@@ -1,0 +1,28 @@
+# robots.txt para AMAS Team Wolf
+User-agent: *
+Allow: /
+Allow: /leadership
+Allow: /tienda
+Allow: /graduacion
+
+# Sitemap
+Sitemap: https://amasteamwolf.com/sitemap.xml
+
+# Crawl-delay (opcional, para ser amigables con los bots)
+Crawl-delay: 1
+
+# Bots específicos
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Bloquear acceso a páginas de registro (no queremos que se indexen formularios)
+User-agent: *
+Disallow: /registro-3-meses
+Disallow: /registro-mensual
+Disallow: /registro-leadership
