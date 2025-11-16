@@ -30,282 +30,124 @@ jobs:
         run: |
           echo "🔧 Applying comprehensive fixes for Figma Make generated code..."
           
-          # Create a Python script to handle all edge cases
-          cat > fix_imports.py << 'PYTHON_SCRIPT'
-import os
-import re
-import sys
-
-def fix_file(filepath):
-    """Fix all import-related issues in a TypeScript/JavaScript file"""
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        original_content = content
-        
-        # Pattern 1: Scoped packages with versions
-        # from "@radix-ui/react-slot@1.1.2" -> from "@radix-ui/react-slot"
-        content = re.sub(
-            r'from\s+(["\'])(@[^/]+/[^@"\']+)@[\d.]+\1',
-            r'from \1\2\1',
-            content
-        )
-        
-        # Pattern 2: Regular packages with versions
-        # from "sonner@2.0.3" -> from "sonner"
-        content = re.sub(
-            r'from\s+(["\'])([^@"\'\/]+)@[\d.]+\1',
-            r'from \1\2\1',
-            content
-        )
-        
-        # Pattern 3: import() dynamic imports with versions
-        # import("package@1.2.3") -> import("package")
-        content = re.sub(
-            r'import\s*\(\s*(["\'])(@[^/]+/[^@"\']+)@[\d.]+\1\s*\)',
-            r'import(\1\2\1)',
-            content
-        )
-        content = re.sub(
-            r'import\s*\(\s*(["\'])([^@"\'\/]+)@[\d.]+\1\s*\)',
-            r'import(\1\2\1)',
-            content
-        )
-        
-        # Pattern 4: require() with versions
-        # require("package@1.2.3") -> require("package")
-        content = re.sub(
-            r'require\s*\(\s*(["\'])(@[^/]+/[^@"\']+)@[\d.]+\1\s*\)',
-            r'require(\1\2\1)',
-            content
-        )
-        content = re.sub(
-            r'require\s*\(\s*(["\'])([^@"\'\/]+)@[\d.]+\1\s*\)',
-            r'require(\1\2\1)',
-            content
-        )
-        
-        # Pattern 5: export from with versions
-        # export { ... } from "package@1.2.3"
-        content = re.sub(
-            r'from\s+(["\'])(@[^/]+/[^@"\']+)@[\d.]+\1',
-            r'from \1\2\1',
-            content
-        )
-        
-        # Pattern 6: Fix any remaining @version patterns in strings
-        # This is more aggressive but safe for import statements
-        content = re.sub(
-            r'(from|import|require)\s*\(?\s*(["\'])([^"\']*?)@[\d.]+\2',
-            r'\1(\2\3\2',
-            content
-        )
-        
-        # Only write if content changed
-        if content != original_content:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(content)
-            print(f"✓ Fixed: {filepath}")
-            return True
-        return False
-        
-    except Exception as e:
-        print(f"✗ Error processing {filepath}: {e}", file=sys.stderr)
-        return False
-
-def main():
-    fixed_count = 0
-    error_count = 0
-    
-    # Walk through all TypeScript/JavaScript files
-    for root, dirs, files in os.walk('src'):
-        # Skip node_modules
-        dirs[:] = [d for d in dirs if d != 'node_modules']
-        
-        for file in files:
-            if file.endswith(('.ts', '.tsx', '.js', '.jsx')):
-                filepath = os.path.join(root, file)
-                try:
-                    if fix_file(filepath):
-                        fixed_count += 1
-                except Exception as e:
-                    print(f"✗ Failed to process {filepath}: {e}", file=sys.stderr)
-                    error_count += 1
-    
-    print(f"\n📊 Summary: {fixed_count} files fixed, {error_count} errors")
-    return 0 if error_count == 0 else 1
-
-if __name__ == '__main__':
-    sys.exit(main())
-PYTHON_SCRIPT
+          python3 << 'PYTHON_EOF'
+          import os
+          import re
+          import sys
           
-          # Run the Python script
-          python3 fix_imports.py
+          def fix_file(filepath):
+              try:
+                  with open(filepath, 'r', encoding='utf-8') as f:
+                      content = f.read()
+                  
+                  original_content = content
+                  
+                  # Fix scoped packages: "@scope/package@1.2.3" -> "@scope/package"
+                  content = re.sub(r'from\s+(["\'])(@[^/]+/[^@"\']+)@[\d.]+\1', r'from \1\2\1', content)
+                  # Fix regular packages: "package@1.2.3" -> "package"
+                  content = re.sub(r'from\s+(["\'])([^@"\'\/]+)@[\d.]+\1', r'from \1\2\1', content)
+                  # Fix dynamic imports
+                  content = re.sub(r'import\s*\(\s*(["\'])(@[^/]+/[^@"\']+)@[\d.]+\1\s*\)', r'import(\1\2\1)', content)
+                  content = re.sub(r'import\s*\(\s*(["\'])([^@"\'\/]+)@[\d.]+\1\s*\)', r'import(\1\2\1)', content)
+                  
+                  if content != original_content:
+                      with open(filepath, 'w', encoding='utf-8') as f:
+                          f.write(content)
+                      print(f"Fixed: {filepath}")
+                      return True
+                  return False
+                  
+              except Exception as e:
+                  print(f"Error processing {filepath}: {e}", file=sys.stderr)
+                  return False
           
-          echo "✅ All import fixes applied"
+          fixed_count = 0
+          for root, dirs, files in os.walk('src'):
+              dirs[:] = [d for d in dirs if d != 'node_modules']
+              for file in files:
+                  if file.endswith(('.ts', '.tsx', '.js', '.jsx')):
+                      filepath = os.path.join(root, file)
+                      if fix_file(filepath):
+                          fixed_count += 1
+          
+          print(f"Summary: {fixed_count} files fixed")
+          PYTHON_EOF
+          
+          echo "✅ Import fixes applied"
       
       - name: Create missing configuration files
         run: |
           echo "📝 Creating configuration files if missing..."
           
-          # Create vite.config.ts if it doesn't exist
           if [ ! -f "vite.config.ts" ]; then
             cat > vite.config.ts << 'EOF'
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import path from 'path'
-
-export default defineConfig({
-  plugins: [react()],
-  base: '/',
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'ui-vendor': ['@radix-ui/react-accordion', '@radix-ui/react-alert-dialog', '@radix-ui/react-avatar'],
-        },
-      },
-    },
-  },
-})
-EOF
+          import { defineConfig } from 'vite'
+          import react from '@vitejs/plugin-react-swc'
+          import path from 'path'
+          
+          export default defineConfig({
+            plugins: [react()],
+            base: '/',
+            resolve: {
+              alias: {
+                '@': path.resolve(__dirname, './src'),
+              },
+            },
+          })
+          EOF
             echo "✓ Created vite.config.ts"
           fi
           
-          # Create tsconfig.json if it doesn't exist
           if [ ! -f "tsconfig.json" ]; then
             cat > tsconfig.json << 'EOF'
-{
-  "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "module": "ESNext",
-    "skipLibCheck": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx",
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
-}
-EOF
+          {
+            "compilerOptions": {
+              "target": "ES2020",
+              "useDefineForClassFields": true,
+              "lib": ["ES2020", "DOM", "DOM.Iterable"],
+              "module": "ESNext",
+              "skipLibCheck": true,
+              "moduleResolution": "bundler",
+              "allowImportingTsExtensions": true,
+              "resolveJsonModule": true,
+              "isolatedModules": true,
+              "noEmit": true,
+              "jsx": "react-jsx",
+              "strict": false,
+              "baseUrl": ".",
+              "paths": {
+                "@/*": ["./src/*"]
+              }
+            },
+            "include": ["src"]
+          }
+          EOF
             echo "✓ Created tsconfig.json"
           fi
           
-          # Create tsconfig.node.json if it doesn't exist
           if [ ! -f "tsconfig.node.json" ]; then
             cat > tsconfig.node.json << 'EOF'
-{
-  "compilerOptions": {
-    "composite": true,
-    "skipLibCheck": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true
-  },
-  "include": ["vite.config.ts"]
-}
-EOF
+          {
+            "compilerOptions": {
+              "composite": true,
+              "skipLibCheck": true,
+              "module": "ESNext",
+              "moduleResolution": "bundler",
+              "allowSyntheticDefaultImports": true
+            },
+            "include": ["vite.config.ts"]
+          }
+          EOF
             echo "✓ Created tsconfig.node.json"
           fi
       
-      - name: Install dependencies with error handling
+      - name: Install dependencies
         run: |
-          echo "📦 Installing dependencies..."
-          
-          # Install with legacy peer deps to handle version conflicts
-          npm install --legacy-peer-deps || {
-            echo "⚠️ First install attempt failed, trying with --force..."
-            npm install --legacy-peer-deps --force
-          }
-          
-          # Install dev dependencies
+          npm install --legacy-peer-deps || npm install --legacy-peer-deps --force
           npm install --save-dev typescript @types/react @types/react-dom @types/node --legacy-peer-deps || true
-          
-          # Verify critical packages are installed
-          echo "🔍 Verifying installations..."
-          npm list react react-dom vite || echo "⚠️ Some packages may need reinstallation"
-          
-          echo "✅ Dependencies installed"
       
-      - name: Pre-build diagnostics
-        run: |
-          echo "🔍 Running pre-build diagnostics..."
-          echo "Node version: $(node --version)"
-          echo "NPM version: $(npm --version)"
-          echo "TypeScript version: $(npx tsc --version || echo 'Not found')"
-          echo "Vite version: $(npx vite --version || echo 'Not found')"
-          
-          echo "📁 Project structure:"
-          ls -la
-          
-          echo "📦 Key files present:"
-          [ -f "package.json" ] && echo "✓ package.json" || echo "✗ package.json"
-          [ -f "vite.config.ts" ] && echo "✓ vite.config.ts" || echo "✗ vite.config.ts"
-          [ -f "tsconfig.json" ] && echo "✓ tsconfig.json" || echo "✗ tsconfig.json"
-          [ -f "index.html" ] && echo "✓ index.html" || echo "✗ index.html"
-          [ -d "src" ] && echo "✓ src/" || echo "✗ src/"
-      
-      - name: Build with enhanced error handling
-        run: |
-          echo "🏗️ Building project..."
-          
-          # Try building with increased memory and better error output
-          npm run build 2>&1 | tee build.log || {
-            echo "❌ Build failed. Analyzing errors..."
-            
-            # Check for common errors
-            if grep -q "Cannot find module" build.log; then
-              echo "⚠️ Missing module detected. Checking imports..."
-              grep "Cannot find module" build.log
-            fi
-            
-            if grep -q "Unexpected token" build.log; then
-              echo "⚠️ Syntax error detected. Check recent changes..."
-              grep "Unexpected token" build.log
-            fi
-            
-            if grep -q "out of memory" build.log; then
-              echo "⚠️ Out of memory. Trying with more allocation..."
-              NODE_OPTIONS="--max-old-space-size=8192" npm run build
-            else
-              # Re-throw error
-              exit 1
-            fi
-          }
-          
-          echo "✅ Build completed successfully"
-          
-          # Verify dist folder
-          if [ -d "dist" ]; then
-            echo "📊 Build output:"
-            ls -lh dist/
-            du -sh dist/
-          else
-            echo "❌ dist folder not created!"
-            exit 1
-          fi
+      - name: Build
+        run: npm run build
         env:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false
@@ -318,16 +160,6 @@ EOF
         with:
           path: ./dist
       
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        
-      - name: Deployment summary
-        if: always()
-        run: |
-          echo "🎉 Deployment completed!"
-          echo "🌐 Your site should be available at: https://amasteamwolf.com"
-          echo "⏰ DNS propagation may take a few minutes"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
