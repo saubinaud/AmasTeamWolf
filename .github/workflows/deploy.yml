@@ -26,11 +26,13 @@ jobs:
         with:
           node-version: '20'
       
-      - name: Fix import statements
+      - name: Fix package version imports
         run: |
-          echo "🔧 Fixing version imports in TypeScript files..."
-          find src -type f \( -name "*.tsx" -o -name "*.ts" \) -exec sed -i 's/@[0-9]\+\.[0-9]\+\.[0-9]\+"/""/g' {} \;
-          find src -type f \( -name "*.tsx" -o -name "*.ts" \) -exec sed -i "s/@[0-9]\+\.[0-9]\+\.[0-9]\+'/'/g" {} \;
+          echo "🔧 Fixing package version imports..."
+          # Fix imports like: from "package@1.2.3" -> from "package"
+          find src -type f \( -name "*.tsx" -o -name "*.ts" \) -exec perl -pi -e 's/from\s+"([^"@]+)@[0-9.]+"/from "$1"/g' {} \;
+          find src -type f \( -name "*.tsx" -o -name "*.ts" \) -exec perl -pi -e "s/from\\s+'([^'@]+)@[0-9.]+'/ from '\$1'/g" {} \;
+          echo "✅ Imports fixed"
       
       - name: Install dependencies
         run: |
