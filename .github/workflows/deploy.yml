@@ -152,9 +152,12 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false
       
-      - name: Fix SPA routing for GitHub Pages
+      - name: Post-Build SEO and Routing Fixes
         run: |
-          echo "🔧 Adding 404.html for SPA routing..."
+          echo "🎨 Applying post-build optimizations..."
+          
+          # 1. Create 404.html for SPA routing
+          echo "📄 Creating 404.html for SPA routing..."
           cat > dist/404.html << 'EOF'
           <!DOCTYPE html>
           <html>
@@ -178,14 +181,129 @@ jobs:
           </html>
           EOF
           
-          # Also add redirect script to index.html if not present
-          if ! grep -q "spa-github-pages" dist/index.html; then
-            echo "Adding SPA redirect script to index.html..."
-            # Add script right after <head> tag
-            sed -i 's|<head>|<head>\n    <script>\n      (function(l) {\n        if (l.search[1] === "/" ) {\n          var decoded = l.search.slice(1).split("&").map(function(s) { \n            return s.replace(/~and~/g, "&")\n          }).join("?");\n          window.history.replaceState(null, null,\n              l.pathname.slice(0, -1) + decoded + l.hash\n          );\n        }\n      }(window.location))\n    </script>|' dist/index.html
+          # 2. Enhance index.html with comprehensive meta tags
+          echo "🏷️  Enhancing meta tags in index.html..."
+          
+          python3 << 'PYTHON_SCRIPT'
+          import re
+          
+          # Read index.html
+          with open('dist/index.html', 'r', encoding='utf-8') as f:
+              html = f.read()
+          
+          # Meta tags to inject
+          meta_tags = '''
+              <!-- SEO Meta Tags -->
+              <meta name="description" content="AMAS Team Wolf - Liderazgo, estrategia y transformación digital para organizaciones">
+              <meta name="keywords" content="liderazgo, estrategia, transformación digital, AMAS Team Wolf">
+              <meta name="author" content="AMAS Team Wolf">
+              
+              <!-- Open Graph Meta Tags -->
+              <meta property="og:title" content="AMAS Team Wolf - Liderazgo y Estrategia Digital">
+              <meta property="og:description" content="Transformación digital, liderazgo estratégico y soluciones innovadoras">
+              <meta property="og:image" content="https://amasteamwolf.com/og-image.jpg">
+              <meta property="og:url" content="https://amasteamwolf.com">
+              <meta property="og:type" content="website">
+              <meta property="og:site_name" content="AMAS Team Wolf">
+              <meta property="og:image:width" content="1200">
+              <meta property="og:image:height" content="630">
+              
+              <!-- Twitter Card Meta Tags -->
+              <meta name="twitter:card" content="summary_large_image">
+              <meta name="twitter:title" content="AMAS Team Wolf">
+              <meta name="twitter:description" content="Transformación digital y liderazgo estratégico">
+              <meta name="twitter:image" content="https://amasteamwolf.com/og-image.jpg">
+              
+              <!-- WhatsApp Meta Tags -->
+              <meta property="og:image:type" content="image/jpeg">
+              
+              <!-- Dynamic SEO Script -->
+              <script>
+                (function() {
+                  // SPA redirect handler
+                  var l = window.location;
+                  if (l.search[1] === '/') {
+                    var decoded = l.search.slice(1).split('&').map(function(s) { 
+                      return s.replace(/~and~/g, '&');
+                    }).join('?');
+                    window.history.replaceState(null, null,
+                      l.pathname.slice(0, -1) + decoded + l.hash
+                    );
+                  }
+                  
+                  // Dynamic meta tag updates based on route
+                  function updateMetaTags() {
+                    var path = window.location.pathname;
+                    var pageConfig = {
+                      '/conversion': {
+                        title: 'Landing Conversión | AMAS Team Wolf',
+                        description: 'Optimiza tus conversiones con estrategias probadas',
+                        url: 'https://amasteamwolf.com/conversion'
+                      },
+                      '/tienda': {
+                        title: 'Tienda | AMAS Team Wolf',
+                        description: 'Descubre nuestros productos y servicios',
+                        url: 'https://amasteamwolf.com/tienda'
+                      },
+                      '/graduacion': {
+                        title: 'Graduación | AMAS Team Wolf',
+                        description: 'Programa de graduación y certificación',
+                        url: 'https://amasteamwolf.com/graduacion'
+                      }
+                    };
+                    
+                    var config = pageConfig[path] || {
+                      title: 'AMAS Team Wolf - Liderazgo y Estrategia Digital',
+                      description: 'Transformación digital y liderazgo estratégico',
+                      url: 'https://amasteamwolf.com'
+                    };
+                    
+                    document.title = config.title;
+                    
+                    function setMeta(attr, value, content) {
+                      var meta = document.querySelector('meta[' + attr + '="' + value + '"]');
+                      if (meta) meta.setAttribute('content', content);
+                    }
+                    
+                    setMeta('name', 'description', config.description);
+                    setMeta('property', 'og:title', config.title);
+                    setMeta('property', 'og:description', config.description);
+                    setMeta('property', 'og:url', config.url);
+                    setMeta('name', 'twitter:title', config.title);
+                    setMeta('name', 'twitter:description', config.description);
+                    setMeta('name', 'twitter:url', config.url);
+                  }
+                  
+                  // Update on load and route changes
+                  updateMetaTags();
+                  window.addEventListener('popstate', updateMetaTags);
+                  
+                  // Watch for route changes in SPA
+                  var pushState = history.pushState;
+                  history.pushState = function() {
+                    pushState.apply(history, arguments);
+                    updateMetaTags();
+                  };
+                })();
+              </script>
+          '''
+          
+          # Inject before </head>
+          html = re.sub(r'</head>', meta_tags + '\n  </head>', html, count=1)
+          
+          # Write back
+          with open('dist/index.html', 'w', encoding='utf-8') as f:
+              f.write(html)
+          
+          print("✅ Meta tags and SEO script injected")
+          PYTHON_SCRIPT
+          
+          # 3. Create OG image placeholder if doesn't exist
+          if [ ! -f "dist/og-image.jpg" ]; then
+            echo "📷 Note: Add og-image.jpg (1200x630px) to your repository for social sharing"
           fi
           
-          echo "✅ SPA routing configured"
+          echo "✅ Post-build optimizations complete"
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -198,3 +316,20 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+      
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo ""
+          echo "🌐 Your site: https://amasteamwolf.com"
+          echo "📊 Features enabled:"
+          echo "  ✅ SPA routing (direct URL access)"
+          echo "  ✅ Dynamic SEO meta tags"
+          echo "  ✅ Open Graph for social sharing"
+          echo "  ✅ Twitter Cards"
+          echo "  ✅ WhatsApp preview"
+          echo ""
+          echo "📝 Next steps:"
+          echo "  1. Add og-image.jpg (1200x630px) to repository root"
+          echo "  2. Test sharing URLs on WhatsApp/Twitter/Facebook"
+          echo "  3. Verify all routes work: /conversion, /tienda, /graduacion"
