@@ -152,6 +152,41 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
           CI: false
       
+      - name: Fix SPA routing for GitHub Pages
+        run: |
+          echo "🔧 Adding 404.html for SPA routing..."
+          cat > dist/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>AMAS Team Wolf</title>
+              <script>
+                var pathSegmentsToKeep = 0;
+                var l = window.location;
+                l.replace(
+                  l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                  l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+                  l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+                  (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+                  l.hash
+                );
+              </script>
+            </head>
+            <body>
+            </body>
+          </html>
+          EOF
+          
+          # Also add redirect script to index.html if not present
+          if ! grep -q "spa-github-pages" dist/index.html; then
+            echo "Adding SPA redirect script to index.html..."
+            # Add script right after <head> tag
+            sed -i 's|<head>|<head>\n    <script>\n      (function(l) {\n        if (l.search[1] === "/" ) {\n          var decoded = l.search.slice(1).split("&").map(function(s) { \n            return s.replace(/~and~/g, "&")\n          }).join("?");\n          window.history.replaceState(null, null,\n              l.pathname.slice(0, -1) + decoded + l.hash\n          );\n        }\n      }(window.location))\n    </script>|' dist/index.html
+          fi
+          
+          echo "✅ SPA routing configured"
+      
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
