@@ -163,7 +163,7 @@ jobs:
           <html>
             <head>
               <meta charset="utf-8">
-              <title>AMAS Team Wolf</title>
+              <title>Amas Team Wolf</title>
               <script>
                 var pathSegmentsToKeep = 0;
                 var l = window.location;
@@ -194,25 +194,28 @@ jobs:
           # Meta tags to inject
           meta_tags = '''
               <!-- SEO Meta Tags -->
-              <meta name="description" content="AMAS Team Wolf - Liderazgo, estrategia y transformación digital para organizaciones">
-              <meta name="keywords" content="liderazgo, estrategia, transformación digital, AMAS Team Wolf">
-              <meta name="author" content="AMAS Team Wolf">
+              <meta name="description" content="Amas Team Wolf - Academia de taekwondo en San Borja, Lima. Formamos niños, jóvenes y adultos con disciplina, valores y liderazgo. Más que un deporte: educación para la vida.">
+              <meta name="keywords" content="academia taekwondo Lima, taekwondo niños Lima, clases artes marciales Lima, escuela taekwondo disciplina, taekwondo San Borja, formación valores niños Lima, Amas Team Wolf">
+              <meta name="author" content="Amas Team Wolf">
+              <meta name="geo.region" content="PE-LIM">
+              <meta name="geo.placename" content="Lima, Perú">
               
               <!-- Open Graph Meta Tags -->
-              <meta property="og:title" content="AMAS Team Wolf - Liderazgo y Estrategia Digital">
-              <meta property="og:description" content="Transformación digital, liderazgo estratégico y soluciones innovadoras">
-              <meta property="og:image" content="https://amasteamwolf.com/og-image.jpg">
+              <meta property="og:title" content="Amas Team Wolf - Academia de Taekwondo en Lima | Formamos Líderes">
+              <meta property="og:description" content="Formamos niños, jóvenes y adultos con disciplina, respeto y liderazgo. Una comunidad que transforma vidas dentro y fuera del tatami.">
+              <meta property="og:image" content="https://amasteamwolf.com/web-app-manifest-512x512.png">
               <meta property="og:url" content="https://amasteamwolf.com">
               <meta property="og:type" content="website">
-              <meta property="og:site_name" content="AMAS Team Wolf">
+              <meta property="og:site_name" content="Amas Team Wolf">
+              <meta property="og:locale" content="es_PE">
               <meta property="og:image:width" content="1200">
               <meta property="og:image:height" content="630">
               
               <!-- Twitter Card Meta Tags -->
               <meta name="twitter:card" content="summary_large_image">
-              <meta name="twitter:title" content="AMAS Team Wolf">
-              <meta name="twitter:description" content="Transformación digital y liderazgo estratégico">
-              <meta name="twitter:image" content="https://amasteamwolf.com/og-image.jpg">
+              <meta name="twitter:title" content="Amas Team Wolf - Academia de Taekwondo en Lima">
+              <meta name="twitter:description" content="Formamos líderes con disciplina, respeto y valores. Taekwondo para niños, jóvenes y adultos en Lima, Perú.">
+              <meta name="twitter:image" content="https://amasteamwolf.com/web-app-manifest-512x512.png">
               
               <!-- WhatsApp Meta Tags -->
               <meta property="og:image:type" content="image/jpeg">
@@ -235,26 +238,41 @@ jobs:
                   function updateMetaTags() {
                     var path = window.location.pathname;
                     var pageConfig = {
+                      '/': {
+                        title: 'Amas Team Wolf - Academia de Taekwondo en Lima | Formamos Líderes',
+                        description: 'Academia de taekwondo en Lima que forma niños, jóvenes y adultos con disciplina, valores y liderazgo. Descubre cómo transformamos vidas dentro y fuera del tatami.',
+                        url: 'https://amasteamwolf.com'
+                      },
                       '/conversion': {
-                        title: 'Landing Conversión | AMAS Team Wolf',
-                        description: 'Optimiza tus conversiones con estrategias probadas',
+                        title: 'Inscríbete en Amas Team Wolf | Academia de Taekwondo Lima',
+                        description: 'Únete a la manada Wolf. Inscripciones abiertas para niños, jóvenes y adultos. Formación marcial con valores, disciplina y liderazgo en Lima, Perú.',
                         url: 'https://amasteamwolf.com/conversion'
                       },
                       '/tienda': {
-                        title: 'Tienda | AMAS Team Wolf',
-                        description: 'Descubre nuestros productos y servicios',
+                        title: 'Tienda Oficial Amas Team Wolf | Uniformes y Equipamiento',
+                        description: 'Encuentra uniformes reglamentarios, guantes, combat weapons y todo el equipamiento oficial para tu entrenamiento de taekwondo en Amas Team Wolf.',
                         url: 'https://amasteamwolf.com/tienda'
                       },
                       '/graduacion': {
-                        title: 'Graduación | AMAS Team Wolf',
-                        description: 'Programa de graduación y certificación',
+                        title: 'Graduaciones Amas Team Wolf | Ceremonia de Cinturones',
+                        description: 'Celebramos el esfuerzo y progreso de nuestros alumnos. Conoce el programa de graduaciones y ascenso de cinturones en Amas team Team Wolf.',
                         url: 'https://amasteamwolf.com/graduacion'
+                      },
+                      '/programas': {
+                        title: 'Programas de Taekwondo Amas Team Wolf | Básico, Fighter y Leadership',
+                        description: 'Descubre nuestros programas: Básico (niños desde 1 año), Fighter Wolf (alto rendimiento) y Leadership Wolf (programa avanzado de uso de armas). Encuentra el tuyo.',
+                        url: 'https://amasteamwolf.com/programas'
+                      },
+                      '/leadership': {
+                        title: 'Programa Leadership Wolf | Programa avanzado de uso de armar',
+                        description: 'Llega a otro nivel con el programa Leadership Wolf. Aprende nuevas técnicas, conoce nuevas armas y obtener certificaciones oficiales Amas Team Wolf en Lima, Perú.',
+                        url: 'https://amasteamwolf.com/leadership'
                       }
                     };
                     
                     var config = pageConfig[path] || {
-                      title: 'AMAS Team Wolf - Liderazgo y Estrategia Digital',
-                      description: 'Transformación digital y liderazgo estratégico',
+                      title: 'Amas Team Wolf - Academia de Taekwondo en Lima',
+                      description: 'Formamos personas fuertes, dentro y fuera del tatami. Academia de taekwondo con valores en Lima, Perú.',
                       url: 'https://amasteamwolf.com'
                     };
                     
@@ -299,8 +317,8 @@ jobs:
           PYTHON_SCRIPT
           
           # 3. Create OG image placeholder if doesn't exist
-          if [ ! -f "dist/og-image.jpg" ]; then
-            echo "📷 Note: Add og-image.jpg (1200x630px) to your repository for social sharing"
+          if [ ! -f "dist/web-app-manifest-512x512.png" ]; then
+            echo "📷 Note: Add web-app-manifest-512x512.png to your repository for social sharing"
           fi
           
           echo "✅ Post-build optimizations complete"
@@ -330,6 +348,6 @@ jobs:
           echo "  ✅ WhatsApp preview"
           echo ""
           echo "📝 Next steps:"
-          echo "  1. Add og-image.jpg (1200x630px) to repository root"
+          echo "  1. Add web-app-manifest-512x512.png to repository root"
           echo "  2. Test sharing URLs on WhatsApp/Twitter/Facebook"
           echo "  3. Verify all routes work: /conversion, /tienda, /graduacion"
