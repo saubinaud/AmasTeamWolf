@@ -26,10 +26,15 @@ jobs:
         with:
           node-version: '20'
       
+      - name: Fix import statements
+        run: |
+          echo "🔧 Fixing version imports in TypeScript files..."
+          find src -type f \( -name "*.tsx" -o -name "*.ts" \) -exec sed -i 's/@[0-9]\+\.[0-9]\+\.[0-9]\+"/""/g' {} \;
+          find src -type f \( -name "*.tsx" -o -name "*.ts" \) -exec sed -i "s/@[0-9]\+\.[0-9]\+\.[0-9]\+'/'/g" {} \;
+      
       - name: Install dependencies
         run: |
           npm install --legacy-peer-deps
-          npm install sonner@2.0.3 --legacy-peer-deps --force
           npm install --save-dev typescript @types/react @types/react-dom --legacy-peer-deps
       
       - name: Build
