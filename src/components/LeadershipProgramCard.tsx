@@ -8,7 +8,7 @@ interface LeadershipProgramCardProps {
 
 export function LeadershipProgramCard({ onEnrollClick }: LeadershipProgramCardProps) {
   const precioOriginal = 1964;
-  const precioConDescuento = 1499;
+  const precioConDescuento = 1299;
   const ahorro = precioOriginal - precioConDescuento;
 
   // Todos los implementos del programa (excepto membresía)
