@@ -13,7 +13,7 @@ interface RegistroLeadershipPageProps {
   onSuccess: (total: number) => void;
 }
 
-const BASE_PRICE = 1499;
+const BASE_PRICE = 1299;
 
 const INITIAL_FORM_STATE = {
   nombrePadre: '',
