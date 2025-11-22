@@ -76,14 +76,14 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const galleryImages = [
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg', alt: 'Niños entrenandocon energía, disciplina y amor' },
-    { src: 'https://images.unsplash.com/photo-1617627590804-1de3424fbf04?q=80&w=800', alt: 'Instructora certificada corrigiendo postura con paciencia' },
-    { src: 'https://images.unsplash.com/photo-1664802273197-7cdd6a6cbc6e?q=80&w=800', alt: 'Ceremonia de graduación - Momento especial para familias' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg', alt: 'Niño recibiendo su cinturón con orgullo' },
-    { src: 'https://images.unsplash.com/photo-1761039807430-a42c4e260acd?q=80&w=800', alt: 'Instalaciones modernas con tatami acolchado' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg', alt: 'Grupos pequeños - Máximo 12 alumnos por clase' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124686/AMAS_-_graduacio%CC%81n_profesores_6_c3qvlk.jpg', alt: 'Alumno confiado mostrando certificado oficial' },
-    { src: 'https://images.unsplash.com/photo-1758612897440-554531eca46a?q=80&w=800', alt: 'Familia feliz después de clase - Momento de unión' }
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847478/Valencia_2_t8q3hl.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124686/AMAS_-_graduacio%CC%81n_profesores_6_c3qvlk.jpg' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg' }
   ];
 
   // Scroll suave a sección
