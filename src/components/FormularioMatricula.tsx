@@ -54,7 +54,7 @@ const NOMBRES_PROGRAMA: Record<string, string> = {
 
 // Códigos promocionales
 interface CodigoPromocional {
-  tipo: 'descuento_dinero' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  tipo: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'uniforme_gratis';
   valor: number;
   descripcion: string;
   programasAplicables: string[];
@@ -62,38 +62,241 @@ interface CodigoPromocional {
 }
 
 const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
-  "AMAS-DESC100-2025": {
+  // ========== DESCUENTOS EN DINERO ==========
+  "AMAS-DESC50": {
+    tipo: "descuento_dinero",
+    valor: 50,
+    descripcion: "Descuento de S/ 50",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMAS-DESC100": {
     tipo: "descuento_dinero",
     valor: 100,
     descripcion: "Descuento de S/ 100",
     programasAplicables: ["1mes", "full"],
     activo: true
   },
-  "AMAS-DESC150-2025": {
+  "AMAS-DESC150": {
     tipo: "descuento_dinero",
     valor: 150,
     descripcion: "Descuento de S/ 150",
     programasAplicables: ["full"],
     activo: true
   },
-  "AMAS-4CLASES-2025": {
+  "AMAS-DESC200": {
+    tipo: "descuento_dinero",
+    valor: 200,
+    descripcion: "Descuento de S/ 200",
+    programasAplicables: ["full"],
+    activo: true
+  },
+  "PRIMAVEZ": {
+    tipo: "descuento_dinero",
+    valor: 80,
+    descripcion: "Descuento de S/ 80 para nuevos alumnos",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+
+  // ========== DESCUENTOS PORCENTUALES ==========
+  "AMAS10OFF": {
+    tipo: "descuento_porcentaje",
+    valor: 10,
+    descripcion: "10% de descuento",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMAS15OFF": {
+    tipo: "descuento_porcentaje",
+    valor: 15,
+    descripcion: "15% de descuento",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMAS20OFF": {
+    tipo: "descuento_porcentaje",
+    valor: 20,
+    descripcion: "20% de descuento",
+    programasAplicables: ["full"],
+    activo: true
+  },
+  "BLACKFRIDAY": {
+    tipo: "descuento_porcentaje",
+    valor: 25,
+    descripcion: "25% de descuento Black Friday",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+
+  // ========== CLASES EXTRA ==========
+  "AMAS-4CLASES": {
     tipo: "clases_extra",
     valor: 4,
     descripcion: "+4 clases gratis",
     programasAplicables: ["1mes", "full"],
     activo: true
   },
-  "AMAS-MESGRATIS-2025": {
+  "AMAS-8CLASES": {
+    tipo: "clases_extra",
+    valor: 8,
+    descripcion: "+8 clases gratis",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMAS-12CLASES": {
+    tipo: "clases_extra",
+    valor: 12,
+    descripcion: "+12 clases gratis",
+    programasAplicables: ["full"],
+    activo: true
+  },
+
+  // ========== MES GRATIS ==========
+  "MESGRATIS": {
     tipo: "mes_gratis",
     valor: 8,
     descripcion: "+1 mes gratis (8 clases)",
     programasAplicables: ["full"],
     activo: true
   },
-  "AMAS-POLO-2025": {
+  "2X1FINAL": {
+    tipo: "mes_gratis",
+    valor: 16,
+    descripcion: "+2 meses gratis (16 clases)",
+    programasAplicables: ["full"],
+    activo: true
+  },
+
+  // ========== POLOS Y UNIFORMES ==========
+  "POLO1GRATIS": {
     tipo: "polo_gratis",
     valor: 1,
-    descripcion: "+1 polo oficial gratis",
+    descripcion: "+1 polo oficial gratis (S/ 60)",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "POLO2GRATIS": {
+    tipo: "polo_gratis",
+    valor: 2,
+    descripcion: "+2 polos oficiales gratis (S/ 110)",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "UNIFORMEGRATIS": {
+    tipo: "uniforme_gratis",
+    valor: 220,
+    descripcion: "Uniforme completo gratis (S/ 220)",
+    programasAplicables: ["1mes"],
+    activo: true
+  },
+
+  // ========== DESCUENTOS FAMILIARES ==========
+  "HERMANOS10": {
+    tipo: "descuento_porcentaje",
+    valor: 10,
+    descripcion: "10% descuento por inscribir hermanos",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "HERMANOS15": {
+    tipo: "descuento_porcentaje",
+    valor: 15,
+    descripcion: "15% descuento por inscribir 2+ hermanos",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "FAMILIAR20": {
+    tipo: "descuento_porcentaje",
+    valor: 20,
+    descripcion: "20% descuento familiar (3+ miembros)",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+
+  // ========== REFERIDOS ==========
+  "AMIGO50": {
+    tipo: "descuento_dinero",
+    valor: 50,
+    descripcion: "S/ 50 descuento por referir a un amigo",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMIGO100": {
+    tipo: "descuento_dinero",
+    valor: 100,
+    descripcion: "S/ 100 descuento por referir 2+ amigos",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "REFIERE3X": {
+    tipo: "descuento_dinero",
+    valor: 150,
+    descripcion: "S/ 150 descuento por referir 3+ amigos",
+    programasAplicables: ["full"],
+    activo: true
+  },
+
+  // ========== ESPECIALES ==========
+  "CUMPLEAÑOS": {
+    tipo: "descuento_dinero",
+    valor: 80,
+    descripcion: "S/ 80 descuento + 1 polo gratis (mes cumpleaños)",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "BIENVENIDA": {
+    tipo: "descuento_dinero",
+    valor: 60,
+    descripcion: "S/ 60 descuento + 2 clases extra",
+    programasAplicables: ["1mes"],
+    activo: true
+  },
+  "NAVIDAD": {
+    tipo: "descuento_porcentaje",
+    valor: 15,
+    descripcion: "15% descuento + 4 clases extra (Navidad)",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+
+  // ========== FIDELIDAD ==========
+  "VUELVE100": {
+    tipo: "descuento_dinero",
+    valor: 100,
+    descripcion: "S/ 100 descuento para ex-alumnos",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "VUELVE150": {
+    tipo: "descuento_dinero",
+    valor: 150,
+    descripcion: "S/ 150 descuento + 1 polo (ex-alumnos)",
+    programasAplicables: ["full"],
+    activo: true
+  },
+
+  // ========== PROMOCIONES FLASH ==========
+  "FLASH24H": {
+    tipo: "descuento_porcentaje",
+    valor: 20,
+    descripcion: "20% descuento válido 24 horas",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "EARLYBIRD": {
+    tipo: "descuento_dinero",
+    valor: 120,
+    descripcion: "S/ 120 descuento por inscripción anticipada",
+    programasAplicables: ["full"],
+    activo: true
+  },
+
+  // ========== RENOVACIONES ==========
+  "RENUEVA100": {
+    tipo: "descuento_dinero",
+    valor: 100,
+    descripcion: "S/ 100 descuento por renovación anticipada",
     programasAplicables: ["1mes", "full"],
     activo: true
   }
@@ -110,7 +313,7 @@ interface HorariosInfo {
 
 interface CodigoAplicado {
   valido: boolean;
-  tipo?: 'descuento_dinero' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  tipo?: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'uniforme_gratis';
   valor?: number;
   descripcion?: string;
   codigo?: string;
@@ -314,7 +517,7 @@ function obtenerClasesExtraDePromo(codigo: string): number {
   if (!promo) return 0;
 
   if (promo.tipo === "clases_extra") return promo.valor;
-  if (promo.tipo === "mes_gratis") return 8;
+  if (promo.tipo === "mes_gratis") return promo.valor;
   return 0;
 }
 
@@ -415,15 +618,34 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
   // Cálculos de precio
   const precioBase = PRECIOS_BASE[programa];
   const preciosPolos = { '0': 0, '1': 60, '2': 110, '3': 150 };
-  const precioUniforme = programa === '1mes' && includeUniform ? 220 : 0;
+  let precioUniforme = programa === '1mes' && includeUniform ? 220 : 0;
+  let precioPolosAjustado = preciosPolos[polosOption];
 
   // Calcular descuento de código promocional
   let descuentoDinero = 0;
-  if (codigoAplicado?.valido && codigoAplicado.tipo === 'descuento_dinero' && codigoAplicado.valor) {
-    descuentoDinero = codigoAplicado.valor;
+  let descuentoPorcentaje = 0;
+
+  if (codigoAplicado?.valido && codigoAplicado.valor) {
+    if (codigoAplicado.tipo === 'descuento_dinero') {
+      descuentoDinero = codigoAplicado.valor;
+    } else if (codigoAplicado.tipo === 'descuento_porcentaje') {
+      descuentoPorcentaje = codigoAplicado.valor;
+    } else if (codigoAplicado.tipo === 'polo_gratis') {
+      // Reducir precio de polos según cantidad de polos gratis
+      const valorDescuentoPolo = codigoAplicado.valor === 1 ? 60 : 110;
+      precioPolosAjustado = Math.max(0, preciosPolos[polosOption] - valorDescuentoPolo);
+    } else if (codigoAplicado.tipo === 'uniforme_gratis') {
+      precioUniforme = 0;
+    }
   }
 
-  const total = precioBase + preciosPolos[polosOption] + precioUniforme - descuentoDinero;
+  // Calcular subtotal antes de descuento porcentual
+  const subtotal = precioBase + precioPolosAjustado + precioUniforme - descuentoDinero;
+
+  // Aplicar descuento porcentual
+  const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
+
+  const total = Math.max(0, subtotal - descuentoPorcentualMonto);
 
   const needsUniformSize = programa === 'full' || (programa === '1mes' && includeUniform);
   const needsPoloSize = polosOption !== '0';
@@ -632,8 +854,12 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programa] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa]),
         semanasAproximadas: formData.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas || 0),
         codigoPromocional: codigoAplicado?.codigo || 'No aplicado',
-        descuentoAplicado: descuentoDinero,
+        tipoDescuento: codigoAplicado?.tipo || 'ninguno',
+        descuentoDinero: descuentoDinero,
+        descuentoPorcentaje: descuentoPorcentaje,
+        descuentoPorcentualMonto: descuentoPorcentualMonto,
         precioPrograma: precioBase,
+        subtotal: subtotal,
         total: total,
         contratoFirmado: uploadedFile ? {
           nombre: uploadedFile.name,
@@ -1451,7 +1677,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             </div>
 
             {/* Bonus de Código Promocional */}
-            {codigoAplicado?.valido && (codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis' || codigoAplicado.tipo === 'polo_gratis') && (
+            {codigoAplicado?.valido && (codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis' || codigoAplicado.tipo === 'polo_gratis' || codigoAplicado.tipo === 'uniforme_gratis') && (
               <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <p className="text-green-400 font-semibold text-sm mb-2">🎁 Promoción aplicada:</p>
                 <p className="text-green-300 text-xs">✓ {codigoAplicado.descripcion}</p>
@@ -1466,20 +1692,28 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               </div>
               {programa === '1mes' && includeUniform && (
                 <div className="flex justify-between text-white/80 text-sm">
-                  <span>Uniforme adicional</span>
-                  <span>S/ {precioUniforme}</span>
+                  <span>Uniforme adicional {codigoAplicado?.tipo === 'uniforme_gratis' && '(GRATIS 🎁)'}</span>
+                  <span className={codigoAplicado?.tipo === 'uniforme_gratis' ? 'line-through text-white/50' : ''}>
+                    S/ {programa === '1mes' && includeUniform ? 220 : 0}
+                  </span>
                 </div>
               )}
               {polosOption !== '0' && (
                 <div className="flex justify-between text-white/80 text-sm">
-                  <span>Polos ({polosOption})</span>
-                  <span>S/ {preciosPolos[polosOption]}</span>
+                  <span>Polos ({polosOption}) {codigoAplicado?.tipo === 'polo_gratis' && '(Descuento aplicado 🎁)'}</span>
+                  <span>S/ {precioPolosAjustado}</span>
                 </div>
               )}
               {descuentoDinero > 0 && (
                 <div className="flex justify-between text-green-400 text-sm font-semibold">
                   <span>Descuento código promo</span>
                   <span>- S/ {descuentoDinero}</span>
+                </div>
+              )}
+              {descuentoPorcentaje > 0 && (
+                <div className="flex justify-between text-green-400 text-sm font-semibold">
+                  <span>Descuento {descuentoPorcentaje}%</span>
+                  <span>- S/ {descuentoPorcentualMonto}</span>
                 </div>
               )}
             </div>
