@@ -353,6 +353,15 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     clasesTotales: number;
     semanasAproximadas: number;
   } | null>(null);
+  const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
+
+  // Calcular fechas disponibles al abrir el formulario
+  useEffect(() => {
+    if (isOpen) {
+      const fechas = obtenerFechasDisponiblesInicio();
+      setFechasDisponibles(fechas);
+    }
+  }, [isOpen]);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -373,6 +382,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       setContratoExpanded(false);
       setFechaFinCalculada('');
       setDetallesFechaFin(null);
+      setFechasDisponibles([]);
     }
   }, [isOpen]);
 
@@ -659,11 +669,11 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent 
+      <DialogContent
         showCloseButton={false}
-        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-[calc(100%-1rem)] sm:w-full max-w-[95vw] sm:max-w-3xl p-4 sm:p-6"
+        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-[calc(100%-1rem)] sm:w-full max-w-[95vw] sm:max-w-4xl p-0"
         style={{
-          maxHeight: '90vh',
+          maxHeight: '92vh',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
@@ -672,31 +682,34 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <div className="flex items-start justify-between mb-4 sm:mb-6 sticky top-0 bg-zinc-900 z-10 pb-3 sm:pb-4 border-b border-white/10 -mx-4 sm:-mx-6 px-4 sm:px-6">
+        {/* Header Sticky */}
+        <div className="flex items-start justify-between sticky top-0 bg-zinc-900 z-20 pb-4 border-b border-white/10 px-6 pt-6">
           <div className="flex-1 pr-8">
-            <DialogTitle className="text-white text-xl sm:text-2xl md:text-3xl mb-1 sm:mb-2">
-              Datos de Matrícula
+            <DialogTitle className="text-white text-xl sm:text-2xl font-bold mb-2">
+              Formulario de Matrícula
             </DialogTitle>
-            <DialogDescription className="text-white/70 text-xs sm:text-sm md:text-base">
-              Programa: <span className="text-[#FCA929]">
-                {programa === 'full' ? '3 Meses Full' : '1 Mes'}
+            <DialogDescription className="text-white/70 text-sm">
+              Programa: <span className="text-[#FA7B21] font-semibold">
+                {programa === 'full' ? '3 Meses Full (S/ 869)' : '1 Mes (S/ 330)'}
               </span>
             </DialogDescription>
           </div>
           <DialogClose asChild>
-            <button 
-              className="text-white/60 hover:text-white transition-colors flex-shrink-0 -mr-1 sm:mr-0 mt-1"
+            <button
+              className="text-white/60 hover:text-white transition-colors flex-shrink-0 p-2 hover:bg-white/5 rounded-lg"
               style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent'
               }}
             >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              <X className="w-6 h-6" />
             </button>
           </DialogClose>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        {/* Form Content */}
+        <div className="px-6 py-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Datos del Alumno */}
           <div>
             <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
@@ -973,22 +986,58 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               Fechas del Programa
             </h3>
 
-            {/* Fecha de Inicio */}
+            {/* Fecha de Inicio - Selector Visual */}
             <div className="mb-6">
-              <Label htmlFor="fechaInicio" className="text-white mb-2">
-                Fecha de inicio *
+              <Label className="text-white mb-3 block text-base">
+                Selecciona tu fecha de inicio *
+                <span className="text-white/60 text-sm font-normal ml-2">
+                  (Próximos 5 días hábiles disponibles)
+                </span>
               </Label>
-              <Input
-                id="fechaInicio"
-                type="date"
-                value={formData.fechaInicio}
-                onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
-                className="bg-zinc-800 border-white/20 text-white"
-                required
-              />
-              <p className="text-white/50 text-xs mt-2">
-                Selecciona tu fecha de inicio (dentro de los próximos 5 días hábiles)
-              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {fechasDisponibles.map((fecha, index) => {
+                  const fechaStr = fecha.toISOString().split('T')[0];
+                  const estaSeleccionada = formData.fechaInicio === fechaStr;
+                  const nombreDia = obtenerNombreDia(fecha);
+                  const diaNumero = fecha.getDate();
+                  const mes = fecha.toLocaleDateString('es-PE', { month: 'long' });
+
+                  return (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleInputChange('fechaInicio', fechaStr)}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        estaSeleccionada
+                          ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                          : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                          estaSeleccionada ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
+                        }`}>
+                          {diaNumero}
+                        </div>
+                        <div className="flex-1">
+                          <p className={`font-semibold ${estaSeleccionada ? 'text-[#FA7B21]' : 'text-white'}`}>
+                            {nombreDia}
+                          </p>
+                          <p className="text-white/60 text-sm capitalize">{mes}</p>
+                        </div>
+                        {estaSeleccionada && (
+                          <div className="text-[#FA7B21] text-xl">✓</div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+              {!formData.fechaInicio && (
+                <p className="text-white/50 text-xs mt-3">
+                  👆 Selecciona una fecha para continuar
+                </p>
+              )}
             </div>
 
             {/* Días Tentativos de Asistencia */}
@@ -1295,7 +1344,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               )}
             </Button>
           </div>
-        </form>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
