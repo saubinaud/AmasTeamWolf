@@ -1010,11 +1010,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
             {/* Fecha de Inicio - Selector Visual */}
             <div className="mb-6">
-              <Label className="text-white mb-3 block text-base">
-                Selecciona tu fecha de inicio *
-                <span className="text-white/60 text-sm font-normal ml-2">
-                  (Próximos 5 días hábiles disponibles)
-                </span>
+              <Label className="text-white mb-3 block text-base font-semibold">
+                1. Selecciona tu fecha de inicio *
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {fechasDisponibles.map((fecha, index) => {
@@ -1055,30 +1052,54 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                   );
                 })}
               </div>
-              {!formData.fechaInicio && (
+              {!formData.fechaInicio && formData.fechaNacimiento && (
                 <p className="text-white/50 text-xs mt-3">
                   👆 Selecciona una fecha para continuar
                 </p>
               )}
             </div>
 
+            {/* Horarios Disponibles según Edad */}
+            {formData.fechaInicio && horariosInfo && (
+              <div className="mb-6 p-5 bg-gradient-to-br from-[#FA7B21]/10 to-[#FA7B21]/5 border-2 border-[#FA7B21]/30 rounded-xl">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="text-3xl">🕐</div>
+                  <div className="flex-1">
+                    <h4 className="text-[#FA7B21] font-bold text-lg mb-1">
+                      Horarios Disponibles {horariosInfo.categoria && `- ${horariosInfo.categoria}`}
+                    </h4>
+                    <p className="text-white/70 text-sm">
+                      Según tu edad, estos son tus horarios de clase
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="bg-zinc-800/50 rounded-lg p-4">
+                    <p className="text-white/60 text-xs mb-1">Lunes a Viernes</p>
+                    <p className="text-white font-semibold text-lg">{horariosInfo.horarioSemana}</p>
+                  </div>
+                  <div className="bg-zinc-800/50 rounded-lg p-4">
+                    <p className="text-white/60 text-xs mb-1">Sábados</p>
+                    <p className="text-white font-semibold text-lg">{horariosInfo.horarioSabado}</p>
+                  </div>
+                  <div className="bg-zinc-800/50 rounded-lg p-4">
+                    <p className="text-white/60 text-xs mb-1">Días disponibles</p>
+                    <p className="text-white font-semibold">{horariosInfo.diasSemana}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Días Tentativos de Asistencia */}
             {formData.fechaInicio && formData.fechaNacimiento && (
               <div className="mb-6">
-                <Label className="text-white mb-3 block text-base">
-                  Días Tentativos de Asistencia *
-                  <span className="text-white/60 text-sm font-normal ml-2">
-                    (Selecciona al menos 2 días por semana)
-                  </span>
+                <Label className="text-white mb-2 block text-base font-semibold">
+                  2. Días Tentativos de Clases *
                 </Label>
-
-                {categoriaAlumno && (
-                  <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                    <p className="text-blue-300 text-sm">
-                      📅 Categoría <strong>{categoriaAlumno}</strong> - Los días disponibles están filtrados según tu edad
-                    </p>
-                  </div>
-                )}
+                <p className="text-white/60 text-sm mb-4">
+                  (Solo para cálculo de fecha fin - Selecciona al menos 2 días)
+                </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
@@ -1088,7 +1109,6 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     } else if (categoriaAlumno === 'Adolescentes') {
                       isDisabled = !['Martes', 'Jueves', 'Sábado'].includes(dia);
                     }
-                    // Para otras edades (bebés/niños pequeños), todos los días están disponibles
 
                     return (
                       <label
@@ -1124,36 +1144,61 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             )}
 
             {/* Fecha de Fin (Calculada Automáticamente) */}
-            <div className="mb-6">
-              <Label htmlFor="fechaFin" className="text-white mb-2">
-                Fecha de fin
-              </Label>
-              <Input
-                id="fechaFin"
-                type="date"
-                value={fechaFinCalculada}
-                readOnly
-                className="bg-zinc-800/50 border-white/20 text-white cursor-not-allowed"
-                disabled
-              />
-
-              {/* Detalles de Fecha de Fin */}
-              {detallesFechaFin && (
-                <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <div className="space-y-2 text-sm">
-                    <p className="text-white">
-                      <strong>Clases totales:</strong> {detallesFechaFin.clasesTotales}
-                    </p>
-                    <p className="text-white">
-                      <strong>Duración aproximada:</strong> {detallesFechaFin.semanasAproximadas} semanas
-                    </p>
-                    <p className="text-white/60 text-xs mt-3">
-                      ℹ️ Fecha calculada considerando feriados nacionales, cierre vacacional (20 dic - 3 ene) y tus días tentativos elegidos.
+            {diasTentativos.length >= 2 && fechaFinCalculada && (
+              <div className="mb-6 p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="text-3xl">📅</div>
+                  <div className="flex-1">
+                    <Label className="text-green-400 font-bold text-lg mb-1 block">
+                      3. Fecha de Fin del Programa
+                    </Label>
+                    <p className="text-white/70 text-sm">
+                      Calculada automáticamente según tus días tentativos
                     </p>
                   </div>
                 </div>
-              )}
-            </div>
+
+                <div className="bg-zinc-800/50 rounded-lg p-6 mb-4">
+                  <p className="text-white/60 text-xs mb-2">Finalizarás aproximadamente el:</p>
+                  <p className="text-white font-bold text-2xl">
+                    {new Date(fechaFinCalculada).toLocaleDateString('es-PE', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </p>
+                </div>
+
+                {/* Detalles de Fecha de Fin */}
+                {detallesFechaFin && (
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-white/60 text-xs mb-1">Clases totales</p>
+                        <p className="text-white font-semibold text-lg">{detallesFechaFin.clasesTotales} clases</p>
+                      </div>
+                      <div>
+                        <p className="text-white/60 text-xs mb-1">Duración aproximada</p>
+                        <p className="text-white font-semibold text-lg">{detallesFechaFin.semanasAproximadas} semanas</p>
+                      </div>
+                    </div>
+                    <p className="text-green-300 text-xs mt-3">
+                      ✓ Esta fecha considera feriados, cierres y tus días tentativos seleccionados
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mensaje si faltan días tentativos */}
+            {formData.fechaInicio && formData.fechaNacimiento && diasTentativos.length < 2 && (
+              <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                <p className="text-yellow-200 text-sm">
+                  ⏳ Selecciona al menos 2 días tentativos arriba para calcular tu fecha de fin
+                </p>
+              </div>
+            )}
 
             <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-lg p-4">
               <p className="text-white/80 text-sm">
