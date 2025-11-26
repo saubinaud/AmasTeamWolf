@@ -243,10 +243,10 @@ jobs:
                         description: 'Academia de taekwondo en Lima que forma niños, jóvenes y adultos con disciplina, valores y liderazgo. Descubre cómo transformamos vidas dentro y fuera del tatami.',
                         url: 'https://amasteamwolf.com'
                       },
-                      '/conversion': {
-                        title: 'Inscríbete en Amas Team Wolf | Academia de Taekwondo Lima',
-                        description: 'Únete a la manada Wolf. Inscripciones abiertas para niños, jóvenes y adultos. Formación marcial con valores, disciplina y liderazgo en Lima, Perú.',
-                        url: 'https://amasteamwolf.com/conversion'
+                      '/clase-prueba': {
+                        title: 'Clase de Prueba Taekwondo S/ 40 | AMAS Team Wolf San Borja',
+                        description: '¡Reserva tu clase de prueba de Taekwondo por S/ 40 (GRATIS al inscribirse)! Para niños desde 1 año. Desarrolla confianza, disciplina y respeto. 20 años formando líderes en San Borja, Lima.',
+                        url: 'https://amasteamwolf.com/clase-prueba'
                       },
                       '/tienda': {
                         title: 'Tienda Oficial Amas Team Wolf | Uniformes y Equipamiento',
@@ -265,7 +265,7 @@ jobs:
                       },
                       '/leadership': {
                         title: 'Programa Leadership Wolf | Programa avanzado de uso de armas',
-                        description: 'Llega a otro nivel con el programa Leadership Wolf. Aprende nuevas técnicas, conoce nuevas armas y obtener certificaciones oficiales Amas Team Wolf en Lima, Perú.',
+                        description: 'Llega a otro nivel con el programa Leadership Wolf. Aprende nuevas técnicas, conoce nuevas armas y obtén certificaciones oficiales Amas Team Wolf en Lima, Perú.',
                         url: 'https://amasteamwolf.com/leadership'
                       }
                     };
@@ -350,4 +350,4 @@ jobs:
           echo "📝 Next steps:"
           echo "  1. Add web-app-manifest-512x512.png to repository root"
           echo "  2. Test sharing URLs on WhatsApp/Twitter/Facebook"
-          echo "  3. Verify all routes work: /conversion, /tienda, /graduacion"
+          echo "  3. Verify all routes work: /clase-prueba, /tienda, /graduacion, /leadership"

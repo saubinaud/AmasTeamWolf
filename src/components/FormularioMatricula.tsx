@@ -1,16 +1,321 @@
 import { useState, useCallback, memo, useEffect } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
-import { X, Loader2, Upload, File, Trash2 } from 'lucide-react';
+import { X, Loader2, Upload, File, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner@2.0.3';
+
+// ========== CONSTANTES ==========
+
+// Feriados fijos de Perú
+const FERIADOS_FIJOS_PERU = [
+  { mes: 1, dia: 1, nombre: "Año Nuevo" },
+  { mes: 5, dia: 1, nombre: "Día del Trabajo" },
+  { mes: 6, dia: 29, nombre: "San Pedro y San Pablo" },
+  { mes: 7, dia: 28, nombre: "Fiestas Patrias" },
+  { mes: 7, dia: 29, nombre: "Fiestas Patrias" },
+  { mes: 8, dia: 30, nombre: "Santa Rosa de Lima" },
+  { mes: 10, dia: 8, nombre: "Combate de Angamos" },
+  { mes: 11, dia: 1, nombre: "Todos los Santos" },
+  { mes: 12, dia: 8, nombre: "Inmaculada Concepción" },
+  { mes: 12, dia: 25, nombre: "Navidad" }
+];
+
+// Feriados móviles por año
+const FERIADOS_MOVILES: Record<number, Array<{ fecha: string; nombre: string }>> = {
+  2025: [
+    { fecha: "2025-04-17", nombre: "Jueves Santo" },
+    { fecha: "2025-04-18", nombre: "Viernes Santo" }
+  ],
+  2026: [
+    { fecha: "2026-04-02", nombre: "Jueves Santo" },
+    { fecha: "2026-04-03", nombre: "Viernes Santo" }
+  ]
+};
+
+// Clases por programa
+const PROGRAMA_CLASES: Record<string, number> = {
+  "1mes": 8,
+  "full": 24 // 3 meses
+};
+
+// Precios base por programa
+const PRECIOS_BASE: Record<string, number> = {
+  "1mes": 330,
+  "full": 869
+};
+
+// Nombres de programas
+const NOMBRES_PROGRAMA: Record<string, string> = {
+  "1mes": "Programa 1 Mes",
+  "full": "Programa 3 Meses FULL"
+};
+
+// Códigos promocionales
+interface CodigoPromocional {
+  tipo: 'descuento_dinero' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  valor: number;
+  descripcion: string;
+  programasAplicables: string[];
+  activo: boolean;
+}
+
+const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
+  "AMAS-DESC100-2025": {
+    tipo: "descuento_dinero",
+    valor: 100,
+    descripcion: "Descuento de S/ 100",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMAS-DESC150-2025": {
+    tipo: "descuento_dinero",
+    valor: 150,
+    descripcion: "Descuento de S/ 150",
+    programasAplicables: ["full"],
+    activo: true
+  },
+  "AMAS-4CLASES-2025": {
+    tipo: "clases_extra",
+    valor: 4,
+    descripcion: "+4 clases gratis",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  },
+  "AMAS-MESGRATIS-2025": {
+    tipo: "mes_gratis",
+    valor: 8,
+    descripcion: "+1 mes gratis (8 clases)",
+    programasAplicables: ["full"],
+    activo: true
+  },
+  "AMAS-POLO-2025": {
+    tipo: "polo_gratis",
+    valor: 1,
+    descripcion: "+1 polo oficial gratis",
+    programasAplicables: ["1mes", "full"],
+    activo: true
+  }
+};
+
+// ========== INTERFACES ==========
+
+interface HorariosInfo {
+  horarioSemana: string;
+  horarioSabado: string;
+  diasSemana: string;
+  categoria: string;
+}
+
+interface CodigoAplicado {
+  valido: boolean;
+  tipo?: 'descuento_dinero' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  valor?: number;
+  descripcion?: string;
+  codigo?: string;
+  mensaje?: string;
+}
 
 interface FormularioMatriculaProps {
   isOpen: boolean;
   onClose: () => void;
   programa: 'full' | '1mes';
   onSuccess: (total: number) => void;
+}
+
+// ========== FUNCIONES AUXILIARES ==========
+
+// Calcular horarios según edad
+function calcularHorarios(fechaNacimiento: string): HorariosInfo {
+  const hoy = new Date();
+  const nacimiento = new Date(fechaNacimiento);
+  const edadMeses = Math.floor((hoy.getTime() - nacimiento.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+  const edadAnios = Math.floor(edadMeses / 12);
+
+  let horarioSemana = "";
+  let horarioSabado = "";
+  let diasSemana = "Lunes a Viernes";
+  let categoria = "";
+
+  if (edadMeses >= 11 && edadMeses <= 15) {
+    horarioSemana = "3:00 PM";
+    horarioSabado = "9:00 AM";
+  } else if (edadMeses >= 16 && edadMeses <= 20) {
+    horarioSemana = "3:30 PM";
+    horarioSabado = "9:30 AM";
+  } else if (edadMeses >= 21 && edadMeses <= 26) {
+    horarioSemana = "4:00 PM";
+    horarioSabado = "10:00 AM";
+  } else if (edadMeses >= 27 && edadMeses <= 32) {
+    horarioSemana = "4:30 PM";
+    horarioSabado = "10:30 AM";
+  } else if (edadMeses >= 33 && edadMeses <= 38) {
+    horarioSemana = "5:00 PM";
+    horarioSabado = "11:00 AM";
+  } else if (edadMeses >= 39 && edadMeses <= 48) {
+    horarioSemana = "5:30 PM";
+    horarioSabado = "11:30 AM";
+  } else if (edadMeses >= 49 && edadMeses <= 71) {
+    horarioSemana = "6:00 PM";
+    horarioSabado = "12:00 PM";
+  } else if (edadAnios >= 6 && edadAnios <= 11) {
+    horarioSemana = "6:30 PM";
+    horarioSabado = "12:30 PM";
+    diasSemana = "Lunes, Miércoles y Viernes";
+    categoria = "Juniors";
+  } else if (edadAnios >= 12 && edadAnios <= 17) {
+    horarioSemana = "6:30 PM";
+    horarioSabado = "1:30 PM";
+    diasSemana = "Martes y Jueves";
+    categoria = "Adolescentes";
+  } else {
+    horarioSemana = "Por definir";
+    horarioSabado = "Por definir";
+    diasSemana = "Consultar en academia";
+  }
+
+  return {
+    horarioSemana,
+    horarioSabado,
+    diasSemana,
+    categoria
+  };
+}
+
+// Verificar si una fecha es feriado
+function esFeriado(fecha: Date): boolean {
+  const anio = fecha.getFullYear();
+  const mes = fecha.getMonth() + 1;
+  const dia = fecha.getDate();
+
+  const esFeriadoFijo = FERIADOS_FIJOS_PERU.some(f => f.mes === mes && f.dia === dia);
+  if (esFeriadoFijo) return true;
+
+  const fechaStr = fecha.toISOString().split('T')[0];
+  const moviles = FERIADOS_MOVILES[anio] || [];
+  return moviles.some(f => f.fecha === fechaStr);
+}
+
+// Verificar si es cierre vacacional de AMAS
+function esCierreVacacionalAMAS(fecha: Date): boolean {
+  const mes = fecha.getMonth() + 1;
+  const dia = fecha.getDate();
+
+  if (mes === 12 && dia >= 20) return true;
+  if (mes === 1 && dia <= 3) return true;
+
+  return false;
+}
+
+// Obtener fechas disponibles para inicio (5 días hábiles)
+function obtenerFechasDisponiblesInicio(): Date[] {
+  const hoy = new Date();
+  const fechasDisponibles: Date[] = [];
+  let diasHabilesContados = 0;
+  const fechaIteracion = new Date(hoy);
+  fechaIteracion.setDate(fechaIteracion.getDate() + 1);
+
+  while (diasHabilesContados < 5) {
+    if (fechaIteracion.getDay() === 0) {
+      fechaIteracion.setDate(fechaIteracion.getDate() + 1);
+      continue;
+    }
+
+    if (esFeriado(fechaIteracion)) {
+      fechaIteracion.setDate(fechaIteracion.getDate() + 1);
+      continue;
+    }
+
+    if (esCierreVacacionalAMAS(fechaIteracion)) {
+      fechaIteracion.setDate(fechaIteracion.getDate() + 1);
+      continue;
+    }
+
+    fechasDisponibles.push(new Date(fechaIteracion));
+    diasHabilesContados++;
+    fechaIteracion.setDate(fechaIteracion.getDate() + 1);
+  }
+
+  return fechasDisponibles;
+}
+
+// Obtener nombre del día
+function obtenerNombreDia(fecha: Date): string {
+  const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+  return dias[fecha.getDay()];
+}
+
+// Calcular fecha de fin
+function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: string[], clasesExtra: number = 0): {
+  fechaFin: Date;
+  clasesTotales: number;
+  semanasAproximadas: number;
+} {
+  let clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
+
+  const fechaActual = new Date(fechaInicio);
+  let clasesContadas = 1; // La primera clase cuenta
+
+  while (clasesContadas < clasesTotales) {
+    fechaActual.setDate(fechaActual.getDate() + 1);
+
+    if (fechaActual.getDay() === 0) continue;
+
+    if (esFeriado(fechaActual)) continue;
+
+    if (esCierreVacacionalAMAS(fechaActual)) continue;
+
+    const nombreDia = obtenerNombreDia(fechaActual);
+    if (diasTentativos.includes(nombreDia)) {
+      clasesContadas++;
+    }
+  }
+
+  return {
+    fechaFin: fechaActual,
+    clasesTotales,
+    semanasAproximadas: Math.ceil((fechaActual.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000))
+  };
+}
+
+// Validar código promocional
+function validarCodigoPromocional(codigo: string, programaActual: string): CodigoAplicado {
+  const codigoUpper = codigo.toUpperCase().trim();
+  const promo = CODIGOS_PROMOCIONALES[codigoUpper];
+
+  if (!promo) {
+    return { valido: false, mensaje: "❌ Código no válido" };
+  }
+
+  if (!promo.activo) {
+    return { valido: false, mensaje: "❌ Código inactivo" };
+  }
+
+  if (!promo.programasAplicables.includes(programaActual)) {
+    return {
+      valido: false,
+      mensaje: "❌ Este código no aplica para el programa seleccionado"
+    };
+  }
+
+  return {
+    valido: true,
+    tipo: promo.tipo,
+    valor: promo.valor,
+    descripcion: promo.descripcion,
+    codigo: codigoUpper
+  };
+}
+
+// Obtener clases extra de un código promo
+function obtenerClasesExtraDePromo(codigo: string): number {
+  const promo = CODIGOS_PROMOCIONALES[codigo];
+  if (!promo) return 0;
+
+  if (promo.tipo === "clases_extra") return promo.valor;
+  if (promo.tipo === "mes_gratis") return 8;
+  return 0;
 }
 
 const INITIAL_FORM_STATE = {
@@ -27,6 +332,7 @@ const INITIAL_FORM_STATE = {
 };
 
 export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, onClose, programa, onSuccess }: FormularioMatriculaProps) {
+  // Estados existentes
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
   const [includeUniform, setIncludeUniform] = useState(false);
@@ -34,6 +340,19 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileBase64, setFileBase64] = useState<string>('');
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+
+  // Estados nuevos para funcionalidades adicionales
+  const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
+  const [categoriaAlumno, setCategoriaAlumno] = useState<string>('');
+  const [diasTentativos, setDiasTentativos] = useState<string[]>([]);
+  const [codigoPromocional, setCodigoPromocional] = useState<string>('');
+  const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
+  const [contratoExpanded, setContratoExpanded] = useState(false);
+  const [fechaFinCalculada, setFechaFinCalculada] = useState<string>('');
+  const [detallesFechaFin, setDetallesFechaFin] = useState<{
+    clasesTotales: number;
+    semanasAproximadas: number;
+  } | null>(null);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -46,13 +365,29 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       setUploadedFile(null);
       setFileBase64('');
       setIsSubmitting(false);
+      setHorariosInfo(null);
+      setCategoriaAlumno('');
+      setDiasTentativos([]);
+      setCodigoPromocional('');
+      setCodigoAplicado(null);
+      setContratoExpanded(false);
+      setFechaFinCalculada('');
+      setDetallesFechaFin(null);
     }
   }, [isOpen]);
 
-  const precioBase = programa === 'full' ? 869 : 330;
+  // Cálculos de precio
+  const precioBase = PRECIOS_BASE[programa];
   const preciosPolos = { '0': 0, '1': 60, '2': 110, '3': 150 };
   const precioUniforme = programa === '1mes' && includeUniform ? 220 : 0;
-  const total = precioBase + preciosPolos[polosOption] + precioUniforme;
+
+  // Calcular descuento de código promocional
+  let descuentoDinero = 0;
+  if (codigoAplicado?.valido && codigoAplicado.tipo === 'descuento_dinero' && codigoAplicado.valor) {
+    descuentoDinero = codigoAplicado.valor;
+  }
+
+  const total = precioBase + preciosPolos[polosOption] + precioUniforme - descuentoDinero;
 
   const needsUniformSize = programa === 'full' || (programa === '1mes' && includeUniform);
   const needsPoloSize = polosOption !== '0';
@@ -119,11 +454,100 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     setFileBase64('');
   }, []);
 
+  // ========== NUEVOS HANDLERS ==========
+
+  // Handler para cuando cambia la fecha de nacimiento
+  const handleFechaNacimientoChange = useCallback((fecha: string) => {
+    handleInputChange('fechaNacimiento', fecha);
+    if (fecha) {
+      const horarios = calcularHorarios(fecha);
+      setHorariosInfo(horarios);
+      setCategoriaAlumno(horarios.categoria);
+    } else {
+      setHorariosInfo(null);
+      setCategoriaAlumno('');
+    }
+  }, []);
+
+  // Handler para días tentativos
+  const handleDiaTentativoChange = useCallback((dia: string, checked: boolean) => {
+    setDiasTentativos(prev => {
+      if (checked) {
+        return [...prev, dia];
+      } else {
+        return prev.filter(d => d !== dia);
+      }
+    });
+  }, []);
+
+  // Handler para aplicar código promocional
+  const handleAplicarCodigo = useCallback(() => {
+    if (!codigoPromocional.trim()) {
+      toast.error('Ingrese un código promocional');
+      return;
+    }
+
+    const validacion = validarCodigoPromocional(codigoPromocional, programa);
+
+    if (!validacion.valido) {
+      toast.error(validacion.mensaje || 'Código no válido');
+      setCodigoAplicado(null);
+      return;
+    }
+
+    setCodigoAplicado(validacion);
+    toast.success(`✅ Código "${validacion.codigo}" aplicado exitosamente`);
+  }, [codigoPromocional, programa]);
+
+  // Handler para quitar código promocional
+  const handleQuitarCodigo = useCallback(() => {
+    setCodigoPromocional('');
+    setCodigoAplicado(null);
+    toast.info('Código promocional removido');
+  }, []);
+
+  // Effect para calcular fecha de fin automáticamente
+  useEffect(() => {
+    if (!formData.fechaInicio || diasTentativos.length < 2) {
+      setFechaFinCalculada('');
+      setDetallesFechaFin(null);
+      return;
+    }
+
+    const clasesExtra = codigoAplicado?.codigo ? obtenerClasesExtraDePromo(codigoAplicado.codigo) : 0;
+    const resultado = calcularFechaFin(new Date(formData.fechaInicio), programa, diasTentativos, clasesExtra);
+
+    setFechaFinCalculada(resultado.fechaFin.toISOString().split('T')[0]);
+    setDetallesFechaFin({
+      clasesTotales: resultado.clasesTotales,
+      semanasAproximadas: resultado.semanasAproximadas
+    });
+  }, [formData.fechaInicio, diasTentativos, codigoAplicado, programa]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    // Validaciones básicas
     if (!formData.nombreAlumno || !formData.dniAlumno || !formData.nombrePadre || !formData.dniPadre || !formData.email || !formData.fechaInicio) {
       toast.error('Por favor complete todos los campos obligatorios');
+      return;
+    }
+
+    // Validar fecha de nacimiento
+    if (!formData.fechaNacimiento) {
+      toast.error('Por favor ingrese la fecha de nacimiento del alumno');
+      return;
+    }
+
+    // Validar días tentativos (mínimo 2)
+    if (diasTentativos.length < 2) {
+      toast.error('Debes seleccionar al menos 2 días de asistencia por semana');
+      return;
+    }
+
+    // Validar que la fecha de fin se haya calculado
+    if (!fechaFinCalculada) {
+      toast.error('La fecha de fin no se ha calculado correctamente. Por favor verifica los datos');
       return;
     }
 
@@ -150,6 +574,12 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         nombreAlumno: formData.nombreAlumno,
         dniAlumno: formData.dniAlumno,
         fechaNacimiento: formData.fechaNacimiento,
+        categoriaAlumno: categoriaAlumno || 'No especificada',
+        horariosDisponibles: horariosInfo ? {
+          horarioSemana: horariosInfo.horarioSemana,
+          horarioSabado: horariosInfo.horarioSabado,
+          diasSemana: horariosInfo.diasSemana
+        } : null,
         tallaUniforme: needsUniformSize ? formData.tallaUniforme : 'No aplica',
         tallasPolos: needsPoloSize ? tallasPolos : [],
         nombrePadre: formData.nombrePadre,
@@ -161,7 +591,12 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         uniformeAdicional: programa === '1mes' ? (includeUniform ? 'Sí' : 'No') : 'Incluido',
         precioUniforme: precioUniforme,
         fechaInicio: formData.fechaInicio,
-        fechaFin: formData.fechaFin || 'No especificada',
+        diasTentativos: diasTentativos.join(', '),
+        fechaFin: fechaFinCalculada,
+        clasesTotales: detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa],
+        semanasAproximadas: detallesFechaFin?.semanasAproximadas || 0,
+        codigoPromocional: codigoAplicado?.codigo || 'No aplicado',
+        descuentoAplicado: descuentoDinero,
         precioPrograma: precioBase,
         total: total,
         contratoFirmado: uploadedFile ? {
@@ -296,15 +731,39 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               </div>
               <div>
                 <Label htmlFor="fechaNacimiento" className="text-white mb-2">
-                  Fecha de nacimiento
+                  Fecha de nacimiento *
                 </Label>
                 <Input
                   id="fechaNacimiento"
                   type="date"
                   value={formData.fechaNacimiento}
-                  onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
+                  onChange={(e) => handleFechaNacimientoChange(e.target.value)}
                   className="bg-zinc-800 border-white/20 text-white"
+                  required
                 />
+
+                {/* Mostrar horarios disponibles después de ingresar fecha de nacimiento */}
+                {horariosInfo && (
+                  <div className="mt-4 p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
+                    <p className="text-white font-semibold mb-3 text-sm sm:text-base">
+                      📍 Horarios disponibles{horariosInfo.categoria ? ` - Categoría ${horariosInfo.categoria}` : ''}
+                    </p>
+                    <div className="space-y-2 text-xs sm:text-sm">
+                      <p className="text-white/80">
+                        <strong className="text-white">Lunes a Viernes:</strong> {horariosInfo.horarioSemana}
+                      </p>
+                      <p className="text-white/80">
+                        <strong className="text-white">Días disponibles:</strong> {horariosInfo.diasSemana}
+                      </p>
+                      <p className="text-white/80">
+                        <strong className="text-white">Sábados:</strong> {horariosInfo.horarioSabado}
+                      </p>
+                      <p className="text-white/60 text-xs mt-3">
+                        ℹ️ Podrás asistir cualquier día dentro de estos horarios según tu disponibilidad.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -508,105 +967,311 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             </div>
           </div>
 
-          {/* Fecha de Inicio y Fin */}
+          {/* Fecha de Inicio, Días Tentativos y Fecha de Fin */}
           <div>
             <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
               Fechas del Programa
             </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fechaInicio" className="text-white mb-2">
-                  Fecha de inicio *
-                </Label>
-                <Input
-                  id="fechaInicio"
-                  type="date"
-                  value={formData.fechaInicio}
-                  onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="fechaFin" className="text-white mb-2">
-                  Fecha de fin (opcional)
-                </Label>
-                <Input
-                  id="fechaFin"
-                  type="date"
-                  value={formData.fechaFin}
-                  onChange={(e) => handleInputChange('fechaFin', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
-                />
-              </div>
+
+            {/* Fecha de Inicio */}
+            <div className="mb-6">
+              <Label htmlFor="fechaInicio" className="text-white mb-2">
+                Fecha de inicio *
+              </Label>
+              <Input
+                id="fechaInicio"
+                type="date"
+                value={formData.fechaInicio}
+                onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
+                className="bg-zinc-800 border-white/20 text-white"
+                required
+              />
+              <p className="text-white/50 text-xs mt-2">
+                Selecciona tu fecha de inicio (dentro de los próximos 5 días hábiles)
+              </p>
             </div>
-            <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-lg p-4 mt-4">
+
+            {/* Días Tentativos de Asistencia */}
+            {categoriaAlumno && (
+              <div className="mb-6">
+                <Label className="text-white mb-3 block">
+                  Días Tentativos de Asistencia *
+                  <span className="text-white/60 text-sm font-normal ml-2">
+                    (Selecciona al menos 2 días por semana)
+                  </span>
+                </Label>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
+                    const isDisabled =
+                      (categoriaAlumno === 'Juniors' && !['Lunes', 'Miércoles', 'Viernes', 'Sábado'].includes(dia)) ||
+                      (categoriaAlumno === 'Adolescentes' && !['Martes', 'Jueves', 'Sábado'].includes(dia));
+
+                    return (
+                      <label
+                        key={dia}
+                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                          isDisabled
+                            ? 'border-white/10 opacity-40 cursor-not-allowed'
+                            : diasTentativos.includes(dia)
+                            ? 'border-[#FA7B21] bg-[#FA7B21]/10'
+                            : 'border-white/20 hover:border-white/30 cursor-pointer'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={diasTentativos.includes(dia)}
+                          onChange={(e) => handleDiaTentativoChange(dia, e.target.checked)}
+                          disabled={isDisabled}
+                          className="w-4 h-4 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
+                        />
+                        <span className="text-white text-sm">{dia}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  <p className="text-yellow-200 text-xs">
+                    ⚠️ Importante: Estos días son solo para calcular tu fecha de fin estimada.
+                    Durante el programa, puedes venir cualquier día disponible de tu categoría según tu disponibilidad.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Fecha de Fin (Calculada Automáticamente) */}
+            <div className="mb-6">
+              <Label htmlFor="fechaFin" className="text-white mb-2">
+                Fecha de fin
+              </Label>
+              <Input
+                id="fechaFin"
+                type="date"
+                value={fechaFinCalculada}
+                readOnly
+                className="bg-zinc-800/50 border-white/20 text-white cursor-not-allowed"
+                disabled
+              />
+
+              {/* Detalles de Fecha de Fin */}
+              {detallesFechaFin && (
+                <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                  <div className="space-y-2 text-sm">
+                    <p className="text-white">
+                      <strong>Clases totales:</strong> {detallesFechaFin.clasesTotales}
+                    </p>
+                    <p className="text-white">
+                      <strong>Duración aproximada:</strong> {detallesFechaFin.semanasAproximadas} semanas
+                    </p>
+                    <p className="text-white/60 text-xs mt-3">
+                      ℹ️ Fecha calculada considerando feriados nacionales, cierre vacacional (20 dic - 3 ene) y tus días tentativos elegidos.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-lg p-4">
               <p className="text-white/80 text-sm">
                 ℹ️ Todos los datos serán enviados por correo
               </p>
             </div>
           </div>
 
-          {/* File Upload Section - Simplified */}
+          {/* Código Promocional */}
           <div>
             <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-              Contrato Firmado (Opcional)
+              Código Promocional (Opcional)
             </h3>
-            {!uploadedFile ? (
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FA7B21]/50 transition-colors bg-zinc-800/30">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-10 h-10 mb-3 text-white/40" />
-                  <p className="mb-2 text-sm text-white/60">
-                    <span className="font-semibold">Click para subir</span> o arrastra aquí
-                  </p>
-                  <p className="text-xs text-white/40">PDF, JPG, PNG (MAX. 5MB)</p>
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
-                />
-              </label>
-            ) : (
-              <div className="flex items-center justify-between p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <File className="w-8 h-8 text-[#FCA929]" />
-                  <div>
-                    <p className="text-white text-sm">{uploadedFile.name}</p>
-                    <p className="text-white/40 text-xs">
-                      {(uploadedFile.size / 1024).toFixed(2)} KB
+            <div className="flex gap-3">
+              <Input
+                type="text"
+                placeholder="Ingresa tu código"
+                value={codigoPromocional}
+                onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
+                className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
+              />
+              <Button
+                type="button"
+                onClick={handleAplicarCodigo}
+                className="bg-[#FA7B21] hover:bg-[#F36A15] text-white px-6"
+              >
+                Aplicar
+              </Button>
+            </div>
+
+            {/* Mensaje de código aplicado */}
+            {codigoAplicado?.valido && (
+              <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-green-400 font-semibold mb-2">
+                      ✅ Código "{codigoAplicado.codigo}" aplicado
                     </p>
+                    <p className="text-green-300 text-sm mb-1">
+                      🎁 {codigoAplicado.descripcion}
+                    </p>
+                    {(codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis') && (
+                      <p className="text-green-200 text-xs mt-2">
+                        Se recalculará tu fecha de fin con las clases adicionales.
+                      </p>
+                    )}
                   </div>
+                  <button
+                    type="button"
+                    onClick={handleQuitarCodigo}
+                    className="text-green-300 hover:text-green-100 transition-colors ml-4"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleRemoveFile}
-                  className="text-white/60 hover:text-red-500 transition-colors p-2"
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent'
-                  }}
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
               </div>
             )}
           </div>
 
-          {/* Total */}
-          <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border-2 border-[#FA7B21]/30 rounded-lg p-6">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-white text-lg">Total a pagar:</span>
-              <span className="text-[#FCA929] text-3xl">S/ {total}</span>
-            </div>
-            {(polosOption !== '0' || precioUniforme > 0) && (
-              <div className="text-white/60 text-sm space-y-1 pt-3 border-t border-white/10">
-                <p>Programa: S/ {precioBase}</p>
-                {programa === '1mes' && includeUniform && <p>Uniforme: S/ {precioUniforme}</p>}
-                {polosOption !== '0' && <p>Polos: S/ {preciosPolos[polosOption]}</p>}
+          {/* File Upload Section - Collapsible */}
+          <div>
+            <button
+              type="button"
+              onClick={() => setContratoExpanded(!contratoExpanded)}
+              className="w-full flex items-center justify-between p-4 bg-zinc-800/30 border border-white/10 rounded-lg hover:border-white/20 transition-colors"
+            >
+              <h3 className="text-white text-lg">
+                Contrato Firmado (Opcional)
+              </h3>
+              {contratoExpanded ? (
+                <ChevronDown className="w-5 h-5 text-white/60" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-white/60" />
+              )}
+            </button>
+
+            {contratoExpanded && (
+              <div className="mt-4 p-4 bg-zinc-800/20 border border-white/10 rounded-lg">
+                <p className="text-white/60 text-sm mb-4">
+                  Si ya tienes el contrato firmado físicamente, puedes subirlo aquí:
+                </p>
+
+                {!uploadedFile ? (
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FA7B21]/50 transition-colors bg-zinc-800/30">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-10 h-10 mb-3 text-white/40" />
+                      <p className="mb-2 text-sm text-white/60">
+                        <span className="font-semibold">Click para subir</span> o arrastra aquí
+                      </p>
+                      <p className="text-xs text-white/40">PDF, JPG, PNG (MAX. 5MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
+                    />
+                  </label>
+                ) : (
+                  <div className="flex items-center justify-between p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <File className="w-8 h-8 text-[#FCA929]" />
+                      <div>
+                        <p className="text-white text-sm">{uploadedFile.name}</p>
+                        <p className="text-white/40 text-xs">
+                          {(uploadedFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="text-white/60 hover:text-red-500 transition-colors p-2"
+                      style={{
+                        touchAction: 'manipulation',
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+
+                <p className="mt-4 text-white/50 text-xs p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                  ℹ️ No es necesario subirlo ahora. Recibirás un email para firmarlo digitalmente después del pago.
+                </p>
               </div>
             )}
+          </div>
+
+          {/* Resumen de Inscripción */}
+          <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border-2 border-[#FA7B21]/30 rounded-lg p-6">
+            <h3 className="text-white text-xl font-bold mb-4">📋 Resumen de tu Inscripción</h3>
+
+            {/* Información del Programa */}
+            <div className="mb-4 space-y-2 text-sm">
+              <p className="text-white">
+                <strong>Programa:</strong> {NOMBRES_PROGRAMA[programa]}
+              </p>
+              <p className="text-white">
+                <strong>Clases incluidas:</strong> {PROGRAMA_CLASES[programa]}
+                {detallesFechaFin && detallesFechaFin.clasesTotales > PROGRAMA_CLASES[programa] && (
+                  <span className="text-green-400"> + {detallesFechaFin.clasesTotales - PROGRAMA_CLASES[programa]} bonus = {detallesFechaFin.clasesTotales} total</span>
+                )}
+              </p>
+              {diasTentativos.length >= 2 && (
+                <p className="text-white">
+                  <strong>Días tentativos:</strong> {diasTentativos.join(', ')}
+                </p>
+              )}
+              {formData.fechaInicio && (
+                <p className="text-white">
+                  <strong>Inicio:</strong> {new Date(formData.fechaInicio).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              )}
+              {fechaFinCalculada && (
+                <p className="text-white">
+                  <strong>Fin estimado:</strong> {new Date(fechaFinCalculada).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </p>
+              )}
+            </div>
+
+            {/* Bonus de Código Promocional */}
+            {codigoAplicado?.valido && (codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis' || codigoAplicado.tipo === 'polo_gratis') && (
+              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                <p className="text-green-400 font-semibold text-sm mb-2">🎁 Promoción aplicada:</p>
+                <p className="text-green-300 text-xs">✓ {codigoAplicado.descripcion}</p>
+              </div>
+            )}
+
+            {/* Desglose de Precios */}
+            <div className="space-y-2 py-4 border-t border-white/10">
+              <div className="flex justify-between text-white/80 text-sm">
+                <span>{NOMBRES_PROGRAMA[programa]}</span>
+                <span>S/ {precioBase}</span>
+              </div>
+              {programa === '1mes' && includeUniform && (
+                <div className="flex justify-between text-white/80 text-sm">
+                  <span>Uniforme adicional</span>
+                  <span>S/ {precioUniforme}</span>
+                </div>
+              )}
+              {polosOption !== '0' && (
+                <div className="flex justify-between text-white/80 text-sm">
+                  <span>Polos ({polosOption})</span>
+                  <span>S/ {preciosPolos[polosOption]}</span>
+                </div>
+              )}
+              {descuentoDinero > 0 && (
+                <div className="flex justify-between text-green-400 text-sm font-semibold">
+                  <span>Descuento código promo</span>
+                  <span>- S/ {descuentoDinero}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Total Final */}
+            <div className="flex justify-between items-center pt-4 border-t-2 border-white/20">
+              <span className="text-white text-lg font-bold">TOTAL A PAGAR:</span>
+              <span className="text-[#FCA929] text-3xl font-bold">S/ {total}</span>
+            </div>
           </div>
 
           {/* Submit Button */}

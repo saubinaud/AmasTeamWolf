@@ -34,7 +34,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'conversion'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba'>('home');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -74,8 +74,8 @@ function App() {
         setCurrentPage('registro-leadership');
       } else if (path === '/graduacion') {
         setCurrentPage('graduacion');
-      } else if (path === '/conversion') {
-        setCurrentPage('conversion');
+      } else if (path === '/clase-prueba') {
+        setCurrentPage('clase-prueba');
       } else {
         setCurrentPage('home');
       }
@@ -102,8 +102,8 @@ function App() {
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    
-    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'conversion');
+
+    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba');
     // Update URL
     const path = page === 'home' ? '/' : `/${page}`;
     window.history.pushState({}, '', path);
@@ -292,11 +292,11 @@ function App() {
     );
   }
 
-  // Render Conversion Page
-  if (currentPage === 'conversion') {
+  // Render Clase Prueba Page
+  if (currentPage === 'clase-prueba') {
     return (
       <>
-        <SEO {...seoConfigs.conversion} />
+        <SEO {...seoConfigs.clasePrueba} />
         <LandingConversion onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
