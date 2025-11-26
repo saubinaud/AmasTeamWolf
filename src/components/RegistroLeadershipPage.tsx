@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft, Loader2, Check } from 'lucide-react';
+import { ArrowLeft, Loader2, Check, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -15,6 +15,94 @@ interface RegistroLeadershipPageProps {
 
 const BASE_PRICE = 1299;
 
+// Códigos promocionales solo de descuentos monetarios para Leadership
+interface CodigoPromocional {
+  valor: number;
+  descripcion: string;
+  activo: boolean;
+}
+
+const CODIGOS_PROMOCIONALES_LEADERSHIP: Record<string, CodigoPromocional> = {
+  "AMAS-DESC50": {
+    valor: 50,
+    descripcion: "Descuento de S/ 50",
+    activo: true
+  },
+  "AMAS-DESC100": {
+    valor: 100,
+    descripcion: "Descuento de S/ 100",
+    activo: true
+  },
+  "AMAS-DESC150": {
+    valor: 150,
+    descripcion: "Descuento de S/ 150",
+    activo: true
+  },
+  "AMAS-DESC200": {
+    valor: 200,
+    descripcion: "Descuento de S/ 200",
+    activo: true
+  },
+  "PRIMAVEZ": {
+    valor: 80,
+    descripcion: "Descuento de S/ 80 para nuevos alumnos",
+    activo: true
+  },
+  "AMIGO50": {
+    valor: 50,
+    descripcion: "S/ 50 descuento por referir a un amigo",
+    activo: true
+  },
+  "AMIGO100": {
+    valor: 100,
+    descripcion: "S/ 100 descuento por referir 2+ amigos",
+    activo: true
+  },
+  "REFIERE3X": {
+    valor: 150,
+    descripcion: "S/ 150 descuento por referir 3+ amigos",
+    activo: true
+  },
+  "CUMPLEAÑOS": {
+    valor: 80,
+    descripcion: "S/ 80 descuento (mes cumpleaños)",
+    activo: true
+  },
+  "BIENVENIDA": {
+    valor: 60,
+    descripcion: "S/ 60 descuento de bienvenida",
+    activo: true
+  },
+  "VUELVE100": {
+    valor: 100,
+    descripcion: "S/ 100 descuento para ex-alumnos",
+    activo: true
+  },
+  "VUELVE150": {
+    valor: 150,
+    descripcion: "S/ 150 descuento para ex-alumnos",
+    activo: true
+  },
+  "EARLYBIRD": {
+    valor: 120,
+    descripcion: "S/ 120 descuento por inscripción anticipada",
+    activo: true
+  },
+  "RENUEVA100": {
+    valor: 100,
+    descripcion: "S/ 100 descuento por renovación anticipada",
+    activo: true
+  }
+};
+
+interface CodigoAplicado {
+  valido: boolean;
+  valor?: number;
+  descripcion?: string;
+  codigo?: string;
+  mensaje?: string;
+}
+
 const INITIAL_FORM_STATE = {
   nombrePadre: '',
   nombreAlumno: '',
@@ -25,6 +113,8 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
   const [ownedImplements, setOwnedImplements] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [codigoPromocional, setCodigoPromocional] = useState<string>('');
+  const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -37,11 +127,51 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
   }, []);
 
   const handleToggleImplement = useCallback((implementId: string) => {
-    setOwnedImplements(prev => 
+    setOwnedImplements(prev =>
       prev.includes(implementId)
         ? prev.filter(id => id !== implementId)
         : [...prev, implementId]
     );
+  }, []);
+
+  // Validar código promocional
+  const handleAplicarCodigo = useCallback(() => {
+    const codigoUpper = codigoPromocional.toUpperCase().trim();
+
+    if (!codigoUpper) {
+      toast.error('Por favor ingresa un código promocional');
+      return;
+    }
+
+    const promo = CODIGOS_PROMOCIONALES_LEADERSHIP[codigoUpper];
+
+    if (!promo) {
+      setCodigoAplicado({ valido: false, mensaje: "❌ Código no válido" });
+      toast.error("Código no válido");
+      return;
+    }
+
+    if (!promo.activo) {
+      setCodigoAplicado({ valido: false, mensaje: "❌ Código inactivo" });
+      toast.error("Código inactivo");
+      return;
+    }
+
+    setCodigoAplicado({
+      valido: true,
+      valor: promo.valor,
+      descripcion: promo.descripcion,
+      codigo: codigoUpper
+    });
+
+    toast.success(`✅ Código "${codigoUpper}" aplicado exitosamente`);
+  }, [codigoPromocional]);
+
+  // Quitar código promocional
+  const handleQuitarCodigo = useCallback(() => {
+    setCodigoPromocional('');
+    setCodigoAplicado(null);
+    toast.info('Código promocional removido');
   }, []);
 
   // Calcular descuento basado en implementos que ya tiene (excluir membresía)
@@ -50,7 +180,10 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
     .filter(impl => ownedImplements.includes(impl.id))
     .reduce((sum, impl) => sum + impl.price, 0);
 
-  const finalPrice = BASE_PRICE - ownedImplementsTotal;
+  // Calcular descuento de código promocional
+  const descuentoCodigo = codigoAplicado?.valido && codigoAplicado.valor ? codigoAplicado.valor : 0;
+
+  const finalPrice = Math.max(0, BASE_PRICE - ownedImplementsTotal - descuentoCodigo);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +213,8 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
       programa: 'Leadership Wolf',
       precio_base: BASE_PRICE,
       descuento_por_implementos: ownedImplementsTotal,
+      codigo_promocional: codigoAplicado?.codigo || 'No aplicado',
+      descuento_codigo: descuentoCodigo,
       total_a_pagar: finalPrice,
       implementos_incluidos: implementosIncluidos,
       implementos_que_ya_tiene: implementosQueTiene,
@@ -102,7 +237,9 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
         // Limpiar formulario
         setFormData(INITIAL_FORM_STATE);
         setOwnedImplements([]);
-        
+        setCodigoPromocional('');
+        setCodigoAplicado(null);
+
         // Abrir popup de pago
         onSuccess(finalPrice);
         
@@ -235,6 +372,66 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
             </div>
           </div>
 
+          <Separator className="bg-white/10" />
+
+          {/* Código Promocional */}
+          <div className="space-y-4">
+            <h3 className="text-[#FA7B21]">🎟️ Código Promocional (Opcional)</h3>
+
+            <div className="bg-zinc-800/50 rounded-lg p-4 sm:p-6 border border-white/10">
+              <div className="flex gap-3">
+                <Input
+                  type="text"
+                  placeholder="Ingresa tu código"
+                  value={codigoPromocional}
+                  onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
+                  className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
+                  disabled={codigoAplicado?.valido}
+                />
+                <Button
+                  type="button"
+                  onClick={handleAplicarCodigo}
+                  disabled={codigoAplicado?.valido}
+                  className="bg-[#FA7B21] hover:bg-[#F36A15] text-white px-6"
+                >
+                  Aplicar
+                </Button>
+              </div>
+
+              {/* Mensaje de código aplicado */}
+              {codigoAplicado?.valido && (
+                <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-green-400 font-semibold mb-2">
+                        ✅ Código "{codigoAplicado.codigo}" aplicado
+                      </p>
+                      <p className="text-green-300 text-sm mb-1">
+                        🎁 {codigoAplicado.descripcion}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleQuitarCodigo}
+                      className="text-green-300 hover:text-green-100 transition-colors ml-4"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Mensaje de código inválido */}
+              {codigoAplicado && !codigoAplicado.valido && (
+                <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
+                  <p className="text-red-400 text-sm">
+                    {codigoAplicado.mensaje}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Resumen de implementos incluidos */}
           <div className="space-y-4 border-t border-white/10 pt-6">
             <h3 className="text-[#FA7B21]">📦 Resumen de tu pedido</h3>
@@ -271,6 +468,12 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                   <div className="flex justify-between text-green-400">
                     <span>Descuento (implementos):</span>
                     <span>- S/ {ownedImplementsTotal}</span>
+                  </div>
+                )}
+                {descuentoCodigo > 0 && (
+                  <div className="flex justify-between text-green-400 font-semibold">
+                    <span>Descuento código promo:</span>
+                    <span>- S/ {descuentoCodigo}</span>
                   </div>
                 )}
                 <Separator className="bg-white/10" />
