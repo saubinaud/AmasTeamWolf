@@ -355,13 +355,35 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
   } | null>(null);
   const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
 
-  // Calcular fechas disponibles al abrir el formulario
+  // Recalcular fechas disponibles cuando cambia la fecha de nacimiento
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && formData.fechaNacimiento) {
+      const todasLasFechas = obtenerFechasDisponiblesInicio();
+      const horarios = calcularHorarios(formData.fechaNacimiento);
+
+      // Filtrar fechas según categoría del alumno
+      let diasPermitidos: string[] = [];
+      if (horarios.categoria === 'Juniors') {
+        diasPermitidos = ['Lunes', 'Miércoles', 'Viernes', 'Sábado'];
+      } else if (horarios.categoria === 'Adolescentes') {
+        diasPermitidos = ['Martes', 'Jueves', 'Sábado'];
+      } else {
+        // Para bebés y niños pequeños, todos los días excepto domingo
+        diasPermitidos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      }
+
+      const fechasFiltradas = todasLasFechas.filter(fecha => {
+        const nombreDia = obtenerNombreDia(fecha);
+        return diasPermitidos.includes(nombreDia);
+      });
+
+      setFechasDisponibles(fechasFiltradas.slice(0, 5));
+    } else if (isOpen) {
+      // Si no hay fecha de nacimiento, mostrar todas las fechas
       const fechas = obtenerFechasDisponiblesInicio();
       setFechasDisponibles(fechas);
     }
-  }, [isOpen]);
+  }, [isOpen, formData.fechaNacimiento]);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -671,9 +693,9 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         showCloseButton={false}
-        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-[calc(100%-1rem)] sm:w-full max-w-[95vw] sm:max-w-4xl p-0"
+        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-full max-w-[calc(100%-2rem)] sm:max-w-[95vw] md:max-w-4xl p-0 m-4 sm:m-6"
         style={{
-          maxHeight: '92vh',
+          maxHeight: 'calc(100vh - 4rem)',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
           touchAction: 'pan-y',
@@ -683,12 +705,12 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         onInteractOutside={(e) => e.preventDefault()}
       >
         {/* Header Sticky */}
-        <div className="flex items-start justify-between sticky top-0 bg-zinc-900 z-20 pb-4 border-b border-white/10 px-6 pt-6">
-          <div className="flex-1 pr-8">
-            <DialogTitle className="text-white text-xl sm:text-2xl font-bold mb-2">
+        <div className="flex items-start justify-between sticky top-0 bg-zinc-900 z-20 pb-3 sm:pb-4 border-b border-white/10 px-4 sm:px-6 pt-4 sm:pt-6">
+          <div className="flex-1 pr-4 sm:pr-8">
+            <DialogTitle className="text-white text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
               Formulario de Matrícula
             </DialogTitle>
-            <DialogDescription className="text-white/70 text-sm">
+            <DialogDescription className="text-white/70 text-xs sm:text-sm">
               Programa: <span className="text-[#FA7B21] font-semibold">
                 {programa === 'full' ? '3 Meses Full (S/ 869)' : '1 Mes (S/ 330)'}
               </span>
@@ -702,14 +724,14 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                 WebkitTapHighlightColor: 'transparent'
               }}
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           </DialogClose>
         </div>
 
         {/* Form Content */}
-        <div className="px-6 py-4">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="px-4 sm:px-6 py-4 sm:py-6 pb-6 sm:pb-8">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           {/* Datos del Alumno */}
           <div>
             <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
@@ -1041,30 +1063,42 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             </div>
 
             {/* Días Tentativos de Asistencia */}
-            {categoriaAlumno && (
+            {formData.fechaInicio && formData.fechaNacimiento && (
               <div className="mb-6">
-                <Label className="text-white mb-3 block">
+                <Label className="text-white mb-3 block text-base">
                   Días Tentativos de Asistencia *
                   <span className="text-white/60 text-sm font-normal ml-2">
                     (Selecciona al menos 2 días por semana)
                   </span>
                 </Label>
 
+                {categoriaAlumno && (
+                  <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                    <p className="text-blue-300 text-sm">
+                      📅 Categoría <strong>{categoriaAlumno}</strong> - Los días disponibles están filtrados según tu edad
+                    </p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
-                    const isDisabled =
-                      (categoriaAlumno === 'Juniors' && !['Lunes', 'Miércoles', 'Viernes', 'Sábado'].includes(dia)) ||
-                      (categoriaAlumno === 'Adolescentes' && !['Martes', 'Jueves', 'Sábado'].includes(dia));
+                    let isDisabled = false;
+                    if (categoriaAlumno === 'Juniors') {
+                      isDisabled = !['Lunes', 'Miércoles', 'Viernes', 'Sábado'].includes(dia);
+                    } else if (categoriaAlumno === 'Adolescentes') {
+                      isDisabled = !['Martes', 'Jueves', 'Sábado'].includes(dia);
+                    }
+                    // Para otras edades (bebés/niños pequeños), todos los días están disponibles
 
                     return (
                       <label
                         key={dia}
-                        className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all ${
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
                           isDisabled
-                            ? 'border-white/10 opacity-40 cursor-not-allowed'
+                            ? 'border-white/10 opacity-40 cursor-not-allowed bg-zinc-800/30'
                             : diasTentativos.includes(dia)
-                            ? 'border-[#FA7B21] bg-[#FA7B21]/10'
-                            : 'border-white/20 hover:border-white/30 cursor-pointer'
+                            ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                            : 'border-white/20 hover:border-[#FA7B21]/50 cursor-pointer bg-zinc-800/50'
                         }`}
                       >
                         <input
@@ -1072,9 +1106,9 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                           checked={diasTentativos.includes(dia)}
                           onChange={(e) => handleDiaTentativoChange(dia, e.target.checked)}
                           disabled={isDisabled}
-                          className="w-4 h-4 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
+                          className="w-5 h-5 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
                         />
-                        <span className="text-white text-sm">{dia}</span>
+                        <span className={`text-sm font-medium ${diasTentativos.includes(dia) ? 'text-[#FA7B21]' : 'text-white'}`}>{dia}</span>
                       </label>
                     );
                   })}
