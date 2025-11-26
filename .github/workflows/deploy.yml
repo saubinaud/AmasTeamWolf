@@ -264,7 +264,7 @@ jobs:
                         url: 'https://amasteamwolf.com/programas'
                       },
                       '/leadership': {
-                        title: 'Programa Leadership Wolf | Programa avanzado de uso de armar',
+                        title: 'Programa Leadership Wolf | Programa avanzado de uso de armas',
                         description: 'Llega a otro nivel con el programa Leadership Wolf. Aprende nuevas técnicas, conoce nuevas armas y obtener certificaciones oficiales Amas Team Wolf en Lima, Perú.',
                         url: 'https://amasteamwolf.com/leadership'
                       }
