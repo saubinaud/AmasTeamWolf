@@ -4,6 +4,7 @@ Allow: /
 Allow: /leadership
 Allow: /tienda
 Allow: /graduacion
+Allow: /clase-prueba
 
 # Sitemap
 Sitemap: https://amasteamwolf.com/sitemap.xml

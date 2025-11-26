@@ -61,6 +61,17 @@ function App() {
   // Handle URL routing on mount and popstate
   useEffect(() => {
     const handlePopState = () => {
+      // Check for redirect from 404.html
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectPath = urlParams.get('redirect') || sessionStorage.getItem('redirectPath');
+
+      if (redirectPath) {
+        // Clear the redirect data
+        sessionStorage.removeItem('redirectPath');
+        // Update the URL without the redirect parameter
+        window.history.replaceState({}, '', redirectPath);
+      }
+
       const path = window.location.pathname;
       if (path === '/leadership') {
         setCurrentPage('leadership');

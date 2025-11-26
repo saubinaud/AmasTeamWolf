@@ -13,7 +13,7 @@ export function SEO({
   title = 'AMAS Team Wolf - Academia de Artes Marciales | Leadership Program',
   description = 'AMAS Team Wolf: Academia líder en artes marciales en San Borja, Lima. Programas de Taekwondo, Leadership Wolf, Combat, Bo Staff y más. Formamos líderes con disciplina, respeto y valores. Matrícula abierta para niños y jóvenes.',
   keywords = 'AMAS Team Wolf, artes marciales Lima, taekwondo San Borja, leadership program, leadership wolf, academia artes marciales Perú, clases taekwondo niños, combat, bo staff, nunchaku, formación integral, disciplina, respeto, valores, matrícula artes marciales, gimnasio San Borja, defensa personal Lima',
-  image = 'https://amasteamwolf.com/og-image.jpg',
+  image = 'https://res.cloudinary.com/dkoocok3j/image/upload/w_1200,h_630,c_fill,g_center,q_auto,f_auto/v1761500577/5_daew00.png',
   url = 'https://amasteamwolf.com',
   type = 'website'
 }: SEOProps) {
