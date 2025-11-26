@@ -354,6 +354,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     semanasAproximadas: number;
   } | null>(null);
   const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
+  const [mostrarOtraFecha, setMostrarOtraFecha] = useState(false);
+  const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
 
   // Recalcular fechas disponibles cuando cambia la fecha de nacimiento
   useEffect(() => {
@@ -405,6 +407,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       setFechaFinCalculada('');
       setDetallesFechaFin(null);
       setFechasDisponibles([]);
+      setMostrarOtraFecha(false);
+      setOpcionFechaSeleccionada('fechas');
     }
   }, [isOpen]);
 
@@ -540,7 +544,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
   // Effect para calcular fecha de fin automáticamente
   useEffect(() => {
-    if (!formData.fechaInicio || diasTentativos.length < 2) {
+    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 2) {
       setFechaFinCalculada('');
       setDetallesFechaFin(null);
       return;
@@ -571,14 +575,14 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       return;
     }
 
-    // Validar días tentativos (mínimo 2)
-    if (diasTentativos.length < 2) {
+    // Validar días tentativos (mínimo 2) solo si la fecha no es "no-especificado"
+    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 2) {
       toast.error('Debes seleccionar al menos 2 días de asistencia por semana');
       return;
     }
 
-    // Validar que la fecha de fin se haya calculado
-    if (!fechaFinCalculada) {
+    // Validar que la fecha de fin se haya calculado solo si la fecha no es "no-especificado"
+    if (formData.fechaInicio !== 'no-especificado' && !fechaFinCalculada) {
       toast.error('La fecha de fin no se ha calculado correctamente. Por favor verifica los datos');
       return;
     }
@@ -623,10 +627,10 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         uniformeAdicional: programa === '1mes' ? (includeUniform ? 'Sí' : 'No') : 'Incluido',
         precioUniforme: precioUniforme,
         fechaInicio: formData.fechaInicio,
-        diasTentativos: diasTentativos.join(', '),
-        fechaFin: fechaFinCalculada,
-        clasesTotales: detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa],
-        semanasAproximadas: detallesFechaFin?.semanasAproximadas || 0,
+        diasTentativos: formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : diasTentativos.join(', '),
+        fechaFin: formData.fechaInicio === 'no-especificado' ? 'Por calcular' : fechaFinCalculada,
+        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programa] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa]),
+        semanasAproximadas: formData.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas || 0),
         codigoPromocional: codigoAplicado?.codigo || 'No aplicado',
         descuentoAplicado: descuentoDinero,
         precioPrograma: precioBase,
@@ -1016,7 +1020,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {fechasDisponibles.map((fecha, index) => {
                   const fechaStr = fecha.toISOString().split('T')[0];
-                  const estaSeleccionada = formData.fechaInicio === fechaStr;
+                  const estaSeleccionada = formData.fechaInicio === fechaStr && opcionFechaSeleccionada === 'fechas';
                   const nombreDia = obtenerNombreDia(fecha);
                   const diaNumero = fecha.getDate();
                   const mes = fecha.toLocaleDateString('es-PE', { month: 'long' });
@@ -1025,7 +1029,11 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     <button
                       key={index}
                       type="button"
-                      onClick={() => handleInputChange('fechaInicio', fechaStr)}
+                      onClick={() => {
+                        handleInputChange('fechaInicio', fechaStr);
+                        setOpcionFechaSeleccionada('fechas');
+                        setMostrarOtraFecha(false);
+                      }}
                       className={`p-4 rounded-lg border-2 transition-all text-left ${
                         estaSeleccionada
                           ? 'border-[#FA7B21] bg-[#FA7B21]/20'
@@ -1051,16 +1059,97 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     </button>
                   );
                 })}
+
+                {/* Opción: Aún no especificado */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleInputChange('fechaInicio', 'no-especificado');
+                    setOpcionFechaSeleccionada('no-especificado');
+                    setMostrarOtraFecha(false);
+                  }}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    opcionFechaSeleccionada === 'no-especificado'
+                      ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                      : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                      opcionFechaSeleccionada === 'no-especificado' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
+                    }`}>
+                      ⏰
+                    </div>
+                    <div className="flex-1">
+                      <p className={`font-semibold ${opcionFechaSeleccionada === 'no-especificado' ? 'text-[#FA7B21]' : 'text-white'}`}>
+                        Aún no especificado
+                      </p>
+                      <p className="text-white/60 text-sm">Lo decidiré después</p>
+                    </div>
+                    {opcionFechaSeleccionada === 'no-especificado' && (
+                      <div className="text-[#FA7B21] text-xl">✓</div>
+                    )}
+                  </div>
+                </button>
+
+                {/* Opción: Otra fecha */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpcionFechaSeleccionada('otra');
+                    setMostrarOtraFecha(true);
+                  }}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${
+                    opcionFechaSeleccionada === 'otra'
+                      ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                      : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
+                      opcionFechaSeleccionada === 'otra' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
+                    }`}>
+                      📅
+                    </div>
+                    <div className="flex-1">
+                      <p className={`font-semibold ${opcionFechaSeleccionada === 'otra' ? 'text-[#FA7B21]' : 'text-white'}`}>
+                        Otra fecha
+                      </p>
+                      <p className="text-white/60 text-sm">Elegir fecha personalizada</p>
+                    </div>
+                    {opcionFechaSeleccionada === 'otra' && (
+                      <div className="text-[#FA7B21] text-xl">✓</div>
+                    )}
+                  </div>
+                </button>
               </div>
-              {!formData.fechaInicio && formData.fechaNacimiento && (
+
+              {/* Input de fecha personalizada */}
+              {mostrarOtraFecha && opcionFechaSeleccionada === 'otra' && (
+                <div className="mt-4 p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
+                  <Label className="text-white mb-2 block text-sm">Selecciona tu fecha personalizada:</Label>
+                  <Input
+                    type="date"
+                    value={formData.fechaInicio !== 'no-especificado' ? formData.fechaInicio : ''}
+                    onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className="bg-zinc-800 border-white/20 text-white"
+                  />
+                  <p className="text-white/50 text-xs mt-2">
+                    💡 Asegúrate de elegir una fecha válida según tu edad y disponibilidad
+                  </p>
+                </div>
+              )}
+
+              {!formData.fechaInicio && formData.fechaNacimiento && opcionFechaSeleccionada === 'fechas' && (
                 <p className="text-white/50 text-xs mt-3">
-                  👆 Selecciona una fecha para continuar
+                  👆 Selecciona una opción para continuar
                 </p>
               )}
             </div>
 
             {/* Horarios Disponibles según Edad */}
-            {formData.fechaInicio && horariosInfo && (
+            {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && horariosInfo && (
               <div className="mb-6 p-5 bg-gradient-to-br from-[#FA7B21]/10 to-[#FA7B21]/5 border-2 border-[#FA7B21]/30 rounded-xl">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="text-3xl">🕐</div>
@@ -1092,7 +1181,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             )}
 
             {/* Días Tentativos de Asistencia */}
-            {formData.fechaInicio && formData.fechaNacimiento && (
+            {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && (
               <div className="mb-6">
                 <Label className="text-white mb-2 block text-base font-semibold">
                   2. Días Tentativos de Clases *
@@ -1192,7 +1281,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             )}
 
             {/* Mensaje si faltan días tentativos */}
-            {formData.fechaInicio && formData.fechaNacimiento && diasTentativos.length < 2 && (
+            {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && diasTentativos.length < 2 && (
               <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <p className="text-yellow-200 text-sm">
                   ⏳ Selecciona al menos 2 días tentativos arriba para calcular tu fecha de fin
@@ -1344,14 +1433,14 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                   <span className="text-green-400"> + {detallesFechaFin.clasesTotales - PROGRAMA_CLASES[programa]} bonus = {detallesFechaFin.clasesTotales} total</span>
                 )}
               </p>
-              {diasTentativos.length >= 2 && (
+              {diasTentativos.length >= 2 && formData.fechaInicio !== 'no-especificado' && (
                 <p className="text-white">
                   <strong>Días tentativos:</strong> {diasTentativos.join(', ')}
                 </p>
               )}
               {formData.fechaInicio && (
                 <p className="text-white">
-                  <strong>Inicio:</strong> {new Date(formData.fechaInicio).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  <strong>Inicio:</strong> {formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : new Date(formData.fechaInicio).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </p>
               )}
               {fechaFinCalculada && (
