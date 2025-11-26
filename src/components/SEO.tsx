@@ -14,7 +14,7 @@ export function SEO({
   description = 'AMAS Team Wolf: Academia líder en artes marciales en San Borja, Lima. Programas de Taekwondo, Leadership Wolf, Combat, Bo Staff y más. Formamos líderes con disciplina, respeto y valores. Matrícula abierta para niños y jóvenes.',
   keywords = 'AMAS Team Wolf, artes marciales Lima, taekwondo San Borja, leadership program, leadership wolf, academia artes marciales Perú, clases taekwondo niños, combat, bo staff, nunchaku, formación integral, disciplina, respeto, valores, matrícula artes marciales, gimnasio San Borja, defensa personal Lima',
   image = 'https://amasteamwolf.com/og-image.jpg',
-  url = 'https://amas-team-wolf.figma.site',
+  url = 'https://amasteamwolf.com',
   type = 'website'
 }: SEOProps) {
   
@@ -149,12 +149,12 @@ export function SEO({
         },
         {
           "@type": "WebSite",
-          "@id": "https://amas-team-wolf.figma.site/#website",
-          "url": "https://amas-team-wolf.figma.site",
+          "@id": "https://amasteamwolf.com/#website",
+          "url": "https://amasteamwolf.com",
           "name": "AMAS Team Wolf",
           "description": description,
           "publisher": {
-            "@id": "https://amas-team-wolf.figma.site/#organization"
+            "@id": "https://amasteamwolf.com/#organization"
           },
           "inLanguage": "es-PE"
         },
@@ -163,16 +163,16 @@ export function SEO({
           "name": "Leadership Wolf Program",
           "description": "Programa completo de liderazgo y artes marciales para niños y jóvenes. Incluye formación en Taekwondo, Combat, Bo Staff, Nunchaku y desarrollo de valores.",
           "provider": {
-            "@id": "https://amas-team-wolf.figma.site/#organization"
+            "@id": "https://amasteamwolf.com/#organization"
           },
           "educationalLevel": "Todos los niveles",
           "availableLanguage": "es",
           "offers": {
             "@type": "Offer",
-            "price": "1499",
+            "price": "1299",
             "priceCurrency": "PEN",
             "availability": "https://schema.org/InStock",
-            "url": "https://amas-team-wolf.figma.site/leadership",
+            "url": "https://amasteamwolf.com/leadership",
             "validFrom": "2024-01-01"
           }
         },
@@ -181,7 +181,7 @@ export function SEO({
           "name": "Programa Full 3 Meses",
           "description": "Programa integral de artes marciales de 3 meses. Incluye uniforme completo, graduación, certificado oficial y seguimiento personalizado.",
           "provider": {
-            "@id": "https://amas-team-wolf.figma.site/#organization"
+            "@id": "https://amasteamwolf.com/#organization"
           },
           "educationalLevel": "Todos los niveles",
           "availableLanguage": "es",
@@ -190,7 +190,7 @@ export function SEO({
             "price": "869",
             "priceCurrency": "PEN",
             "availability": "https://schema.org/InStock",
-            "url": "https://amas-team-wolf.figma.site",
+            "url": "https://amasteamwolf.com",
             "validFrom": "2024-01-01"
           }
         },
@@ -198,8 +198,8 @@ export function SEO({
           "@type": "LocalBusiness",
           "name": "AMAS Team Wolf - Academia de Artes Marciales",
           "image": image,
-          "@id": "https://amas-team-wolf.figma.site",
-          "url": "https://amas-team-wolf.figma.site",
+          "@id": "https://amasteamwolf.com",
+          "url": "https://amasteamwolf.com",
           "telephone": "+51989717412",
           "priceRange": "S/ 330 - S/ 1,964",
           "address": {
@@ -249,31 +249,31 @@ export const seoConfigs = {
   home: {
     title: 'AMAS Team Wolf - Academia de Artes Marciales en San Borja | Taekwondo Lima',
     description: 'Academia de artes marciales AMAS Team Wolf en San Borja, Lima. Programas de Taekwondo, Leadership Wolf y Combat para niños y jóvenes. Formación integral con valores. ¡Matrícula abierta! ☎ +51 989 717 412',
-    keywords: 'AMAS Team Wolf, artes marciales Lima, taekwondo San Borja, academia artes marciales Perú, clases taekwondo niños Lima, gimnasio artes marciales San Borja, defensa personal niños, formación integral Lima, valores niños, disciplina respeto',
-    url: 'https://amas-team-wolf.figma.site'
+    keywords: 'AMAS Team Wolf, artes marciales Lima, taekwondo San Borja, academia artes marciales Perú, clases taekwondo niños Lima, gimnasio artes marciales San Borja, defensa personal niños, formación integral Lima, valores niños, disciplina respeto, mejor academia taekwondo Lima, escuela artes marciales San Borja',
+    url: 'https://amasteamwolf.com'
   },
   leadership: {
     title: 'Leadership Wolf Program - AMAS Team Wolf | Programa de Liderazgo y Artes Marciales',
-    description: 'Leadership Wolf: Programa exclusivo de liderazgo y artes marciales. Incluye Taekwondo, Combat, Bo Staff, Nunchaku y formación en valores. 12 hitos de desarrollo personal. Desde S/ 1,499 con descuentos. ¡Inscríbete ahora!',
-    keywords: 'leadership wolf, leadership program, programa liderazgo Lima, liderazgo artes marciales, AMAS leadership, taekwondo leadership, combat training, bo staff, nunchaku, formación líderes niños, desarrollo personal niños, programa integral artes marciales',
-    url: 'https://amas-team-wolf.figma.site/leadership'
+    description: 'Leadership Wolf: Programa exclusivo de liderazgo y artes marciales. Incluye Taekwondo, Combat, Bo Staff, Nunchaku y formación en valores. 12 hitos de desarrollo personal. Desde S/ 1,299 con descuento de lanzamiento. ¡Inscríbete ahora!',
+    keywords: 'leadership wolf, leadership program, programa liderazgo Lima, liderazgo artes marciales, AMAS leadership, taekwondo leadership, combat training, bo staff, nunchaku, formación líderes niños, desarrollo personal niños, programa integral artes marciales, programa avanzado artes marciales, curso liderazgo juvenil Lima',
+    url: 'https://amasteamwolf.com/leadership'
   },
   tienda: {
     title: 'Tienda AMAS Team Wolf - Uniformes y Equipamiento de Artes Marciales',
     description: 'Tienda oficial AMAS Team Wolf. Uniformes de Taekwondo, equipamiento Combat, Bo Staff, Nunchaku y más. Productos de calidad para artes marciales. Envío disponible en Lima.',
-    keywords: 'tienda artes marciales Lima, uniformes taekwondo, dobok, combat gear, bo staff comprar, nunchaku Lima, equipamiento artes marciales Perú, AMAS Team Wolf tienda',
-    url: 'https://amas-team-wolf.figma.site/tienda'
+    keywords: 'tienda artes marciales Lima, uniformes taekwondo, dobok, combat gear, bo staff comprar, nunchaku Lima, equipamiento artes marciales Perú, AMAS Team Wolf tienda, comprar uniforme taekwondo Lima, venta dobok San Borja',
+    url: 'https://amasteamwolf.com/tienda'
   },
   graduacion: {
     title: 'Graduaciones AMAS Team Wolf - Ceremonias y Logros de Nuestros Estudiantes',
     description: 'Conoce las graduaciones y ceremonias de AMAS Team Wolf. Galería de logros de nuestros estudiantes en artes marciales. Celebramos el esfuerzo y dedicación con certificados oficiales.',
-    keywords: 'graduaciones taekwondo, ceremonias artes marciales Lima, graduación AMAS Team Wolf, certificados taekwondo, cinturones taekwondo, logros estudiantes artes marciales',
-    url: 'https://amas-team-wolf.figma.site/graduacion'
+    keywords: 'graduaciones taekwondo, ceremonias artes marciales Lima, graduación AMAS Team Wolf, certificados taekwondo, cinturones taekwondo, logros estudiantes artes marciales, exámenes de grado taekwondo Lima, ceremonia cinturones artes marciales San Borja',
+    url: 'https://amasteamwolf.com/graduacion'
   },
-  conversion: {
-    title: 'Clases de Taekwondo para Niños desde 1 año | AMAS Team Wolf San Borja',
-    description: 'Transforma a tu hijo en una persona segura, disciplinada y respetuosa. Desde 1 año de edad. 20 años de experiencia. Clase de prueba S/40 (GRATIS al inscribirse). ☎ +51 989 717 412',
-    keywords: 'clases taekwondo niños San Borja, taekwondo para niños Lima, academia infantil artes marciales, formación niños disciplina, confianza niños Lima, clases niños San Borja, taekwondo niños tímidos, disciplina niños berrinches, baby wolf, taekwondo bebés Lima',
-    url: 'https://amas-team-wolf.figma.site/conversion'
+  clasePrueba: {
+    title: 'Clase de Prueba Taekwondo S/ 40 | AMAS Team Wolf San Borja - Niños desde 1 año',
+    description: '¡Reserva tu clase de prueba de Taekwondo por S/ 40 (GRATIS al inscribirse)! Para niños desde 1 año. Desarrolla confianza, disciplina y respeto. 20 años formando líderes en San Borja, Lima. ☎ +51 989 717 412',
+    keywords: 'clase prueba taekwondo Lima, clase de prueba artes marciales San Borja, taekwondo para niños Lima, clases taekwondo niños San Borja, academia infantil artes marciales, formación niños disciplina, confianza niños Lima, taekwondo niños tímidos, disciplina niños berrinches, baby wolf, taekwondo bebés Lima, primera clase taekwondo gratis',
+    url: 'https://amasteamwolf.com/clase-prueba'
   }
 };
