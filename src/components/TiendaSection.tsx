@@ -3,7 +3,7 @@ import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import { OptimizedImage } from './OptimizedImage';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { featuredStoreProducts, Implement } from '../data/implements';
 
 interface TiendaSectionProps {

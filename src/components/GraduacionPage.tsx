@@ -3,7 +3,7 @@ import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 import { Button } from './ui/button';
 import { ChevronDown, Award, Clock, User, Loader2, Calendar } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface GraduacionPageProps {
   onNavigate: (page: string) => void;
