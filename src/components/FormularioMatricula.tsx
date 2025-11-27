@@ -406,7 +406,7 @@ function esCierreVacacionalAMAS(fecha: Date): boolean {
   const dia = fecha.getDate();
 
   if (mes === 12 && dia >= 20) return true;
-  if (mes === 1 && dia <= 3) return true;
+  if (mes === 1 && dia <= 4) return true;  // Cerrado hasta el 4, abren el 5
 
   return false;
 }
@@ -457,29 +457,49 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
 } {
   let clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
 
+  console.log('=== CÁLCULO DE FECHA FIN ===');
+  console.log('Fecha inicio:', fechaInicio.toISOString().split('T')[0], '(', obtenerNombreDia(fechaInicio), ')');
+  console.log('Programa:', programa, '- Clases totales:', clasesTotales);
+  console.log('Días tentativos:', diasTentativos);
+
   const fechaActual = new Date(fechaInicio);
   let clasesContadas = 1; // La primera clase cuenta
+
+  console.log('Clase #1:', fechaInicio.toISOString().split('T')[0], '(', obtenerNombreDia(fechaInicio), ') - INICIO');
 
   while (clasesContadas < clasesTotales) {
     fechaActual.setDate(fechaActual.getDate() + 1);
 
-    if (fechaActual.getDay() === 0) continue;
+    if (fechaActual.getDay() === 0) continue;  // Domingo
 
-    if (esFeriado(fechaActual)) continue;
+    if (esFeriado(fechaActual)) {
+      console.log('⛔ Feriado:', fechaActual.toISOString().split('T')[0]);
+      continue;
+    }
 
-    if (esCierreVacacionalAMAS(fechaActual)) continue;
+    if (esCierreVacacionalAMAS(fechaActual)) {
+      console.log('🏖️ Cierre vacacional:', fechaActual.toISOString().split('T')[0]);
+      continue;
+    }
 
     const nombreDia = obtenerNombreDia(fechaActual);
     if (diasTentativos.includes(nombreDia)) {
       clasesContadas++;
+      console.log(`Clase #${clasesContadas}:`, fechaActual.toISOString().split('T')[0], '(', nombreDia, ')');
     }
   }
 
-  return {
+  const resultado = {
     fechaFin: fechaActual,
     clasesTotales,
     semanasAproximadas: Math.ceil((fechaActual.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000))
   };
+
+  console.log('📅 FECHA FIN:', resultado.fechaFin.toISOString().split('T')[0], '(', obtenerNombreDia(resultado.fechaFin), ')');
+  console.log('⏱️ Semanas:', resultado.semanasAproximadas);
+  console.log('===========================');
+
+  return resultado;
 }
 
 // Validar código promocional
@@ -566,12 +586,12 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       const todasLasFechas = obtenerFechasDisponiblesInicio();
       const horarios = calcularHorarios(formData.fechaNacimiento);
 
-      // Filtrar fechas según categoría del alumno
+      // Filtrar fechas según categoría del alumno (solo días de clase)
       let diasPermitidos: string[] = [];
       if (horarios.categoria === 'Juniors') {
-        diasPermitidos = ['Lunes', 'Miércoles', 'Viernes', 'Sábado'];
+        diasPermitidos = ['Lunes', 'Miércoles', 'Viernes'];  // Solo días de clase
       } else if (horarios.categoria === 'Adolescentes') {
-        diasPermitidos = ['Martes', 'Jueves', 'Sábado'];
+        diasPermitidos = ['Martes', 'Jueves'];  // Solo días de clase
       } else {
         // Para bebés y niños pequeños, todos los días excepto domingo
         diasPermitidos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -1420,9 +1440,9 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                   {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
                     let isDisabled = false;
                     if (categoriaAlumno === 'Juniors') {
-                      isDisabled = !['Lunes', 'Miércoles', 'Viernes', 'Sábado'].includes(dia);
+                      isDisabled = !['Lunes', 'Miércoles', 'Viernes'].includes(dia);  // Solo días de clase
                     } else if (categoriaAlumno === 'Adolescentes') {
-                      isDisabled = !['Martes', 'Jueves', 'Sábado'].includes(dia);
+                      isDisabled = !['Martes', 'Jueves'].includes(dia);  // Solo días de clase
                     }
 
                     return (
