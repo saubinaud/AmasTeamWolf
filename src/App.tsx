@@ -6,6 +6,8 @@ import { RegistroMensualPage } from './components/RegistroMensualPage';
 import { RegistroLeadershipPage } from './components/RegistroLeadershipPage';
 import { GraduacionPage } from './components/GraduacionPage';
 import { LandingConversion } from './components/LandingConversion';
+import { InicioSesionPage } from './components/InicioSesionPage';
+import { PerfilPage } from './components/PerfilPage';
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
 import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
@@ -34,7 +36,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil'>('home');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -87,6 +89,10 @@ function App() {
         setCurrentPage('graduacion');
       } else if (path === '/clase-prueba') {
         setCurrentPage('clase-prueba');
+      } else if (path === '/inicio-sesion') {
+        setCurrentPage('inicio-sesion');
+      } else if (path === '/perfil') {
+        setCurrentPage('perfil');
       } else {
         setCurrentPage('home');
       }
@@ -114,7 +120,7 @@ function App() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
-    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba');
+    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil');
     // Update URL
     const path = page === 'home' ? '/' : `/${page}`;
     window.history.pushState({}, '', path);
@@ -309,6 +315,38 @@ function App() {
       <>
         <SEO {...seoConfigs.clasePrueba} />
         <LandingConversion onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  // Render Inicio Sesion Page
+  if (currentPage === 'inicio-sesion') {
+    return (
+      <>
+        <SEO
+          title="Iniciar Sesión - AMAS Team Wolf"
+          description="Acceso para familias de AMAS Team Wolf. Revisa tus clases, pagos y más."
+          keywords="login amas, acceso familias, portal estudiantes"
+          url="https://amasteamwolf.com/inicio-sesion"
+        />
+        <InicioSesionPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  // Render Perfil Page
+  if (currentPage === 'perfil') {
+    return (
+      <>
+        <SEO
+          title="Mi Perfil - AMAS Team Wolf"
+          description="Panel de familia AMAS Team Wolf. Consulta tus clases, pagos, matrícula y notificaciones."
+          keywords="perfil amas, panel familias, mis clases"
+          url="https://amasteamwolf.com/perfil"
+        />
+        <PerfilPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
