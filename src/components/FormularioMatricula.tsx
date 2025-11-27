@@ -8,17 +8,22 @@ import { toast } from 'sonner@2.0.3';
 
 // ========== CONSTANTES ==========
 
-// Feriados fijos de Perú
+// Feriados fijos de Perú - Feriados obligatorios no laborables según Decreto Legislativo 713
+// Fuente: https://gestion.pe/peru/feriados-2025-en-peru-conoce-los-dias-festivos-y-no-laborales-para-este-ano-noticia/
 const FERIADOS_FIJOS_PERU = [
   { mes: 1, dia: 1, nombre: "Año Nuevo" },
   { mes: 5, dia: 1, nombre: "Día del Trabajo" },
+  { mes: 6, dia: 7, nombre: "Batalla de Arica y Día de la Bandera" },
   { mes: 6, dia: 29, nombre: "San Pedro y San Pablo" },
-  { mes: 7, dia: 28, nombre: "Fiestas Patrias" },
+  { mes: 7, dia: 23, nombre: "Día de la Fuerza Aérea del Perú" },
+  { mes: 7, dia: 28, nombre: "Fiestas Patrias - Independencia" },
   { mes: 7, dia: 29, nombre: "Fiestas Patrias" },
+  { mes: 8, dia: 6, nombre: "Batalla de Junín" },
   { mes: 8, dia: 30, nombre: "Santa Rosa de Lima" },
   { mes: 10, dia: 8, nombre: "Combate de Angamos" },
   { mes: 11, dia: 1, nombre: "Todos los Santos" },
   { mes: 12, dia: 8, nombre: "Inmaculada Concepción" },
+  { mes: 12, dia: 9, nombre: "Batalla de Ayacucho" },
   { mes: 12, dia: 25, nombre: "Navidad" }
 ];
 
@@ -425,11 +430,6 @@ function obtenerFechasDisponiblesInicio(): Date[] {
       continue;
     }
 
-    if (esFeriado(fechaIteracion)) {
-      fechaIteracion.setDate(fechaIteracion.getDate() + 1);
-      continue;
-    }
-
     if (esCierreVacacionalAMAS(fechaIteracion)) {
       fechaIteracion.setDate(fechaIteracion.getDate() + 1);
       continue;
@@ -472,11 +472,6 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
 
     if (fechaActual.getDay() === 0) continue;  // Domingo
 
-    if (esFeriado(fechaActual)) {
-      console.log('⛔ Feriado:', fechaActual.toISOString().split('T')[0]);
-      continue;
-    }
-
     if (esCierreVacacionalAMAS(fechaActual)) {
       console.log('🏖️ Cierre vacacional:', fechaActual.toISOString().split('T')[0]);
       continue;
@@ -484,6 +479,11 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
 
     const nombreDia = obtenerNombreDia(fechaActual);
     if (diasTentativos.includes(nombreDia)) {
+      // Solo omitir feriados que caen en días de clase
+      if (esFeriado(fechaActual)) {
+        console.log('⛔ Feriado en día de clase:', fechaActual.toISOString().split('T')[0]);
+        continue;
+      }
       clasesContadas++;
       console.log(`Clase #${clasesContadas}:`, fechaActual.toISOString().split('T')[0], '(', nombreDia, ')');
     }
