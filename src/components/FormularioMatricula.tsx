@@ -425,11 +425,6 @@ function obtenerFechasDisponiblesInicio(): Date[] {
       continue;
     }
 
-    if (esFeriado(fechaIteracion)) {
-      fechaIteracion.setDate(fechaIteracion.getDate() + 1);
-      continue;
-    }
-
     if (esCierreVacacionalAMAS(fechaIteracion)) {
       fechaIteracion.setDate(fechaIteracion.getDate() + 1);
       continue;
@@ -472,11 +467,7 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
 
     if (fechaActual.getDay() === 0) continue;  // Domingo
 
-    if (esFeriado(fechaActual)) {
-      console.log('⛔ Feriado:', fechaActual.toISOString().split('T')[0]);
-      continue;
-    }
-
+    // AMAS Team Wolf solo cierra por vacaciones, no por feriados nacionales
     if (esCierreVacacionalAMAS(fechaActual)) {
       console.log('🏖️ Cierre vacacional:', fechaActual.toISOString().split('T')[0]);
       continue;
