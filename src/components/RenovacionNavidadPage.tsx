@@ -371,11 +371,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Ej: María González"
                           value={formData.nombre_padre}
                           onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 scroll-mt-32 ${
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${
                             formErrors.nombre_padre ? 'border-red-500' : ''
                           }`}
                           disabled={isSubmitting}
-                          style={{ scrollMarginTop: '128px' }}
                         />
                         {formErrors.nombre_padre && (
                           <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
@@ -395,11 +394,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Ej: maria.gonzalez@gmail.com"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 scroll-mt-32 ${
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${
                             formErrors.email ? 'border-red-500' : ''
                           }`}
                           disabled={isSubmitting}
-                          style={{ scrollMarginTop: '128px' }}
                         />
                         {formErrors.email && (
                           <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
@@ -427,11 +425,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Ej: Sebastián González"
                           value={formData.nombre_alumno}
                           onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 scroll-mt-32 ${
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${
                             formErrors.nombre_alumno ? 'border-red-500' : ''
                           }`}
                           disabled={isSubmitting}
-                          style={{ scrollMarginTop: '128px' }}
                         />
                         {formErrors.nombre_alumno && (
                           <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
@@ -528,9 +525,8 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Escribe aquí si hay algo que quieras compartir con nosotros..."
                           value={formData.comentario}
                           onChange={(e) => handleInputChange('comentario', e.target.value)}
-                          className="bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 min-h-[120px] scroll-mt-32"
+                          className="bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 min-h-[120px]"
                           disabled={isSubmitting}
-                          style={{ scrollMarginTop: '128px' }}
                         />
                       </div>
                     </div>
