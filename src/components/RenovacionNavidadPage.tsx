@@ -7,7 +7,7 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
-import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, MessageSquare, Clock, Users, Sparkles } from 'lucide-react';
+import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, Clock, Users, Sparkles } from 'lucide-react';
 
 interface RenovacionNavidadPageProps {
   onNavigate: (page: string) => void;
@@ -27,11 +27,11 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Scroll to top on mount
+  // Scroll to top on mount - corregido para evitar conflictos
   useEffect(() => {
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    });
   }, []);
 
   const validateEmail = (email: string) => {
@@ -41,7 +41,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
@@ -105,7 +104,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
       if (response.ok) {
         setIsSubmitted(true);
         toast.success('¡Renovación pre-registrada exitosamente!');
-        // Scroll to confirmation section
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
@@ -123,16 +121,16 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
   const scrollToForm = () => {
     const formElement = document.getElementById('formulario-renovacion');
     if (formElement) {
-      const yOffset = -100; // Offset para el header
+      const yOffset = -100;
       const y = formElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative">
       {/* Background with Christmas gradients */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-red-950/30 to-black" />
         <div
           className="absolute inset-0 opacity-20"
@@ -146,7 +144,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
             background: 'radial-gradient(circle at 80% 50%, rgba(218, 165, 32, 0.25) 0%, transparent 60%)'
           }}
         />
-        {/* Snowflakes effect - subtle */}
         <div
           className="absolute inset-0 opacity-5"
           style={{
@@ -171,7 +168,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
         />
 
         {isSubmitted ? (
-          // Confirmation Section
           <div className="min-h-screen flex items-center justify-center px-4 py-20">
             <div className="max-w-2xl w-full bg-zinc-900/80 backdrop-blur-sm border border-green-500/30 rounded-2xl p-8 sm:p-12 text-center">
               <div className="mb-6">
@@ -217,12 +213,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
             {/* Hero Section */}
             <section className="pt-32 pb-16 px-4">
               <div className="container mx-auto max-w-4xl text-center">
-                {/* Christmas Wolf Icon - placeholder */}
                 <div className="mb-8 relative inline-block">
                   <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-red-900 to-yellow-600 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-red-900/50">
                     <span className="text-6xl sm:text-7xl">🐺</span>
                   </div>
-                  {/* Christmas hat decoration */}
                   <div className="absolute -top-2 -right-2">
                     <span className="text-4xl">🎅</span>
                   </div>
@@ -269,7 +263,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                 </h2>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Block 1 */}
                   <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Calendar className="w-12 h-12 text-[#FCA929] mx-auto" />
@@ -282,7 +275,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                     </p>
                   </div>
 
-                  {/* Block 2 */}
                   <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Gift className="w-12 h-12 text-[#FCA929] mx-auto" />
@@ -295,7 +287,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                     </p>
                   </div>
 
-                  {/* Block 3 */}
                   <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Rocket className="w-12 h-12 text-[#FCA929] mx-auto" />
@@ -308,7 +299,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                     </p>
                   </div>
 
-                  {/* Block 4 */}
                   <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Dumbbell className="w-12 h-12 text-[#FCA929] mx-auto" />
@@ -327,7 +317,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
             {/* Form Section */}
             <section id="formulario-renovacion" className="py-16 px-4">
               <div className="container mx-auto max-w-2xl">
-                {/* Urgency badges */}
                 <div className="flex flex-wrap justify-center gap-3 mb-6">
                   <div className="bg-red-600/20 border border-red-500/50 rounded-full px-4 py-2 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-red-400" />
@@ -464,20 +453,25 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           >
                             <SelectValue placeholder="Selecciona tu plan de renovación" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]" position="popper" sideOffset={5}>
-                            <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
+                          <SelectContent 
+                            className="bg-zinc-800 border-zinc-700 z-[9999] max-h-[var(--radix-select-content-available-height)]"
+                            position="popper"
+                            sideOffset={4}
+                            align="start"
+                          >
+                            <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 focus:text-white py-4 cursor-pointer">
                               <div className="flex flex-col gap-1">
                                 <span className="font-semibold text-[#FCA929]">3 meses - S/ 869</span>
                                 <span className="text-sm text-white/70">+ 15 días de regalo 🎁</span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="6-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
+                            <SelectItem value="6-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 focus:text-white py-4 cursor-pointer">
                               <div className="flex flex-col gap-1">
                                 <span className="font-semibold text-[#FCA929]">6 meses - S/ 1,620</span>
-                                <span className="text-sm text-white/70">+ 30 días de regalo + implemento de regalo 🎁✨</span>
+                                <span className="text-sm text-white/70">+ 30 días de regalo + implemento 🎁✨</span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="no-decido" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-3">
+                            <SelectItem value="no-decido" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 focus:text-white py-3 cursor-pointer">
                               <span className="text-white/80">Aún no decido</span>
                             </SelectItem>
                           </SelectContent>
@@ -510,10 +504,15 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12">
                             <SelectValue placeholder="Comparte tu experiencia con nosotros" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]" position="popper" sideOffset={5}>
-                            <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐⭐ Excelente</SelectItem>
-                            <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐ Buena</SelectItem>
-                            <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐ Podría mejorar</SelectItem>
+                          <SelectContent 
+                            className="bg-zinc-800 border-zinc-700 z-[9999] max-h-[var(--radix-select-content-available-height)]"
+                            position="popper"
+                            sideOffset={4}
+                            align="start"
+                          >
+                            <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 focus:text-white cursor-pointer">⭐⭐⭐⭐⭐ Excelente</SelectItem>
+                            <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 focus:text-white cursor-pointer">⭐⭐⭐⭐ Buena</SelectItem>
+                            <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 focus:text-white cursor-pointer">⭐⭐⭐ Podría mejorar</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -542,7 +541,6 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       {isSubmitting ? '⏳ Enviando...' : '🎁 Asegurar mi renovación'}
                     </Button>
 
-                    {/* Legal text */}
                     <p className="text-white/50 text-sm text-center">
                       Al enviar este formulario, autorizas a AMAS Team Wolf
                       a contactarte para coordinar tu renovación.
