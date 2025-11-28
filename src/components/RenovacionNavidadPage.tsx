@@ -330,7 +330,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                 <div className="flex flex-wrap justify-center gap-3 mb-6">
                   <div className="bg-red-600/20 border border-red-500/50 rounded-full px-4 py-2 flex items-center gap-2">
                     <Clock className="w-4 h-4 text-red-400" />
-                    <span className="text-red-300 text-sm font-semibold">Promoción válida hasta fin de mes</span>
+                    <span className="text-red-300 text-sm font-semibold">Promoción única</span>
                   </div>
                   <div className="bg-yellow-600/20 border border-yellow-500/50 rounded-full px-4 py-2 flex items-center gap-2">
                     <Users className="w-4 h-4 text-yellow-400" />
@@ -490,7 +490,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex flex-col gap-2 flex-1">
-                                <span className="font-bold text-[#FCA929] text-lg">Plan 6 Meses - S/ 1,620</span>
+                                <span className="font-bold text-[#FCA929] text-lg">Plan 6 Meses - S/ 1,699</span>
                                 <div className="space-y-1">
                                   <span className="text-sm text-white/80 flex items-center gap-2">
                                     <Gift className="w-4 h-4" />
