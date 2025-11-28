@@ -32,10 +32,21 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const { user, logout, refreshUserData, isAuthenticated } = useAuth() as any;
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // ========== DEBUG - AGREGAR ESTOS LOGS ==========
+  console.log("=== DEBUG PERFIL ===");
+  console.log("user raw:", user);
+  console.log("user type:", typeof user);
+  console.log("isArray:", Array.isArray(user));
+  // ================================================
+
   // 2. EXTRAER LOS DATOS DEL ARRAY (SOLUCIÓN AL PROBLEMA DE CARGA)
-  // Si 'user' es una lista [ {datos...} ], sacamos el primero con user[0].
-  // Si 'user' ya es el objeto {datos...}, lo usamos directo.
   const userData = user && Array.isArray(user) ? user[0] : user;
+
+  // ========== DEBUG - MÁS LOGS ==========
+  console.log("userData final:", userData);
+  console.log("Nombre del alumno:", userData?.["Nombre del alumno"]);
+  console.log("====================");
+  // ======================================
 
   // Redirección si no hay sesión
   useEffect(() => {
