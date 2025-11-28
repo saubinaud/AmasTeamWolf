@@ -5,7 +5,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
 import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, MessageSquare, Clock, Users, Sparkles } from 'lucide-react';
 
@@ -449,45 +448,48 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       </div>
 
                       <div>
-                        <div className="text-white mb-2 block text-base font-semibold">
+                        <div className="text-white mb-4 block text-base font-semibold">
                           ¿Qué plan te interesa renovar? <span className="text-red-500">*</span>
                         </div>
-                        <Select
-                          value={formData.plan}
-                          onValueChange={(value) => handleInputChange('plan', value)}
-                          disabled={isSubmitting}
-                        >
-                          <SelectTrigger
-                            className={`bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700/80 h-14 text-base ${
-                              formErrors.plan ? 'border-red-500' : ''
-                            }`}
+                        <div className="space-y-3">
+                          {/* Plan 3 Meses */}
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('plan', '3-meses')}
+                            disabled={isSubmitting}
+                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${
+                              formData.plan === '3-meses'
+                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                            } ${formErrors.plan ? 'border-red-500' : ''}`}
                           >
-                            <SelectValue placeholder="Selecciona tu plan de renovación" />
-                          </SelectTrigger>
-                          <SelectContent
-                            className="bg-zinc-900 border-2 border-[#FA7B21]/50 z-[10000] shadow-2xl shadow-orange-900/50"
-                            position="item-aligned"
-                            align="start"
-                            sideOffset={8}
-                          >
-                            <SelectItem
-                              value="3-meses"
-                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-6 px-4 my-1 rounded-md"
-                            >
-                              <div className="flex flex-col gap-2">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex flex-col gap-2 flex-1">
                                 <span className="font-bold text-[#FCA929] text-lg">Plan 3 Meses - S/ 869</span>
                                 <span className="text-sm text-white/80 flex items-center gap-2">
                                   <Gift className="w-4 h-4" />
                                   + 15 días de regalo
                                 </span>
                               </div>
-                            </SelectItem>
+                              {formData.plan === '3-meses' && (
+                                <CheckCircle className="w-6 h-6 text-[#FA7B21] flex-shrink-0" />
+                              )}
+                            </div>
+                          </button>
 
-                            <SelectItem
-                              value="6-meses"
-                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-6 px-4 my-1 rounded-md"
-                            >
-                              <div className="flex flex-col gap-2">
+                          {/* Plan 6 Meses */}
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('plan', '6-meses')}
+                            disabled={isSubmitting}
+                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${
+                              formData.plan === '6-meses'
+                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                            } ${formErrors.plan ? 'border-red-500' : ''}`}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex flex-col gap-2 flex-1">
                                 <span className="font-bold text-[#FCA929] text-lg">Plan 6 Meses - S/ 1,620</span>
                                 <div className="space-y-1">
                                   <span className="text-sm text-white/80 flex items-center gap-2">
@@ -500,18 +502,33 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                                   </span>
                                 </div>
                               </div>
-                            </SelectItem>
+                              {formData.plan === '6-meses' && (
+                                <CheckCircle className="w-6 h-6 text-[#FA7B21] flex-shrink-0" />
+                              )}
+                            </div>
+                          </button>
 
-                            <SelectItem
-                              value="no-decido"
-                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md"
-                            >
+                          {/* Aún no decido */}
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('plan', 'no-decido')}
+                            disabled={isSubmitting}
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
+                              formData.plan === 'no-decido'
+                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                            } ${formErrors.plan ? 'border-red-500' : ''}`}
+                          >
+                            <div className="flex items-center justify-between">
                               <span className="text-white/70">Aún no decido</span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                              {formData.plan === 'no-decido' && (
+                                <CheckCircle className="w-5 h-5 text-[#FA7B21]" />
+                              )}
+                            </div>
+                          </button>
+                        </div>
                         {formErrors.plan && (
-                          <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
+                          <p className="text-red-400 text-sm mt-2 flex items-center gap-1">
                             <span>⚠️</span>
                             {formErrors.plan}
                           </p>
@@ -527,52 +544,61 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       </div>
 
                       <div>
-                        <div className="text-white mb-2 block text-base font-semibold">
+                        <div className="text-white mb-4 block text-base font-semibold">
                           ¿Cómo ha sido tu experiencia hasta ahora?
                         </div>
-                        <Select
-                          value={formData.experiencia}
-                          onValueChange={(value) => handleInputChange('experiencia', value)}
-                          disabled={isSubmitting}
-                        >
-                          <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700/80 h-14 text-base">
-                            <SelectValue placeholder="Comparte tu experiencia con nosotros" />
-                          </SelectTrigger>
-                          <SelectContent
-                            className="bg-zinc-900 border-2 border-[#FA7B21]/50 z-[10000] shadow-2xl shadow-orange-900/50"
-                            position="item-aligned"
-                            align="start"
-                            sideOffset={8}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {/* Excelente */}
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('experiencia', 'excelente')}
+                            disabled={isSubmitting}
+                            className={`p-4 rounded-lg border-2 transition-all ${
+                              formData.experiencia === 'excelente'
+                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                            }`}
                           >
-                            <SelectItem
-                              value="excelente"
-                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md text-base"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
-                                <span>Excelente</span>
-                              </span>
-                            </SelectItem>
-                            <SelectItem
-                              value="buena"
-                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md text-base"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="text-yellow-400">⭐⭐⭐⭐</span>
-                                <span>Buena</span>
-                              </span>
-                            </SelectItem>
-                            <SelectItem
-                              value="podria-mejorar"
-                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md text-base"
-                            >
-                              <span className="flex items-center gap-2">
-                                <span className="text-yellow-400">⭐⭐⭐</span>
-                                <span>Podría mejorar</span>
-                              </span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</span>
+                              <span className="text-white text-sm font-medium">Excelente</span>
+                            </div>
+                          </button>
+
+                          {/* Buena */}
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('experiencia', 'buena')}
+                            disabled={isSubmitting}
+                            className={`p-4 rounded-lg border-2 transition-all ${
+                              formData.experiencia === 'buena'
+                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-yellow-400 text-xl">⭐⭐⭐⭐</span>
+                              <span className="text-white text-sm font-medium">Buena</span>
+                            </div>
+                          </button>
+
+                          {/* Podría mejorar */}
+                          <button
+                            type="button"
+                            onClick={() => handleInputChange('experiencia', 'podria-mejorar')}
+                            disabled={isSubmitting}
+                            className={`p-4 rounded-lg border-2 transition-all ${
+                              formData.experiencia === 'podria-mejorar'
+                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center gap-2">
+                              <span className="text-yellow-400 text-xl">⭐⭐⭐</span>
+                              <span className="text-white text-sm font-medium">Podría mejorar</span>
+                            </div>
+                          </button>
+                        </div>
                       </div>
 
                       <div>
