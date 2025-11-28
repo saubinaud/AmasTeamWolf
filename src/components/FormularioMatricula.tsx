@@ -198,16 +198,16 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
 
   // ========== DESCUENTOS FAMILIARES ==========
   "HERMANOS10": {
-    tipo: "descuento_porcentaje",
-    valor: 10,
-    descripcion: "10% descuento por inscribir hermanos",
+    tipo: "descuento_dinero",
+    valor: 100,
+    descripcion: "100 soles de descuento por 1 hermano",
     programasAplicables: ["1mes", "full"],
     activo: true
   },
   "HERMANOS15": {
-    tipo: "descuento_porcentaje",
-    valor: 15,
-    descripcion: "15% descuento por inscribir 2+ hermanos",
+    tipo: "descuento_dinero",
+    valor: 150,
+    descripcion: "150 soles de descuento por inscribir 2+ hermanos",
     programasAplicables: ["1mes", "full"],
     activo: true
   },

@@ -8,6 +8,7 @@ import { GraduacionPage } from './components/GraduacionPage';
 import { LandingConversion } from './components/LandingConversion';
 import { InicioSesionPage } from './components/InicioSesionPage';
 import { PerfilPage } from './components/PerfilPage';
+import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
 import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
@@ -36,7 +37,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad'>('home');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -93,6 +94,8 @@ function App() {
         setCurrentPage('inicio-sesion');
       } else if (path === '/perfil') {
         setCurrentPage('perfil');
+      } else if (path === '/renovacion-navidad' || path === '/renueva-diciembre') {
+        setCurrentPage('renovacion-navidad');
       } else {
         setCurrentPage('home');
       }
@@ -120,7 +123,7 @@ function App() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
-    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil');
+    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad');
     // Update URL
     const path = page === 'home' ? '/' : `/${page}`;
     window.history.pushState({}, '', path);
@@ -209,18 +212,18 @@ function App() {
   if (currentPage === 'registro-3-meses') {
     return (
       <>
-        <SEO 
+        <SEO
           title="Matrícula Programa 3 Meses - AMAS Team Wolf"
           description="Matricúlate en el Programa Full de 3 meses de AMAS Team Wolf. Incluye uniforme, graduación y certificado oficial. ¡Inscripción abierta!"
           keywords="matrícula taekwondo, inscripción artes marciales Lima, programa 3 meses AMAS, registro taekwondo niños"
           url="https://amasteamwolf.com/registro-3-meses"
         />
-        <RegistroTresMesesPage 
+        <RegistroTresMesesPage
           onNavigateHome={() => handleNavigate('home')}
           onSuccess={handleRegistrationSuccess}
         />
         <Toaster theme="dark" position="bottom-right" />
-        
+
         {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
@@ -240,18 +243,18 @@ function App() {
   if (currentPage === 'registro-mensual') {
     return (
       <>
-        <SEO 
+        <SEO
           title="Matrícula Programa Mensual - AMAS Team Wolf"
           description="Matricúlate en el Programa Mensual de AMAS Team Wolf. Ideal para comenzar con flexibilidad. ¡Inscripción abierta!"
           keywords="matrícula mensual taekwondo, programa 1 mes artes marciales, inscripción flexible AMAS"
           url="https://amasteamwolf.com/registro-mensual"
         />
-        <RegistroMensualPage 
+        <RegistroMensualPage
           onNavigateHome={() => handleNavigate('home')}
           onSuccess={handleRegistrationSuccess}
         />
         <Toaster theme="dark" position="bottom-right" />
-        
+
         {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
@@ -271,18 +274,18 @@ function App() {
   if (currentPage === 'registro-leadership') {
     return (
       <>
-        <SEO 
+        <SEO
           title="Matrícula Leadership Wolf - AMAS Team Wolf"
           description="Inscríbete en el programa Leadership Wolf. Formación integral en liderazgo y artes marciales. Incluye 12 hitos de desarrollo personal."
           keywords="matrícula leadership wolf, inscripción programa liderazgo, leadership AMAS Team Wolf"
           url="https://amasteamwolf.com/registro-leadership"
         />
-        <RegistroLeadershipPage 
+        <RegistroLeadershipPage
           onNavigateHome={() => handleNavigate('home')}
           onSuccess={handleRegistrationSuccess}
         />
         <Toaster theme="dark" position="bottom-right" />
-        
+
         {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
@@ -352,6 +355,22 @@ function App() {
     );
   }
 
+  // Render Renovacion Navidad Page
+  if (currentPage === 'renovacion-navidad') {
+    return (
+      <>
+        <SEO
+          title="Renovación Navidad - AMAS Team Wolf"
+          description="Renueva tu membresía anticipadamente y recibe beneficios exclusivos de temporada navideña. Días extras y promociones especiales para familias AMAS."
+          keywords="renovación navidad, renovación anticipada, promoción navideña AMAS, beneficios navidad taekwondo"
+          url="https://amasteamwolf.com/renovacion-navidad"
+        />
+        <RenovacionNavidadPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
   // Render Leadership Page
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -371,7 +390,7 @@ function App() {
             background: 'radial-gradient(circle at 80% 50%, rgba(252, 169, 41, 0.2) 0%, transparent 60%)'
           }}
         />
-        <div 
+        <div
           className="absolute inset-0 opacity-5"
           style={{
             backgroundImage: `
@@ -384,29 +403,29 @@ function App() {
       </div>
 
       <div className="relative z-10">
-        <HeaderMain 
+        <HeaderMain
           onNavigate={handleNavigate}
           onOpenMatricula={handleEnrollProgram}
           onCartClick={() => setIsCartOpen(true)}
           cartItemsCount={cartItemsCount}
         />
-        
+
         <NetworkStatusIndicator />
-        
+
         <HeroLeadershipFinal />
-        
+
         <Suspense fallback={<LoadingSection />}>
           <LeadershipTimeline />
         </Suspense>
-        
+
         <Suspense fallback={<LoadingSection />}>
           <ImplementsSection />
         </Suspense>
 
         {/* Program Enrollment Card */}
         <LeadershipProgramCard onEnrollClick={handleEnrollProgram} />
-        
-        <FooterMain 
+
+        <FooterMain
           onNavigate={handleNavigate}
           onOpenMatricula={handleEnrollProgram}
         />
