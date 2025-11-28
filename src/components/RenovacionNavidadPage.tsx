@@ -449,7 +449,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       </div>
 
                       <div>
-                        <div className="text-white mb-2 block text-base">
+                        <div className="text-white mb-2 block text-base font-semibold">
                           ¿Qué plan te interesa renovar? <span className="text-red-500">*</span>
                         </div>
                         <Select
@@ -458,27 +458,55 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           disabled={isSubmitting}
                         >
                           <SelectTrigger
-                            className={`bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12 ${
+                            className={`bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700/80 h-14 text-base ${
                               formErrors.plan ? 'border-red-500' : ''
                             }`}
                           >
                             <SelectValue placeholder="Selecciona tu plan de renovación" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]" position="popper" sideOffset={5}>
-                            <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
-                              <div className="flex flex-col gap-1">
-                                <span className="font-semibold text-[#FCA929]">3 meses - S/ 869</span>
-                                <span className="text-sm text-white/70">+ 15 días de regalo 🎁</span>
+                          <SelectContent
+                            className="bg-zinc-900 border-2 border-[#FA7B21]/50 z-[10000] shadow-2xl shadow-orange-900/50"
+                            position="item-aligned"
+                            align="start"
+                            sideOffset={8}
+                          >
+                            <SelectItem
+                              value="3-meses"
+                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-6 px-4 my-1 rounded-md"
+                            >
+                              <div className="flex flex-col gap-2">
+                                <span className="font-bold text-[#FCA929] text-lg">Plan 3 Meses - S/ 869</span>
+                                <span className="text-sm text-white/80 flex items-center gap-2">
+                                  <Gift className="w-4 h-4" />
+                                  + 15 días de regalo
+                                </span>
                               </div>
                             </SelectItem>
-                            <SelectItem value="6-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
-                              <div className="flex flex-col gap-1">
-                                <span className="font-semibold text-[#FCA929]">6 meses - S/ 1,620</span>
-                                <span className="text-sm text-white/70">+ 30 días de regalo + implemento de regalo 🎁✨</span>
+
+                            <SelectItem
+                              value="6-meses"
+                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-6 px-4 my-1 rounded-md"
+                            >
+                              <div className="flex flex-col gap-2">
+                                <span className="font-bold text-[#FCA929] text-lg">Plan 6 Meses - S/ 1,620</span>
+                                <div className="space-y-1">
+                                  <span className="text-sm text-white/80 flex items-center gap-2">
+                                    <Gift className="w-4 h-4" />
+                                    + 30 días de regalo
+                                  </span>
+                                  <span className="text-sm text-green-400 flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4" />
+                                    + Implemento de regalo
+                                  </span>
+                                </div>
                               </div>
                             </SelectItem>
-                            <SelectItem value="no-decido" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-3">
-                              <span className="text-white/80">Aún no decido</span>
+
+                            <SelectItem
+                              value="no-decido"
+                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md"
+                            >
+                              <span className="text-white/70">Aún no decido</span>
                             </SelectItem>
                           </SelectContent>
                         </Select>
@@ -499,7 +527,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       </div>
 
                       <div>
-                        <div className="text-white mb-2 block text-base">
+                        <div className="text-white mb-2 block text-base font-semibold">
                           ¿Cómo ha sido tu experiencia hasta ahora?
                         </div>
                         <Select
@@ -507,13 +535,42 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           onValueChange={(value) => handleInputChange('experiencia', value)}
                           disabled={isSubmitting}
                         >
-                          <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12">
+                          <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700/80 h-14 text-base">
                             <SelectValue placeholder="Comparte tu experiencia con nosotros" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]" position="popper" sideOffset={5}>
-                            <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐⭐ Excelente</SelectItem>
-                            <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐ Buena</SelectItem>
-                            <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐ Podría mejorar</SelectItem>
+                          <SelectContent
+                            className="bg-zinc-900 border-2 border-[#FA7B21]/50 z-[10000] shadow-2xl shadow-orange-900/50"
+                            position="item-aligned"
+                            align="start"
+                            sideOffset={8}
+                          >
+                            <SelectItem
+                              value="excelente"
+                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md text-base"
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                                <span>Excelente</span>
+                              </span>
+                            </SelectItem>
+                            <SelectItem
+                              value="buena"
+                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md text-base"
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className="text-yellow-400">⭐⭐⭐⭐</span>
+                                <span>Buena</span>
+                              </span>
+                            </SelectItem>
+                            <SelectItem
+                              value="podria-mejorar"
+                              className="text-white hover:bg-zinc-800 focus:bg-zinc-800 data-[state=checked]:bg-[#FA7B21]/20 cursor-pointer py-4 px-4 my-1 rounded-md text-base"
+                            >
+                              <span className="flex items-center gap-2">
+                                <span className="text-yellow-400">⭐⭐⭐</span>
+                                <span>Podría mejorar</span>
+                              </span>
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
