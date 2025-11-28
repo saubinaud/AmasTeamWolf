@@ -3,6 +3,7 @@ import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
@@ -351,133 +352,188 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-zinc-900/90 backdrop-blur-sm border-2 border-[#FA7B21]/50 rounded-xl p-6 sm:p-8 shadow-2xl shadow-red-900/30">
-                  <div className="space-y-6">
-                    {/* Nombre del padre */}
-                    <div>
-                      <label htmlFor="nombre_padre" className="block text-white font-medium mb-2">
-                        Nombre del padre/tutor <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        id="nombre_padre"
-                        type="text"
-                        placeholder="Ej: María González"
-                        value={formData.nombre_padre}
-                        onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                        className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-white/40 ${
-                          formErrors.nombre_padre ? 'border-red-500' : ''
-                        }`}
-                        disabled={isSubmitting}
-                      />
-                      {formErrors.nombre_padre && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.nombre_padre}</p>
-                      )}
-                    </div>
+                <form onSubmit={handleSubmit} className="bg-zinc-900/95 backdrop-blur-sm border-2 border-[#FA7B21]/50 rounded-xl p-6 sm:p-8 shadow-2xl shadow-red-900/30">
+                  <div className="space-y-8">
+                    {/* Datos del Tutor */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div className="text-2xl">👤</div>
+                        <h3 className="text-[#FCA929] font-bold text-lg">Datos del Tutor</h3>
+                      </div>
 
-                    {/* Nombre del alumno */}
-                    <div>
-                      <label htmlFor="nombre_alumno" className="block text-white font-medium mb-2">
-                        Nombre del alumno <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        id="nombre_alumno"
-                        type="text"
-                        placeholder="Ej: Sebastián González"
-                        value={formData.nombre_alumno}
-                        onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                        className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-white/40 ${
-                          formErrors.nombre_alumno ? 'border-red-500' : ''
-                        }`}
-                        disabled={isSubmitting}
-                      />
-                      {formErrors.nombre_alumno && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.nombre_alumno}</p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                      <label htmlFor="email" className="block text-white font-medium mb-2">
-                        Correo electrónico <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Ej: maria.gonzalez@gmail.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        className={`bg-zinc-800 border-zinc-700 text-white placeholder:text-white/40 ${
-                          formErrors.email ? 'border-red-500' : ''
-                        }`}
-                        disabled={isSubmitting}
-                      />
-                      {formErrors.email && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
-                      )}
-                    </div>
-
-                    {/* Plan */}
-                    <div>
-                      <label htmlFor="plan" className="block text-white font-medium mb-2">
-                        ¿Qué plan te interesa renovar? <span className="text-red-500">*</span>
-                      </label>
-                      <Select
-                        value={formData.plan}
-                        onValueChange={(value) => handleInputChange('plan', value)}
-                        disabled={isSubmitting}
-                      >
-                        <SelectTrigger
-                          className={`bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 ${
-                            formErrors.plan ? 'border-red-500' : ''
+                      <div>
+                        <Label htmlFor="nombre_padre" className="text-white mb-2 block text-base">
+                          Nombre del padre/tutor <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="nombre_padre"
+                          type="text"
+                          placeholder="Ej: María González"
+                          value={formData.nombre_padre}
+                          onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 scroll-mt-32 ${
+                            formErrors.nombre_padre ? 'border-red-500' : ''
                           }`}
+                          disabled={isSubmitting}
+                          style={{ scrollMarginTop: '128px' }}
+                        />
+                        {formErrors.nombre_padre && (
+                          <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
+                            <span>⚠️</span>
+                            {formErrors.nombre_padre}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <Label htmlFor="email" className="text-white mb-2 block text-base">
+                          Correo electrónico <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Ej: maria.gonzalez@gmail.com"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 scroll-mt-32 ${
+                            formErrors.email ? 'border-red-500' : ''
+                          }`}
+                          disabled={isSubmitting}
+                          style={{ scrollMarginTop: '128px' }}
+                        />
+                        {formErrors.email && (
+                          <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
+                            <span>⚠️</span>
+                            {formErrors.email}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Datos del Alumno */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div className="text-2xl">🥋</div>
+                        <h3 className="text-[#FCA929] font-bold text-lg">Datos del Alumno</h3>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="nombre_alumno" className="text-white mb-2 block text-base">
+                          Nombre del alumno <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="nombre_alumno"
+                          type="text"
+                          placeholder="Ej: Sebastián González"
+                          value={formData.nombre_alumno}
+                          onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 scroll-mt-32 ${
+                            formErrors.nombre_alumno ? 'border-red-500' : ''
+                          }`}
+                          disabled={isSubmitting}
+                          style={{ scrollMarginTop: '128px' }}
+                        />
+                        {formErrors.nombre_alumno && (
+                          <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
+                            <span>⚠️</span>
+                            {formErrors.nombre_alumno}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Plan de Renovación */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div className="text-2xl">🎁</div>
+                        <h3 className="text-[#FCA929] font-bold text-lg">Plan de Renovación</h3>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="plan" className="text-white mb-2 block text-base">
+                          ¿Qué plan te interesa renovar? <span className="text-red-500">*</span>
+                        </Label>
+                        <Select
+                          value={formData.plan}
+                          onValueChange={(value) => handleInputChange('plan', value)}
+                          disabled={isSubmitting}
                         >
-                          <SelectValue placeholder="Selecciona una opción" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700">
-                          <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">3 meses</SelectItem>
-                          <SelectItem value="6-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">6 meses</SelectItem>
-                          <SelectItem value="no-decido" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Aún no decido</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {formErrors.plan && (
-                        <p className="text-red-500 text-sm mt-1">{formErrors.plan}</p>
-                      )}
+                          <SelectTrigger
+                            className={`bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12 scroll-mt-32 ${
+                              formErrors.plan ? 'border-red-500' : ''
+                            }`}
+                            style={{ scrollMarginTop: '128px' }}
+                          >
+                            <SelectValue placeholder="Selecciona tu plan de renovación" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-800 border-zinc-700">
+                            <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-semibold text-[#FCA929]">3 meses - S/ 869</span>
+                                <span className="text-sm text-white/70">+ 15 días de regalo 🎁</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="6-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-semibold text-[#FCA929]">6 meses - S/ 1,620</span>
+                                <span className="text-sm text-white/70">+ 30 días de regalo + implemento de regalo 🎁✨</span>
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="no-decido" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-3">
+                              <span className="text-white/80">Aún no decido</span>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {formErrors.plan && (
+                          <p className="text-red-400 text-sm mt-1.5 flex items-center gap-1">
+                            <span>⚠️</span>
+                            {formErrors.plan}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Experiencia (opcional) */}
-                    <div>
-                      <label htmlFor="experiencia" className="block text-white font-medium mb-2">
-                        ¿Cómo ha sido tu experiencia hasta ahora?
-                      </label>
-                      <Select
-                        value={formData.experiencia}
-                        onValueChange={(value) => handleInputChange('experiencia', value)}
-                        disabled={isSubmitting}
-                      >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
-                          <SelectValue placeholder="Selecciona una opción" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-zinc-800 border-zinc-700">
-                          <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Excelente</SelectItem>
-                          <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Buena</SelectItem>
-                          <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Podría mejorar</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {/* Feedback Opcional */}
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div className="text-2xl">💭</div>
+                        <h3 className="text-[#FCA929] font-bold text-lg">Tu Opinión (Opcional)</h3>
+                      </div>
 
-                    {/* Comentario (opcional) */}
-                    <div>
-                      <label htmlFor="comentario" className="block text-white font-medium mb-2">
-                        ¿Tienes algún comentario o sugerencia de mejora?
-                      </label>
-                      <Textarea
-                        id="comentario"
-                        placeholder="Escribe aquí si hay algo que quieras compartir con nosotros..."
-                        value={formData.comentario}
-                        onChange={(e) => handleInputChange('comentario', e.target.value)}
-                        className="bg-zinc-800 border-zinc-700 text-white placeholder:text-white/40 min-h-[100px]"
-                        disabled={isSubmitting}
-                      />
+                      <div>
+                        <Label htmlFor="experiencia" className="text-white mb-2 block text-base">
+                          ¿Cómo ha sido tu experiencia hasta ahora?
+                        </Label>
+                        <Select
+                          value={formData.experiencia}
+                          onValueChange={(value) => handleInputChange('experiencia', value)}
+                          disabled={isSubmitting}
+                        >
+                          <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12 scroll-mt-32" style={{ scrollMarginTop: '128px' }}>
+                            <SelectValue placeholder="Comparte tu experiencia con nosotros" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-zinc-800 border-zinc-700">
+                            <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐⭐ Excelente</SelectItem>
+                            <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐ Buena</SelectItem>
+                            <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐ Podría mejorar</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label htmlFor="comentario" className="text-white mb-2 block text-base">
+                          ¿Tienes algún comentario o sugerencia de mejora?
+                        </Label>
+                        <Textarea
+                          id="comentario"
+                          placeholder="Escribe aquí si hay algo que quieras compartir con nosotros..."
+                          value={formData.comentario}
+                          onChange={(e) => handleInputChange('comentario', e.target.value)}
+                          className="bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 min-h-[120px] scroll-mt-32"
+                          disabled={isSubmitting}
+                          style={{ scrollMarginTop: '128px' }}
+                        />
+                      </div>
                     </div>
 
                     {/* Submit Button */}
