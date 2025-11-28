@@ -105,8 +105,86 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ email, password }),
       });
 
+      if (!response.ok) {
+        return {
+          success: false,
+          message: 'Email o contraseña incorrectos',
+        };
+      }
+
       const result = await response.json();
 
+      // Verificar si es un array (formato Google Sheets)
+      if (Array.isArray(result) && result.length > 0) {
+        const userData = result[0];
+
+        // Verificar contraseña
+        if (!userData.Contraseña) {
+          return {
+            success: true,
+            requirePasswordChange: true,
+          };
+        }
+
+        if (userData.Contraseña !== password) {
+          return {
+            success: false,
+            message: 'Contraseña incorrecta',
+          };
+        }
+
+        // Transformar datos de Google Sheets al formato de la app
+        const token = btoa(`${email}:${Date.now()}`); // Token simple basado en email y timestamp
+        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2 horas
+
+        const transformedData: UserData = {
+          familia: {
+            email: userData.Correo || email,
+            nombreFamilia: userData['Nombre del padre'] || 'Familia',
+            telefono: userData['Teléfono'] || userData['Celular'] || 'No registrado',
+            estudiante: userData['Nombre del alumno'] || 'Estudiante',
+          },
+          matricula: {
+            programa: userData.Programa || 'Programa',
+            fechaInicio: userData['Fecha inicio'] || '',
+            fechaFin: userData['Fecha final'] || '',
+            estado: 'activa',
+          },
+          clases: userData['Días tentativos']
+            ? [{ horario: userData['Días tentativos'] }]
+            : [],
+          pagos: {
+            proximoPago: {
+              fecha: userData['Próxima fecha de pago'] || userData['Fecha final'] || '',
+              monto: Number(userData['Precio a pagar']) || Number(userData['Precio del programa']) || 0,
+              estado: 'pendiente',
+            },
+            ultimoPago: userData['Último pago']
+              ? {
+                  fecha: userData['Último pago'],
+                  monto: Number(userData['Último monto pagado']) || 0,
+                  estado: 'pagado',
+                }
+              : undefined,
+          },
+          notificaciones: [],
+        };
+
+        const session: AuthSession = {
+          token,
+          expiresAt,
+          data: transformedData,
+        };
+
+        localStorage.setItem('amasUserSession', JSON.stringify(session));
+        setIsAuthenticated(true);
+        setUser(transformedData);
+        setToken(token);
+
+        return { success: true };
+      }
+
+      // Formato estándar (si n8n lo envía estructurado)
       if (result.success) {
         // Verificar si requiere cambio de contraseña (primera vez)
         if (result.requirePasswordChange) {
@@ -184,25 +262,70 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!token) return;
 
     try {
+      // Extraer email del token para hacer el refresh
+      const sessionData = localStorage.getItem('amasUserSession');
+      if (!sessionData) return;
+
+      const session: AuthSession = JSON.parse(sessionData);
+      const email = session.data.familia.email;
+
       const response = await fetch(`${API_BASE_URL}/refresh-usuarios`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ email }),
       });
+
+      if (!response.ok) return;
 
       const result = await response.json();
 
-      if (result.success) {
-        // Actualizar solo los datos, mantener el token actual
-        const sessionData = localStorage.getItem('amasUserSession');
-        if (sessionData) {
-          const session: AuthSession = JSON.parse(sessionData);
-          session.data = result.data;
-          localStorage.setItem('amasUserSession', JSON.stringify(session));
-          setUser(result.data);
-        }
+      // Verificar si es un array (formato Google Sheets)
+      if (Array.isArray(result) && result.length > 0) {
+        const userData = result[0];
+
+        const transformedData: UserData = {
+          familia: {
+            email: userData.Correo || email,
+            nombreFamilia: userData['Nombre del padre'] || 'Familia',
+            telefono: userData['Teléfono'] || userData['Celular'] || 'No registrado',
+            estudiante: userData['Nombre del alumno'] || 'Estudiante',
+          },
+          matricula: {
+            programa: userData.Programa || 'Programa',
+            fechaInicio: userData['Fecha inicio'] || '',
+            fechaFin: userData['Fecha final'] || '',
+            estado: 'activa',
+          },
+          clases: userData['Días tentativos']
+            ? [{ horario: userData['Días tentativos'] }]
+            : [],
+          pagos: {
+            proximoPago: {
+              fecha: userData['Próxima fecha de pago'] || userData['Fecha final'] || '',
+              monto: Number(userData['Precio a pagar']) || Number(userData['Precio del programa']) || 0,
+              estado: 'pendiente',
+            },
+            ultimoPago: userData['Último pago']
+              ? {
+                  fecha: userData['Último pago'],
+                  monto: Number(userData['Último monto pagado']) || 0,
+                  estado: 'pagado',
+                }
+              : undefined,
+          },
+          notificaciones: [],
+        };
+
+        session.data = transformedData;
+        localStorage.setItem('amasUserSession', JSON.stringify(session));
+        setUser(transformedData);
+      } else if (result.success) {
+        // Formato estándar
+        session.data = result.data;
+        localStorage.setItem('amasUserSession', JSON.stringify(session));
+        setUser(result.data);
       }
     } catch (error) {
       console.error('Error al refrescar datos:', error);
