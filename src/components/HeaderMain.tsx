@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, ShoppingCart } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingCart, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderMainProps {
   onNavigate: (page: string) => void;
@@ -11,6 +12,7 @@ interface HeaderMainProps {
 }
 
 export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: HeaderMainProps) {
+  const { isAuthenticated, user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProgramasOpen, setIsProgramasOpen] = useState(false);
@@ -201,7 +203,44 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 </Badge>
               )}
             </Button>
-            
+
+            {/* Botón de perfil/login */}
+            {isAuthenticated ? (
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onNavigate('perfil');
+                }}
+                variant="ghost"
+                className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10 text-sm lg:text-base"
+                style={{
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                <User className="h-5 w-5 mr-2" />
+                Mi Perfil
+              </Button>
+            ) : (
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onNavigate('inicio-sesion');
+                }}
+                variant="ghost"
+                className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10 text-sm lg:text-base"
+                style={{
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                <User className="h-5 w-5 mr-2" />
+                Acceso
+              </Button>
+            )}
+
             <Button
               type="button"
               onClick={(e) => {
@@ -354,6 +393,23 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             >
               Graduaciones
             </button>
+
+            {/* Botón de perfil/login móvil */}
+            <button
+              onClick={() => {
+                onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion');
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base flex items-center gap-2"
+              style={{
+                touchAction: 'manipulation',
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              <User className="h-5 w-5" />
+              {isAuthenticated ? 'Mi Perfil' : 'Acceso'}
+            </button>
+
             <div className="pt-4 border-t border-white/10">
               <Button
                 type="button"
