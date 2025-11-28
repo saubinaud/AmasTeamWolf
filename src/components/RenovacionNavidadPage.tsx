@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { toast } from 'sonner';
-import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, MessageSquare } from 'lucide-react';
+import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, MessageSquare, Clock, Users, Sparkles } from 'lucide-react';
 
 interface RenovacionNavidadPageProps {
   onNavigate: (page: string) => void;
@@ -251,9 +251,9 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                 <Button
                   onClick={scrollToForm}
                   size="lg"
-                  className="bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white font-bold px-8 py-6 text-lg shadow-xl shadow-red-900/30"
+                  className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-bold px-10 py-7 text-xl shadow-2xl shadow-red-600/50 border-2 border-red-400/30 animate-pulse hover:animate-none transition-all hover:scale-105"
                 >
-                  Renovar ahora
+                  🎁 Renovar ahora
                 </Button>
               </div>
             </section>
@@ -324,7 +324,24 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
             {/* Form Section */}
             <section id="formulario-renovacion" className="py-16 px-4">
               <div className="container mx-auto max-w-2xl">
+                {/* Urgency badges */}
+                <div className="flex flex-wrap justify-center gap-3 mb-6">
+                  <div className="bg-red-600/20 border border-red-500/50 rounded-full px-4 py-2 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-red-400" />
+                    <span className="text-red-300 text-sm font-semibold">Promoción válida hasta fin de mes</span>
+                  </div>
+                  <div className="bg-yellow-600/20 border border-yellow-500/50 rounded-full px-4 py-2 flex items-center gap-2">
+                    <Users className="w-4 h-4 text-yellow-400" />
+                    <span className="text-yellow-300 text-sm font-semibold">Cupos limitados</span>
+                  </div>
+                </div>
+
                 <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600/30 to-orange-600/30 border border-red-500/40 rounded-lg px-4 py-2 mb-4">
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                    <span className="text-yellow-300 font-bold text-sm uppercase tracking-wide">Acceso Exclusivo</span>
+                    <Sparkles className="w-5 h-5 text-yellow-400" />
+                  </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                     Separa tu cupo ahora
                   </h2>
@@ -334,7 +351,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 sm:p-8">
+                <form onSubmit={handleSubmit} className="bg-zinc-900/90 backdrop-blur-sm border-2 border-[#FA7B21]/50 rounded-xl p-6 sm:p-8 shadow-2xl shadow-red-900/30">
                   <div className="space-y-6">
                     {/* Nombre del padre */}
                     <div>
@@ -410,16 +427,16 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                         disabled={isSubmitting}
                       >
                         <SelectTrigger
-                          className={`bg-zinc-800 border-zinc-700 text-white ${
+                          className={`bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 ${
                             formErrors.plan ? 'border-red-500' : ''
                           }`}
                         >
                           <SelectValue placeholder="Selecciona una opción" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="3-meses">3 meses</SelectItem>
-                          <SelectItem value="6-meses">6 meses</SelectItem>
-                          <SelectItem value="no-decido">Aún no decido</SelectItem>
+                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                          <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">3 meses</SelectItem>
+                          <SelectItem value="6-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">6 meses</SelectItem>
+                          <SelectItem value="no-decido" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Aún no decido</SelectItem>
                         </SelectContent>
                       </Select>
                       {formErrors.plan && (
@@ -437,13 +454,13 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                         onValueChange={(value) => handleInputChange('experiencia', value)}
                         disabled={isSubmitting}
                       >
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white">
+                        <SelectTrigger className="bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700">
                           <SelectValue placeholder="Selecciona una opción" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="excelente">Excelente</SelectItem>
-                          <SelectItem value="buena">Buena</SelectItem>
-                          <SelectItem value="podria-mejorar">Podría mejorar</SelectItem>
+                        <SelectContent className="bg-zinc-800 border-zinc-700">
+                          <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Excelente</SelectItem>
+                          <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Buena</SelectItem>
+                          <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">Podría mejorar</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -466,10 +483,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-red-700 to-yellow-600 hover:from-red-800 hover:to-yellow-700 text-white font-bold py-6 text-lg shadow-xl shadow-red-900/30"
+                      className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-bold py-7 text-xl shadow-2xl shadow-red-600/50 border-2 border-red-400/30 hover:scale-105 transition-all"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? 'Enviando...' : 'Asegurar mi renovación'}
+                      {isSubmitting ? '⏳ Enviando...' : '🎁 Asegurar mi renovación'}
                     </Button>
 
                     {/* Legal text */}
