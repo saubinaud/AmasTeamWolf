@@ -28,25 +28,8 @@ interface PerfilPageProps {
 }
 
 export function PerfilPage({ onNavigate }: PerfilPageProps) {
-  // 1. OBTENER LOS DATOS CRUDOS
-  const { user, logout, refreshUserData, isAuthenticated } = useAuth() as any;
+  const { user, logout, refreshUserData, isAuthenticated } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // ========== DEBUG - AGREGAR ESTOS LOGS ==========
-  console.log("=== DEBUG PERFIL ===");
-  console.log("user raw:", user);
-  console.log("user type:", typeof user);
-  console.log("isArray:", Array.isArray(user));
-  // ================================================
-
-  // 2. EXTRAER LOS DATOS DEL ARRAY (SOLUCIÓN AL PROBLEMA DE CARGA)
-  const userData = user && Array.isArray(user) ? user[0] : user;
-
-  // ========== DEBUG - MÁS LOGS ==========
-  console.log("userData final:", userData);
-  console.log("Nombre del alumno:", userData?.["Nombre del alumno"]);
-  console.log("====================");
-  // ======================================
 
   // Redirección si no hay sesión
   useEffect(() => {
@@ -67,8 +50,8 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     onNavigate('home');
   };
 
-  // 3. PANTALLA DE CARGA (Si userData es null o undefined)
-  if (!userData) {
+  // PANTALLA DE CARGA
+  if (!user) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -79,7 +62,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     );
   }
 
-  // 4. HELPERS VISUALES SEGÚN EL JSON
+  // HELPER VISUAL SEGÚN EL ESTADO DE PAGO
   const getStatusColor = (estado: string) => {
     const status = estado?.toLowerCase() || '';
     if (status.includes('pagado') || status.includes('activo')) return 'bg-green-500/10 text-green-400 border-green-500/50';
@@ -117,34 +100,34 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         {/* --- TARJETA PRINCIPAL (DATOS DEL ALUMNO) --- */}
         <Card className="bg-zinc-900/80 backdrop-blur-md border-zinc-800 overflow-hidden mb-6 relative">
           {/* Barra lateral de color según estado */}
-          <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${userData["Estado"] === 'Pagado' ? 'bg-green-500' : 'bg-[#FA7B21]'}`} />
+          <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${user.pagos.estadoPago === 'Pagado' ? 'bg-green-500' : 'bg-[#FA7B21]'}`} />
           
           <CardContent className="p-6 sm:p-8">
             <div className="flex flex-col md:flex-row justify-between items-start gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="outline" className="border-[#FA7B21]/50 text-[#FA7B21] bg-[#FA7B21]/10 px-3">
-                    {userData["Categoría"]}
+                    {user.estudiante.categoria}
                   </Badge>
                   <span className="text-xs text-zinc-500 uppercase tracking-widest font-bold">
-                    {userData["Programa"]}
+                    {user.matricula.programa}
                   </span>
                 </div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
-                  {userData["Nombre del alumno"]}
+                  {user.estudiante.nombre}
                 </h1>
                 <p className="text-zinc-400 flex items-center gap-2 text-sm">
                    <User className="h-4 w-4" />
-                   DNI: {userData["DNI del alumno"]}
+                   DNI: {user.estudiante.dni}
                 </p>
               </div>
 
               {/* Estado Badge Grande */}
-              <div className={`px-5 py-2 rounded-xl border flex flex-col items-center justify-center min-w-[140px] ${getStatusColor(userData["Estado"])}`}>
+              <div className={`px-5 py-2 rounded-xl border flex flex-col items-center justify-center min-w-[140px] ${getStatusColor(user.pagos.estadoPago)}`}>
                  <span className="text-xs font-bold uppercase tracking-wider opacity-80">Estado</span>
                  <span className="text-lg font-bold flex items-center gap-2">
-                    {userData["Estado"] === 'Pagado' && <CheckCircle2 className="h-4 w-4" />}
-                    {userData["Estado"]}
+                    {user.pagos.estadoPago === 'Pagado' && <CheckCircle2 className="h-4 w-4" />}
+                    {user.pagos.estadoPago}
                  </span>
               </div>
             </div>
@@ -153,19 +136,19 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10">
                <div>
                   <p className="text-xs text-zinc-500 uppercase">Inicio</p>
-                  <p className="text-white font-medium">{userData["Fecha inicio"]}</p>
+                  <p className="text-white font-medium">{user.matricula.fechaInicio}</p>
                </div>
                <div>
                   <p className="text-xs text-zinc-500 uppercase">Fin</p>
-                  <p className="text-white font-medium">{userData["Fecha final"]}</p>
+                  <p className="text-white font-medium">{user.matricula.fechaFin}</p>
                </div>
                <div>
                   <p className="text-xs text-zinc-500 uppercase">Días</p>
-                  <p className="text-white font-medium truncate">{userData["Días tentativos"]}</p>
+                  <p className="text-white font-medium truncate">{user.clases[0]?.horario || 'No definido'}</p>
                </div>
                <div>
                   <p className="text-xs text-zinc-500 uppercase">Tallas</p>
-                  <p className="text-white font-medium text-sm">U: {userData["Talla uniforme"]} / P: {userData["Talla Polo"]}</p>
+                  <p className="text-white font-medium text-sm">U: {user.estudiante.tallaUniforme} / P: {user.estudiante.tallaPolo}</p>
                </div>
             </div>
           </CardContent>
@@ -195,14 +178,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                    </div>
                    {/* Fecha arriba del mensaje */}
                    <Badge variant="outline" className="border-[#FA7B21]/40 text-white bg-black/40">
-                      {userData["Fecha"]}
+                      {user.mensaje.fecha}
                    </Badge>
                 </CardHeader>
                 <CardContent className="pt-4">
-                   {userData["Mensaje"] ? (
+                   {user.mensaje.contenido ? (
                      <div className="bg-black/40 p-5 rounded-xl border border-white/5">
                         <p className="text-zinc-100 whitespace-pre-wrap leading-relaxed text-base">
-                           {userData["Mensaje"]}
+                           {user.mensaje.contenido}
                         </p>
                      </div>
                    ) : (
@@ -225,24 +208,24 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-1">
                          <p className="text-xs text-zinc-500 uppercase">Nombre Completo</p>
-                         <p className="text-white text-lg font-medium">{userData["Nombre del padre"]}</p>
+                         <p className="text-white text-lg font-medium">{user.familia.nombreFamilia}</p>
                       </div>
                       <div className="space-y-1">
                          <p className="text-xs text-zinc-500 uppercase">DNI</p>
-                         <p className="text-white font-mono bg-white/5 inline-block px-2 py-1 rounded">{userData["DNI del padre"]}</p>
+                         <p className="text-white font-mono bg-white/5 inline-block px-2 py-1 rounded">{user.familia.dniFamilia}</p>
                       </div>
                       <div className="space-y-1">
                          <p className="text-xs text-zinc-500 uppercase">Correo Electrónico</p>
                          <div className="flex items-center gap-2 text-white">
                             <Mail className="h-4 w-4 text-[#FA7B21]" />
-                            {userData["Correo"]}
+                            {user.familia.email}
                          </div>
                       </div>
                       <div className="space-y-1">
                          <p className="text-xs text-zinc-500 uppercase">Dirección</p>
                          <div className="flex items-center gap-2 text-white">
                             <MapPin className="h-4 w-4 text-[#FA7B21]" />
-                            {userData["Dirección"]}
+                            {user.familia.direccion}
                          </div>
                       </div>
                    </div>
@@ -264,23 +247,19 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       <div className="w-full space-y-3 flex-1">
                          <div className="flex justify-between items-center border-b border-white/5 pb-2">
                             <span className="text-zinc-400">Precio Regular</span>
-                            <span className="text-white">S/ {userData["Precio del programa"]}</span>
+                            <span className="text-white">S/ {user.pagos.precioPrograma}</span>
                          </div>
                          <div className="flex justify-between items-center border-b border-white/5 pb-2">
                             <span className="text-zinc-400">Descuento</span>
-                            <span className="text-green-400 font-bold">- S/ {userData["Descuento"]}</span>
-                         </div>
-                         <div className="flex justify-between items-center">
-                            <span className="text-zinc-400 text-sm">Contraseña Web</span>
-                            <span className="font-mono text-[#FA7B21] bg-[#FA7B21]/10 px-2 rounded text-sm">{userData["Contraseña"]}</span>
+                            <span className="text-green-400 font-bold">- S/ {user.pagos.descuento}</span>
                          </div>
                       </div>
                       
                       <div className="bg-black p-6 rounded-xl border border-zinc-800 text-center w-full md:w-auto min-w-[200px]">
                          <p className="text-zinc-500 text-xs uppercase font-bold mb-2">Total a Pagar</p>
-                         <p className="text-4xl font-bold text-white mb-2">S/ {userData["Precio a pagar"]}</p>
-                         <Badge className={getStatusColor(userData["Estado"])}>
-                            {userData["Estado"]?.toUpperCase()}
+                         <p className="text-4xl font-bold text-white mb-2">S/ {user.pagos.precioAPagar}</p>
+                         <Badge className={getStatusColor(user.pagos.estadoPago)}>
+                            {user.pagos.estadoPago?.toUpperCase()}
                          </Badge>
                       </div>
                    </div>
