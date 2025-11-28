@@ -410,7 +410,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         {/* Acciones rápidas */}
         <div className={`mt-6 transition-all duration-700 delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <a 
-            href="https://wa.me/51999999999" 
+            href="https://wa.me/‪51989717412‬" 
             target="_blank" 
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-emerald-500/20"
