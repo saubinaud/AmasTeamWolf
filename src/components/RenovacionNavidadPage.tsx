@@ -465,7 +465,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           >
                             <SelectValue placeholder="Selecciona tu plan de renovación" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700">
+                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]">
                             <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
                               <div className="flex flex-col gap-1">
                                 <span className="font-semibold text-[#FCA929]">3 meses - S/ 869</span>
@@ -511,7 +511,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12">
                             <SelectValue placeholder="Comparte tu experiencia con nosotros" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700">
+                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]">
                             <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐⭐ Excelente</SelectItem>
                             <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐ Buena</SelectItem>
                             <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐ Podría mejorar</SelectItem>
