@@ -123,7 +123,9 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
   const scrollToForm = () => {
     const formElement = document.getElementById('formulario-renovacion');
     if (formElement) {
-      formElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const yOffset = -100; // Offset para el header
+      const y = formElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
@@ -447,9 +449,9 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       </div>
 
                       <div>
-                        <Label htmlFor="plan" className="text-white mb-2 block text-base">
+                        <div className="text-white mb-2 block text-base">
                           ¿Qué plan te interesa renovar? <span className="text-red-500">*</span>
-                        </Label>
+                        </div>
                         <Select
                           value={formData.plan}
                           onValueChange={(value) => handleInputChange('plan', value)}
@@ -462,7 +464,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           >
                             <SelectValue placeholder="Selecciona tu plan de renovación" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]">
+                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]" position="popper" sideOffset={5}>
                             <SelectItem value="3-meses" className="text-white hover:bg-zinc-700 focus:bg-zinc-700 py-4">
                               <div className="flex flex-col gap-1">
                                 <span className="font-semibold text-[#FCA929]">3 meses - S/ 869</span>
@@ -497,9 +499,9 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                       </div>
 
                       <div>
-                        <Label htmlFor="experiencia" className="text-white mb-2 block text-base">
+                        <div className="text-white mb-2 block text-base">
                           ¿Cómo ha sido tu experiencia hasta ahora?
-                        </Label>
+                        </div>
                         <Select
                           value={formData.experiencia}
                           onValueChange={(value) => handleInputChange('experiencia', value)}
@@ -508,7 +510,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12">
                             <SelectValue placeholder="Comparte tu experiencia con nosotros" />
                           </SelectTrigger>
-                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]">
+                          <SelectContent className="bg-zinc-800 border-zinc-700 z-[10000]" position="popper" sideOffset={5}>
                             <SelectItem value="excelente" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐⭐ Excelente</SelectItem>
                             <SelectItem value="buena" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐⭐ Buena</SelectItem>
                             <SelectItem value="podria-mejorar" className="text-white hover:bg-zinc-700 focus:bg-zinc-700">⭐⭐⭐ Podría mejorar</SelectItem>
