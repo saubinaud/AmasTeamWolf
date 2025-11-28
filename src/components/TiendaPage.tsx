@@ -5,7 +5,7 @@ import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import { OptimizedImage } from './OptimizedImage';
 import { useDataSaver } from '../hooks/useNetworkStatus';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { allStoreProducts, Implement } from '../data/implements';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
