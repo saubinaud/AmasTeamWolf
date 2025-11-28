@@ -5,6 +5,10 @@ interface FamiliaData {
   nombreFamilia: string;
   telefono: string;
   estudiante: string;
+  // NUEVOS CAMPOS
+  dniFamilia: string;
+  dniEstudiante: string;
+  direccion: string;
 }
 
 interface Matricula {
@@ -12,6 +16,9 @@ interface Matricula {
   fechaInicio: string;
   fechaFin: string;
   estado: string;
+  // NUEVOS CAMPOS
+  categoria: string;
+  fechaInscripcion: string;
 }
 
 interface Clase {
@@ -27,6 +34,11 @@ interface PagoData {
 interface Pagos {
   proximoPago: PagoData;
   ultimoPago?: PagoData;
+  // NUEVOS CAMPOS
+  precioPrograma: number;
+  precioAPagar: number;
+  descuento: number;
+  estadoPago: string;
 }
 
 interface Notificacion {
@@ -37,12 +49,32 @@ interface Notificacion {
   leido: boolean;
 }
 
+// NUEVA INTERFACE - Datos del estudiante
+interface EstudianteData {
+  nombre: string;
+  dni: string;
+  fechaNacimiento: string;
+  edad: string;
+  categoria: string;
+  tallaUniforme: string;
+  tallaPolo: string;
+}
+
+// NUEVA INTERFACE - Mensaje/Comunicado
+interface MensajeData {
+  fecha: string;
+  contenido: string;
+}
+
 interface UserData {
   familia: FamiliaData;
   matricula: Matricula;
   clases: Clase[];
   pagos: Pagos;
   notificaciones: Notificacion[];
+  // NUEVOS CAMPOS
+  estudiante: EstudianteData;
+  mensaje: MensajeData;
 }
 
 interface AuthSession {
@@ -64,6 +96,69 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API_BASE_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook';
+
+// FUNCIÓN HELPER para transformar datos de Google Sheets
+function transformUserData(userData: any, email: string): UserData {
+  return {
+    familia: {
+      email: userData.Correo || email,
+      nombreFamilia: userData['Nombre del padre'] || 'Familia',
+      telefono: userData['Teléfono'] || userData['Celular'] || 'No registrado',
+      estudiante: userData['Nombre del alumno'] || 'Estudiante',
+      // NUEVOS
+      dniFamilia: String(userData['DNI del padre'] || ''),
+      dniEstudiante: String(userData['DNI del alumno'] || ''),
+      direccion: userData['Dirección'] || '',
+    },
+    matricula: {
+      programa: userData.Programa || 'Programa',
+      fechaInicio: userData['Fecha inicio'] || '',
+      fechaFin: userData['Fecha final'] || '',
+      estado: 'activa',
+      // NUEVOS
+      categoria: userData['Categoría'] || '',
+      fechaInscripcion: userData['Fecha inscripción'] || '',
+    },
+    clases: userData['Días tentativos']
+      ? [{ horario: userData['Días tentativos'] }]
+      : [],
+    pagos: {
+      proximoPago: {
+        fecha: userData['Próxima fecha de pago'] || userData['Fecha final'] || '',
+        monto: Number(userData['Precio a pagar']) || Number(userData['Precio del programa']) || 0,
+        estado: 'pendiente',
+      },
+      ultimoPago: userData['Último pago']
+        ? {
+            fecha: userData['Último pago'],
+            monto: Number(userData['Último monto pagado']) || 0,
+            estado: 'pagado',
+          }
+        : undefined,
+      // NUEVOS
+      precioPrograma: Number(userData['Precio del programa']) || 0,
+      precioAPagar: Number(userData['Precio a pagar']) || 0,
+      descuento: Number(userData['Descuento']) || 0,
+      estadoPago: userData['Estado'] || 'Pendiente',
+    },
+    notificaciones: [],
+    // NUEVOS - Datos del estudiante
+    estudiante: {
+      nombre: userData['Nombre del alumno'] || '',
+      dni: String(userData['DNI del alumno'] || ''),
+      fechaNacimiento: userData['Fecha de nacimiento alumno'] || '',
+      edad: userData['Edad del alumno'] || '',
+      categoria: userData['Categoría'] || '',
+      tallaUniforme: userData['Talla uniforme'] || '',
+      tallaPolo: userData['Talla Polo'] || '',
+    },
+    // NUEVOS - Mensaje/Comunicado
+    mensaje: {
+      fecha: userData['Fecha'] || '',
+      contenido: userData['Mensaje'] || '',
+    },
+  };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -134,41 +229,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // Transformar datos de Google Sheets al formato de la app
-        const token = btoa(`${email}:${Date.now()}`); // Token simple basado en email y timestamp
-        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2 horas
+        const token = btoa(`${email}:${Date.now()}`);
+        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
-        const transformedData: UserData = {
-          familia: {
-            email: userData.Correo || email,
-            nombreFamilia: userData['Nombre del padre'] || 'Familia',
-            telefono: userData['Teléfono'] || userData['Celular'] || 'No registrado',
-            estudiante: userData['Nombre del alumno'] || 'Estudiante',
-          },
-          matricula: {
-            programa: userData.Programa || 'Programa',
-            fechaInicio: userData['Fecha inicio'] || '',
-            fechaFin: userData['Fecha final'] || '',
-            estado: 'activa',
-          },
-          clases: userData['Días tentativos']
-            ? [{ horario: userData['Días tentativos'] }]
-            : [],
-          pagos: {
-            proximoPago: {
-              fecha: userData['Próxima fecha de pago'] || userData['Fecha final'] || '',
-              monto: Number(userData['Precio a pagar']) || Number(userData['Precio del programa']) || 0,
-              estado: 'pendiente',
-            },
-            ultimoPago: userData['Último pago']
-              ? {
-                  fecha: userData['Último pago'],
-                  monto: Number(userData['Último monto pagado']) || 0,
-                  estado: 'pagado',
-                }
-              : undefined,
-          },
-          notificaciones: [],
-        };
+        const transformedData = transformUserData(userData, email);
 
         const session: AuthSession = {
           token,
@@ -284,39 +348,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Verificar si es un array (formato Google Sheets)
       if (Array.isArray(result) && result.length > 0) {
         const userData = result[0];
-
-        const transformedData: UserData = {
-          familia: {
-            email: userData.Correo || email,
-            nombreFamilia: userData['Nombre del padre'] || 'Familia',
-            telefono: userData['Teléfono'] || userData['Celular'] || 'No registrado',
-            estudiante: userData['Nombre del alumno'] || 'Estudiante',
-          },
-          matricula: {
-            programa: userData.Programa || 'Programa',
-            fechaInicio: userData['Fecha inicio'] || '',
-            fechaFin: userData['Fecha final'] || '',
-            estado: 'activa',
-          },
-          clases: userData['Días tentativos']
-            ? [{ horario: userData['Días tentativos'] }]
-            : [],
-          pagos: {
-            proximoPago: {
-              fecha: userData['Próxima fecha de pago'] || userData['Fecha final'] || '',
-              monto: Number(userData['Precio a pagar']) || Number(userData['Precio del programa']) || 0,
-              estado: 'pendiente',
-            },
-            ultimoPago: userData['Último pago']
-              ? {
-                  fecha: userData['Último pago'],
-                  monto: Number(userData['Último monto pagado']) || 0,
-                  estado: 'pagado',
-                }
-              : undefined,
-          },
-          notificaciones: [],
-        };
+        const transformedData = transformUserData(userData, email);
 
         session.data = transformedData;
         localStorage.setItem('amasUserSession', JSON.stringify(session));
