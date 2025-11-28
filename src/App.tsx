@@ -6,6 +6,7 @@ import { RegistroMensualPage } from './components/RegistroMensualPage';
 import { RegistroLeadershipPage } from './components/RegistroLeadershipPage';
 import { GraduacionPage } from './components/GraduacionPage';
 import { LandingConversion } from './components/LandingConversion';
+import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
 import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
@@ -34,7 +35,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'renovacion-navidad'>('home');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -87,6 +88,8 @@ function App() {
         setCurrentPage('graduacion');
       } else if (path === '/clase-prueba') {
         setCurrentPage('clase-prueba');
+      } else if (path === '/renovacion-navidad' || path === '/renueva-diciembre') {
+        setCurrentPage('renovacion-navidad');
       } else {
         setCurrentPage('home');
       }
@@ -114,7 +117,7 @@ function App() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
-    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba');
+    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'renovacion-navidad');
     // Update URL
     const path = page === 'home' ? '/' : `/${page}`;
     window.history.pushState({}, '', path);
@@ -309,6 +312,22 @@ function App() {
       <>
         <SEO {...seoConfigs.clasePrueba} />
         <LandingConversion onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  // Render Renovacion Navidad Page
+  if (currentPage === 'renovacion-navidad') {
+    return (
+      <>
+        <SEO
+          title="Renovación Navidad - AMAS Team Wolf"
+          description="Renueva tu membresía anticipadamente y recibe beneficios exclusivos de temporada navideña. Días extras y promociones especiales para familias AMAS."
+          keywords="renovación navidad, renovación anticipada, promoción navideña AMAS, beneficios navidad taekwondo"
+          url="https://amasteamwolf.com/renovacion-navidad"
+        />
+        <RenovacionNavidadPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
