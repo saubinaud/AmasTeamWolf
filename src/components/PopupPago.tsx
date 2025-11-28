@@ -2,7 +2,7 @@ import { useState, memo } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
 import { X, QrCode, Building2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 interface CartItem {
   id: string;
