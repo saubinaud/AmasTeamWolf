@@ -194,7 +194,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                   </div>
                   <div className="flex items-start gap-3">
                     <Gift className="w-5 h-5 text-[#FCA929] mt-0.5 flex-shrink-0" />
-                    <span className="text-white/70">Información de tus días extras de diciembre</span>
+                    <span className="text-white/70">Información de tus días de regalo</span>
                   </div>
                 </div>
               </div>
