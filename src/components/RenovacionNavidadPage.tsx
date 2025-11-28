@@ -459,10 +459,9 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           disabled={isSubmitting}
                         >
                           <SelectTrigger
-                            className={`bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12 scroll-mt-32 ${
+                            className={`bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12 ${
                               formErrors.plan ? 'border-red-500' : ''
                             }`}
-                            style={{ scrollMarginTop: '128px' }}
                           >
                             <SelectValue placeholder="Selecciona tu plan de renovación" />
                           </SelectTrigger>
@@ -509,7 +508,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           onValueChange={(value) => handleInputChange('experiencia', value)}
                           disabled={isSubmitting}
                         >
-                          <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12 scroll-mt-32" style={{ scrollMarginTop: '128px' }}>
+                          <SelectTrigger className="bg-zinc-800/80 border-zinc-700 text-white hover:bg-zinc-700 h-12">
                             <SelectValue placeholder="Comparte tu experiencia con nosotros" />
                           </SelectTrigger>
                           <SelectContent className="bg-zinc-800 border-zinc-700">
