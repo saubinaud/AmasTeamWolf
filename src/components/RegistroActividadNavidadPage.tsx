@@ -14,22 +14,43 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- COMPONENTES UI (Botones e Inputs bonitos) ---
+// --- INTERFACES TYPESCRIPT ---
+interface FormData {
+  nombre_padre: string;
+  nombre_alumno: string;
+  email: string;
+  asistencia: 'confirmado' | 'no_asistire' | '';
+  deseo_1: string;
+  deseo_2: string;
+  deseo_3: string;
+  [key: string]: string;
+}
 
-const Label = ({ children, className = "" }) => (
+interface FormErrors {
+  nombre_padre?: string;
+  nombre_alumno?: string;
+  email?: string;
+  asistencia?: string;
+  deseos?: string;
+  [key: string]: string | undefined;
+}
+
+// --- COMPONENTES UI ---
+
+const Label = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <label className={`block text-[#d4af37] text-sm font-bold mb-1 uppercase tracking-wider ${className}`}>
     {children}
   </label>
 );
 
-const Input = ({ className = "", ...props }) => (
+const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
     className={`w-full bg-white/10 border border-[#d4af37]/30 rounded-xl px-4 py-4 text-white placeholder:text-white/40 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base ${className}`}
     {...props}
   />
 );
 
-const Button = ({ children, className = "", disabled, onClick, ...props }) => (
+const Button = ({ children, className = "", disabled, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
   <button 
     onClick={onClick}
     disabled={disabled}
@@ -40,10 +61,10 @@ const Button = ({ children, className = "", disabled, onClick, ...props }) => (
   </button>
 );
 
-// --- PÁGINA PRINCIPAL ---
+// --- PÁGINA PRINCIPAL (LANDING) ---
 
 export default function RegistroActividadNavidadPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     nombre_padre: '',
     nombre_alumno: '',
     email: '',
@@ -55,26 +76,26 @@ export default function RegistroActividadNavidadPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
-  const handleAttendance = (value) => {
+  const handleAttendance = (value: 'confirmado' | 'no_asistire') => {
     setFormData(prev => ({ ...prev, asistencia: value }));
     if (formErrors.asistencia) setFormErrors(prev => ({ ...prev, asistencia: '' }));
   };
 
   const validateForm = () => {
-    const errors = {};
+    const errors: FormErrors = {};
     if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
     if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
     if (!formData.email.trim() || !validateEmail(formData.email)) errors.email = 'Email inválido';
@@ -90,7 +111,7 @@ export default function RegistroActividadNavidadPage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error('Por favor completa los campos requeridos', { position: 'top-center' });
@@ -100,15 +121,32 @@ export default function RegistroActividadNavidadPage() {
     setIsSubmitting(true);
 
     try {
-      // AQUÍ IRÍA LA CONEXIÓN A GOOGLE SHEETS O BASE DE DATOS
-      // Por ahora simulamos una espera de 1.5 segundos
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsSubmitted(true);
-      toast.success('¡Registro enviado con éxito! 🎄', { position: 'top-center' });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // --- ENVÍO DE DATOS AL WEBHOOK REAL ---
+      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/asistencia-evento-navidad', {
+         method: 'POST',
+         headers: { 
+           'Content-Type': 'application/json',
+           // 'Accept': 'application/json' // Opcional, ayuda a veces con ciertos servidores
+         },
+         body: JSON.stringify({ 
+           ...formData, 
+           timestamp: new Date().toISOString(), 
+           source: 'landing_navidad_final' 
+         }),
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+        toast.success('¡Registro enviado con éxito! 🎄', { position: 'top-center' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        // Intentamos leer el error si el servidor devuelve algo
+        console.error("Error respuesta servidor:", response.status, response.statusText);
+        throw new Error('Error en la respuesta del servidor');
+      }
 
     } catch (error) {
+      console.error("Error al enviar:", error);
       toast.error('Error de conexión. Intenta nuevamente.', { position: 'top-center' });
     } finally {
       setIsSubmitting(false);
