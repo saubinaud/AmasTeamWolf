@@ -27,52 +27,32 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Scroll al inicio al cargar
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   const handleAttendance = (value: 'confirmado' | 'no_asistire') => {
     setFormData(prev => ({ ...prev, asistencia: value }));
-    if (formErrors.asistencia) {
-      setFormErrors(prev => ({ ...prev, asistencia: '' }));
-    }
+    if (formErrors.asistencia) setFormErrors(prev => ({ ...prev, asistencia: '' }));
   };
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-
     if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
     if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
+    if (!formData.email.trim() || !validateEmail(formData.email)) errors.email = 'Email inválido';
+    if (!formData.asistencia) errors.asistencia = 'Selecciona una opción';
     
-    if (!formData.email.trim()) {
-      errors.email = 'Requerido';
-    } else if (!validateEmail(formData.email)) {
-      errors.email = 'Email inválido';
-    }
-
-    if (!formData.asistencia) {
-      errors.asistencia = 'Por favor selecciona una opción';
-    }
-
-    // Validación condicional: Si confirma, pedimos al menos 1 deseo
-    if (formData.asistencia === 'confirmado') {
-      if (!formData.deseo_1 && !formData.deseo_2 && !formData.deseo_3) {
-        errors.deseos = 'Por favor agrega al menos un deseo para el intercambio';
-        toast.error('¡Ayuda a Santa! Escribe al menos una opción de regalo.');
-      }
+    if (formData.asistencia === 'confirmado' && (!formData.deseo_1 && !formData.deseo_2 && !formData.deseo_3)) {
+      errors.deseos = 'Agrega al menos un deseo';
+      toast.error('¡Ayuda a Santa! Escribe al menos un deseo.');
     }
 
     setFormErrors(errors);
@@ -81,38 +61,29 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
-      toast.error('Por favor completa los campos obligatorios');
+      toast.error('Completa los campos obligatorios');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const webhookData = {
-        ...formData,
-        timestamp: new Date().toISOString(),
-        source: 'landing_navidad_v2'
-      };
-
-      // Webhook actualizado
       const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/asistencia-evento-navidad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookData),
+        body: JSON.stringify({ ...formData, timestamp: new Date().toISOString(), source: 'landing_navidad_v2' }),
       });
 
       if (response.ok) {
         setIsSubmitted(true);
-        toast.success('¡Registro enviado con éxito! 🎄');
+        toast.success('¡Registro exitoso! 🎄');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         throw new Error('Error al enviar');
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Hubo un error de conexión. Intenta nuevamente.');
+      toast.error('Error de conexión. Intenta nuevamente.');
     } finally {
       setIsSubmitting(false);
     }
