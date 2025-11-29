@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
 import { 
-  Gift, CheckCircle, Mail, User, Sparkles, PartyPopper, 
-  XCircle, CalendarHeart, Frown, Send, Loader2
+  Gift, CheckCircle, PartyPopper, 
+  XCircle, CalendarHeart, Frown, Send, Loader2, User, Sparkles, Mail
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,18 +35,17 @@ interface FormErrors {
   [key: string]: string | undefined;
 }
 
-// --- COMPONENTES UI LOCALES ---
-// Mantenemos estos aquí para que el formulario tenga su estilo propio sin depender de ./ui/button externos por ahora
+// --- COMPONENTES UI LOCALES (Estilos personalizados navideños) ---
 
 const Label = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <label className={`block text-[#d4af37] text-sm font-bold mb-1 uppercase tracking-wider ${className}`}>
+  <label className={`block text-[#d4af37] text-xs md:text-sm font-bold mb-2 uppercase tracking-widest ${className}`}>
     {children}
   </label>
 );
 
 const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    className={`w-full bg-white/10 border border-[#d4af37]/30 rounded-xl px-4 py-4 text-white placeholder:text-white/40 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base ${className}`}
+    className={`w-full bg-black/40 border border-[#d4af37]/30 rounded-xl px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37]/50 transition-all text-base backdrop-blur-sm ${className}`}
     {...props}
   />
 );
@@ -79,7 +78,6 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
-  // Scroll al inicio al cargar
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -152,7 +150,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden font-sans selection:bg-[#d4af37] selection:text-black bg-[#021a0a] text-white">
+    <div className="min-h-screen relative flex flex-col font-sans selection:bg-[#d4af37] selection:text-black bg-[#021a0a] text-white">
       <Toaster position="top-center" richColors />
       
       {/* Estilos CSS Nieve */}
@@ -179,11 +177,12 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-            opacity: 0.5 
+            opacity: 0.6 // Aumenté un poco la opacidad para que se vea más el fondo
           }} 
         />
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/80 backdrop-blur-[1px]" />
         
+        {/* Nieve */}
         {[...Array(30)].map((_, i) => (
           <div
             key={i}
@@ -201,7 +200,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         ))}
       </div>
 
-      {/* --- CONTENEDOR PRINCIPAL (z-10 para estar sobre el fondo) --- */}
+      {/* --- CONTENEDOR PRINCIPAL (z-10) --- */}
       <div className="relative z-10 flex flex-col min-h-screen">
         
         {/* HEADER */}
@@ -213,57 +212,57 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         />
 
         {/* CONTENIDO SCROLLABLE */}
-        <main className="flex-grow flex flex-col items-center justify-center px-4 py-12 md:py-20 relative">
+        <main className="flex-grow flex flex-col items-center justify-start px-4 pt-12 pb-32">
           
-          {/* TITULAR (z-20) */}
-          <div className="text-center mb-8 max-w-2xl mx-auto mt-4 relative z-20">
+          {/* TITULAR (Mejorado con márgenes y tamaño) */}
+          <div className="text-center mb-10 max-w-3xl mx-auto mt-8 relative z-20">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <div className="inline-block mb-3">
-                <span className="px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-gradient-to-r from-red-700 to-red-900 border border-red-500 text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+              <div className="inline-block mb-4">
+                <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-red-700 to-red-900 border border-red-500 text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(220,38,38,0.6)]">
                   🎅 Evento Fin de Año
                 </span>
               </div>
-              <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-3 leading-tight drop-shadow-2xl font-serif">
+              <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-2xl font-serif">
                 Gran Clausura <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFD700] to-[#B8860B]">Navideña AMAS</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFD700] to-[#B8860B] drop-shadow-sm">Navideña AMAS</span>
               </h1>
               
-              <p className="text-white/90 text-sm md:text-lg font-medium max-w-md mx-auto leading-relaxed drop-shadow-md px-2">
-                Regístrate para la gran actividad navideña, no te la pierdas. Los esperamos a todos.
+              <p className="text-white/80 text-base md:text-xl font-medium max-w-xl mx-auto leading-relaxed px-4">
+                Regístrate para la gran actividad navideña, no te la pierdas. <br className="hidden md:block"/>Los esperamos a todos.
               </p>
             </motion.div>
           </div>
 
-          {/* --- FORMULARIO (z-30) --- */}
-          <div className="w-full max-w-lg relative mb-20 z-30"> 
+          {/* --- FORMULARIO --- */}
+          <div className="w-full max-w-lg relative z-30"> 
             
             {isSubmitted ? (
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-[#fffbf0] border-4 border-[#d4af37] rounded-3xl p-6 md:p-8 text-center shadow-2xl text-[#1a0505]"
+                className="bg-[#fffbf0] border-4 border-[#d4af37] rounded-3xl p-8 text-center shadow-2xl text-[#1a0505]"
               >
                 <div className="mb-6 flex justify-center">
                   {formData.asistencia === 'confirmado' ? (
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-[#165b33] rounded-full flex items-center justify-center shadow-lg animate-bounce text-white">
-                      <PartyPopper className="w-10 h-10 md:w-12 md:h-12" />
+                    <div className="w-24 h-24 bg-[#165b33] rounded-full flex items-center justify-center shadow-lg animate-bounce text-white">
+                      <PartyPopper className="w-12 h-12" />
                     </div>
                   ) : (
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-lg">
-                      <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-gray-500" />
+                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-lg">
+                      <CheckCircle className="w-12 h-12 text-gray-500" />
                     </div>
                   )}
                 </div>
-                <h3 className="text-xl md:text-2xl font-serif font-bold mb-2">¡Gracias por responder!</h3>
-                <p className="text-gray-600 mb-6 text-sm md:text-base">Hemos registrado tu respuesta correctamente.</p>
+                <h3 className="text-2xl font-serif font-bold mb-3">¡Gracias por responder!</h3>
+                <p className="text-gray-600 mb-8">Hemos registrado tu respuesta correctamente.</p>
                 
                 <Button 
                   onClick={() => window.location.reload()}
-                  className="w-full bg-[#d4af37] hover:bg-amber-500 text-black font-bold py-4 rounded-xl shadow-lg touch-manipulation"
+                  className="w-full bg-[#d4af37] hover:bg-amber-500 text-black font-bold py-4 rounded-xl shadow-lg"
                 >
                   Volver al Inicio
                 </Button>
@@ -273,36 +272,37 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                 onSubmit={handleSubmit}
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="bg-black/60 backdrop-blur-md border border-[#d4af37]/50 rounded-3xl p-5 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
+                className="bg-black/50 backdrop-blur-xl border border-[#d4af37]/40 rounded-3xl p-6 md:p-8 shadow-[0_0_60px_rgba(0,0,0,0.6)] relative overflow-hidden"
               >
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
+                {/* Cinta decorativa superior */}
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-red-600 via-[#d4af37] to-red-600" />
 
                 {/* 1. DATOS PERSONALES */}
-                <div className="space-y-4 md:space-y-5 mb-6 md:mb-8">
+                <div className="space-y-5 mb-8 mt-2">
                   <div>
-                    <Label>Nombre del Apoderado <User className="inline w-4 h-4 ml-1"/></Label>
+                    <Label>Nombre del Apoderado <User className="inline w-3 h-3 ml-1 text-[#d4af37]"/></Label>
                     <Input 
                       placeholder="Ej: Juan Pérez" 
                       value={formData.nombre_padre}
                       onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
                       className={formErrors.nombre_padre ? 'border-red-500 bg-red-500/10' : ''}
                     />
-                    {formErrors.nombre_padre && <span className="text-red-400 text-xs mt-1 block">Requerido</span>}
+                    {formErrors.nombre_padre && <span className="text-red-400 text-xs mt-1 font-bold ml-1">• Requerido</span>}
                   </div>
                   
                   <div>
-                    <Label>Nombre del Alumno/a <Sparkles className="inline w-4 h-4 ml-1"/></Label>
+                    <Label>Nombre del Alumno/a <Sparkles className="inline w-3 h-3 ml-1 text-[#d4af37]"/></Label>
                     <Input 
                       placeholder="Ej: Sofía Pérez"
                       value={formData.nombre_alumno}
                       onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
                       className={formErrors.nombre_alumno ? 'border-red-500 bg-red-500/10' : ''}
                     />
-                    {formErrors.nombre_alumno && <span className="text-red-400 text-xs mt-1 block">Requerido</span>}
+                    {formErrors.nombre_alumno && <span className="text-red-400 text-xs mt-1 font-bold ml-1">• Requerido</span>}
                   </div>
 
                   <div>
-                    <Label>Correo Electrónico <Mail className="inline w-4 h-4 ml-1"/></Label>
+                    <Label>Correo Electrónico <Mail className="inline w-3 h-3 ml-1 text-[#d4af37]"/></Label>
                     <Input 
                       type="email"
                       placeholder="correo@ejemplo.com"
@@ -310,50 +310,59 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       className={formErrors.email ? 'border-red-500 bg-red-500/10' : ''}
                     />
-                    {formErrors.email && <span className="text-red-400 text-xs mt-1 block">Email inválido</span>}
+                    {formErrors.email && <span className="text-red-400 text-xs mt-1 font-bold ml-1">• Email inválido</span>}
                   </div>
                 </div>
 
-                {/* 2. ASISTENCIA */}
-                <div className="mb-6">
-                  <Label className="text-center block text-lg mb-4 text-white">¿Asistirán al evento?</Label>
-                  <div className="grid grid-cols-2 gap-3 md:gap-4">
+                {/* 2. ASISTENCIA - Botones con color y vida */}
+                <div className="mb-8">
+                  <Label className="text-center block text-lg mb-4 text-white/90">¿Asistirán al evento?</Label>
+                  <div className="grid grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => handleAttendance('confirmado')}
-                      className={`p-4 md:p-5 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 touch-manipulation ${
+                      className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-300 relative overflow-hidden group ${
                         formData.asistencia === 'confirmado'
-                          ? 'bg-[#d4af37] border-[#d4af37] text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-[1.02]'
-                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:border-[#d4af37]/50 hover:text-white'
+                          ? 'border-[#d4af37] bg-[#d4af37] text-black shadow-[0_0_20px_rgba(212,175,55,0.6)] scale-[1.02]'
+                          : 'border-white/20 bg-white/5 text-white/60 hover:border-[#d4af37] hover:text-white'
                       }`}
                     >
-                      <CalendarHeart className="w-8 h-8 md:w-9 md:h-9" />
-                      <span className="font-bold text-xs md:text-sm uppercase">¡Sí, Vamos!</span>
+                      {/* Fondo gradiente sutil al confirmar */}
+                      {formData.asistencia === 'confirmado' && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#FFD700] to-[#B8860B] opacity-100 -z-10" />
+                      )}
+                      
+                      <CalendarHeart className={`w-8 h-8 ${formData.asistencia === 'confirmado' ? 'text-black' : 'text-gray-400 group-hover:text-[#d4af37]'}`} />
+                      <span className="font-black text-sm md:text-base uppercase tracking-wider">¡Sí, Vamos!</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleAttendance('no_asistire')}
-                      className={`p-4 md:p-5 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 touch-manipulation ${
+                      className={`p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-300 relative overflow-hidden group ${
                         formData.asistencia === 'no_asistire'
-                          ? 'bg-red-900/80 border-red-500 text-white shadow-lg scale-[1.02]'
-                          : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:border-red-400/50 hover:text-white'
+                          ? 'border-red-500 bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.6)] scale-[1.02]'
+                          : 'border-white/20 bg-white/5 text-white/60 hover:border-red-500 hover:text-white'
                       }`}
                     >
-                      <XCircle className="w-8 h-8 md:w-9 md:h-9" />
-                      <span className="font-bold text-xs md:text-sm uppercase">No podré</span>
+                      {formData.asistencia === 'no_asistire' && (
+                        <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-red-800 opacity-100 -z-10" />
+                      )}
+
+                      <XCircle className={`w-8 h-8 ${formData.asistencia === 'no_asistire' ? 'text-white' : 'text-gray-400 group-hover:text-red-500'}`} />
+                      <span className="font-black text-sm md:text-base uppercase tracking-wider">No podré</span>
                     </button>
                   </div>
-                  {formErrors.asistencia && <p className="text-red-400 text-xs text-center mt-2 font-medium">⚠️ Selecciona una opción</p>}
+                  {formErrors.asistencia && <p className="text-red-400 text-xs text-center mt-3 font-bold bg-red-500/10 py-1 rounded">⚠️ Selecciona una opción</p>}
                 </div>
 
                 {/* LÓGICA CONDICIONAL */}
                 <AnimatePresence mode="wait">
                   {formData.asistencia === 'no_asistire' && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
+                      initial={{ opacity: 0, height: 0, y: 10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: 10 }}
                       className="overflow-hidden"
                     >
                       <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center mb-6">
@@ -361,8 +370,8 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                           <Frown className="w-8 h-8 text-amber-400" />
                         </div>
                         <p className="text-white/80 text-sm leading-relaxed">
-                          ¡Qué pena! Los extrañaremos mucho. <br/>
-                          <span className="text-[#d4af37] font-medium block mt-2">¡Feliz Navidad! 🎄</span>
+                          ¡Qué pena! Los extrañaremos mucho en la celebración. <br/>
+                          <span className="text-[#d4af37] font-bold block mt-2 text-base">¡Les deseamos una Feliz Navidad! 🎄</span>
                         </p>
                       </div>
                     </motion.div>
@@ -370,21 +379,21 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
 
                   {formData.asistencia === 'confirmado' && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
+                      initial={{ opacity: 0, height: 0, y: 10 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: 10 }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-[#d4af37]/10 border-l-4 border-[#d4af37] p-4 rounded-r-lg mb-4">
+                      <div className="bg-[#d4af37]/10 border-l-4 border-[#d4af37] p-4 rounded-r-lg mb-6">
                         <h4 className="text-[#d4af37] font-bold text-sm uppercase flex items-center gap-2 mb-1">
                           <Gift className="w-4 h-4" /> Misión Intercambio
                         </h4>
-                        <p className="text-white/70 text-xs leading-snug">
-                          Ayuda al "Amigo Secreto" con 3 opciones. <br/><span className="text-white font-bold">Ref. mínima: S/ 40.</span>
+                        <p className="text-white/80 text-xs leading-relaxed">
+                          Ayuda a tu "Amigo Secreto" dándole 3 opciones. <br/><span className="text-white font-bold">Referencia mínima: S/ 40.</span>
                         </p>
                       </div>
 
-                      <div className="space-y-3 mb-6">
+                      <div className="space-y-3 mb-8">
                         {[1, 2, 3].map((num) => (
                           <Input
                             key={num}
@@ -402,11 +411,11 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#d4af37] to-[#b4941f] hover:brightness-110 text-black font-black text-lg py-5 rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] uppercase tracking-widest relative overflow-hidden group touch-manipulation"
+                  className="w-full bg-gradient-to-r from-[#d4af37] via-[#eecf5b] to-[#b4941f] hover:brightness-110 text-black font-black text-lg py-5 rounded-xl shadow-[0_0_25px_rgba(212,175,55,0.4)] uppercase tracking-widest relative overflow-hidden group active:scale-95 transition-all"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
                     {isSubmitting ? (
-                      <>Enviando... <Loader2 className="w-4 h-4 animate-spin ml-2"/></>
+                      <>Enviando... <Loader2 className="w-5 h-5 animate-spin ml-2"/></>
                     ) : (
                       <>ENVIAR RESPUESTA <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                     )}
@@ -424,23 +433,17 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
           onOpenMatricula={() => {}}
         />
 
-        {/* --- LOBO ANIMADO --- */}
-        {/* Móvil: absolute bottom-0 z-0 (Para que quede detrás de todo y al final de la página) */}
+        {/* --- LOBO ANIMADO (Pequeño, Derecha, Fijo) --- */}
         <motion.div
-          initial={{ y: 200 }}
-          animate={{ y: [200, 0, 0, 0, 200] }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            repeatDelay: 5,
-            times: [0, 0.1, 0.8, 0.9, 1]
-          }}
-          className="absolute bottom-0 right-0 md:fixed md:bottom-0 md:right-10 z-0 w-36 md:w-56 pointer-events-none filter drop-shadow-2xl opacity-80 md:opacity-100"
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="fixed bottom-4 right-4 z-[60] w-24 md:w-36 pointer-events-none filter drop-shadow-xl"
         >
           <img
             src="https://res.cloudinary.com/dkoocok3j/image/upload/v1764451372/lobo_sin_fondo_navidad_Mesa_de_trabajo_1_copia_5_r4cl8x.png"
             alt="Lobo Santa"
-            className="w-full h-auto"
+            className="w-full h-auto opacity-90"
           />
         </motion.div>
       </div>
