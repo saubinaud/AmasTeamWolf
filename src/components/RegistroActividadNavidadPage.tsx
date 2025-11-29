@@ -6,6 +6,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
 import { Gift, CheckCircle, Mail, User, Sparkles, PartyPopper, XCircle, CalendarHeart, Star, Trophy } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface RegistroActividadNavidadPageProps {
   onNavigate: (page: string) => void;
@@ -26,52 +27,32 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const validateEmail = (email: string) => {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-  };
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) {
-      setFormErrors(prev => ({ ...prev, [field]: '' }));
-    }
+    if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
   const handleAttendance = (value: 'confirmado' | 'no_asistire') => {
     setFormData(prev => ({ ...prev, asistencia: value }));
-    if (formErrors.asistencia) {
-      setFormErrors(prev => ({ ...prev, asistencia: '' }));
-    }
+    if (formErrors.asistencia) setFormErrors(prev => ({ ...prev, asistencia: '' }));
   };
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-
-    if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido para el ingreso';
-    if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido para el certificado';
+    if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
+    if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
+    if (!formData.email.trim() || !validateEmail(formData.email)) errors.email = 'Email inválido';
+    if (!formData.asistencia) errors.asistencia = 'Selecciona una opción';
     
-    if (!formData.email.trim()) {
-      errors.email = 'Requerido';
-    } else if (!validateEmail(formData.email)) {
-      errors.email = 'Email inválido';
-    }
-
-    if (!formData.asistencia) {
-      errors.asistencia = 'Por favor confirma tu asistencia para continuar';
-    }
-
-    // Si confirma asistencia, validamos deseos para asegurar el intercambio
-    if (formData.asistencia === 'confirmado') {
-      if (!formData.deseo_1 && !formData.deseo_2 && !formData.deseo_3) {
-        errors.deseos = 'Por favor agrega al menos una opción de regalo';
-        toast.error('¡Ayuda a Santa! Escribe al menos un deseo para el intercambio.');
-      }
+    if (formData.asistencia === 'confirmado' && (!formData.deseo_1 && !formData.deseo_2 && !formData.deseo_3)) {
+      errors.deseos = 'Agrega al menos un deseo';
+      toast.error('¡Ayuda a Santa! Escribe al menos un deseo.');
     }
 
     setFormErrors(errors);
@@ -80,61 +61,54 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) {
-      toast.error('Por favor completa los campos requeridos');
-      const firstError = document.querySelector('.text-red-400');
-      firstError?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast.error('Completa los campos obligatorios');
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const webhookData = {
-        ...formData,
-        timestamp: new Date().toISOString(),
-        source: 'landing_navidad_actividad_v2'
-      };
-
-      // WEBHOOK ACTUALIZADO
       const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/asistencia-evento-navidad', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookData),
+        body: JSON.stringify({ ...formData, timestamp: new Date().toISOString(), source: 'landing_navidad_v2' }),
       });
 
       if (response.ok) {
         setIsSubmitted(true);
-        toast.success('¡Registro completado exitosamente!');
+        toast.success('¡Registro exitoso! 🎄');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         throw new Error('Error al enviar');
       }
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Hubo un error de conexión. Intenta nuevamente.');
+      toast.error('Error de conexión. Intenta nuevamente.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-black">
-      {/* --- Background Effects (Navideño Dark Premium) --- */}
+    <div className="min-h-screen bg-[#0f0505] relative overflow-x-hidden font-sans selection:bg-red-500 selection:text-white">
+      
+      {/* --- FONDOS NAVIDEÑOS MÁGICOS --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-[#1a0505] to-black" />
-        {/* Luces navideñas abstractas (Blur) */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FA7B21]/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#2a0a0a] via-[#1a0505] to-black" />
         
-        {/* Patrón sutil de nieve/estrellas */}
-        <div className="absolute inset-0 opacity-10" 
-          style={{
-            backgroundImage: `radial-gradient(white 1px, transparent 1px), radial-gradient(#FA7B21 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
-            backgroundPosition: '0 0, 25px 25px'
-          }} 
+        {/* Luces del árbol (Blur spots) */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-red-600/10 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-amber-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+        </div>
+
+        {/* Nieve cayendo */}
+        <div className="absolute inset-0 opacity-20" 
+             style={{ 
+               backgroundImage: `radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px)`,
+               backgroundSize: '50px 50px',
+               backgroundPosition: '0 0'
+             }} 
         />
       </div>
 
@@ -147,304 +121,225 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         />
 
         {isSubmitted ? (
-          // --- VISTA DE CONFIRMACIÓN (ÉXITO) ---
-          <div className="min-h-[80vh] flex items-center justify-center px-4 py-20">
-            <div className="max-w-lg w-full bg-zinc-900/90 backdrop-blur-xl border border-[#FA7B21]/30 rounded-2xl p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden">
-              {/* Confetti Effect background (simulado) */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#FA7B21]/5 to-transparent pointer-events-none" />
-              
-              <div className="mb-8 relative inline-block">
-                <div className="absolute inset-0 bg-[#FA7B21] blur-2xl opacity-30 rounded-full animate-pulse"></div>
+          // --- CONFIRMACIÓN ---
+          <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="max-w-md w-full bg-gradient-to-b from-[#1a0505] to-black border-2 border-[#d4af37] rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(212,175,55,0.2)] relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-[#d4af37] rounded-tl-3xl opacity-50" />
+              <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-[#d4af37] rounded-br-3xl opacity-50" />
+
+              <div className="mb-6 relative inline-block">
                 {formData.asistencia === 'confirmado' ? (
-                  <div className="w-24 h-24 bg-gradient-to-br from-[#FA7B21] to-red-600 rounded-full flex items-center justify-center mx-auto shadow-lg relative z-10">
-                    <PartyPopper className="w-12 h-12 text-white" />
+                  <div className="w-20 h-20 bg-gradient-to-br from-[#d4af37] to-amber-700 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-amber-500/30">
+                    <PartyPopper className="w-10 h-10 text-white" />
                   </div>
                 ) : (
-                  <div className="w-24 h-24 bg-zinc-800 rounded-full flex items-center justify-center mx-auto shadow-lg relative z-10">
-                    <CheckCircle className="w-12 h-12 text-zinc-400" />
-                  </div>
+                   <CheckCircle className="w-20 h-20 text-zinc-500 mx-auto" />
                 )}
               </div>
 
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4 leading-tight">
-                {formData.asistencia === 'confirmado' 
-                  ? '¡Registro Confirmado!' 
-                  : 'Gracias por avisarnos'}
+              <h2 className="text-2xl sm:text-3xl font-bold text-[#d4af37] mb-4 uppercase tracking-wide">
+                {formData.asistencia === 'confirmado' ? '¡Registro Confirmado!' : 'Gracias por avisar'}
               </h2>
 
-              <p className="text-white/70 mb-8 text-lg leading-relaxed">
+              <p className="text-white/80 mb-8 text-base leading-relaxed">
                 {formData.asistencia === 'confirmado' 
-                  ? <>
-                      Tu lugar en la <span className="text-[#FCA929] font-semibold">Gran Clausura Navideña</span> está asegurado. 
-                      <br/><br/>
-                      <span className="text-sm bg-white/5 py-1 px-3 rounded-full border border-white/10">
-                        📧 Te hemos enviado los detalles por correo
-                      </span>
-                    </>
-                  : 'Lamentamos que no puedas acompañarnos esta vez. ¡Nos vemos en el próximo entrenamiento!'}
+                  ? 'Tu pase para la Gran Clausura Navideña está listo. Revisa tu correo para más detalles.'
+                  : 'Esperamos verte en el próximo evento de la manada.'}
               </p>
 
               <Button
                 onClick={() => onNavigate('home')}
-                className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white px-10 py-7 text-lg w-full rounded-xl shadow-lg shadow-orange-900/20"
+                className="w-full bg-gradient-to-r from-[#d4af37] to-amber-600 hover:from-amber-400 hover:to-amber-700 text-black font-bold py-6 rounded-xl shadow-lg transition-all"
               >
-                Volver al inicio
+                Volver al Inicio
               </Button>
-            </div>
+            </motion.div>
           </div>
         ) : (
-          // --- VISTA DE FORMULARIO (VENTA DEL EVENTO) ---
-          <div className="container mx-auto max-w-3xl px-4 pt-28 pb-20">
-            
-            {/* 1. HERO TEXT: Persuasión emocional */}
-            <div className="text-center mb-12 relative">
-              <div className="inline-flex items-center gap-2 bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-full px-4 py-1.5 mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
-                <Sparkles className="w-4 h-4 text-[#FCA929]" />
-                <span className="text-[#FCA929] text-sm font-bold uppercase tracking-wider">Evento de Fin de Año</span>
-              </div>
+          // --- FORMULARIO ---
+          <div className="container mx-auto max-w-2xl px-4 pt-24 pb-20">
+            <div className="text-center mb-10 relative">
+              <motion.div 
+                initial={{ y: -20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 0.8 }}
+                className="inline-flex items-center gap-2 bg-red-900/30 border border-red-500/30 rounded-full px-5 py-2 mb-6 backdrop-blur-md"
+              >
+                <Sparkles className="w-4 h-4 text-[#d4af37]" />
+                <span className="text-[#d4af37] text-xs font-bold uppercase tracking-widest">Evento Exclusivo 2025</span>
+              </motion.div>
               
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
-                La Gran Clausura <br className="hidden sm:block" />
-                <span className="bg-gradient-to-r from-red-500 via-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">
-                   Navideña AMAS
+              <motion.h1 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight"
+              >
+                Gran Clausura <br />
+                <span className="bg-gradient-to-r from-red-500 via-[#d4af37] to-amber-500 bg-clip-text text-transparent drop-shadow-sm">
+                   Navideña Wolf
                 </span>
-              </h1>
+              </motion.h1>
               
-              <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed mb-8">
-                Más que una fiesta, es el momento de celebrar el esfuerzo, la disciplina y 
-                el crecimiento de tu pequeño lobo en este 2025. 
-                <span className="block mt-2 text-white font-medium">¡No dejes que se pierda esta experiencia inolvidable!</span>
+              <p className="text-base sm:text-lg text-white/70 max-w-lg mx-auto leading-relaxed">
+                Celebra el esfuerzo de todo el año. Premiación, show en vivo y el gran intercambio de regalos.
               </p>
-
-              {/* Benefits Grid (Mini Sales Pitch) */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-8">
-                {[
-                  { icon: <Trophy className="w-5 h-5 text-[#FCA929]" />, text: "Reconocimientos" },
-                  { icon: <Gift className="w-5 h-5 text-[#FCA929]" />, text: "Intercambio" },
-                  { icon: <PartyPopper className="w-5 h-5 text-[#FCA929]" />, text: "Show en Vivo" },
-                  { icon: <Star className="w-5 h-5 text-[#FCA929]" />, text: "Sorpresas" },
-                ].map((item, i) => (
-                  <div key={i} className="bg-white/5 border border-white/10 rounded-lg p-3 flex flex-col items-center justify-center gap-2 text-center">
-                    {item.icon}
-                    <span className="text-white/80 text-sm font-medium">{item.text}</span>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            {/* 2. FORM CARD */}
-            <div className="bg-zinc-900/80 backdrop-blur-xl border-2 border-[#FA7B21]/20 rounded-2xl p-6 sm:p-10 shadow-2xl shadow-orange-900/20 relative">
-              {/* Glow decorativo en la esquina */}
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-[#FA7B21]/20 rounded-full blur-[80px] pointer-events-none" />
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="bg-[#120505]/90 backdrop-blur-xl border border-red-900/50 rounded-3xl overflow-hidden shadow-2xl shadow-red-900/20"
+            >
+              <div className="h-2 w-full bg-gradient-to-r from-red-700 via-[#d4af37] to-red-700" />
 
-              <form onSubmit={handleSubmit} className="space-y-10 relative z-10">
+              <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-8">
                 
-                {/* SECCIÓN 1: DATOS */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 pb-4 border-b border-white/10">
-                    <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">📝</div>
+                <div className="space-y-5">
+                  <h3 className="text-[#d4af37] font-bold text-lg uppercase tracking-wider flex items-center gap-2">
+                    <User className="w-5 h-5" /> Datos del Alumno
+                  </h3>
+                  
+                  <div className="grid gap-5">
                     <div>
-                      <h3 className="text-white font-bold text-xl">Registro de Asistencia</h3>
-                      <p className="text-white/50 text-sm">Asegura el ingreso de tu familia</p>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-6">
-                    <div className="grid sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label htmlFor="nombre_alumno" className="text-white/90 text-base">Nombre del Alumno</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                          <Input
-                            id="nombre_alumno"
-                            placeholder="Ej: Sebastián González"
-                            value={formData.nombre_alumno}
-                            onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                            className={`pl-10 h-12 bg-black/40 border-white/20 text-white focus:border-[#FA7B21] focus:ring-[#FA7B21]/20 ${formErrors.nombre_alumno ? 'border-red-500' : ''}`}
-                          />
-                        </div>
-                        {formErrors.nombre_alumno && <p className="text-red-400 text-sm mt-1">{formErrors.nombre_alumno}</p>}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="nombre_padre" className="text-white/90 text-base">Apoderado Responsable</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                          <Input
-                            id="nombre_padre"
-                            placeholder="Tu nombre completo"
-                            value={formData.nombre_padre}
-                            onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                            className={`pl-10 h-12 bg-black/40 border-white/20 text-white focus:border-[#FA7B21] focus:ring-[#FA7B21]/20 ${formErrors.nombre_padre ? 'border-red-500' : ''}`}
-                          />
-                        </div>
-                        {formErrors.nombre_padre && <p className="text-red-400 text-sm mt-1">{formErrors.nombre_padre}</p>}
-                      </div>
+                      <Label className="text-white/90 mb-2 block">Nombre del Alumno</Label>
+                      <Input
+                        placeholder="Ej: Sebastián González"
+                        value={formData.nombre_alumno}
+                        onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
+                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] rounded-xl ${formErrors.nombre_alumno ? 'border-red-500' : ''}`}
+                      />
+                      {formErrors.nombre_alumno && <p className="text-red-400 text-xs mt-1">{formErrors.nombre_alumno}</p>}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-white/90 text-base">Correo Electrónico</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Para enviarte el pase de ingreso"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange('email', e.target.value)}
-                          className={`pl-10 h-12 bg-black/40 border-white/20 text-white focus:border-[#FA7B21] focus:ring-[#FA7B21]/20 ${formErrors.email ? 'border-red-500' : ''}`}
-                        />
-                      </div>
-                      {formErrors.email && <p className="text-red-400 text-sm mt-1">{formErrors.email}</p>}
+                    <div>
+                      <Label className="text-white/90 mb-2 block">Nombre del Apoderado</Label>
+                      <Input
+                        placeholder="Tu nombre completo"
+                        value={formData.nombre_padre}
+                        onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
+                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] rounded-xl ${formErrors.nombre_padre ? 'border-red-500' : ''}`}
+                      />
+                      {formErrors.nombre_padre && <p className="text-red-400 text-xs mt-1">{formErrors.nombre_padre}</p>}
+                    </div>
+
+                    <div>
+                      <Label className="text-white/90 mb-2 block">Correo Electrónico</Label>
+                      <Input
+                        type="email"
+                        placeholder="Para enviar tu pase"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] rounded-xl ${formErrors.email ? 'border-red-500' : ''}`}
+                      />
+                      {formErrors.email && <p className="text-red-400 text-xs mt-1">{formErrors.email}</p>}
                     </div>
                   </div>
                 </div>
 
-                {/* SECCIÓN 2: DECISIÓN (EL CORAZÓN DE LA VENTA) */}
-                <div className="space-y-6 pt-2">
-                  <div className="text-center mb-2">
-                    <Label className="text-white text-xl font-bold block mb-1">¿Confirmas la asistencia de tu hijo?</Label>
-                    <p className="text-white/50 text-sm">Es importante para organizar los grupos y regalos</p>
-                  </div>
+                <div className="pt-4">
+                  <Label className="text-white text-lg font-bold block text-center mb-6">
+                    ¿Confirmas la asistencia de tu hijo?
+                  </Label>
                   
-                  <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
-                    {/* Botón SÍ - Optimizado para conversión */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => handleAttendance('confirmado')}
-                      className={`relative group p-6 md:p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center justify-center gap-4 overflow-hidden ${
+                      className={`relative p-6 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 group ${
                         formData.asistencia === 'confirmado'
-                          ? 'bg-gradient-to-br from-[#FA7B21]/20 to-red-900/20 border-[#FA7B21] shadow-[0_0_40px_rgba(250,123,33,0.3)] scale-[1.02]'
-                          : 'bg-zinc-800/30 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800/50'
+                          ? 'bg-gradient-to-br from-[#d4af37]/20 to-amber-900/20 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.15)]'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-[#d4af37]/50'
                       }`}
                     >
-                      {/* Efecto de selección */}
-                      {formData.asistencia === 'confirmado' && (
-                        <div className="absolute top-3 right-3 bg-[#FA7B21] text-white rounded-full p-1 animate-in zoom-in duration-300">
-                          <CheckCircle className="w-5 h-5" />
-                        </div>
-                      )}
-                      
-                      <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors shadow-lg ${
-                        formData.asistencia === 'confirmado' 
-                          ? 'bg-gradient-to-br from-[#FA7B21] to-red-500 text-white scale-110' 
-                          : 'bg-zinc-700 text-zinc-400 group-hover:bg-[#FA7B21]/20 group-hover:text-[#FA7B21]'
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                        formData.asistencia === 'confirmado' ? 'bg-[#d4af37] text-black' : 'bg-zinc-800 text-zinc-500'
                       }`}>
-                        <CalendarHeart className="w-8 h-8" />
+                        <CalendarHeart className="w-7 h-7" />
                       </div>
-                      
                       <div className="text-center">
-                        <span className={`block font-bold text-xl mb-1 ${formData.asistencia === 'confirmado' ? 'text-white' : 'text-zinc-300 group-hover:text-white'}`}>
-                          ¡Sí, vamos!
-                        </span>
-                        <span className={`text-sm ${formData.asistencia === 'confirmado' ? 'text-[#FCA929]' : 'text-zinc-500'}`}>
-                          No nos lo perdemos 🐺
-                        </span>
+                        <span className={`block font-bold text-lg ${formData.asistencia === 'confirmado' ? 'text-[#d4af37]' : 'text-white'}`}>¡Sí, vamos!</span>
+                        <span className="text-xs text-white/50">No nos lo perdemos</span>
                       </div>
+                      {formData.asistencia === 'confirmado' && (
+                        <div className="absolute top-3 right-3 text-[#d4af37]"><CheckCircle className="w-6 h-6" /></div>
+                      )}
                     </button>
 
-                    {/* Botón NO - Sutil */}
                     <button
                       type="button"
                       onClick={() => handleAttendance('no_asistire')}
-                      className={`relative group p-6 md:p-8 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center justify-center gap-4 ${
+                      className={`relative p-6 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 group ${
                         formData.asistencia === 'no_asistire'
-                          ? 'bg-red-900/10 border-red-500/50 shadow-none'
-                          : 'bg-zinc-800/30 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/50 grayscale opacity-70 hover:opacity-100'
+                          ? 'bg-red-900/20 border-red-500/50'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'
                       }`}
                     >
-                       <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${
-                        formData.asistencia === 'no_asistire' ? 'bg-red-900/30 text-red-400' : 'bg-zinc-800 text-zinc-500'
+                       <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
+                        formData.asistencia === 'no_asistire' ? 'bg-red-800 text-white' : 'bg-zinc-800 text-zinc-500'
                       }`}>
-                        <XCircle className="w-8 h-8" />
+                        <XCircle className="w-7 h-7" />
                       </div>
                       <div className="text-center">
-                        <span className={`block font-bold text-xl mb-1 ${formData.asistencia === 'no_asistire' ? 'text-red-400' : 'text-zinc-500'}`}>
-                          No podremos asistir
-                        </span>
-                        <span className="text-zinc-600 text-sm">
-                          Una lástima :(
-                        </span>
+                        <span className={`block font-bold text-lg ${formData.asistencia === 'no_asistire' ? 'text-red-400' : 'text-zinc-400'}`}>No asistiré</span>
+                        <span className="text-xs text-zinc-600">Una lástima :(</span>
                       </div>
                     </button>
                   </div>
-                  {formErrors.asistencia && <p className="text-red-400 text-sm text-center animate-pulse">{formErrors.asistencia}</p>}
+                  {formErrors.asistencia && <p className="text-red-400 text-sm text-center mt-2">{formErrors.asistencia}</p>}
                 </div>
 
-                {/* SECCIÓN 3: INTERCAMBIO (EL GANCHO) */}
                 {formData.asistencia === 'confirmado' && (
-                  <div className="space-y-6 pt-4 animate-in fade-in slide-in-from-top-8 duration-700">
-                    
-                    {/* Info Box */}
-                    <div className="bg-gradient-to-r from-red-900/20 to-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-xl p-5 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-                      <div className="w-12 h-12 rounded-full bg-[#FA7B21]/20 flex items-center justify-center text-2xl flex-shrink-0 border border-[#FA7B21]/30">
-                        🎁
-                      </div>
-                      <div>
-                        <h3 className="text-white font-bold text-lg">Misión Secreta: El Intercambio</h3>
-                        <p className="text-white/70 text-sm mt-1">
-                          Para asegurar que todos reciban un regalo increíble, hemos establecido una 
-                          <strong className="text-[#FCA929]"> referencia mínima de S/ 40</strong>. 
-                          Ayúdanos con 3 opciones que le gustarían a tu hijo/a para guiar al "Amigo Secreto".
-                        </p>
-                      </div>
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="space-y-6 pt-6 border-t border-white/10"
+                  >
+                    <div className="bg-gradient-to-r from-[#d4af37]/10 to-transparent border-l-4 border-[#d4af37] p-4 rounded-r-lg">
+                      <h3 className="text-[#d4af37] font-bold text-lg flex items-center gap-2">
+                        <Gift className="w-5 h-5" /> Misión Secreta: El Intercambio
+                      </h3>
+                      <p className="text-white/70 text-sm mt-1">
+                        Ayuda al "Amigo Secreto" con 3 opciones de regalo (Referencia mínima: S/ 40).
+                      </p>
                     </div>
 
-                    <div className="space-y-4 bg-black/20 p-6 rounded-2xl border border-white/5">
-                      <h4 className="text-white font-medium mb-4 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-[#FCA929]" /> Lista de Deseos (Opciones sugeridas)
-                      </h4>
-                      
+                    <div className="space-y-4">
                       {[1, 2, 3].map((num) => (
-                        <div key={num} className="relative">
-                          <Label className="text-white/50 absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium pointer-events-none">
-                            Opción {num}:
-                          </Label>
+                        <div key={num}>
+                          <Label className="text-white/60 mb-1.5 text-sm ml-1">Opción {num}</Label>
                           <Input
-                            placeholder={`Ej: Set de Lego, Pelota de fútbol, Libro de arte...`}
+                            placeholder={`Ej: Set de Lego, Pelota, Libro...`}
                             value={formData[`deseo_${num}` as keyof typeof formData]}
                             onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
-                            className="bg-zinc-800/80 border-zinc-700 text-white h-12 pl-24 focus:border-[#FA7B21] focus:ring-[#FA7B21]/20 transition-all"
+                            className="bg-black/40 border-white/10 text-white h-11 focus:border-[#d4af37] rounded-lg"
                           />
                         </div>
                       ))}
-                      {formErrors.deseos && <p className="text-red-400 text-sm ml-1">{formErrors.deseos}</p>}
+                      {formErrors.deseos && <p className="text-red-400 text-sm">{formErrors.deseos}</p>}
                     </div>
-                  </div>
+                  </motion.div>
                 )}
 
-                {/* Submit Button */}
-                <div className="pt-4">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full h-auto py-6 text-xl font-bold rounded-xl transition-all duration-300 shadow-2xl ${
-                      formData.asistencia === 'confirmado'
-                        ? 'bg-gradient-to-r from-[#FA7B21] via-orange-500 to-[#FCA929] hover:scale-[1.02] shadow-orange-500/20 text-white'
-                        : formData.asistencia === 'no_asistire'
-                        ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                        : 'bg-zinc-800 text-white/50 cursor-not-allowed'
-                    }`}
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Enviando...
-                      </span>
-                    ) : (
-                      formData.asistencia === 'confirmado' ? '🎄 Confirmar y Guardar Cupo' : 'Enviar Respuesta'
-                    )}
-                  </Button>
-                  
-                  {formData.asistencia === 'confirmado' && (
-                    <p className="text-center text-white/30 text-sm mt-4">
-                      Al confirmar, te comprometes a participar en el intercambio de regalos.
-                    </p>
-                  )}
-                </div>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-[#d4af37] to-amber-600 hover:from-amber-400 hover:to-amber-700 text-black font-bold text-lg py-6 rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] mt-4"
+                >
+                  {isSubmitting ? 'Enviando...' : (formData.asistencia === 'confirmado' ? '✨ Confirmar Asistencia' : 'Enviar Respuesta')}
+                </Button>
 
               </form>
-            </div>
+            </motion.div>
+            
+            <p className="text-center text-white/30 text-sm mt-8">
+              AMAS Team Wolf - San Borja <br />
+              ¡La manada te espera!
+            </p>
           </div>
         )}
 
