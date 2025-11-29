@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- COMPONENTES UI ---
+// --- COMPONENTES UI (Botones e Inputs bonitos) ---
 
 const Label = ({ children, className = "" }) => (
   <label className={`block text-[#d4af37] text-sm font-bold mb-1 uppercase tracking-wider ${className}`}>
@@ -80,6 +80,7 @@ export default function RegistroActividadNavidadPage() {
     if (!formData.email.trim() || !validateEmail(formData.email)) errors.email = 'Email inválido';
     if (!formData.asistencia) errors.asistencia = 'Selecciona una opción';
     
+    // Solo validamos deseos si confirma asistencia
     if (formData.asistencia === 'confirmado' && (!formData.deseo_1 && !formData.deseo_2 && !formData.deseo_3)) {
       errors.deseos = 'Escribe al menos un deseo';
       toast.error('🎅 ¡Santa necesita ayuda! Escribe al menos un deseo.', { position: 'top-center' });
@@ -99,7 +100,8 @@ export default function RegistroActividadNavidadPage() {
     setIsSubmitting(true);
 
     try {
-      // Simulación de envío (Aquí iría tu fetch a Google Sheets o base de datos si tienes)
+      // AQUÍ IRÍA LA CONEXIÓN A GOOGLE SHEETS O BASE DE DATOS
+      // Por ahora simulamos una espera de 1.5 segundos
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setIsSubmitted(true);
