@@ -9,6 +9,9 @@ import { LandingConversion } from './components/LandingConversion';
 import { InicioSesionPage } from './components/InicioSesionPage';
 import { PerfilPage } from './components/PerfilPage';
 import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
+// 1. IMPORT NUEVO COMPONENTE
+import { RegistroActividadNavidadPage } from './components/RegistroActividadNavidadPage';
+
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
 import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
@@ -37,7 +40,9 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad'>('home');
+  // 2. AGREGADO EL ESTADO 'registro-actividad-navidad'
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad'>('home');
+  
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -96,6 +101,8 @@ function App() {
         setCurrentPage('perfil');
       } else if (path === '/renovacion-navidad' || path === '/renueva-diciembre') {
         setCurrentPage('renovacion-navidad');
+      } else if (path === '/navidad' || path === '/evento-navidad') { // 3. NUEVA RUTA DETECTADA
+        setCurrentPage('registro-actividad-navidad');
       } else {
         setCurrentPage('home');
       }
@@ -123,9 +130,19 @@ function App() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
-    setCurrentPage(page as 'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad');
-    // Update URL
-    const path = page === 'home' ? '/' : `/${page}`;
+    // Actualizar estado (casting para incluir el nuevo tipo)
+    setCurrentPage(page as any);
+    
+    // Update URL - Lógica mejorada para incluir la nueva ruta amigable
+    let path = '/';
+    if (page === 'home') {
+      path = '/';
+    } else if (page === 'registro-actividad-navidad') {
+      path = '/navidad';
+    } else {
+      path = `/${page}`;
+    }
+    
     window.history.pushState({}, '', path);
   };
 
@@ -133,8 +150,6 @@ function App() {
     // Navegar a la página de registro de Leadership
     handleNavigate('registro-leadership');
   };
-
-
 
   const handleAddToCart = (product: any, variant: string = 'default', quantity: number = 1) => {
     const existingItemIndex = cartItems.findIndex(
@@ -366,6 +381,23 @@ function App() {
           url="https://amasteamwolf.com/renovacion-navidad"
         />
         <RenovacionNavidadPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  // 4. RENDERIZADO DE LA NUEVA PÁGINA
+  if (currentPage === 'registro-actividad-navidad') {
+    return (
+      <>
+        <SEO
+          title="Gran Clausura Navideña - AMAS Team Wolf"
+          description="Celebra con nosotros el cierre del año. Confirma tu asistencia y participa en el intercambio de regalos."
+          keywords="navidad amas team wolf, clausura taekwondo, fiesta navidad academia"
+          url="https://amasteamwolf.com/navidad"
+          image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg"
+        />
+        <RegistroActividadNavidadPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
