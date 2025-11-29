@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
-import { Gift, CheckCircle, Mail, User, Sparkles, PartyPopper, XCircle, CalendarHeart, Star, Trophy } from 'lucide-react';
+import { Gift, CheckCircle, Mail, User, Sparkles, PartyPopper, XCircle, CalendarHeart, Star, Trophy, Snowflake } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface RegistroActividadNavidadPageProps {
@@ -90,24 +90,41 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0505] relative overflow-x-hidden font-sans selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-red-950 relative overflow-x-hidden font-sans selection:bg-amber-500 selection:text-black">
       
-      {/* --- FONDOS NAVIDEÑOS MÁGICOS --- */}
+      {/* --- FONDOS NAVIDEÑOS ÉPICOS --- */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#2a0a0a] via-[#1a0505] to-black" />
+        {/* Imagen de fondo principal (basada en tus referencias) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-40 mix-blend-overlay"
+          style={{
+            // Puedes usar la URL de tu imagen de fondo aquí si la subes, o usar este degradado festivo
+            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1732975640/Gemini_Generated_Image_6_upscayl_2x_digital-art-4x_f82fdd12-156a-425e-ba38-90d643b19785.jpg')`,
+            // Opcional: si no tienes la imagen subida, usa este degradado rojo festivo
+            // background: 'linear-gradient(135deg, #7f1d1d 0%, #991b1b 50%, #dc2626 100%)'
+          }}
+        />
+
+        {/* Capa de color y efectos */}
+        <div className="absolute inset-0 bg-gradient-to-b from-red-900/80 via-red-950/90 to-black" />
         
-        {/* Luces del árbol (Blur spots) */}
+        {/* Luces doradas y rojas (Blur spots animados) */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
-          <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-red-600/10 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-amber-500/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-amber-500/20 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-red-600/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
 
-        {/* Nieve cayendo */}
-        <div className="absolute inset-0 opacity-20" 
+        {/* Nieve cayendo y destellos */}
+        <div className="absolute inset-0 opacity-30" 
              style={{ 
-               backgroundImage: `radial-gradient(circle at 50% 50%, white 2px, transparent 2.5px)`,
-               backgroundSize: '50px 50px',
-               backgroundPosition: '0 0'
+               backgroundImage: `
+                 radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 1px, transparent 1.5px),
+                 radial-gradient(circle at 20% 30%, rgba(255,215,0,0.8) 1px, transparent 1.5px),
+                 radial-gradient(circle at 80% 70%, rgba(255,255,255,0.8) 1px, transparent 1.5px)
+               `,
+               backgroundSize: '60px 60px, 90px 90px, 70px 70px',
+               backgroundPosition: '0 0, 30px 30px, 15px 15px',
+               animation: 'snowfall 20s linear infinite'
              }} 
         />
       </div>
@@ -121,206 +138,228 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         />
 
         {isSubmitted ? (
-          // --- CONFIRMACIÓN ---
+          // --- VISTA DE CONFIRMACIÓN (ESTILO TARJETA DE REGALO) ---
           <div className="min-h-[85vh] flex items-center justify-center px-4 py-12">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="max-w-md w-full bg-gradient-to-b from-[#1a0505] to-black border-2 border-[#d4af37] rounded-3xl p-8 text-center shadow-[0_0_50px_rgba(212,175,55,0.2)] relative overflow-hidden"
+              className="max-w-md w-full bg-gradient-to-b from-red-900 to-red-950 border-4 border-amber-500 rounded-3xl p-8 text-center shadow-[0_0_60px_rgba(251,191,36,0.4)] relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-[#d4af37] rounded-tl-3xl opacity-50" />
-              <div className="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-[#d4af37] rounded-br-3xl opacity-50" />
+              {/* Decoración esquinas doradas y lazos */}
+              <div className="absolute top-0 left-0 w-20 h-20 border-t-4 border-l-4 border-amber-500 rounded-tl-3xl opacity-70" />
+              <div className="absolute bottom-0 right-0 w-20 h-20 border-b-4 border-r-4 border-amber-500 rounded-br-3xl opacity-70" />
+              {/* Lazo superior */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-8 bg-amber-500 rounded-b-lg shadow-lg" />
 
               <div className="mb-6 relative inline-block">
                 {formData.asistencia === 'confirmado' ? (
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#d4af37] to-amber-700 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-amber-500/30">
-                    <PartyPopper className="w-10 h-10 text-white" />
+                  <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-amber-500/50 border-2 border-white/20">
+                    <PartyPopper className="w-12 h-12 text-white" />
                   </div>
                 ) : (
-                   <CheckCircle className="w-20 h-20 text-zinc-500 mx-auto" />
+                   <CheckCircle className="w-24 h-24 text-white/50 mx-auto" />
                 )}
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-[#d4af37] mb-4 uppercase tracking-wide">
+              <h2 className="text-2xl sm:text-3xl font-bold text-amber-400 mb-4 uppercase tracking-wide flex items-center justify-center gap-2">
+                <Sparkles className="w-6 h-6" />
                 {formData.asistencia === 'confirmado' ? '¡Registro Confirmado!' : 'Gracias por avisar'}
+                <Sparkles className="w-6 h-6" />
               </h2>
 
-              <p className="text-white/80 mb-8 text-base leading-relaxed">
+              <p className="text-white/90 mb-8 text-base leading-relaxed font-medium">
                 {formData.asistencia === 'confirmado' 
-                  ? 'Tu pase para la Gran Clausura Navideña está listo. Revisa tu correo para más detalles.'
-                  : 'Esperamos verte en el próximo evento de la manada.'}
+                  ? 'Tu pase para la Gran Clausura Navideña está listo. ¡Prepárate para una noche mágica! Revisa tu correo para más detalles.'
+                  : 'Entendemos. Esperamos verte en el próximo evento de la manada. ¡Felices fiestas!'}
               </p>
 
               <Button
                 onClick={() => onNavigate('home')}
-                className="w-full bg-gradient-to-r from-[#d4af37] to-amber-600 hover:from-amber-400 hover:to-amber-700 text-black font-bold py-6 rounded-xl shadow-lg transition-all"
+                className="w-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black font-bold py-6 rounded-xl shadow-lg shadow-amber-500/20 transition-all border-2 border-amber-300/50"
               >
                 Volver al Inicio
               </Button>
             </motion.div>
           </div>
         ) : (
-          // --- FORMULARIO ---
-          <div className="container mx-auto max-w-2xl px-4 pt-24 pb-20">
-            <div className="text-center mb-10 relative">
+          // --- VISTA DE FORMULARIO (DISEÑO FESTIVO PREMIUM) ---
+          <div className="container mx-auto max-w-2xl px-4 pt-24 pb-20 relative">
+            
+            {/* Elemento Decorativo: Lobo Navideño (Flotante) */}
+            <div className="absolute -top-10 -right-20 w-64 h-64 pointer-events-none opacity-40 hidden md:block">
+              <img src="https://res.cloudinary.com/dkoocok3j/image/upload/v1732975640/Gemini_Generated_Image_7_upscayl_4x_digital-art-4x_85a0d7f9-bab6-4084-bc12-23fcb1ed71b9.jpg" alt="Lobo Navideño" className="w-full h-full object-cover rounded-full blur-sm" />
+            </div>
+
+            {/* Hero Header */}
+            <div className="text-center mb-10 relative z-10">
               <motion.div 
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.8 }}
-                className="inline-flex items-center gap-2 bg-red-900/30 border border-red-500/30 rounded-full px-5 py-2 mb-6 backdrop-blur-md"
+                className="inline-flex items-center gap-2 bg-red-900/50 border-2 border-amber-500/50 rounded-full px-5 py-2 mb-6 backdrop-blur-md shadow-lg shadow-red-900/30"
               >
-                <Sparkles className="w-4 h-4 text-[#d4af37]" />
-                <span className="text-[#d4af37] text-xs font-bold uppercase tracking-widest">Evento Exclusivo 2025</span>
+                <Snowflake className="w-4 h-4 text-amber-400" />
+                <span className="text-amber-400 text-xs font-bold uppercase tracking-widest">Evento Exclusivo 2025</span>
+                <Snowflake className="w-4 h-4 text-amber-400" />
               </motion.div>
               
               <motion.h1 
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight"
+                className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-white mb-6 leading-tight drop-shadow-lg"
               >
                 Gran Clausura <br />
-                <span className="bg-gradient-to-r from-red-500 via-[#d4af37] to-amber-500 bg-clip-text text-transparent drop-shadow-sm">
+                <span className="bg-gradient-to-r from-amber-300 via-amber-500 to-amber-300 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(251,191,36,0.4)]">
                    Navideña Wolf
                 </span>
               </motion.h1>
               
-              <p className="text-base sm:text-lg text-white/70 max-w-lg mx-auto leading-relaxed">
-                Celebra el esfuerzo de todo el año. Premiación, show en vivo y el gran intercambio de regalos.
+              <p className="text-base sm:text-lg text-white/80 max-w-lg mx-auto leading-relaxed font-medium">
+                Celebra el esfuerzo de todo el año en una noche mágica. Premiación, show en vivo y el gran intercambio de regalos.
               </p>
             </div>
 
+            {/* Tarjeta Principal del Formulario (Estilo Regalo) */}
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="bg-[#120505]/90 backdrop-blur-xl border border-red-900/50 rounded-3xl overflow-hidden shadow-2xl shadow-red-900/20"
+              className="bg-gradient-to-b from-red-900/90 to-red-950/95 backdrop-blur-xl border-4 border-amber-500 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(220,38,38,0.3)] relative z-10"
             >
-              <div className="h-2 w-full bg-gradient-to-r from-red-700 via-[#d4af37] to-red-700" />
+              {/* Cinta Decorativa Superior */}
+              <div className="h-3 w-full bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 shadow-md" />
 
               <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-8">
                 
+                {/* SECCIÓN 1: DATOS DEL LOBO */}
                 <div className="space-y-5">
-                  <h3 className="text-[#d4af37] font-bold text-lg uppercase tracking-wider flex items-center gap-2">
-                    <User className="w-5 h-5" /> Datos del Alumno
+                  <h3 className="text-amber-400 font-bold text-xl uppercase tracking-wider flex items-center gap-2 border-b-2 border-amber-500/30 pb-3">
+                    <User className="w-6 h-6" /> Datos del Alumno
                   </h3>
                   
                   <div className="grid gap-5">
                     <div>
-                      <Label className="text-white/90 mb-2 block">Nombre del Alumno</Label>
+                      <Label className="text-white/90 mb-2 block font-medium">Nombre del Alumno</Label>
                       <Input
                         placeholder="Ej: Sebastián González"
                         value={formData.nombre_alumno}
                         onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] rounded-xl ${formErrors.nombre_alumno ? 'border-red-500' : ''}`}
+                        className={`bg-red-950/50 border-2 border-red-800/50 text-white h-12 focus:border-amber-500 rounded-xl placeholder:text-white/40 ${formErrors.nombre_alumno ? 'border-red-500' : ''}`}
                       />
-                      {formErrors.nombre_alumno && <p className="text-red-400 text-xs mt-1">{formErrors.nombre_alumno}</p>}
+                      {formErrors.nombre_alumno && <p className="text-red-300 text-xs mt-1 font-medium">{formErrors.nombre_alumno}</p>}
                     </div>
 
                     <div>
-                      <Label className="text-white/90 mb-2 block">Nombre del Apoderado</Label>
+                      <Label className="text-white/90 mb-2 block font-medium">Nombre del Apoderado</Label>
                       <Input
                         placeholder="Tu nombre completo"
                         value={formData.nombre_padre}
                         onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] rounded-xl ${formErrors.nombre_padre ? 'border-red-500' : ''}`}
+                        className={`bg-red-950/50 border-2 border-red-800/50 text-white h-12 focus:border-amber-500 rounded-xl placeholder:text-white/40 ${formErrors.nombre_padre ? 'border-red-500' : ''}`}
                       />
-                      {formErrors.nombre_padre && <p className="text-red-400 text-xs mt-1">{formErrors.nombre_padre}</p>}
+                      {formErrors.nombre_padre && <p className="text-red-300 text-xs mt-1 font-medium">{formErrors.nombre_padre}</p>}
                     </div>
 
                     <div>
-                      <Label className="text-white/90 mb-2 block">Correo Electrónico</Label>
+                      <Label className="text-white/90 mb-2 block font-medium">Correo Electrónico</Label>
                       <Input
                         type="email"
                         placeholder="Para enviar tu pase"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
-                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] rounded-xl ${formErrors.email ? 'border-red-500' : ''}`}
+                        className={`bg-red-950/50 border-2 border-red-800/50 text-white h-12 focus:border-amber-500 rounded-xl placeholder:text-white/40 ${formErrors.email ? 'border-red-500' : ''}`}
                       />
-                      {formErrors.email && <p className="text-red-400 text-xs mt-1">{formErrors.email}</p>}
+                      {formErrors.email && <p className="text-red-300 text-xs mt-1 font-medium">{formErrors.email}</p>}
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-4">
-                  <Label className="text-white text-lg font-bold block text-center mb-6">
+                {/* SECCIÓN 2: CONFIRMACIÓN (Botones Dorados) */}
+                <div className="pt-6">
+                  <Label className="text-white text-xl font-bold block text-center mb-6 flex items-center justify-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-400" />
                     ¿Confirmas la asistencia de tu hijo?
+                    <Sparkles className="w-5 h-5 text-amber-400" />
                   </Label>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <button
                       type="button"
                       onClick={() => handleAttendance('confirmado')}
-                      className={`relative p-6 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 group ${
+                      className={`relative p-6 rounded-2xl border-4 transition-all duration-300 flex flex-col items-center gap-3 group ${
                         formData.asistencia === 'confirmado'
-                          ? 'bg-gradient-to-br from-[#d4af37]/20 to-amber-900/20 border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.15)]'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-[#d4af37]/50'
+                          ? 'bg-gradient-to-br from-amber-500/20 to-red-900/40 border-amber-500 shadow-[0_0_30px_rgba(251,191,36,0.3)] scale-[1.02]'
+                          : 'bg-red-950/30 border-red-800/50 hover:bg-red-900/40 hover:border-amber-500/50'
                       }`}
                     >
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
-                        formData.asistencia === 'confirmado' ? 'bg-[#d4af37] text-black' : 'bg-zinc-800 text-zinc-500'
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors shadow-lg ${
+                        formData.asistencia === 'confirmado' ? 'bg-gradient-to-br from-amber-400 to-amber-600 text-white border-2 border-white/20' : 'bg-red-900/50 text-white/50 border-2 border-white/10'
                       }`}>
-                        <CalendarHeart className="w-7 h-7" />
+                        <CalendarHeart className="w-8 h-8" />
                       </div>
                       <div className="text-center">
-                        <span className={`block font-bold text-lg ${formData.asistencia === 'confirmado' ? 'text-[#d4af37]' : 'text-white'}`}>¡Sí, vamos!</span>
-                        <span className="text-xs text-white/50">No nos lo perdemos</span>
+                        <span className={`block font-bold text-lg ${formData.asistencia === 'confirmado' ? 'text-amber-400' : 'text-white'}`}>¡Sí, vamos!</span>
+                        <span className="text-xs text-white/60 font-medium">No nos lo perdemos</span>
                       </div>
                       {formData.asistencia === 'confirmado' && (
-                        <div className="absolute top-3 right-3 text-[#d4af37]"><CheckCircle className="w-6 h-6" /></div>
+                        <div className="absolute top-3 right-3 text-amber-400 bg-white/10 rounded-full p-1"><CheckCircle className="w-6 h-6" /></div>
                       )}
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleAttendance('no_asistire')}
-                      className={`relative p-6 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3 group ${
+                      className={`relative p-6 rounded-2xl border-4 transition-all duration-300 flex flex-col items-center gap-3 group ${
                         formData.asistencia === 'no_asistire'
-                          ? 'bg-red-900/20 border-red-500/50'
-                          : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-red-500/30'
+                          ? 'bg-red-950/50 border-red-500 shadow-inner'
+                          : 'bg-red-950/30 border-red-800/50 hover:bg-red-900/40 hover:border-red-500/30'
                       }`}
                     >
-                       <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors ${
-                        formData.asistencia === 'no_asistire' ? 'bg-red-800 text-white' : 'bg-zinc-800 text-zinc-500'
+                       <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors shadow-lg ${
+                        formData.asistencia === 'no_asistire' ? 'bg-red-800 text-white border-2 border-white/10' : 'bg-red-900/50 text-white/50 border-2 border-white/10'
                       }`}>
-                        <XCircle className="w-7 h-7" />
+                        <XCircle className="w-8 h-8" />
                       </div>
                       <div className="text-center">
-                        <span className={`block font-bold text-lg ${formData.asistencia === 'no_asistire' ? 'text-red-400' : 'text-zinc-400'}`}>No asistiré</span>
-                        <span className="text-xs text-zinc-600">Una lástima :(</span>
+                        <span className={`block font-bold text-lg ${formData.asistencia === 'no_asistire' ? 'text-red-300' : 'text-white/60'}`}>No asistiré</span>
+                        <span className="text-xs text-white/40 font-medium">Una lástima :(</span>
                       </div>
                     </button>
                   </div>
-                  {formErrors.asistencia && <p className="text-red-400 text-sm text-center mt-2">{formErrors.asistencia}</p>}
+                  {formErrors.asistencia && <p className="text-red-300 text-sm text-center mt-3 font-medium bg-red-900/50 py-1 rounded-lg">{formErrors.asistencia}</p>}
                 </div>
 
+                {/* SECCIÓN 3: INTERCAMBIO (ANIMADA) */}
                 {formData.asistencia === 'confirmado' && (
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="space-y-6 pt-6 border-t border-white/10"
+                    className="space-y-6 pt-8 border-t-2 border-amber-500/30"
                   >
-                    <div className="bg-gradient-to-r from-[#d4af37]/10 to-transparent border-l-4 border-[#d4af37] p-4 rounded-r-lg">
-                      <h3 className="text-[#d4af37] font-bold text-lg flex items-center gap-2">
-                        <Gift className="w-5 h-5" /> Misión Secreta: El Intercambio
+                    <div className="bg-gradient-to-r from-amber-500/20 to-transparent border-l-4 border-amber-500 p-5 rounded-r-xl shadow-sm">
+                      <h3 className="text-amber-400 font-bold text-xl flex items-center gap-3 mb-2">
+                        <Gift className="w-7 h-7" /> Misión Secreta: El Intercambio
                       </h3>
-                      <p className="text-white/70 text-sm mt-1">
-                        Ayuda al "Amigo Secreto" con 3 opciones de regalo (Referencia mínima: S/ 40).
+                      <p className="text-white/90 text-base font-medium">
+                        Ayuda al "Amigo Secreto" con 3 opciones de regalo. <span className="text-amber-300 font-bold block mt-1">Referencia mínima: S/ 40.</span>
                       </p>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                       {[1, 2, 3].map((num) => (
                         <div key={num}>
-                          <Label className="text-white/60 mb-1.5 text-sm ml-1">Opción {num}</Label>
+                          <Label className="text-white/70 mb-2 text-sm ml-1 font-medium flex items-center gap-2">
+                            <Star className="w-4 h-4 text-amber-500/70" /> Opción {num}
+                          </Label>
                           <Input
                             placeholder={`Ej: Set de Lego, Pelota, Libro...`}
                             value={formData[`deseo_${num}` as keyof typeof formData]}
                             onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
-                            className="bg-black/40 border-white/10 text-white h-11 focus:border-[#d4af37] rounded-lg"
+                            className="bg-red-950/50 border-2 border-red-800/50 text-white h-12 focus:border-amber-500 rounded-xl placeholder:text-white/40"
                           />
                         </div>
                       ))}
-                      {formErrors.deseos && <p className="text-red-400 text-sm">{formErrors.deseos}</p>}
+                      {formErrors.deseos && <p className="text-red-300 text-sm font-medium bg-red-900/50 py-1 px-2 rounded-lg">{formErrors.deseos}</p>}
                     </div>
                   </motion.div>
                 )}
@@ -328,17 +367,22 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#d4af37] to-amber-600 hover:from-amber-400 hover:to-amber-700 text-black font-bold text-lg py-6 rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] mt-4"
+                  className="w-full bg-gradient-to-r from-amber-400 to-amber-600 hover:from-amber-500 hover:to-amber-700 text-black font-extrabold text-xl py-7 rounded-xl shadow-lg shadow-amber-500/30 transition-all hover:scale-[1.02] mt-6 border-2 border-amber-300/50 relative overflow-hidden group"
                 >
-                  {isSubmitting ? 'Enviando...' : (formData.asistencia === 'confirmado' ? '✨ Confirmar Asistencia' : 'Enviar Respuesta')}
+                  {/* Efecto de brillo en el botón */}
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+                  <span className="relative flex items-center justify-center gap-2">
+                    {isSubmitting ? 'Enviando...' : (formData.asistencia === 'confirmado' ? (<><Sparkles className="w-5 h-5"/> Confirmar Asistencia <Sparkles className="w-5 h-5"/></>) : 'Enviar Respuesta')}
+                  </span>
                 </Button>
 
               </form>
             </motion.div>
             
-            <p className="text-center text-white/30 text-sm mt-8">
+            {/* Footer Text */}
+            <p className="text-center text-white/50 text-sm mt-10 font-medium relative z-10">
               AMAS Team Wolf - San Borja <br />
-              ¡La manada te espera!
+              ¡La manada te espera para celebrar! 🎄🐺
             </p>
           </div>
         )}
