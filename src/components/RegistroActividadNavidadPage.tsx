@@ -10,55 +10,11 @@ import {
   XCircle, 
   CalendarHeart, 
   Frown,
-  Send,
-  Wand2
+  Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- CONFIGURACIÓN OPENAI API ---
-// ⚠️ PEGA TU CLAVE DENTRO DE LAS COMILLAS ABAJO.
-// NO LA SUBAS A GITHUB NI LA COMPARTAS PÚBLICAMENTE.
-const OPENAI_API_KEY = "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"; 
-
-async function callOpenAI(prompt) {
-  if (!OPENAI_API_KEY) {
-    console.error("Falta la API Key de OpenAI");
-    return null;
-  }
-
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini", // Usamos gpt-4o-mini porque es más rápido y barato que gpt-3.5
-        messages: [
-          { role: "system", content: "Eres un asistente navideño experto y creativo." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 150
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("OpenAI API Error:", errorData);
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || null;
-  } catch (error) {
-    console.error("Connection Error:", error);
-    return null;
-  }
-}
-
-// --- COMPONENTES UI OPTIMIZADOS PARA MÓVIL ---
+// --- COMPONENTES UI ---
 
 const Label = ({ children, className = "" }) => (
   <label className={`block text-[#d4af37] text-sm font-bold mb-1 uppercase tracking-wider ${className}`}>
@@ -100,8 +56,6 @@ export default function RegistroActividadNavidadPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-  const [isGeneratingGifts, setIsGeneratingGifts] = useState(false);
-  const [customWelcomeMessage, setCustomWelcomeMessage] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -117,32 +71,6 @@ export default function RegistroActividadNavidadPage() {
   const handleAttendance = (value) => {
     setFormData(prev => ({ ...prev, asistencia: value }));
     if (formErrors.asistencia) setFormErrors(prev => ({ ...prev, asistencia: '' }));
-  };
-
-  // ✨ FEATURE 1: Generador de Regalos con OpenAI
-  const handleGenerateGifts = async () => {
-    setIsGeneratingGifts(true);
-    toast.info("🎅 Consultando a los elfos (GPT)...", { position: 'top-center' });
-    
-    const prompt = `Genera 3 ideas de regalos creativos, populares y aptos para un intercambio escolar (niños/adolescentes), con un valor aproximado de 40 a 50 Soles Peruanos.
-    Devuelve SOLO los nombres de los 3 objetos separados por el símbolo "|", sin numeración y sin explicaciones extra. Ejemplo: Audífonos|Juego Uno|Termo`;
-
-    // Cambiamos callGemini por callOpenAI
-    const result = await callOpenAI(prompt);
-    
-    if (result) {
-      const gifts = result.split('|').map(g => g.trim());
-      setFormData(prev => ({
-        ...prev,
-        deseo_1: gifts[0] || prev.deseo_1,
-        deseo_2: gifts[1] || prev.deseo_2,
-        deseo_3: gifts[2] || prev.deseo_3
-      }));
-      toast.success("¡Ideas mágicas añadidas! ✨", { position: 'top-center' });
-    } else {
-      toast.error("Error al conectar con la IA. Verifica tu clave.", { position: 'top-center' });
-    }
-    setIsGeneratingGifts(false);
   };
 
   const validateForm = () => {
@@ -171,21 +99,15 @@ export default function RegistroActividadNavidadPage() {
     setIsSubmitting(true);
 
     try {
-      // ✨ FEATURE 2: Mensaje de Bienvenida con OpenAI
-      const attendanceType = formData.asistencia === 'confirmado' ? 'asistirá' : 'no podrá asistir';
-      const prompt = `Escribe un mensaje muy breve, festivo y épico (máximo 2 frases) dirigido a "${formData.nombre_alumno}" confirmando que hemos recibido su respuesta de que ${attendanceType} a la Clausura Navideña de la "Manada AMAS". Usa tono de celebración y emojis.`;
-      
-      const aiMessage = await callOpenAI(prompt);
-      if (aiMessage) setCustomWelcomeMessage(aiMessage);
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Simulación de envío (Aquí iría tu fetch a Google Sheets o base de datos si tienes)
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       setIsSubmitted(true);
       toast.success('¡Registro enviado con éxito! 🎄', { position: 'top-center' });
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
     } catch (error) {
-      toast.error('Error de conexión.', { position: 'top-center' });
+      toast.error('Error de conexión. Intenta nuevamente.', { position: 'top-center' });
     } finally {
       setIsSubmitting(false);
     }
@@ -195,6 +117,7 @@ export default function RegistroActividadNavidadPage() {
     <div className="min-h-screen relative overflow-x-hidden font-sans selection:bg-[#d4af37] selection:text-black bg-[#021a0a] text-white">
       <Toaster position="top-center" richColors />
       
+      {/* Estilos CSS para la nieve */}
       <style>{`
         @keyframes snowfall {
           0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
@@ -210,19 +133,9 @@ export default function RegistroActividadNavidadPage() {
           text-shadow: 0 0 5px rgba(255,255,255,0.8);
           z-index: 1;
         }
-        
-        @keyframes shine {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .magic-btn {
-          background-size: 200% auto;
-          animation: shine 3s linear infinite;
-        }
       `}</style>
 
-      {/* --- FONDO ORIGINAL --- */}
+      {/* --- FONDO --- */}
       <div className="fixed inset-0 z-0">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -233,6 +146,7 @@ export default function RegistroActividadNavidadPage() {
         />
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
         
+        {/* Nieve decorativa */}
         {[...Array(30)].map((_, i) => (
           <div
             key={i}
@@ -276,7 +190,7 @@ export default function RegistroActividadNavidadPage() {
           </motion.div>
         </div>
 
-        {/* --- FORMULARIO O CONFIRMACIÓN --- */}
+        {/* --- FORMULARIO --- */}
         <div className="w-full max-w-lg relative"> 
           
           {isSubmitted ? (
@@ -297,14 +211,7 @@ export default function RegistroActividadNavidadPage() {
                 )}
               </div>
               <h3 className="text-xl md:text-2xl font-serif font-bold mb-2">¡Gracias por responder!</h3>
-              
-              {customWelcomeMessage ? (
-                 <p className="text-[#165b33] font-medium text-base md:text-lg mb-6 italic">
-                   "{customWelcomeMessage}"
-                 </p>
-              ) : (
-                 <p className="text-gray-600 mb-6">Hemos registrado tu respuesta correctamente.</p>
-              )}
+              <p className="text-gray-600 mb-6 text-sm md:text-base">Hemos registrado tu respuesta correctamente.</p>
               
               <Button 
                 onClick={() => window.location.reload()}
@@ -430,19 +337,6 @@ export default function RegistroActividadNavidadPage() {
                       </p>
                     </div>
 
-                    {/* BOTÓN MÁGICO */}
-                    <div className="flex justify-end mb-3">
-                      <Button
-                         type="button"
-                         onClick={handleGenerateGifts}
-                         disabled={isGeneratingGifts}
-                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white shadow-lg magic-btn touch-manipulation"
-                      >
-                         <Wand2 className={`w-3 h-3 ${isGeneratingGifts ? 'animate-spin' : ''}`} />
-                         {isGeneratingGifts ? 'Pensando...' : '✨ Sugerir Ideas GPT'}
-                      </Button>
-                    </div>
-
                     <div className="space-y-3 mb-6">
                       {[1, 2, 3].map((num) => (
                         <Input
@@ -487,6 +381,7 @@ export default function RegistroActividadNavidadPage() {
           repeatDelay: 5,
           times: [0, 0.1, 0.8, 0.9, 1]
         }}
+        // pointer-events-none: Esencial para que el lobo no bloquee clicks en el móvil
         className="fixed bottom-0 right-[-10px] md:right-10 z-50 w-36 md:w-56 pointer-events-none filter drop-shadow-2xl"
       >
         <img
