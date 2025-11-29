@@ -1,23 +1,97 @@
-import { useState, useEffect } from 'react';
-import { HeaderMain } from './HeaderMain';
-import { FooterMain } from './FooterMain';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
-import { toast } from 'sonner';
-import { Gift, CheckCircle, Mail, User, Sparkles, PartyPopper, XCircle, CalendarHeart, Star, Frown } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect } from 'react';
+import { toast, Toaster } from 'sonner';
+import { 
+  Gift, 
+  CheckCircle, 
+  Mail, 
+  User, 
+  Sparkles, 
+  PartyPopper, 
+  XCircle, 
+  CalendarHeart, 
+  Frown,
+  Send,
+  Wand2
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-interface RegistroActividadNavidadPageProps {
-  onNavigate: (page: string) => void;
+// --- CONFIGURACIÓN OPENAI API ---
+// ⚠️ PEGA TU CLAVE DENTRO DE LAS COMILLAS ABAJO.
+// NO LA SUBAS A GITHUB NI LA COMPARTAS PÚBLICAMENTE.
+const OPENAI_API_KEY = "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"; 
+
+async function callOpenAI(prompt) {
+  if (!OPENAI_API_KEY) {
+    console.error("Falta la API Key de OpenAI");
+    return null;
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // Usamos gpt-4o-mini porque es más rápido y barato que gpt-3.5
+        messages: [
+          { role: "system", content: "Eres un asistente navideño experto y creativo." },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 150
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("OpenAI API Error:", errorData);
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || null;
+  } catch (error) {
+    console.error("Connection Error:", error);
+    return null;
+  }
 }
 
-export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNavidadPageProps) {
+// --- COMPONENTES UI OPTIMIZADOS PARA MÓVIL ---
+
+const Label = ({ children, className = "" }) => (
+  <label className={`block text-[#d4af37] text-sm font-bold mb-1 uppercase tracking-wider ${className}`}>
+    {children}
+  </label>
+);
+
+const Input = ({ className = "", ...props }) => (
+  <input 
+    className={`w-full bg-white/10 border border-[#d4af37]/30 rounded-xl px-4 py-4 text-white placeholder:text-white/40 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base ${className}`}
+    {...props}
+  />
+);
+
+const Button = ({ children, className = "", disabled, onClick, ...props }) => (
+  <button 
+    onClick={onClick}
+    disabled={disabled}
+    className={`active:scale-95 transition-transform ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+// --- PÁGINA PRINCIPAL ---
+
+export default function RegistroActividadNavidadPage() {
   const [formData, setFormData] = useState({
     nombre_padre: '',
     nombre_alumno: '',
     email: '',
-    asistencia: '' as 'confirmado' | 'no_asistire' | '',
+    asistencia: '', 
     deseo_1: '',
     deseo_2: '',
     deseo_3: ''
@@ -25,26 +99,54 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [formErrors, setFormErrors] = useState({});
+  const [isGeneratingGifts, setIsGeneratingGifts] = useState(false);
+  const [customWelcomeMessage, setCustomWelcomeMessage] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
   };
 
-  const handleAttendance = (value: 'confirmado' | 'no_asistire') => {
+  const handleAttendance = (value) => {
     setFormData(prev => ({ ...prev, asistencia: value }));
     if (formErrors.asistencia) setFormErrors(prev => ({ ...prev, asistencia: '' }));
   };
 
+  // ✨ FEATURE 1: Generador de Regalos con OpenAI
+  const handleGenerateGifts = async () => {
+    setIsGeneratingGifts(true);
+    toast.info("🎅 Consultando a los elfos (GPT)...", { position: 'top-center' });
+    
+    const prompt = `Genera 3 ideas de regalos creativos, populares y aptos para un intercambio escolar (niños/adolescentes), con un valor aproximado de 40 a 50 Soles Peruanos.
+    Devuelve SOLO los nombres de los 3 objetos separados por el símbolo "|", sin numeración y sin explicaciones extra. Ejemplo: Audífonos|Juego Uno|Termo`;
+
+    // Cambiamos callGemini por callOpenAI
+    const result = await callOpenAI(prompt);
+    
+    if (result) {
+      const gifts = result.split('|').map(g => g.trim());
+      setFormData(prev => ({
+        ...prev,
+        deseo_1: gifts[0] || prev.deseo_1,
+        deseo_2: gifts[1] || prev.deseo_2,
+        deseo_3: gifts[2] || prev.deseo_3
+      }));
+      toast.success("¡Ideas mágicas añadidas! ✨", { position: 'top-center' });
+    } else {
+      toast.error("Error al conectar con la IA. Verifica tu clave.", { position: 'top-center' });
+    }
+    setIsGeneratingGifts(false);
+  };
+
   const validateForm = () => {
-    const errors: Record<string, string> = {};
+    const errors = {};
     if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
     if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
     if (!formData.email.trim() || !validateEmail(formData.email)) errors.email = 'Email inválido';
@@ -52,88 +154,95 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
     
     if (formData.asistencia === 'confirmado' && (!formData.deseo_1 && !formData.deseo_2 && !formData.deseo_3)) {
       errors.deseos = 'Escribe al menos un deseo';
-      toast.error('🎅 ¡Santa necesita ayuda! Escribe al menos un deseo.');
+      toast.error('🎅 ¡Santa necesita ayuda! Escribe al menos un deseo.', { position: 'top-center' });
     }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) {
-      toast.error('Por favor completa los campos requeridos');
+      toast.error('Por favor completa los campos requeridos', { position: 'top-center' });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/asistencia-evento-navidad', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, timestamp: new Date().toISOString(), source: 'landing_navidad_final_v6' }),
-      });
+      // ✨ FEATURE 2: Mensaje de Bienvenida con OpenAI
+      const attendanceType = formData.asistencia === 'confirmado' ? 'asistirá' : 'no podrá asistir';
+      const prompt = `Escribe un mensaje muy breve, festivo y épico (máximo 2 frases) dirigido a "${formData.nombre_alumno}" confirmando que hemos recibido su respuesta de que ${attendanceType} a la Clausura Navideña de la "Manada AMAS". Usa tono de celebración y emojis.`;
+      
+      const aiMessage = await callOpenAI(prompt);
+      if (aiMessage) setCustomWelcomeMessage(aiMessage);
 
-      if (response.ok) {
-        setIsSubmitted(true);
-        toast.success('¡Registro enviado con éxito! 🎄');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        throw new Error('Error al enviar');
-      }
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setIsSubmitted(true);
+      toast.success('¡Registro enviado con éxito! 🎄', { position: 'top-center' });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
     } catch (error) {
-      toast.error('Error de conexión. Intenta nuevamente.');
+      toast.error('Error de conexión.', { position: 'top-center' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Nieve CSS
-  const snowStyles = `
-    @keyframes snowfall {
-      0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
-      10% { opacity: 1; }
-      100% { transform: translateY(110vh) translateX(20px); opacity: 0.3; }
-    }
-    .snowflake {
-      position: absolute;
-      top: -10vh;
-      color: #fff;
-      pointer-events: none;
-      animation: snowfall linear infinite;
-      text-shadow: 0 0 5px rgba(255,255,255,0.8);
-      z-index: 1;
-    }
-  `;
-
   return (
-    <div className="min-h-screen relative overflow-x-hidden font-sans selection:bg-[#d4af37] selection:text-black bg-[#021a0a]">
-      <style>{snowStyles}</style>
+    <div className="min-h-screen relative overflow-x-hidden font-sans selection:bg-[#d4af37] selection:text-black bg-[#021a0a] text-white">
+      <Toaster position="top-center" richColors />
       
-      {/* --- FONDO --- */}
+      <style>{`
+        @keyframes snowfall {
+          0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
+          10% { opacity: 1; }
+          100% { transform: translateY(110vh) translateX(20px); opacity: 0.3; }
+        }
+        .snowflake {
+          position: absolute;
+          top: -10vh;
+          color: #fff;
+          pointer-events: none;
+          animation: snowfall linear infinite;
+          text-shadow: 0 0 5px rgba(255,255,255,0.8);
+          z-index: 1;
+        }
+        
+        @keyframes shine {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .magic-btn {
+          background-size: 200% auto;
+          animation: shine 3s linear infinite;
+        }
+      `}</style>
+
+      {/* --- FONDO ORIGINAL --- */}
       <div className="fixed inset-0 z-0">
-        {/* Imagen de fondo */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
+          style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-          }}
+            opacity: 0.5 
+          }} 
         />
-        {/* Capa oscura para legibilidad */}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px]" />
         
-        {/* Nieve CSS */}
-        {[...Array(40)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <div
             key={i}
             className="snowflake"
             style={{
               left: `${Math.random() * 100}vw`,
-              animationDuration: `${Math.random() * 10 + 15}s`,
+              animationDuration: `${Math.random() * 10 + 10}s`,
               animationDelay: `${Math.random() * 10}s`,
-              fontSize: `${Math.random() * 8 + 6}px`,
-              opacity: Math.random() * 0.5 + 0.2
+              fontSize: `${Math.random() * 10 + 10}px`,
+              opacity: Math.random() * 0.5 + 0.3
             }}
           >
             ❄
@@ -141,281 +250,252 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         ))}
       </div>
 
-      {/* --- LOBO ANIMADO (CORREGIDO: Z-INDEX ALTO Y POSICIÓN FIJA) --- */}
-      <motion.div
-        initial={{ y: 200 }}
-        animate={{ 
-          y: [200, 0, 0, 0, 200], // Sube, espera, baja
-        }}
-        transition={{ 
-          duration: 15, 
-          repeat: Infinity, 
-          repeatDelay: 3,
-          times: [0, 0.1, 0.8, 0.9, 1]
-        }}
-        // Z-50 para asegurar que esté encima de todo, pero pointer-events-none para no bloquear clics
-        className="fixed bottom-0 right-[-20px] z-50 w-40 md:w-56 pointer-events-none filter drop-shadow-2xl"
-      >
-        <img 
-          src="https://res.cloudinary.com/dkoocok3j/image/upload/v1764451372/lobo_sin_fondo_navidad_Mesa_de_trabajo_1_copia_5_r4cl8x.png" 
-          alt="Lobo Santa" 
-          className="w-full h-auto"
-        />
-      </motion.div>
+      {/* --- CONTENIDO PRINCIPAL --- */}
+      <main className="relative z-10 flex flex-col items-center justify-center px-4 py-8 md:py-12 min-h-screen pb-40">
+        
+        {/* TITULAR */}
+        <div className="text-center mb-6 md:mb-8 max-w-2xl mx-auto mt-4">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="inline-block mb-3">
+              <span className="px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-gradient-to-r from-red-700 to-red-900 border border-red-500 text-white text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                🎅 Evento Fin de Año
+              </span>
+            </div>
+            <h1 className="text-3xl md:text-6xl font-extrabold text-white mb-3 leading-tight drop-shadow-2xl font-serif">
+              Gran Clausura <br/>
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#FFD700] to-[#B8860B]">Navideña AMAS</span>
+            </h1>
+            
+            <p className="text-white/90 text-sm md:text-lg font-medium max-w-md mx-auto leading-relaxed drop-shadow-md px-2">
+              Regístrate para la gran actividad navideña, no te la pierdas. Los esperamos a todos.
+            </p>
+          </motion.div>
+        </div>
 
-      <div className="relative z-10 flex flex-col min-h-screen">
-        <HeaderMain
-          onNavigate={onNavigate}
-          onOpenMatricula={() => onNavigate('registro-leadership')}
-          onCartClick={() => {}}
-          cartItemsCount={0}
-        />
-
-        {/* Padding bottom extra grande para que el lobo no tape el botón final */}
-        <main className="flex-grow flex flex-col items-center justify-center px-4 pt-28 pb-48">
+        {/* --- FORMULARIO O CONFIRMACIÓN --- */}
+        <div className="w-full max-w-lg relative"> 
           
-          {/* --- CABECERA DE TEXTO --- */}
-          <div className="text-center mb-8 max-w-2xl mx-auto">
-            <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="inline-block mb-4">
-                <span className="px-4 py-1.5 rounded-full bg-gradient-to-r from-red-600 to-red-800 border border-red-400 text-white text-xs font-bold tracking-[0.2em] uppercase shadow-lg">
-                  🎅 Evento Fin de Año
-                </span>
-              </div>
-              <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]" 
-                  style={{ fontFamily: 'serif' }}>
-                Gran Clausura <br/>
-                <span className="text-[#FFD700]">Navideña AMAS</span>
-              </h1>
-              <p className="text-white/90 text-base md:text-xl font-medium max-w-md mx-auto leading-relaxed drop-shadow-md">
-                Celebremos juntos el esfuerzo de la manada.
-              </p>
-            </motion.div>
-          </div>
-
           {isSubmitted ? (
-            // --- VISTA CONFIRMACIÓN ---
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="w-full max-w-md bg-[#fffbf0] border-4 border-[#d4af37] rounded-3xl p-8 text-center shadow-2xl text-[#1a0505]"
+              className="bg-[#fffbf0] border-4 border-[#d4af37] rounded-3xl p-6 md:p-8 text-center shadow-2xl text-[#1a0505]"
             >
               <div className="mb-6 flex justify-center">
                 {formData.asistencia === 'confirmado' ? (
-                  <div className="w-20 h-20 bg-[#165b33] rounded-full flex items-center justify-center shadow-lg animate-bounce text-white">
-                    <PartyPopper className="w-10 h-10" />
+                  <div className="w-20 h-20 md:w-24 md:h-24 bg-[#165b33] rounded-full flex items-center justify-center shadow-lg animate-bounce text-white">
+                    <PartyPopper className="w-10 h-10 md:w-12 md:h-12" />
                   </div>
                 ) : (
-                   <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center shadow-lg">
-                     <CheckCircle className="w-10 h-10 text-gray-500" />
-                   </div>
+                  <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-lg">
+                    <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-gray-500" />
+                  </div>
                 )}
               </div>
-
-              <h2 className="text-2xl font-bold text-[#c41e3a] mb-3 font-serif">
-                {formData.asistencia === 'confirmado' ? '¡Confirmado!' : 'Gracias por avisar'}
-              </h2>
-
-              <p className="text-gray-700 mb-8 text-lg leading-relaxed">
-                {formData.asistencia === 'confirmado' 
-                  ? 'Tu lugar en la manada está reservado. ¡Te esperamos para celebrar!'
-                  : 'Entendido. Te extrañaremos en esta ocasión.'}
-              </p>
-
-              <Button
-                onClick={() => onNavigate('home')}
-                className="w-full bg-[#d4af37] hover:bg-amber-500 text-black font-bold py-4 rounded-xl shadow-lg transition-all"
+              <h3 className="text-xl md:text-2xl font-serif font-bold mb-2">¡Gracias por responder!</h3>
+              
+              {customWelcomeMessage ? (
+                 <p className="text-[#165b33] font-medium text-base md:text-lg mb-6 italic">
+                   "{customWelcomeMessage}"
+                 </p>
+              ) : (
+                 <p className="text-gray-600 mb-6">Hemos registrado tu respuesta correctamente.</p>
+              )}
+              
+              <Button 
+                onClick={() => window.location.reload()}
+                className="w-full bg-[#d4af37] hover:bg-amber-500 text-black font-bold py-4 rounded-xl shadow-lg touch-manipulation"
               >
                 Volver al Inicio
               </Button>
             </motion.div>
           ) : (
-            // --- FORMULARIO ---
-            <motion.div 
+            <motion.form
+              onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              // Cambiamos el fondo a algo más sólido y claro (tipo carta) para contraste máximo
-              className="w-full max-w-md bg-[#1a1a1a]/95 backdrop-blur-md border-2 border-[#d4af37] rounded-3xl p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative overflow-hidden"
+              className="bg-black/60 backdrop-blur-md border border-[#d4af37]/50 rounded-3xl p-5 md:p-8 shadow-[0_0_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
             >
-              {/* Cinta decorativa superior */}
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-red-600 via-[#d4af37] to-red-600" />
+              {/* Decoración Dorada */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent" />
 
-              <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+              {/* 1. DATOS PERSONALES */}
+              <div className="space-y-4 md:space-y-5 mb-6 md:mb-8">
+                <div>
+                  <Label>Nombre del Apoderado <User className="inline w-4 h-4 ml-1"/></Label>
+                  <Input 
+                    placeholder="Ej: Juan Pérez" 
+                    value={formData.nombre_padre}
+                    onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
+                    className={formErrors.nombre_padre ? 'border-red-500 bg-red-500/10' : ''}
+                  />
+                  {formErrors.nombre_padre && <span className="text-red-400 text-xs mt-1 block">Requerido</span>}
+                </div>
                 
-                {/* 1. DATOS */}
-                <div className="space-y-5">
-                   <h3 className="text-[#d4af37] font-bold text-sm uppercase tracking-widest border-b border-white/10 pb-2 mb-4 flex items-center gap-2">
-                    <User className="w-4 h-4" /> Datos de Registro
-                  </h3>
-                  
-                  <div className="grid gap-4">
-                    <div>
-                      <Label className="text-white/80 mb-1.5 block text-sm font-medium ml-1">Nombre del Alumno</Label>
-                      <Input
-                        placeholder="Ej: Sebastián González"
-                        value={formData.nombre_alumno}
-                        onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl placeholder:text-white/30 ${formErrors.nombre_alumno ? 'border-red-500/80' : ''}`}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white/80 mb-1.5 block text-sm font-medium ml-1">Nombre del Apoderado</Label>
-                      <Input
-                        placeholder="Tu nombre completo"
-                        value={formData.nombre_padre}
-                        onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl placeholder:text-white/30 ${formErrors.nombre_padre ? 'border-red-500/80' : ''}`}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white/80 mb-1.5 block text-sm font-medium ml-1">Correo Electrónico</Label>
-                      <Input
-                        type="email"
-                        placeholder="contacto@email.com"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange('email', e.target.value)}
-                        className={`bg-white/5 border-white/10 text-white h-12 focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] rounded-xl placeholder:text-white/30 ${formErrors.email ? 'border-red-500/80' : ''}`}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <Label>Nombre del Alumno/a <Sparkles className="inline w-4 h-4 ml-1"/></Label>
+                  <Input 
+                    placeholder="Ej: Sofía Pérez"
+                    value={formData.nombre_alumno}
+                    onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
+                    className={formErrors.nombre_alumno ? 'border-red-500 bg-red-500/10' : ''}
+                  />
+                  {formErrors.nombre_alumno && <span className="text-red-400 text-xs mt-1 block">Requerido</span>}
                 </div>
 
-                {/* 2. ASISTENCIA (BOTONES VIBRANTES) */}
-                <div className="pt-2">
-                  <Label className="text-[#d4af37] text-lg font-bold block text-center mb-4 uppercase tracking-wide">
-                    ¿Asistirán al evento?
-                  </Label>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    {/* BOTÓN SÍ: Dorado Vibrante */}
-                    <button
-                      type="button"
-                      onClick={() => handleAttendance('confirmado')}
-                      className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 active:scale-95 ${
-                        formData.asistencia === 'confirmado'
-                          ? 'bg-[#d4af37] border-[#d4af37] text-black shadow-[0_0_20px_rgba(212,175,55,0.5)] transform scale-105'
-                          : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10 hover:border-[#d4af37] hover:text-white'
-                      }`}
-                    >
-                      <div className={`p-2 rounded-full ${formData.asistencia === 'confirmado' ? 'bg-black/10' : 'bg-transparent'}`}>
-                        <CalendarHeart className="w-7 h-7" />
-                      </div>
-                      <span className="font-black text-sm sm:text-base uppercase">¡SÍ, VAMOS!</span>
-                    </button>
-
-                    {/* BOTÓN NO: Blanco/Gris Sutil */}
-                    <button
-                      type="button"
-                      onClick={() => handleAttendance('no_asistire')}
-                      className={`p-4 rounded-2xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 active:scale-95 ${
-                        formData.asistencia === 'no_asistire'
-                          ? 'bg-white border-white text-red-600 shadow-lg'
-                          : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10 hover:border-white hover:text-white'
-                      }`}
-                    >
-                      <div className={`p-2 rounded-full ${formData.asistencia === 'no_asistire' ? 'bg-red-100' : 'bg-transparent'}`}>
-                        <XCircle className="w-7 h-7" />
-                      </div>
-                      <span className="font-black text-sm sm:text-base uppercase">NO PODRÉ</span>
-                    </button>
-                  </div>
-                  {formErrors.asistencia && <p className="text-red-400 text-xs text-center mt-2 font-medium">⚠️ Por favor selecciona una opción</p>}
+                <div>
+                  <Label>Correo Electrónico <Mail className="inline w-4 h-4 ml-1"/></Label>
+                  <Input 
+                    type="email"
+                    placeholder="correo@ejemplo.com"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className={formErrors.email ? 'border-red-500 bg-red-500/10' : ''}
+                  />
+                  {formErrors.email && <span className="text-red-400 text-xs mt-1 block">Email inválido</span>}
                 </div>
+              </div>
 
-                {/* MENSAJE "NO PODRÉ" (Con margen corregido) */}
-                <AnimatePresence>
-                  {formData.asistencia === 'no_asistire' && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: 'auto', marginTop: 24 }} // mt-6 = 24px
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center">
-                        <div className="flex justify-center mb-2">
-                          <Frown className="w-8 h-8 text-amber-400" />
-                        </div>
-                        <p className="text-white/90 text-sm leading-relaxed">
-                          ¡Qué pena que no puedan acompañarnos! <br/>
-                          Nos hubiera encantado verlos ahí. <br/>
-                          <span className="text-[#d4af37] font-medium block mt-2">¡Les deseamos una muy feliz Navidad! 🎄</span>
-                        </p>
+              {/* 2. ASISTENCIA */}
+              <div className="mb-6">
+                <Label className="text-center block text-lg mb-4 text-white">¿Asistirán al evento?</Label>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleAttendance('confirmado')}
+                    className={`p-4 md:p-5 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 touch-manipulation ${
+                      formData.asistencia === 'confirmado'
+                        ? 'bg-[#d4af37] border-[#d4af37] text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-[1.02]'
+                        : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:border-[#d4af37]/50 hover:text-white'
+                    }`}
+                  >
+                    <CalendarHeart className="w-8 h-8 md:w-9 md:h-9" />
+                    <span className="font-bold text-xs md:text-sm uppercase">¡Sí, Vamos!</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleAttendance('no_asistire')}
+                    className={`p-4 md:p-5 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 touch-manipulation ${
+                      formData.asistencia === 'no_asistire'
+                        ? 'bg-red-900/80 border-red-500 text-white shadow-lg scale-[1.02]'
+                        : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:border-red-400/50 hover:text-white'
+                    }`}
+                  >
+                    <XCircle className="w-8 h-8 md:w-9 md:h-9" />
+                    <span className="font-bold text-xs md:text-sm uppercase">No podré</span>
+                  </button>
+                </div>
+                {formErrors.asistencia && <p className="text-red-400 text-xs text-center mt-2 font-medium">⚠️ Selecciona una opción</p>}
+              </div>
+
+              {/* LÓGICA CONDICIONAL */}
+              <AnimatePresence mode="wait">
+                {formData.asistencia === 'no_asistire' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-center mb-6">
+                      <div className="flex justify-center mb-2">
+                        <Frown className="w-8 h-8 text-amber-400" />
                       </div>
-                    </motion.div>
+                      <p className="text-white/80 text-sm leading-relaxed">
+                        ¡Qué pena! Los extrañaremos mucho. <br/>
+                        <span className="text-[#d4af37] font-medium block mt-2">¡Feliz Navidad! 🎄</span>
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+
+                {formData.asistencia === 'confirmado' && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="bg-[#d4af37]/10 border-l-4 border-[#d4af37] p-4 rounded-r-lg mb-4">
+                      <h4 className="text-[#d4af37] font-bold text-sm uppercase flex items-center gap-2 mb-1">
+                        <Gift className="w-4 h-4" /> Misión Intercambio
+                      </h4>
+                      <p className="text-white/70 text-xs leading-snug">
+                        Ayuda al "Amigo Secreto" con 3 opciones. <br/><span className="text-white font-bold">Ref. mínima: S/ 40.</span>
+                      </p>
+                    </div>
+
+                    {/* BOTÓN MÁGICO */}
+                    <div className="flex justify-end mb-3">
+                      <Button
+                         type="button"
+                         onClick={handleGenerateGifts}
+                         disabled={isGeneratingGifts}
+                         className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:brightness-110 text-white shadow-lg magic-btn touch-manipulation"
+                      >
+                         <Wand2 className={`w-3 h-3 ${isGeneratingGifts ? 'animate-spin' : ''}`} />
+                         {isGeneratingGifts ? 'Pensando...' : '✨ Sugerir Ideas GPT'}
+                      </Button>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                      {[1, 2, 3].map((num) => (
+                        <Input
+                          key={num}
+                          placeholder={`Opción de regalo #${num}...`}
+                          value={formData[`deseo_${num}`]}
+                          onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* BOTÓN SUBMIT */}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-[#d4af37] to-[#b4941f] hover:brightness-110 text-black font-black text-lg py-5 rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] uppercase tracking-widest relative overflow-hidden group touch-manipulation"
+              >
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    'Enviando...' 
+                  ) : (
+                    <>ENVIAR RESPUESTA <Send className="w-5 h-5 group-hover:translate-x-1 transition-transform" /></>
                   )}
-                </AnimatePresence>
+                </span>
+              </Button>
 
-                {/* 3. DESEOS (Solo si confirma) */}
-                <AnimatePresence>
-                  {formData.asistencia === 'confirmado' && (
-                    <motion.div 
-                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                      animate={{ opacity: 1, height: 'auto', marginTop: 32 }} // mt-8
-                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                      className="overflow-hidden pt-2 border-t border-white/10"
-                    >
-                      <div className="bg-[#d4af37]/10 border-l-4 border-[#d4af37] p-4 rounded-r-lg mb-4">
-                        <h4 className="text-[#d4af37] font-bold text-sm uppercase flex items-center gap-2 mb-1">
-                          <Gift className="w-4 h-4" /> Misión Intercambio
-                        </h4>
-                        <p className="text-white/80 text-xs">
-                          Ayuda al "Amigo Secreto" con 3 opciones. <span className="text-white font-bold">Ref. mínima: S/ 40.</span>
-                        </p>
-                      </div>
-
-                      <div className="space-y-3">
-                        {[1, 2, 3].map((num) => (
-                          <div key={num} className="relative">
-                            <Star className="absolute left-3 top-3.5 w-4 h-4 text-[#d4af37]/60" />
-                            <Input
-                              placeholder={`Opción de regalo ${num}...`}
-                              value={formData[`deseo_${num}` as keyof typeof formData]}
-                              onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
-                              className="bg-white/5 border-white/10 text-white focus:border-[#d4af37] h-11 pl-10 text-sm rounded-xl placeholder:text-white/20"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      {formErrors.deseos && <p className="text-red-400 text-xs text-center mt-2">⚠️ {formErrors.deseos}</p>}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* BOTÓN DE ENVÍO (NUEVO DISEÑO ROJO/DORADO) */}
-                <Button 
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-black text-lg py-7 rounded-xl shadow-lg shadow-amber-500/20 uppercase tracking-widest transition-all hover:scale-[1.02] mt-6 border-b-4 border-orange-800 active:border-b-0 active:translate-y-1 relative overflow-hidden"
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    {isSubmitting ? 'Enviando...' : 'ENVIAR RESPUESTA'}
-                  </span>
-                </Button>
-
-              </form>
-            </motion.div>
+            </motion.form>
           )}
+        </div>
+      </main>
 
-          <div className="mt-12 text-center z-10">
-            <p className="text-[#d4af37]/50 text-[10px] font-bold uppercase tracking-[0.2em]">
-              AMAS Team Wolf • Navidad 2025
-            </p>
-          </div>
-
-        </main>
-
-        <FooterMain
-          onNavigate={onNavigate}
-          onOpenMatricula={() => onNavigate('registro-leadership')}
+      {/* --- LOBO ANIMADO --- */}
+      <motion.div
+        initial={{ y: 200 }}
+        animate={{ y: [200, 0, 0, 0, 200] }}
+        transition={{
+          duration: 15,
+          repeat: Infinity,
+          repeatDelay: 5,
+          times: [0, 0.1, 0.8, 0.9, 1]
+        }}
+        className="fixed bottom-0 right-[-10px] md:right-10 z-50 w-36 md:w-56 pointer-events-none filter drop-shadow-2xl"
+      >
+        <img
+          src="https://res.cloudinary.com/dkoocok3j/image/upload/v1764451372/lobo_sin_fondo_navidad_Mesa_de_trabajo_1_copia_5_r4cl8x.png"
+          alt="Lobo Santa"
+          className="w-full h-auto"
         />
-      </div>
+      </motion.div>
+
     </div>
   );
 }
