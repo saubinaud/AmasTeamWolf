@@ -63,7 +63,8 @@ const Button = ({ children, className = "", disabled, onClick, ...props }: React
 
 // --- PÁGINA PRINCIPAL (LANDING) ---
 
-export default function RegistroActividadNavidadPage() {
+// 1. Exportación NOMINAL (para que funcione tu import { ... } en App.tsx)
+export function RegistroActividadNavidadPage() {
   const [formData, setFormData] = useState<FormData>({
     nombre_padre: '',
     nombre_alumno: '',
@@ -126,7 +127,6 @@ export default function RegistroActividadNavidadPage() {
          method: 'POST',
          headers: { 
            'Content-Type': 'application/json',
-           // 'Accept': 'application/json' // Opcional, ayuda a veces con ciertos servidores
          },
          body: JSON.stringify({ 
            ...formData, 
@@ -140,7 +140,6 @@ export default function RegistroActividadNavidadPage() {
         toast.success('¡Registro enviado con éxito! 🎄', { position: 'top-center' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        // Intentamos leer el error si el servidor devuelve algo
         console.error("Error respuesta servidor:", response.status, response.statusText);
         throw new Error('Error en la respuesta del servidor');
       }
@@ -434,3 +433,6 @@ export default function RegistroActividadNavidadPage() {
     </div>
   );
 }
+
+// 2. Exportación POR DEFECTO (para que funcione la vista previa y si importas sin llaves)
+export default RegistroActividadNavidadPage;
