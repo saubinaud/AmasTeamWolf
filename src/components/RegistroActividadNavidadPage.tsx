@@ -1,28 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast, Toaster } from 'sonner';
 import { 
-  Gift, PartyPopper, XCircle, CalendarHeart, Send, Loader2, User, Sparkles, Mail 
+  Gift, PartyPopper, XCircle, CalendarHeart, Send, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { HeaderMain } from './HeaderMain';
+import { FooterMain } from './FooterMain';
 
 // --- COMPONENTES UI ---
 
 const Label = ({ children, className = "" }) => (
-  <label className={`block text-white text-xs font-bold mb-2 uppercase tracking-wide ${className}`}>
+  <label className={`block text-white text-sm md:text-base font-bold mb-2.5 uppercase tracking-wide ${className}`}>
     {children}
   </label>
 );
 
-const Input = ({ className = "", icon: Icon, ...props }) => (
-  <div className="relative">
-    {Icon && (
-      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 z-10 pointer-events-none" />
-    )}
-    <input 
-      className={`w-full bg-white/95 border-2 border-zinc-300 rounded-lg ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3.5 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/20 transition-all text-sm font-medium ${className}`}
-      {...props}
-    />
-  </div>
+const Input = ({ className = "", ...props }) => (
+  <input 
+    className={`w-full bg-white/95 border-2 border-zinc-300 rounded-lg px-4 py-3.5 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/20 transition-all text-sm font-medium ${className}`}
+    {...props}
+  />
 );
 
 const Button = ({ children, className = "", disabled, onClick, variant = "primary", ...props }) => {
@@ -147,25 +144,37 @@ export function RegistroActividadNavidadPage() {
     <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-white bg-[#0a2818] text-white overflow-x-hidden">
       <Toaster position="top-center" richColors />
       
-      {/* FONDO - MÁS CLARO Y VISIBLE */}
+      {/* FONDO - MÓVIL Y DESKTOP DIFERENTES */}
       <div className="fixed inset-0 z-0 pointer-events-none">
+        {/* Fondo móvil */}
         <div 
-          className="absolute inset-0 bg-center bg-no-repeat md:bg-cover"
+          className="absolute inset-0 bg-center bg-cover md:hidden"
           style={{ 
-            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-            backgroundSize: 'contain',
-            backgroundPosition: 'top center',
-            opacity: 0.85
+            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/4_guugpt.png')`,
+            opacity: 0.9
           }} 
         />
-        {/* Gradiente sutil solo en los bordes */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/30 via-transparent to-[#0a2818]/50" />
+        {/* Fondo desktop */}
+        <div 
+          className="absolute inset-0 bg-center bg-cover hidden md:block"
+          style={{ 
+            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/3_dat4ln.png')`,
+            opacity: 0.9
+          }} 
+        />
+        {/* Gradiente sutil */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/20 via-transparent to-[#0a2818]/30" />
+      </div>
+
+      {/* HEADER */}
+      <div className="relative z-20">
+        <HeaderMain />
       </div>
 
       {/* CONTENIDO */}
       <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 md:py-12 lg:py-16 relative z-10 w-full max-w-7xl mx-auto">
         
-        {/* HEADER */}
+        {/* HEADER DE PÁGINA */}
         <div className="text-center mb-6 md:mb-10 w-full max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -174,7 +183,7 @@ export function RegistroActividadNavidadPage() {
             className="space-y-3 md:space-y-4"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-[#FF6700]/40">
+            <div className="inline-flex items-center gap-2 bg-black/70 backdrop-blur-sm px-4 py-2 rounded-full border border-[#FF6700]/50">
               <span className="text-base md:text-lg">🎅</span>
               <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] uppercase text-[#FF6700]">
                 Evento Fin de Año
@@ -185,13 +194,13 @@ export function RegistroActividadNavidadPage() {
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight px-4">
               Gran Clausura
               <br />
-              <span className="text-[#FF6700] font-black drop-shadow-[0_2px_8px_rgba(255,103,0,0.6)]">
+              <span className="text-[#FF6700] font-black drop-shadow-[0_2px_10px_rgba(255,103,0,0.8)]">
                 Navideña
               </span>
             </h1>
             
             {/* Descripción */}
-            <p className="text-white text-sm md:text-base lg:text-lg max-w-md mx-auto leading-relaxed px-4 drop-shadow-lg">
+            <p className="text-white text-sm md:text-base lg:text-lg max-w-md mx-auto leading-relaxed px-4 drop-shadow-lg font-medium">
               Regístrate para la gran actividad navideña.
               <span className="block text-[#FF6700] font-bold mt-1">¡Los esperamos a todos!</span>
             </p>
@@ -230,26 +239,25 @@ export function RegistroActividadNavidadPage() {
               </Button>
             </motion.div>
           ) : (
-            // FORMULARIO - MÁS VIDA Y CONTRASTE
+            // FORMULARIO - FONDO MÁS OSCURO
             <motion.form
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="bg-gradient-to-br from-[#1a3a2e]/95 to-[#0f2419]/95 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-2xl relative overflow-hidden"
+              className="bg-gradient-to-br from-[#0d1f16]/98 to-[#08150e]/98 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-2xl relative overflow-hidden"
             >
               {/* Decoración superior brillante */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700]" />
               
               {/* Brillo interno */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/5 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/8 via-transparent to-transparent pointer-events-none" />
 
               {/* DATOS PERSONALES */}
               <div className="space-y-4 md:space-y-5 mb-6 md:mb-8 relative z-10">
                 <div>
                   <Label>Nombre del Apoderado</Label>
                   <Input 
-                    icon={User}
                     placeholder="Ej: Juan Pérez" 
                     value={formData.nombre_padre}
                     onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
@@ -260,7 +268,6 @@ export function RegistroActividadNavidadPage() {
                 <div>
                   <Label>Nombre del Alumno/a</Label>
                   <Input 
-                    icon={Sparkles}
                     placeholder="Ej: Sofía Pérez"
                     value={formData.nombre_alumno}
                     onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
@@ -271,7 +278,6 @@ export function RegistroActividadNavidadPage() {
                 <div>
                   <Label>Correo Electrónico</Label>
                   <Input 
-                    icon={Mail}
                     type="email"
                     placeholder="correo@ejemplo.com"
                     value={formData.email}
@@ -374,7 +380,7 @@ export function RegistroActividadNavidadPage() {
                     <div className="space-y-3 md:space-y-4">
                       {[1, 2, 3].map((num) => (
                         <div key={num}>
-                          <label className="text-white/90 text-[10px] md:text-xs font-bold mb-2 block uppercase tracking-wide">
+                          <label className="text-white text-sm md:text-base font-bold mb-2.5 block uppercase tracking-wide">
                             Opción #{num}
                           </label>
                           <Input
@@ -389,20 +395,20 @@ export function RegistroActividadNavidadPage() {
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT - MUY VISIBLE */}
+              {/* BOTÓN SUBMIT - MUY NOTORIO */}
               <Button 
                 type="submit"
                 disabled={isSubmitting}
                 variant="primary"
-                className="uppercase tracking-widest text-sm md:text-base lg:text-lg relative z-10 transform hover:scale-[1.02]"
+                className="uppercase tracking-widest text-base md:text-lg lg:text-xl relative z-10 transform hover:scale-[1.03] py-5 md:py-6 shadow-[0_0_40px_rgba(255,103,0,0.6)] hover:shadow-[0_0_50px_rgba(255,103,0,0.8)]"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2 md:gap-3">
-                    ENVIANDO... <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin"/>
+                    ENVIANDO... <Loader2 className="w-6 h-6 md:w-7 md:h-7 animate-spin"/>
                   </span>
                 ) : (
                   <span className="flex items-center justify-center gap-2 md:gap-3">
-                    ENVIAR RESPUESTA <Send className="w-5 h-5 md:w-6 md:h-6" />
+                    ENVIAR RESPUESTA <Send className="w-6 h-6 md:w-7 md:h-7" />
                   </span>
                 )}
               </Button>
@@ -411,14 +417,13 @@ export function RegistroActividadNavidadPage() {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="mt-8 md:mt-12 text-center">
-          <p className="text-white/60 text-xs md:text-sm font-medium flex items-center justify-center gap-2">
-            🎄 <span className="font-bold">AMAS Team Wolf</span> © 2024
-          </p>
-        </div>
-
       </main>
+
+      {/* FOOTER */}
+      <div className="relative z-20">
+        <FooterMain />
+      </div>
+
     </div>
   );
 }
