@@ -9,7 +9,6 @@ import { LandingConversion } from './components/LandingConversion';
 import { InicioSesionPage } from './components/InicioSesionPage';
 import { PerfilPage } from './components/PerfilPage';
 import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
-// 1. IMPORT NUEVO COMPONENTE
 import { RegistroActividadNavidadPage } from './components/RegistroActividadNavidadPage';
 
 import { HeaderMain } from './components/HeaderMain';
@@ -40,7 +39,6 @@ function LoadingSection() {
 }
 
 function App() {
-  // 2. AGREGADO EL ESTADO 'registro-actividad-navidad'
   const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad'>('home');
   
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -48,6 +46,35 @@ function App() {
   const [totalAmount, setTotalAmount] = useState(0);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
+
+  // --- NUEVA FUNCIÓN: SCROLL ROBUSTO (POLLING) ---
+  // Busca el elemento repetidamente hasta que aparece (máx 2.5 seg)
+  const robustScrollToSection = (sectionId: string) => {
+    let intentos = 0;
+    const maxIntentos = 25; // 25 * 100ms = 2.5 segundos
+
+    const buscar = () => {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        // Offset para el header fijo (aprox 80px)
+        const headerOffset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      } else if (intentos < maxIntentos) {
+        intentos++;
+        setTimeout(buscar, 100); // Reintentar en 100ms
+      }
+    };
+    
+    // Iniciar búsqueda
+    buscar();
+  };
+  // ------------------------------------------------
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -72,11 +99,11 @@ function App() {
       // Check for redirect from 404.html
       const urlParams = new URLSearchParams(window.location.search);
       const redirectPath = urlParams.get('redirect') || sessionStorage.getItem('redirectPath');
+      // Detectar sección en URL (ej: ?section=tienda)
+      const sectionParam = urlParams.get('section');
 
       if (redirectPath) {
-        // Clear the redirect data
         sessionStorage.removeItem('redirectPath');
-        // Update the URL without the redirect parameter
         window.history.replaceState({}, '', redirectPath);
       }
 
@@ -101,39 +128,42 @@ function App() {
         setCurrentPage('perfil');
       } else if (path === '/renovacion-navidad' || path === '/renueva-diciembre') {
         setCurrentPage('renovacion-navidad');
-      } else if (path === '/navidad' || path === '/evento-navidad') { // 3. NUEVA RUTA DETECTADA
+      } else if (path === '/navidad' || path === '/evento-navidad') {
         setCurrentPage('registro-actividad-navidad');
       } else {
         setCurrentPage('home');
+        // Si estamos en home y hay sección, activar scroll robusto
+        if (sectionParam) {
+           setTimeout(() => robustScrollToSection(sectionParam), 100);
+        }
       }
     };
 
-    // Initial load
     handlePopState();
-
-    // Listen for browser back/forward
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Scroll to top whenever page changes
   useEffect(() => {
-    // Triple capa de seguridad para asegurar scroll to top
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // MODIFICADO: Solo hacer scroll top si NO hay una sección específica en la URL
+    // Esto evita que el "scroll top" cancele el "scroll a sección"
+    const urlParams = new URLSearchParams(window.location.search);
+    const sectionParam = urlParams.get('section');
+
+    if (!sectionParam) {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
   }, [currentPage]);
 
-  const handleNavigate = (page: string) => {
-    // Scroll inmediato ANTES de cambiar la página
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-
-    // Actualizar estado (casting para incluir el nuevo tipo)
+  // MODIFICADO: Acepta sectionId opcional
+  const handleNavigate = (page: string, sectionId?: string) => {
+    // 1. Actualizar estado de página
     setCurrentPage(page as any);
     
-    // Update URL - Lógica mejorada para incluir la nueva ruta amigable
+    // 2. Construir path y query params
     let path = '/';
     if (page === 'home') {
       path = '/';
@@ -143,11 +173,25 @@ function App() {
       path = `/${page}`;
     }
     
+    // Si hay sección, agregarla a la URL (ej: /?section=tienda)
+    if (sectionId) {
+      path += `?section=${sectionId}`;
+    } else {
+      // Si no hay sección, forzar scroll arriba inmediatamente
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    }
+    
     window.history.pushState({}, '', path);
+
+    // 3. Ejecutar scroll inteligente si hay sección
+    if (sectionId) {
+      robustScrollToSection(sectionId);
+    }
   };
 
   const handleEnrollProgram = () => {
-    // Navegar a la página de registro de Leadership
     handleNavigate('registro-leadership');
   };
 
@@ -157,12 +201,10 @@ function App() {
     );
 
     if (existingItemIndex >= 0) {
-      // Update quantity if item exists
       const newCart = [...cartItems];
       newCart[existingItemIndex].quantity += quantity;
       setCartItems(newCart);
     } else {
-      // Add new item
       const newItem: CartItem = {
         id: product.id,
         name: product.name,
@@ -201,18 +243,19 @@ function App() {
 
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Render Home Page
+  // --- RENDERS ---
+
   if (currentPage === 'home') {
     return (
       <>
         <SEO {...seoConfigs.home} />
+        {/* Pasamos handleNavigate tal cual, ahora acepta (page, sectionId) */}
         <HomePage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
   }
 
-  // Render Tienda Page
   if (currentPage === 'tienda') {
     return (
       <>
@@ -223,7 +266,6 @@ function App() {
     );
   }
 
-  // Render Registro 3 Meses Page
   if (currentPage === 'registro-3-meses') {
     return (
       <>
@@ -238,13 +280,10 @@ function App() {
           onSuccess={handleRegistrationSuccess}
         />
         <Toaster theme="dark" position="bottom-right" />
-
-        {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
           onClose={() => {
             setIsPagoOpen(false);
-            // Navegar al home después de cerrar el popup de pago
             handleNavigate('home');
           }}
           totalAmount={totalAmount}
@@ -254,7 +293,6 @@ function App() {
     );
   }
 
-  // Render Registro Mensual Page
   if (currentPage === 'registro-mensual') {
     return (
       <>
@@ -269,13 +307,10 @@ function App() {
           onSuccess={handleRegistrationSuccess}
         />
         <Toaster theme="dark" position="bottom-right" />
-
-        {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
           onClose={() => {
             setIsPagoOpen(false);
-            // Navegar al home después de cerrar el popup de pago
             handleNavigate('home');
           }}
           totalAmount={totalAmount}
@@ -285,7 +320,6 @@ function App() {
     );
   }
 
-  // Render Registro Leadership Page
   if (currentPage === 'registro-leadership') {
     return (
       <>
@@ -300,13 +334,10 @@ function App() {
           onSuccess={handleRegistrationSuccess}
         />
         <Toaster theme="dark" position="bottom-right" />
-
-        {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
           onClose={() => {
             setIsPagoOpen(false);
-            // Navegar al home después de cerrar el popup de pago
             handleNavigate('home');
           }}
           totalAmount={totalAmount}
@@ -316,7 +347,6 @@ function App() {
     );
   }
 
-  // Render Graduacion Page
   if (currentPage === 'graduacion') {
     return (
       <>
@@ -327,7 +357,6 @@ function App() {
     );
   }
 
-  // Render Clase Prueba Page
   if (currentPage === 'clase-prueba') {
     return (
       <>
@@ -338,7 +367,6 @@ function App() {
     );
   }
 
-  // Render Inicio Sesion Page
   if (currentPage === 'inicio-sesion') {
     return (
       <>
@@ -354,7 +382,6 @@ function App() {
     );
   }
 
-  // Render Perfil Page
   if (currentPage === 'perfil') {
     return (
       <>
@@ -370,7 +397,6 @@ function App() {
     );
   }
 
-  // Render Renovacion Navidad Page
   if (currentPage === 'renovacion-navidad') {
     return (
       <>
@@ -386,7 +412,6 @@ function App() {
     );
   }
 
-  // 4. RENDERIZADO DE LA NUEVA PÁGINA
   if (currentPage === 'registro-actividad-navidad') {
     return (
       <>
@@ -403,11 +428,11 @@ function App() {
     );
   }
 
-  // Render Leadership Page
   return (
     <div className="min-h-screen relative overflow-hidden">
       <SEO {...seoConfigs.leadership} />
-      {/* Advanced Gradient Background - igual que el home */}
+      
+      {/* Background Gradients */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
         <div
@@ -454,7 +479,6 @@ function App() {
           <ImplementsSection />
         </Suspense>
 
-        {/* Program Enrollment Card */}
         <LeadershipProgramCard onEnrollClick={handleEnrollProgram} />
 
         <FooterMain
@@ -462,7 +486,6 @@ function App() {
           onOpenMatricula={handleEnrollProgram}
         />
 
-        {/* Cart Drawer */}
         <CartDrawerHome
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
@@ -472,12 +495,10 @@ function App() {
           onCheckout={handleCheckout}
         />
 
-        {/* Popup de Pago */}
         <PopupPago
           isOpen={isPagoOpen}
           onClose={() => {
             setIsPagoOpen(false);
-            // Limpiar el carrito después de proceder al pago
             if (checkoutItems.length > 0) {
               setCartItems([]);
               setCheckoutItems([]);
