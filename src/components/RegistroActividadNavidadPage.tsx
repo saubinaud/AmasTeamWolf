@@ -34,7 +34,7 @@ const Button = ({ children, className = "", disabled, onClick, ...props }) => (
 
 // --- PÁGINA PRINCIPAL ---
 
-function RegistroActividadNavidadPage() {
+export function RegistroActividadNavidadPage() {
   const topRef = useRef(null);
 
   const initialFormState = {
