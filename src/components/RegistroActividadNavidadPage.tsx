@@ -10,7 +10,7 @@ import { FooterMain } from './FooterMain';
 // --- COMPONENTES UI ---
 
 const Label = ({ children, className = "" }) => (
-  <label className={`block text-white text-sm md:text-base font-bold mb-2.5 uppercase tracking-wide ${className}`}>
+  <label className={`block text-[#FF6700] text-sm md:text-base font-bold mb-2.5 uppercase tracking-wide ${className}`}>
     {children}
   </label>
 );
@@ -144,22 +144,28 @@ export function RegistroActividadNavidadPage() {
     <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-white bg-[#0a2818] text-white overflow-x-hidden">
       <Toaster position="top-center" richColors />
       
-      {/* FONDO - MÓVIL (4_guugpt.png) y DESKTOP (3_dat4ln.png) DIFERENTES */}
+      {/* FONDO - ZOOM OUT PARA VER MÁS IMAGEN */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* FONDO MÓVIL */}
+        {/* FONDO MÓVIL - con backgroundSize para ver más */}
         <div 
-          className="absolute inset-0 bg-center bg-cover block md:hidden"
+          className="absolute inset-0 block md:hidden"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/4_guugpt.png')`,
+            backgroundSize: '100% auto',
+            backgroundPosition: 'top center',
+            backgroundRepeat: 'no-repeat',
             opacity: 0.85
           }} 
         />
         
         {/* FONDO DESKTOP */}
         <div 
-          className="absolute inset-0 bg-center bg-cover hidden md:block"
+          className="absolute inset-0 hidden md:block"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/3_dat4ln.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
             opacity: 0.85
           }} 
         />
@@ -173,11 +179,11 @@ export function RegistroActividadNavidadPage() {
         <HeaderMain />
       </div>
 
-      {/* CONTENIDO */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-6 md:py-12 lg:py-16 relative z-10 w-full max-w-7xl mx-auto">
+      {/* CONTENIDO - CON MÁS MARGEN SUPERIOR */}
+      <main className="flex-grow flex flex-col items-center justify-center px-5 pt-8 pb-8 md:px-6 md:py-12 lg:py-16 relative z-10 w-full max-w-7xl mx-auto">
         
-        {/* HEADER DE PÁGINA */}
-        <div className="text-center mb-6 md:mb-10 w-full max-w-2xl mx-auto">
+        {/* HEADER DE PÁGINA - CON MARGEN SUPERIOR */}
+        <div className="text-center mb-8 md:mb-10 w-full max-w-2xl mx-auto mt-4 md:mt-0">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -201,8 +207,8 @@ export function RegistroActividadNavidadPage() {
           </motion.div>
         </div>
 
-        {/* FORMULARIO */}
-        <div className="w-full max-w-md lg:max-w-lg mx-auto"> 
+        {/* FORMULARIO - CON MÁS MÁRGENES */}
+        <div className="w-full max-w-md lg:max-w-lg mx-auto px-2"> 
           
           {isSubmitted ? (
             // ESTADO DE ÉXITO
@@ -233,13 +239,13 @@ export function RegistroActividadNavidadPage() {
               </Button>
             </motion.div>
           ) : (
-            // FORMULARIO - CON MEJOR CONTRASTE
+            // FORMULARIO - FONDO MÁS OSCURO
             <motion.form
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="bg-gradient-to-br from-[#1a3d2e]/98 to-[#0f261b]/98 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] relative overflow-hidden"
+              className="bg-[#0a1510]/98 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-6 md:p-8 lg:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.9)] relative overflow-hidden"
             >
               {/* Decoración superior brillante */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700] shadow-[0_0_20px_rgba(255,103,0,0.8)]" />
@@ -248,7 +254,7 @@ export function RegistroActividadNavidadPage() {
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/5 via-transparent to-transparent pointer-events-none" />
 
               {/* DATOS PERSONALES */}
-              <div className="space-y-4 md:space-y-5 mb-6 md:mb-8 relative z-10">
+              <div className="space-y-5 md:space-y-6 mb-7 md:mb-8 relative z-10">
                 <div>
                   <Label>Nombre del Apoderado</Label>
                   <Input 
@@ -282,23 +288,23 @@ export function RegistroActividadNavidadPage() {
               </div>
 
               {/* ASISTENCIA */}
-              <div className="mb-6 md:mb-8 relative z-10">
-                <Label className="text-center block mb-4 md:mb-5">
+              <div className="mb-7 md:mb-8 relative z-10">
+                <Label className="text-center block mb-5 md:mb-6">
                   ¿Asistirán al evento?
                 </Label>
                 
-                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                <div className="grid grid-cols-2 gap-4 md:gap-5">
                   {/* SÍ ASISTIRÉ */}
                   <button
                     type="button"
                     onClick={() => handleAttendance('confirmado')}
-                    className={`relative p-4 md:p-5 rounded-2xl border-4 flex flex-col items-center justify-center gap-2 md:gap-3 transition-all duration-200 font-bold ${
+                    className={`relative p-5 md:p-6 rounded-2xl border-4 flex flex-col items-center justify-center gap-3 transition-all duration-200 font-bold ${
                       formData.asistencia === 'confirmado'
                         ? 'border-green-500 bg-green-500/40 text-white shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-105'
                         : 'border-white/40 bg-white/15 text-white hover:border-green-400 hover:bg-green-500/25 hover:text-white'
                     }`}
                   >
-                    <CalendarHeart className="w-8 h-8 md:w-10 md:h-10" />
+                    <CalendarHeart className="w-9 h-9 md:w-11 md:h-11" />
                     <span className="text-xs md:text-sm uppercase tracking-wider">
                       ¡Sí, vamos!
                     </span>
@@ -308,13 +314,13 @@ export function RegistroActividadNavidadPage() {
                   <button
                     type="button"
                     onClick={() => handleAttendance('no_asistire')}
-                    className={`relative p-4 md:p-5 rounded-2xl border-4 flex flex-col items-center justify-center gap-2 md:gap-3 transition-all duration-200 font-bold ${
+                    className={`relative p-5 md:p-6 rounded-2xl border-4 flex flex-col items-center justify-center gap-3 transition-all duration-200 font-bold ${
                       formData.asistencia === 'no_asistire'
                         ? 'border-red-500 bg-red-500/40 text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] scale-105'
                         : 'border-white/40 bg-white/15 text-white hover:border-red-400 hover:bg-red-500/25 hover:text-white'
                     }`}
                   >
-                    <XCircle className="w-8 h-8 md:w-10 md:h-10" />
+                    <XCircle className="w-9 h-9 md:w-11 md:h-11" />
                     <span className="text-xs md:text-sm uppercase tracking-wider">
                       No podré
                     </span>
@@ -322,7 +328,7 @@ export function RegistroActividadNavidadPage() {
                 </div>
                 
                 {formErrors.asistencia && (
-                  <p className="text-red-300 text-xs md:text-sm text-center mt-3 md:mt-4 bg-red-500/20 py-2 md:py-2.5 rounded-xl font-bold border-2 border-red-500">
+                  <p className="text-red-300 text-xs md:text-sm text-center mt-4 bg-red-500/20 py-2.5 rounded-xl font-bold border-2 border-red-500">
                     ⚠️ Selecciona una opción
                   </p>
                 )}
@@ -337,9 +343,9 @@ export function RegistroActividadNavidadPage() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="overflow-hidden mb-6 md:mb-8 relative z-10"
+                    className="overflow-hidden mb-7 md:mb-8 relative z-10"
                   >
-                    <div className="bg-white/15 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-5 md:p-6 text-center">
+                    <div className="bg-white/15 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-6 md:p-7 text-center">
                       <p className="text-white text-sm md:text-base leading-relaxed">
                         ¡Qué pena! Los extrañaremos.
                         <span className="text-[#FF6700] font-black block mt-2 text-lg md:text-xl drop-shadow-lg">
@@ -357,10 +363,10 @@ export function RegistroActividadNavidadPage() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="overflow-hidden mb-6 md:mb-8 relative z-10"
+                    className="overflow-hidden mb-7 md:mb-8 relative z-10"
                   >
                     {/* Info del intercambio */}
-                    <div className="bg-[#FF6700]/25 border-l-4 border-[#FF6700] pl-4 pr-3 py-4 mb-5 rounded-r-xl backdrop-blur-sm">
+                    <div className="bg-[#FF6700]/25 border-l-4 border-[#FF6700] pl-4 pr-4 py-4 mb-5 rounded-r-xl backdrop-blur-sm">
                       <h4 className="text-[#FF6700] font-extrabold text-xs md:text-sm uppercase flex items-center gap-2 mb-1.5">
                         <Gift className="w-4 h-4 md:w-5 md:h-5" /> Intercambio de Regalos
                       </h4>
@@ -371,7 +377,7 @@ export function RegistroActividadNavidadPage() {
                     </div>
 
                     {/* Lista de deseos */}
-                    <div className="space-y-3 md:space-y-4">
+                    <div className="space-y-4 md:space-y-5">
                       {[1, 2, 3].map((num) => (
                         <div key={num}>
                           <Label>
