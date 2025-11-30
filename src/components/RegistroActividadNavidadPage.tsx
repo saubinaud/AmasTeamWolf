@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- IMPORTS REALES (Funcionarán en tu proyecto local) ---
+// --- IMPORTS REALES ---
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 
@@ -38,15 +38,14 @@ interface FormErrors {
 // --- COMPONENTES UI LOCALES ---
 
 const Label = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <label className={`block text-[#d4af37] text-xs font-bold mb-2 uppercase tracking-widest ${className}`}>
+  <label className={`block text-white text-xs font-bold mb-2 uppercase tracking-widest ${className}`}>
     {children}
   </label>
 );
 
 const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    // Fondo oscuro sólido para legibilidad perfecta
-    className={`w-full bg-[#111] border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base shadow-inner ${className}`}
+    className={`w-full bg-[#111]/90 border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base shadow-inner ${className}`}
     {...props}
   />
 );
@@ -169,19 +168,16 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
       {/* --- HEADER --- */}
       <HeaderMain 
         onNavigate={onNavigate}
-        // Pasamos props vacías por si el componente las requiere
         onOpenMatricula={() => {}}
         onCartClick={() => {}}
         cartItemsCount={0}
       />
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      {/* pt-48: MARGEN GIGANTE SUPERIOR para que el título baje mucho y no toque el header */}
-      {/* pb-40: MARGEN GIGANTE INFERIOR para que el formulario no toque el footer */}
       <main className="flex-grow flex flex-col items-center justify-start px-4 pt-48 pb-40 relative z-10 w-full">
         
-        {/* TITULAR DE GALA */}
-        <div className="text-center mb-16 w-full max-w-4xl mx-auto relative z-20">
+        {/* TITULAR */}
+        <div className="text-center mb-12 w-full max-w-4xl mx-auto relative z-20">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -232,7 +228,8 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden"
+              // CAMBIO 1: Borde añadido (border border-white/20)
+              className="bg-black/60 backdrop-blur-xl border border-white/20 rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden"
             >
               {/* Cinta decorativa */}
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-80" />
@@ -241,6 +238,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               <div className="space-y-6 mb-8 mt-4">
                 <div>
                   <Label>Nombre del Apoderado</Label>
+                  {/* CAMBIO 2: Íconos alineados DENTRO del input */}
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#d4af37]" />
                     <Input 
@@ -372,7 +370,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT - DORADO SÓLIDO Y VISIBLE */}
+              {/* CAMBIO 3: Botón de enviar con fondo dorado sólido */}
               <Button
                 type="submit"
                 disabled={isSubmitting}
@@ -400,11 +398,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         />
       </div>
 
-      {/* --- LOBO ANIMADO --- 
-          FIXED en la esquina inferior derecha.
-          Z-index 60 para estar ENCIMA de todo el fondo y footer,
-          pero pointer-events-none para que no bloquee clicks si pasa por encima de algo.
-      */}
+      {/* --- LOBO ANIMADO --- */}
       <div className="fixed bottom-0 right-0 z-[60] pointer-events-none w-28 md:w-48 opacity-100 filter drop-shadow-2xl">
         <img
           src="https://res.cloudinary.com/dkoocok3j/image/upload/v1764451372/lobo_sin_fondo_navidad_Mesa_de_trabajo_1_copia_5_r4cl8x.png"
