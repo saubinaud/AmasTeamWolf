@@ -152,8 +152,8 @@ export function RegistroActividadNavidadPage() {
         <div 
           className="absolute inset-0 block md:hidden"
           style={{ 
-            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/4_guugpt.png')`,
-            backgroundSize: '120% auto',
+            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764513223/Green_Red_Festive_Christmas_Card_1_ih2vy3.png')`,
+            backgroundSize: '100% auto',
             backgroundPosition: 'top center',
             backgroundRepeat: 'no-repeat',
             opacity: 0.85
