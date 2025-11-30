@@ -7,25 +7,31 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 
+// --- INTERFAZ DE PROPS (Para TypeScript) ---
+interface RegistroNavidadProps {
+  onNavigate: (page: string, sectionId?: string) => void;
+  onOpenMatricula: () => void;
+  onCartClick: () => void;
+  cartItemsCount: number;
+}
+
 // --- COMPONENTES UI ---
 
-const Label = ({ children, className = "" }) => (
+const Label = ({ children, className = "" }: any) => (
   <label className={`block text-gray-100 text-sm md:text-base font-medium mb-2.5 tracking-wide ${className}`}>
     {children}
   </label>
 );
 
-const Input = ({ className = "", ...props }) => (
+const Input = ({ className = "", ...props }: any) => (
   <input 
     className={`w-full bg-black/20 border-2 border-white/20 rounded-xl px-4 py-3.5 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/30 transition-all text-base font-medium ${className}`}
     {...props}
   />
 );
 
-const Button = ({ children, className = "", disabled, onClick, variant = "primary", ...props }) => {
-  // Nota: Este componente se usa para el botón "Volver al Inicio" en el mensaje de éxito.
-  // El botón principal del formulario tiene estilos específicos inline para el efecto de brillo.
-  const variants = {
+const Button = ({ children, className = "", disabled, onClick, variant = "primary", ...props }: any) => {
+  const variants: any = {
     primary: "bg-gradient-to-r from-[#FF6700] via-[#ff7a1f] to-[#ff8800] hover:from-[#ff8800] hover:via-[#ff9933] hover:to-[#ffaa00] text-white font-black border-b-4 border-[#cc5200] active:border-b-2 shadow-[0_0_40px_rgba(255,103,0,0.9),0_0_80px_rgba(255,103,0,0.5)] hover:shadow-[0_0_60px_rgba(255,103,0,1),0_0_100px_rgba(255,103,0,0.7)]",
     secondary: "bg-white hover:bg-zinc-50 text-zinc-900 font-bold border-2 border-zinc-300 shadow-lg hover:shadow-xl"
   };
@@ -42,10 +48,23 @@ const Button = ({ children, className = "", disabled, onClick, variant = "primar
   );
 };
 
+// --- URLs DE IMÁGENES OPTIMIZADAS ---
+// f_auto: formato automático (webp/avif)
+// q_auto: calidad automática
+// w_XXX: redimensionar al tamaño necesario
+const BG_MOBILE = "https://res.cloudinary.com/dkoocok3j/image/upload/f_auto,q_auto,w_800/v1764514004/Green_Red_Festive_Christmas_Card_3_ffugi8.jpg";
+const BG_DESKTOP = "https://res.cloudinary.com/dkoocok3j/image/upload/f_auto,q_auto,w_1600/v1764494534/3_dat4ln.jpg";
+
 // --- PÁGINA PRINCIPAL ---
 
-export function RegistroActividadNavidadPage() {
-  const topRef = useRef(null);
+export function RegistroActividadNavidadPage({ 
+  onNavigate, 
+  onOpenMatricula, 
+  onCartClick, 
+  cartItemsCount 
+}: RegistroNavidadProps) {
+  
+  const topRef = useRef<HTMLDivElement>(null);
 
   const initialFormState = {
     nombre_padre: '',
@@ -60,22 +79,25 @@ export function RegistroActividadNavidadPage() {
   const [formData, setFormData] = useState(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<any>({});
 
+  // Preload images for faster rendering
   useEffect(() => {
     window.scrollTo(0, 0);
+    const imgMobile = new Image(); imgMobile.src = BG_MOBILE;
+    const imgDesktop = new Image(); imgDesktop.src = BG_DESKTOP;
   }, []);
 
-  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    if (formErrors[field]) setFormErrors(prev => ({ ...prev, [field]: '' }));
+    if (formErrors[field]) setFormErrors((prev: any) => ({ ...prev, [field]: '' }));
   };
 
-  const handleAttendance = (value) => {
+  const handleAttendance = (value: string) => {
     setFormData(prev => ({ ...prev, asistencia: value }));
-    if (formErrors.asistencia) setFormErrors(prev => ({ ...prev, asistencia: '' }));
+    if (formErrors.asistencia) setFormErrors((prev: any) => ({ ...prev, asistencia: '' }));
   };
 
   const handleReset = () => {
@@ -88,7 +110,7 @@ export function RegistroActividadNavidadPage() {
   };
 
   const validateForm = () => {
-    const errors = {};
+    const errors: any = {};
     if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
     if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
     if (!formData.email.trim() || !validateEmail(formData.email)) errors.email = 'Email inválido';
@@ -103,7 +125,7 @@ export function RegistroActividadNavidadPage() {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) {
       toast.error('Por favor completa los campos requeridos', { position: 'top-center' });
@@ -146,13 +168,13 @@ export function RegistroActividadNavidadPage() {
     <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-white bg-[#0a2818] text-white overflow-x-hidden">
       <Toaster position="top-center" richColors />
       
-      {/* FONDO - ZOOM OUT PARA VER MÁS IMAGEN */}
+      {/* FONDO - OPTIMIZADO */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         {/* FONDO MÓVIL */}
         <div 
-          className="absolute inset-0 block md:hidden"
+          className="absolute inset-0 block md:hidden transition-opacity duration-700 ease-in"
           style={{ 
-            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764514004/Green_Red_Festive_Christmas_Card_3_ffugi8.png')`,
+            backgroundImage: `url('${BG_MOBILE}')`,
             backgroundSize: '100% auto',
             backgroundPosition: 'top center',
             backgroundRepeat: 'no-repeat',
@@ -162,9 +184,9 @@ export function RegistroActividadNavidadPage() {
         
         {/* FONDO DESKTOP */}
         <div 
-          className="absolute inset-0 hidden md:block"
+          className="absolute inset-0 hidden md:block transition-opacity duration-700 ease-in"
           style={{ 
-            backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/3_dat4ln.png')`,
+            backgroundImage: `url('${BG_DESKTOP}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center center',
             backgroundRepeat: 'no-repeat',
@@ -176,12 +198,17 @@ export function RegistroActividadNavidadPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/40 via-transparent to-[#0a2818]/60" />
       </div>
 
-      {/* HEADER */}
+      {/* HEADER - AHORA CON PROPS FUNCIONALES */}
       <div className="relative z-20">
-        <HeaderMain />
+        <HeaderMain 
+          onNavigate={onNavigate}
+          onOpenMatricula={onOpenMatricula}
+          onCartClick={onCartClick}
+          cartItemsCount={cartItemsCount}
+        />
       </div>
       
-      {/* CONTENIDO - CON MÁS MARGEN SUPERIOR PARA EVITAR SOLAPAMIENTO */}
+      {/* CONTENIDO PRINCIPAL */}
       <main className="flex-grow flex flex-col items-center justify-center px-5 pt-24 pb-8 md:px-6 md:pt-32 md:pb-12 lg:pt-40 lg:pb-16 relative z-10 w-full max-w-7xl mx-auto">
         
         {/* HEADER DE PÁGINA (TÍTULO) */}
@@ -266,7 +293,7 @@ export function RegistroActividadNavidadPage() {
                   <Input 
                     placeholder="Ej: Juan Pérez" 
                     value={formData.nombre_padre}
-                    onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
+                    onChange={(e: any) => handleInputChange('nombre_padre', e.target.value)}
                     className={`bg-black/20 border-white/20 text-white placeholder:text-gray-500 focus:border-[#FF6700] focus:ring-[#FF6700]/50 h-12 rounded-xl ${
                       formErrors.nombre_padre ? 'border-red-500 ring-2 ring-red-500/20' : ''
                     }`}
@@ -281,7 +308,7 @@ export function RegistroActividadNavidadPage() {
                   <Input 
                     placeholder="Ej: Sofía Pérez"
                     value={formData.nombre_alumno}
-                    onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
+                    onChange={(e: any) => handleInputChange('nombre_alumno', e.target.value)}
                     className={`bg-black/20 border-white/20 text-white placeholder:text-gray-500 focus:border-[#FF6700] focus:ring-[#FF6700]/50 h-12 rounded-xl ${
                       formErrors.nombre_alumno ? 'border-red-500 ring-2 ring-red-500/20' : ''
                     }`}
@@ -297,7 +324,7 @@ export function RegistroActividadNavidadPage() {
                     type="email"
                     placeholder="correo@ejemplo.com"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e: any) => handleInputChange('email', e.target.value)}
                     className={`bg-black/20 border-white/20 text-white placeholder:text-gray-500 focus:border-[#FF6700] focus:ring-[#FF6700]/50 h-12 rounded-xl ${
                       formErrors.email ? 'border-red-500 ring-2 ring-red-500/20' : ''
                     }`}
@@ -411,8 +438,8 @@ export function RegistroActividadNavidadPage() {
                           </Label>
                           <Input
                             placeholder={`Idea de regalo ${num}...`}
-                            value={formData[`deseo_${num}`]}
-                            onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
+                            value={(formData as any)[`deseo_${num}`]}
+                            onChange={(e: any) => handleInputChange(`deseo_${num}`, e.target.value)}
                             className="bg-black/20 border-white/20 text-white placeholder:text-gray-500 focus:border-[#FF6700] focus:ring-[#FF6700]/50 h-11 rounded-xl"
                           />
                         </div>
@@ -422,7 +449,7 @@ export function RegistroActividadNavidadPage() {
                 )}
               </AnimatePresence>
    
-              {/* BOTÓN SUBMIT - DENTRO DEL FORMULARIO Y CORRECTAMENTE ESTRUCTURADO */}
+              {/* BOTÓN SUBMIT */}
               <div className="mt-8 md:mt-10 relative z-20">
                 <button 
                   type="submit"
@@ -452,9 +479,12 @@ export function RegistroActividadNavidadPage() {
         </div>
       </main>
 
-      {/* FOOTER */}
+      {/* FOOTER - AHORA CON PROPS FUNCIONALES */}
       <div className="relative z-20">
-        <FooterMain />
+        <FooterMain 
+          onNavigate={onNavigate}
+          onOpenMatricula={onOpenMatricula}
+        />
       </div>
 
     </div>
