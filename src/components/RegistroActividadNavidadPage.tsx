@@ -6,11 +6,11 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- IMPORTS REALES (Listos para tu web) ---
+// --- IMPORTS REALES (Funcionarán en tu proyecto local) ---
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 
-// --- INTERFACES TYPESCRIPT ---
+// --- INTERFACES ---
 interface RegistroActividadNavidadPageProps {
   onNavigate: (page: string) => void;
 }
@@ -43,10 +43,10 @@ const Label = ({ children, className = "" }: { children: React.ReactNode, classN
   </label>
 );
 
-// Input con estilo Glassmorphism oscuro y borde sutil
 const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    className={`w-full bg-[#1a1a1a]/90 border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base shadow-inner ${className}`}
+    // Fondo oscuro sólido para legibilidad perfecta
+    className={`w-full bg-[#111] border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base shadow-inner ${className}`}
     {...props}
   />
 );
@@ -151,52 +151,53 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col font-sans selection:bg-[#d4af37] selection:text-black bg-[#050505] text-white">
+    <div className="min-h-screen relative flex flex-col font-sans selection:bg-[#d4af37] selection:text-black bg-[#020202] text-white">
       <Toaster position="top-center" richColors />
       
       {/* --- FONDO --- */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-            opacity: 0.4
+            opacity: 0.5 
           }} 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/60 to-black/95" />
       </div>
 
       {/* --- HEADER --- */}
       <HeaderMain 
         onNavigate={onNavigate}
+        // Pasamos props vacías por si el componente las requiere
         onOpenMatricula={() => {}}
         onCartClick={() => {}}
         cartItemsCount={0}
       />
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      {/* pt-40: Margen superior grande para que el título no toque el header */}
-      {/* pb-32: Margen inferior para que el formulario no toque el footer */}
-      <main className="flex-grow flex flex-col items-center justify-start px-4 pt-40 pb-32 relative z-10 w-full">
+      {/* pt-48: MARGEN GIGANTE SUPERIOR para que el título baje mucho y no toque el header */}
+      {/* pb-40: MARGEN GIGANTE INFERIOR para que el formulario no toque el footer */}
+      <main className="flex-grow flex flex-col items-center justify-start px-4 pt-48 pb-40 relative z-10 w-full">
         
-        {/* TITULAR GRANDE */}
-        <div className="text-center mb-10 w-full max-w-4xl mx-auto">
+        {/* TITULAR DE GALA */}
+        <div className="text-center mb-16 w-full max-w-4xl mx-auto relative z-20">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 mb-4 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-              <span className="text-lg">🎅</span>
+            <div className="inline-flex items-center gap-2 mb-6 bg-[#d4af37]/10 px-5 py-2 rounded-full border border-[#d4af37]/40 backdrop-blur-md shadow-lg shadow-[#d4af37]/10">
+              <span className="text-xl">🎅</span>
               <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#d4af37]">Evento Fin de Año</span>
             </div>
             
-            <h1 className="text-4xl md:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-2xl">
+            <h1 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
               Gran Clausura <br />
-              <span className="text-[#d4af37]">Navideña</span>
+              <span className="text-[#FFD700] drop-shadow-md">Navideña</span>
             </h1>
             
-            <p className="text-white/80 text-base md:text-xl font-light max-w-xl mx-auto leading-relaxed px-4">
+            <p className="text-white/80 text-lg md:text-xl font-light max-w-xl mx-auto leading-relaxed px-4 drop-shadow-md">
               Regístrate para la gran actividad navideña, no te la pierdas. Los esperamos a todos.
             </p>
           </motion.div>
@@ -209,7 +210,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-[#1a1a1a] border border-[#d4af37] rounded-3xl p-8 text-center shadow-2xl"
+              className="bg-[#1a1a1a] border-2 border-[#d4af37] rounded-3xl p-8 text-center shadow-2xl"
             >
               <div className="mb-6 flex justify-center">
                 <div className="w-24 h-24 bg-[#165b33] rounded-full flex items-center justify-center shadow-[0_0_30px_#165b33] animate-bounce text-white">
@@ -234,10 +235,10 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden"
             >
               {/* Cinta decorativa */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-70" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-80" />
 
               {/* 1. DATOS PERSONALES */}
-              <div className="space-y-6 mb-8 mt-2">
+              <div className="space-y-6 mb-8 mt-4">
                 <div>
                   <Label>Nombre del Apoderado</Label>
                   <div className="relative">
@@ -280,43 +281,43 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               </div>
 
               {/* 2. ASISTENCIA */}
-              <div className="mb-8">
-                <Label className="text-center block text-sm mb-4 text-white tracking-widest">¿Asistirán al evento?</Label>
+              <div className="mb-10">
+                <Label className="text-center block text-sm mb-6 text-white/90 tracking-widest font-bold">¿ASISTIRÁN AL EVENTO?</Label>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => handleAttendance('confirmado')}
-                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 group overflow-hidden ${
+                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200 group overflow-hidden ${
                       formData.asistencia === 'confirmado'
-                        ? 'border-[#d4af37] bg-[#d4af37]/20 shadow-[0_0_15px_rgba(212,175,55,0.4)]'
-                        : 'border-white/10 bg-white/5 hover:border-[#d4af37]/50'
+                        ? 'border-green-500 bg-green-600 text-white shadow-[0_0_20px_rgba(34,197,94,0.5)] scale-[1.02]'
+                        : 'border-white/20 bg-white/5 text-white/70 hover:border-green-500 hover:text-green-400'
                     }`}
                   >
-                    <CalendarHeart className={`w-8 h-8 ${formData.asistencia === 'confirmado' ? 'text-[#d4af37]' : 'text-gray-400 group-hover:text-[#d4af37]'}`} />
-                    <span className={`font-bold text-xs uppercase tracking-widest ${formData.asistencia === 'confirmado' ? 'text-[#d4af37]' : 'text-gray-400 group-hover:text-white'}`}>
-                      ¡Sí, Vamos!
+                    <CalendarHeart className="w-8 h-8" />
+                    <span className="font-bold text-xs uppercase tracking-widest">
+                      ¡SÍ, VAMOS!
                     </span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => handleAttendance('no_asistire')}
-                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 group ${
+                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200 group ${
                       formData.asistencia === 'no_asistire'
-                        ? 'border-red-500 bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.4)]'
-                        : 'border-white/10 bg-white/5 hover:border-red-500/50'
+                        ? 'border-red-600 bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)] scale-[1.02]'
+                        : 'border-white/20 bg-white/5 text-white/70 hover:border-red-500 hover:text-red-400'
                     }`}
                   >
-                    <XCircle className={`w-8 h-8 ${formData.asistencia === 'no_asistire' ? 'text-red-500' : 'text-gray-400 group-hover:text-red-500'}`} />
-                    <span className={`font-bold text-xs uppercase tracking-widest ${formData.asistencia === 'no_asistire' ? 'text-red-500' : 'text-gray-400 group-hover:text-white'}`}>
-                      No Podré
+                    <XCircle className="w-8 h-8" />
+                    <span className="font-bold text-xs uppercase tracking-widest">
+                      NO PODRÉ
                     </span>
                   </button>
                 </div>
                 
                 {formErrors.asistencia && (
-                  <p className="text-red-400 text-xs text-center mt-3 font-bold">⚠️ Por favor confirma</p>
+                  <p className="text-red-400 text-xs text-center mt-3 font-bold bg-red-500/10 py-1 rounded">⚠️ Por favor selecciona una opción</p>
                 )}
               </div>
 
@@ -345,11 +346,11 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     exit={{ opacity: 0, height: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="bg-[#d4af37]/10 border-l-2 border-[#d4af37] pl-4 py-3 mb-6 rounded-r-lg">
+                    <div className="bg-[#d4af37]/10 border-l-4 border-[#d4af37] pl-4 py-3 mb-6 rounded-r-lg">
                       <h4 className="text-[#d4af37] font-bold text-xs uppercase flex items-center gap-2 mb-1">
                         <Gift className="w-3 h-3" /> Misión Intercambio
                       </h4>
-                      <p className="text-white/60 text-xs">
+                      <p className="text-white/70 text-xs">
                         Ayuda al "Amigo Secreto". <span className="text-white font-bold">Mínimo S/ 40.</span>
                       </p>
                     </div>
@@ -357,7 +358,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     <div className="space-y-4 mb-8">
                       {[1, 2, 3].map((num) => (
                         <div key={num} className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-xs font-bold">#{num}</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#d4af37] text-xs font-bold">#{num}</span>
                           <Input
                             placeholder={`Opción de regalo...`}
                             value={formData[`deseo_${num}`]}
@@ -371,11 +372,11 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT - SÓLIDO DORADO */}
+              {/* BOTÓN SUBMIT - DORADO SÓLIDO Y VISIBLE */}
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#d4af37] hover:bg-[#c29f2d] text-black font-black text-lg py-5 rounded-xl shadow-lg shadow-orange-500/20 uppercase tracking-widest relative overflow-hidden group active:scale-[0.98] transition-all mt-2"
+                className="w-full bg-[#d4af37] hover:bg-[#c29f2d] text-black font-black text-lg py-5 rounded-xl shadow-lg shadow-orange-500/20 uppercase tracking-[0.2em] relative overflow-hidden group active:scale-[0.98] transition-all mt-4 border-b-4 border-[#8a6c15] active:border-b-0 active:translate-y-1"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {isSubmitting ? (
@@ -391,7 +392,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         </div>
       </main>
 
-      {/* --- FOOTER REAL --- */}
+      {/* --- FOOTER --- */}
       <div className="relative z-20">
         <FooterMain 
           onNavigate={onNavigate}
@@ -399,9 +400,12 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         />
       </div>
 
-      {/* --- LOBO ANIMADO --- */}
-      {/* Fixed, z-index 50 para que se vea sobre el fondo pero no tape interacciones críticas */}
-      <div className="fixed bottom-0 right-0 z-50 pointer-events-none w-24 md:w-36 opacity-100 filter drop-shadow-2xl">
+      {/* --- LOBO ANIMADO --- 
+          FIXED en la esquina inferior derecha.
+          Z-index 60 para estar ENCIMA de todo el fondo y footer,
+          pero pointer-events-none para que no bloquee clicks si pasa por encima de algo.
+      */}
+      <div className="fixed bottom-0 right-0 z-[60] pointer-events-none w-28 md:w-48 opacity-100 filter drop-shadow-2xl">
         <img
           src="https://res.cloudinary.com/dkoocok3j/image/upload/v1764451372/lobo_sin_fondo_navidad_Mesa_de_trabajo_1_copia_5_r4cl8x.png"
           alt="Lobo Santa"
