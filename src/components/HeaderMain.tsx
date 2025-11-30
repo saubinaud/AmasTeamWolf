@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderMainProps {
-  // Acepta el segundo parámetro opcional para la sección
+  // Usamos la nueva firma que soporta secciones
   onNavigate: (page: string, sectionId?: string) => void;
   onOpenMatricula: () => void;
   onCartClick: () => void;
@@ -52,16 +52,19 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
     setCloseTimeout(timeout);
   };
 
-  // --- NUEVA LÓGICA SIMPLIFICADA ---
-  // Ya no hace scroll manual, solo le dice a la App a dónde ir
+  // --- LÓGICA DE NAVEGACIÓN UNIFICADA ---
   const handleNavigateToSection = (sectionId: string) => {
-    onNavigate('home', sectionId);
-    
-    // Cerrar todos los menús
+    // 1. Cerrar menús visualmente primero (UX más rápida)
     setIsMobileMenuOpen(false);
     setIsProgramasOpen(false);
     setIsProgramasDesktopOpen(false);
+
+    // 2. Ejecutar la navegación
+    onNavigate('home', sectionId);
   };
+
+  // Estilos comunes para links (para asegurar consistencia visual)
+  const linkStyles = "text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base";
 
   return (
     <header 
@@ -85,10 +88,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           <button
             onClick={() => onNavigate('home')}
             className="flex items-center gap-2 sm:gap-3 group"
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent'
-            }}
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="flex flex-col">
               <span 
@@ -105,22 +105,22 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             </div>
           </button>
 
-          {/* Desktop Navigation */}
+          {/* ========================================== */}
+          {/* DESKTOP NAVIGATION               */}
+          {/* ========================================== */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6">
-            {/* Dropdown de Programas */}
+            
+            {/* 1. Programas (Dropdown) */}
             <div
               className="relative programas-dropdown"
               onMouseEnter={handleMouseEnterProgramas}
               onMouseLeave={handleMouseLeaveProgramas}
             >
-              <button
-                className="flex items-center gap-1 text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base"
-              >
+              <button className={`flex items-center gap-1 ${linkStyles}`}>
                 Programas
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasDesktopOpen ? 'rotate-180' : ''}`} />
               </button>
               
-              {/* Dropdown Menu */}
               {isProgramasDesktopOpen && (
                 <div className="absolute left-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-xl rounded-lg border border-[#FA7B21]/30 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="py-2">
@@ -144,41 +144,29 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               )}
             </div>
             
-            <button
-              onClick={() => handleNavigateToSection('tienda')}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base"
-            >
+            {/* 2. Tienda */}
+            <button onClick={() => handleNavigateToSection('tienda')} className={linkStyles}>
               Tienda
             </button>
-            <button
-              onClick={() => handleNavigateToSection('nosotros')}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base"
-            >
+
+            {/* 3. Nosotros */}
+            <button onClick={() => handleNavigateToSection('nosotros')} className={linkStyles}>
               Nosotros
             </button>
-            <button
-              onClick={() => onNavigate('graduacion')}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base"
-            >
+
+            {/* 4. Graduaciones */}
+            <button onClick={() => onNavigate('graduacion')} className={linkStyles}>
               Graduaciones
             </button>
           </nav>
 
-          {/* Desktop CTA Buttons */}
+          {/* Desktop CTA Buttons (Carrito, Perfil, Matricular) */}
           <div className="hidden md:flex items-center gap-3">
             <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onCartClick();
-              }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCartClick(); }}
               variant="ghost"
               size="icon"
               className="relative text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
             >
               <ShoppingCart className="h-5 w-5" />
               {cartItemsCount > 0 && (
@@ -188,75 +176,34 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               )}
             </Button>
 
-            {/* Botón de perfil/login */}
-            {isAuthenticated ? (
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onNavigate('perfil');
-                }}
-                variant="ghost"
-                className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10 text-sm lg:text-base"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                <User className="h-5 w-5 mr-2" />
-                Mi Perfil
-              </Button>
-            ) : (
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onNavigate('inicio-sesion');
-                }}
-                variant="ghost"
-                className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10 text-sm lg:text-base"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                <User className="h-5 w-5 mr-2" />
-                Acceso
-              </Button>
-            )}
+            <Button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion'); }}
+              variant="ghost"
+              className={`${linkStyles} flex items-center`}
+            >
+              <User className="h-5 w-5 mr-2" />
+              {isAuthenticated ? 'Mi Perfil' : 'Acceso'}
+            </Button>
 
             <Button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onOpenMatricula();
-              }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenMatricula(); }}
               className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 text-sm lg:text-base active:scale-95"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
             >
               Matricular
             </Button>
           </div>
 
-          {/* Mobile Menu Button & Cart */}
+          {/* ========================================== */}
+          {/* MOBILE MENU BUTTONS              */}
+          {/* ========================================== */}
           <div className="flex md:hidden items-center gap-2">
             <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onCartClick();
-              }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCartClick(); }}
               variant="ghost"
               size="icon"
               className="relative text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               <ShoppingCart className="h-5 w-5" />
               {cartItemsCount > 0 && (
@@ -267,18 +214,11 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             </Button>
             
             <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setIsMobileMenuOpen(!isMobileMenuOpen);
-              }}
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMobileMenuOpen(!isMobileMenuOpen); }}
               variant="ghost"
               size="icon"
               className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </Button>
@@ -286,7 +226,9 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* ========================================== */}
+      {/* MOBILE MENU CONTENT              */}
+      {/* ========================================== */}
       {isMobileMenuOpen && (
         <div 
           className="md:hidden backdrop-blur-xl border-t border-[#FA7B21]/30 animate-in slide-in-from-top-4 duration-300"
@@ -296,32 +238,27 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           }}
         >
           <nav className="container mx-auto px-4 py-6 flex flex-col gap-4">
-            {/* Dropdown de Programas - Mobile */}
+            
+            {/* 1. Programas (Dropdown Mobile) */}
             <div>
               <button
                 onClick={() => setIsProgramasOpen(!isProgramasOpen)}
                 className="flex items-center justify-between w-full text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 Programas
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasOpen ? 'rotate-180' : ''}`} />
               </button>
               
-              {/* Submenu Mobile */}
               {isProgramasOpen && (
                 <div className="pl-4 mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <button
                     onClick={() => handleNavigateToSection('programas')}
                     className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
-                    style={{
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent'
-                    }}
+                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                   >
-                    Programas Tradicionales
+                    {/* CORREGIDO: Ahora coincide con Desktop */}
+                    Basic Program
                   </button>
                   <button
                     onClick={() => {
@@ -330,10 +267,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                       setIsProgramasOpen(false);
                     }}
                     className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
-                    style={{
-                      touchAction: 'manipulation',
-                      WebkitTapHighlightColor: 'transparent'
-                    }}
+                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                   >
                     Leadership Wolf
                   </button>
@@ -341,36 +275,32 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               )}
             </div>
             
+            {/* 2. Tienda */}
             <button
               onClick={() => handleNavigateToSection('tienda')}
               className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               Tienda
             </button>
+
+            {/* 3. Nosotros */}
             <button
               onClick={() => handleNavigateToSection('nosotros')}
               className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               Nosotros
             </button>
+
+            {/* 4. Graduaciones */}
             <button
               onClick={() => {
                 onNavigate('graduacion');
                 setIsMobileMenuOpen(false);
               }}
               className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               Graduaciones
             </button>
@@ -382,10 +312,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 setIsMobileMenuOpen(false);
               }}
               className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base flex items-center gap-2"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               <User className="h-5 w-5" />
               {isAuthenticated ? 'Mi Perfil' : 'Acceso'}
@@ -401,10 +328,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                   setIsMobileMenuOpen(false);
                 }}
                 className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 py-3 active:scale-95"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
+                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 Matricular ahora
               </Button>
