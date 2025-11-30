@@ -34,16 +34,14 @@ interface FormErrors {
 // --- COMPONENTES UI LOCALES ---
 
 const Label = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <label className={`block text-orange-500 text-xs font-bold mb-2 uppercase tracking-widest ${className}`}>
+  <label className={`block text-[#FF6700] text-xs font-bold mb-2 uppercase tracking-widest ${className} drop-shadow-md`}>
     {children}
   </label>
 );
 
 const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    // Usamos padding-left-12 (pl-12) fijo para asegurar espacio al icono
-    // Usamos border-orange-500/50 para que se note el color
-    className={`w-full bg-zinc-900 border border-orange-500/30 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all text-base ${className}`}
+    className={`w-full bg-black/80 border border-white/20 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-white/40 focus:outline-none focus:border-[#FF6700] focus:ring-1 focus:ring-[#FF6700] transition-all text-base shadow-inner ${className}`}
     {...props}
   />
 );
@@ -148,43 +146,43 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
   };
 
   return (
-    <div className="min-h-screen relative flex flex-col font-sans selection:bg-orange-500 selection:text-black bg-black text-white">
+    <div className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-black bg-[#020202] text-white">
       <Toaster position="top-center" richColors />
       
-      {/* --- FONDO --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      {/* --- FONDO CLARO (Sin filtros oscuros) --- */}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-[#051a0d]">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-            opacity: 0.5 
+            opacity: 1 // OPACIDAD AL 100% PARA QUE SE VEA CLARO
           }} 
         />
-        {/* Capa negra semi-transparente para oscurecer el fondo pero no tanto */}
-        <div className="absolute inset-0 bg-black/70" />
+        {/* Solo una viñeta muy sutil en los bordes para centrar la atención, sin oscurecer el centro */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40" />
       </div>
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-12 relative z-10 w-full">
+      <main className="flex-grow flex flex-col items-center justify-center px-4 pt-10 pb-20 relative z-10 w-full">
         
         {/* TITULAR */}
-        <div className="text-center mb-10 w-full max-w-4xl mx-auto relative z-20">
+        <div className="text-center mb-8 w-full max-w-4xl mx-auto relative z-20">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 mb-6 bg-orange-500/10 px-5 py-2 rounded-full border border-orange-500/40 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 mb-4 bg-black/60 px-5 py-2 rounded-full border border-[#FF6700]/60 backdrop-blur-md shadow-lg">
               <span className="text-xl">🎅</span>
-              <span className="text-xs font-bold tracking-[0.2em] uppercase text-orange-500">Evento Fin de Año</span>
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#FF6700]">Evento Fin de Año</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-serif text-white mb-4 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-serif text-white mb-4 leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
               Gran Clausura <br />
-              <span className="text-orange-500">Navideña</span>
+              <span className="text-[#FF6700] drop-shadow-md font-black" style={{ textShadow: '2px 2px 0px #000' }}>Navideña</span>
             </h1>
             
-            <p className="text-gray-300 text-lg md:text-xl font-light max-w-xl mx-auto leading-relaxed px-4">
+            <p className="text-white text-lg md:text-xl font-medium max-w-lg mx-auto leading-relaxed px-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               Regístrate para la gran actividad navideña, no te la pierdas. Los esperamos a todos.
             </p>
           </motion.div>
@@ -197,19 +195,19 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-[#111] border-2 border-orange-500 rounded-3xl p-8 text-center shadow-2xl"
+              className="bg-black/90 border-2 border-[#FF6700] rounded-3xl p-8 text-center shadow-2xl"
             >
               <div className="mb-6 flex justify-center">
                 <div className="w-24 h-24 bg-[#165b33] rounded-full flex items-center justify-center shadow-[0_0_30px_#165b33] animate-bounce text-white">
                   <PartyPopper className="w-12 h-12" />
                 </div>
               </div>
-              <h3 className="text-3xl font-serif text-orange-500 mb-3">¡Gracias!</h3>
+              <h3 className="text-3xl font-serif text-[#FF6700] mb-3">¡Gracias!</h3>
               <p className="text-gray-300 mb-8 text-lg">Hemos registrado tu respuesta correctamente.</p>
               
               <Button 
                 onClick={() => window.location.reload()}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-black font-bold py-4 rounded-xl shadow-lg"
+                className="w-full bg-[#FF6700] hover:bg-[#e55c00] text-black font-bold py-4 rounded-xl shadow-lg"
               >
                 Volver al Inicio
               </Button>
@@ -219,50 +217,50 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              // Borde sólido naranja al formulario
-              className="bg-black/80 backdrop-blur-xl border-2 border-orange-500/60 rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden"
+              // Fondo negro semitransparente para que el texto sea legible sobre la imagen clara
+              className="bg-black/75 backdrop-blur-xl border border-[#FF6700]/50 rounded-[2rem] p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
             >
-              {/* Cinta decorativa superior */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent" />
+              {/* Cinta decorativa */}
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#FF6700] to-transparent" />
 
               {/* 1. DATOS PERSONALES */}
               <div className="space-y-6 mb-8 mt-4">
                 <div>
                   <Label>Nombre del Apoderado</Label>
-                  <div className="relative w-full">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 z-10 pointer-events-none" />
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FF6700] z-10 pointer-events-none" />
                     <Input 
                       placeholder="Ej: Juan Pérez" 
                       value={formData.nombre_padre}
                       onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                      className={formErrors.nombre_padre ? 'border-red-500 bg-red-900/10' : ''}
+                      className={`pl-12 ${formErrors.nombre_padre ? 'border-red-500 bg-red-900/20' : ''}`}
                     />
                   </div>
                 </div>
                 
                 <div>
                   <Label>Nombre del Alumno/a</Label>
-                  <div className="relative w-full">
-                    <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 z-10 pointer-events-none" />
+                  <div className="relative">
+                    <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FF6700] z-10 pointer-events-none" />
                     <Input 
                       placeholder="Ej: Sofía Pérez"
                       value={formData.nombre_alumno}
                       onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                      className={formErrors.nombre_alumno ? 'border-red-500 bg-red-900/10' : ''}
+                      className={`pl-12 ${formErrors.nombre_alumno ? 'border-red-500 bg-red-900/20' : ''}`}
                     />
                   </div>
                 </div>
 
                 <div>
                   <Label>Correo Electrónico</Label>
-                  <div className="relative w-full">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-orange-500 z-10 pointer-events-none" />
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#FF6700] z-10 pointer-events-none" />
                     <Input 
                       type="email"
                       placeholder="correo@ejemplo.com"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={formErrors.email ? 'border-red-500 bg-red-900/10' : ''}
+                      className={`pl-12 ${formErrors.email ? 'border-red-500 bg-red-900/20' : ''}`}
                     />
                   </div>
                 </div>
@@ -270,7 +268,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
 
               {/* 2. ASISTENCIA */}
               <div className="mb-10">
-                <Label className="text-center block text-sm mb-6 text-white/80 tracking-widest font-bold">¿ASISTIRÁN AL EVENTO?</Label>
+                <Label className="text-center block text-sm mb-6 text-white font-bold tracking-widest uppercase">¿Asistirán al evento?</Label>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <button
@@ -279,7 +277,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200 group overflow-hidden ${
                       formData.asistencia === 'confirmado'
                         ? 'border-green-500 bg-green-600/20 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
-                        : 'border-white/10 bg-white/5 hover:border-green-500 hover:text-green-400'
+                        : 'border-white/20 bg-white/5 text-white/70 hover:border-green-500 hover:text-green-400'
                     }`}
                   >
                     <CalendarHeart className="w-8 h-8" />
@@ -293,8 +291,8 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     onClick={() => handleAttendance('no_asistire')}
                     className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200 group ${
                       formData.asistencia === 'no_asistire'
-                        ? 'border-red-500 bg-red-600/20 text-white shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                        : 'border-white/10 bg-white/5 hover:border-red-500 hover:text-red-400'
+                        ? 'border-red-600 bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)]'
+                        : 'border-white/20 bg-white/5 text-white/70 hover:border-red-500 hover:text-red-400'
                     }`}
                   >
                     <XCircle className="w-8 h-8" />
@@ -305,7 +303,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                 </div>
                 
                 {formErrors.asistencia && (
-                  <p className="text-red-400 text-xs text-center mt-3 font-bold bg-red-500/10 py-2 rounded-lg">⚠️ Por favor selecciona una opción</p>
+                  <p className="text-red-400 text-xs text-center mt-3 font-bold bg-red-500/10 py-1 rounded">⚠️ Por favor selecciona una opción</p>
                 )}
               </div>
 
@@ -321,7 +319,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center mb-8">
                       <p className="text-white/80 text-sm">
                         ¡Qué pena! Los extrañaremos. <br/>
-                        <span className="text-orange-500 font-bold block mt-2">¡Feliz Navidad! 🎄</span>
+                        <span className="text-[#FF6700] font-bold block mt-2">¡Feliz Navidad! 🎄</span>
                       </p>
                     </div>
                   </motion.div>
@@ -334,11 +332,11 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     exit={{ opacity: 0, height: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="bg-orange-500/10 border-l-4 border-orange-500 pl-4 py-3 mb-6 rounded-r-lg">
-                      <h4 className="text-orange-500 font-bold text-xs uppercase flex items-center gap-2 mb-1">
+                    <div className="bg-[#FF6700]/10 border-l-4 border-[#FF6700] pl-4 py-3 mb-6 rounded-r-lg">
+                      <h4 className="text-[#FF6700] font-bold text-xs uppercase flex items-center gap-2 mb-1">
                         <Gift className="w-3 h-3" /> Misión Intercambio
                       </h4>
-                      <p className="text-white/70 text-xs">
+                      <p className="text-white/80 text-xs">
                         Ayuda al "Amigo Secreto". <span className="text-white font-bold">Mínimo S/ 40.</span>
                       </p>
                     </div>
@@ -346,13 +344,12 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     <div className="space-y-4 mb-8">
                       {[1, 2, 3].map((num) => (
                         <div key={num} className="relative w-full">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500 text-xs font-bold z-10">#{num}</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#FF6700] text-xs font-bold z-10">#{num}</span>
                           <Input
                             placeholder={`Opción de regalo...`}
                             value={formData[`deseo_${num}`]}
                             onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
-                            // pl-12 ya está en el componente Input, pero aquí no necesitamos ícono SVG, solo el texto #num
-                            // Como Input tiene pl-12 por defecto, ajustamos bien
+                            className="pl-10"
                           />
                         </div>
                       ))}
@@ -365,7 +362,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-orange-600 hover:bg-orange-500 text-black font-black text-lg py-5 rounded-xl shadow-lg uppercase tracking-[0.2em] relative overflow-hidden group active:scale-[0.98] transition-all mt-4 border-b-4 border-orange-800 active:border-b-0 active:translate-y-1"
+                className="w-full bg-[#FF6700] hover:bg-[#e55c00] text-black font-black text-lg py-5 rounded-xl shadow-lg shadow-orange-500/20 uppercase tracking-[0.2em] relative overflow-hidden group active:scale-[0.98] transition-all mt-4 border-b-4 border-[#cc5200] active:border-b-0 active:translate-y-1"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   {isSubmitting ? (
