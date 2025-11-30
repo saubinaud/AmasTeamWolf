@@ -34,14 +34,15 @@ interface FormErrors {
 // --- COMPONENTES UI LOCALES ---
 
 const Label = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
-  <label className={`block text-[#FF6700] text-xs font-bold mb-2 uppercase tracking-widest ${className} drop-shadow-md`}>
+  <label className={`block text-[#FF6700] text-xs font-bold mb-2 uppercase tracking-widest ${className}`}>
     {children}
   </label>
 );
 
 const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    className={`w-full bg-black/80 border border-white/20 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-white/40 focus:outline-none focus:border-[#FF6700] focus:ring-1 focus:ring-[#FF6700] transition-all text-base shadow-inner ${className}`}
+    // Fondo oscuro sólido para legibilidad perfecta y padding a la izquierda para el ícono
+    className={`w-full bg-[#111] border border-white/20 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#FF6700] focus:ring-1 focus:ring-[#FF6700] transition-all text-base shadow-inner ${className}`}
     {...props}
   />
 );
@@ -149,53 +150,52 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
     <div className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-black bg-[#020202] text-white">
       <Toaster position="top-center" richColors />
       
-      {/* --- FONDO CLARO (Sin filtros oscuros) --- */}
-      <div className="fixed inset-0 z-0 pointer-events-none bg-[#051a0d]">
+      {/* --- FONDO --- */}
+      <div className="fixed inset-0 z-0 pointer-events-none bg-black">
+        {/* Imagen de fondo sin filtros oscuros para que se vea CLARA */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-            opacity: 1 // OPACIDAD AL 100% PARA QUE SE VEA CLARO
+            opacity: 1 
           }} 
         />
-        {/* Solo una viñeta muy sutil en los bordes para centrar la atención, sin oscurecer el centro */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/40" />
       </div>
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 pt-10 pb-20 relative z-10 w-full">
+      <main className="flex-grow flex flex-col items-center justify-center px-4 py-12 relative z-10 w-full">
         
         {/* TITULAR */}
-        <div className="text-center mb-8 w-full max-w-4xl mx-auto relative z-20">
+        <div className="text-center mb-12 w-full max-w-4xl mx-auto relative z-20">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 mb-4 bg-black/60 px-5 py-2 rounded-full border border-[#FF6700]/60 backdrop-blur-md shadow-lg">
+            <div className="inline-flex items-center gap-2 mb-6 bg-black/80 px-5 py-2 rounded-full border border-[#FF6700] shadow-lg shadow-[#FF6700]/20">
               <span className="text-xl">🎅</span>
               <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#FF6700]">Evento Fin de Año</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-serif text-white mb-4 leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">
+            <h1 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-[0_4px_4px_rgba(0,0,0,0.9)]">
               Gran Clausura <br />
-              <span className="text-[#FF6700] drop-shadow-md font-black" style={{ textShadow: '2px 2px 0px #000' }}>Navideña</span>
+              <span className="text-[#FF6700] font-black drop-shadow-md" style={{ textShadow: '2px 2px 0px #000' }}>Navideña</span>
             </h1>
             
-            <p className="text-white text-lg md:text-xl font-medium max-w-lg mx-auto leading-relaxed px-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <p className="text-white text-lg md:text-xl font-medium max-w-xl mx-auto leading-relaxed px-4 drop-shadow-[0_2px_4px_rgba(0,0,0,1)]">
               Regístrate para la gran actividad navideña, no te la pierdas. Los esperamos a todos.
             </p>
           </motion.div>
         </div>
 
         {/* --- FORMULARIO --- */}
-        <div className="w-full max-w-lg relative z-20"> 
+        <div className="w-full max-w-lg relative z-20 mb-20"> 
           
           {isSubmitted ? (
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-black/90 border-2 border-[#FF6700] rounded-3xl p-8 text-center shadow-2xl"
+              className="bg-[#1a1a1a] border-2 border-[#FF6700] rounded-3xl p-8 text-center shadow-2xl"
             >
               <div className="mb-6 flex justify-center">
                 <div className="w-24 h-24 bg-[#165b33] rounded-full flex items-center justify-center shadow-[0_0_30px_#165b33] animate-bounce text-white">
@@ -217,11 +217,11 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              // Fondo negro semitransparente para que el texto sea legible sobre la imagen clara
-              className="bg-black/75 backdrop-blur-xl border border-[#FF6700]/50 rounded-[2rem] p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden"
+              // Borde naranja al formulario y fondo muy oscuro para contraste sobre el fondo claro
+              className="bg-black/90 backdrop-blur-xl border-2 border-[#FF6700]/50 rounded-[2rem] p-6 md:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] relative overflow-hidden"
             >
               {/* Cinta decorativa */}
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#FF6700] to-transparent" />
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[#FF6700] to-transparent opacity-80" />
 
               {/* 1. DATOS PERSONALES */}
               <div className="space-y-6 mb-8 mt-4">
@@ -276,7 +276,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     onClick={() => handleAttendance('confirmado')}
                     className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200 group overflow-hidden ${
                       formData.asistencia === 'confirmado'
-                        ? 'border-green-500 bg-green-600/20 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)]'
+                        ? 'border-green-500 bg-green-600/20 text-white shadow-[0_0_15px_rgba(34,197,94,0.3)] scale-[1.02]'
                         : 'border-white/20 bg-white/5 text-white/70 hover:border-green-500 hover:text-green-400'
                     }`}
                   >
@@ -291,7 +291,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     onClick={() => handleAttendance('no_asistire')}
                     className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-200 group ${
                       formData.asistencia === 'no_asistire'
-                        ? 'border-red-600 bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)]'
+                        ? 'border-red-600 bg-red-600 text-white shadow-[0_0_20px_rgba(220,38,38,0.5)] scale-[1.02]'
                         : 'border-white/20 bg-white/5 text-white/70 hover:border-red-500 hover:text-red-400'
                     }`}
                   >
@@ -336,7 +336,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                       <h4 className="text-[#FF6700] font-bold text-xs uppercase flex items-center gap-2 mb-1">
                         <Gift className="w-3 h-3" /> Misión Intercambio
                       </h4>
-                      <p className="text-white/80 text-xs">
+                      <p className="text-white/70 text-xs">
                         Ayuda al "Amigo Secreto". <span className="text-white font-bold">Mínimo S/ 40.</span>
                       </p>
                     </div>
