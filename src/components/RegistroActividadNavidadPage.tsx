@@ -24,7 +24,7 @@ const Input = ({ className = "", ...props }) => (
 
 const Button = ({ children, className = "", disabled, onClick, variant = "primary", ...props }) => {
   const variants = {
-    primary: "bg-[#FF6700] hover:bg-[#ff7a1f] text-white font-extrabold border-b-4 border-[#cc5200] active:border-b-2 shadow-xl hover:shadow-2xl",
+    primary: "bg-gradient-to-r from-[#FF6700] to-[#ff8800] hover:from-[#ff7a1f] hover:to-[#ff9933] text-white font-black border-b-4 border-[#cc5200] active:border-b-2 shadow-[0_0_50px_rgba(255,103,0,0.8)] hover:shadow-[0_0_60px_rgba(255,103,0,1)]",
     secondary: "bg-white hover:bg-zinc-50 text-zinc-900 font-bold border-2 border-zinc-300 shadow-lg hover:shadow-xl"
   };
 
@@ -144,17 +144,18 @@ export function RegistroActividadNavidadPage() {
     <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-white bg-[#0a2818] text-white overflow-x-hidden">
       <Toaster position="top-center" richColors />
       
-      {/* FONDO - MÓVIL Y DESKTOP DIFERENTES */}
+      {/* FONDO - MÓVIL (4_guugpt.png) y DESKTOP (3_dat4ln.png) DIFERENTES */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* Fondo móvil */}
+        {/* FONDO MÓVIL - Solo visible en pantallas pequeñas */}
         <div 
-          className="absolute inset-0 bg-center bg-cover md:hidden"
+          className="absolute inset-0 bg-center bg-cover block md:hidden"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/4_guugpt.png')`,
             opacity: 0.9
           }} 
         />
-        {/* Fondo desktop */}
+        
+        {/* FONDO DESKTOP - Solo visible en pantallas medianas y grandes */}
         <div 
           className="absolute inset-0 bg-center bg-cover hidden md:block"
           style={{ 
@@ -162,6 +163,7 @@ export function RegistroActividadNavidadPage() {
             opacity: 0.9
           }} 
         />
+        
         {/* Gradiente sutil */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/20 via-transparent to-[#0a2818]/30" />
       </div>
@@ -239,19 +241,19 @@ export function RegistroActividadNavidadPage() {
               </Button>
             </motion.div>
           ) : (
-            // FORMULARIO - FONDO MÁS OSCURO
+            // FORMULARIO - FONDO MUY OSCURO
             <motion.form
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="bg-gradient-to-br from-[#0d1f16]/98 to-[#08150e]/98 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-2xl relative overflow-hidden"
+              className="bg-[#050d0a]/95 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-2xl relative overflow-hidden"
             >
               {/* Decoración superior brillante */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700]" />
               
               {/* Brillo interno */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/8 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/10 via-transparent to-transparent pointer-events-none" />
 
               {/* DATOS PERSONALES */}
               <div className="space-y-4 md:space-y-5 mb-6 md:mb-8 relative z-10">
@@ -380,9 +382,9 @@ export function RegistroActividadNavidadPage() {
                     <div className="space-y-3 md:space-y-4">
                       {[1, 2, 3].map((num) => (
                         <div key={num}>
-                          <label className="text-white text-sm md:text-base font-bold mb-2.5 block uppercase tracking-wide">
+                          <Label>
                             Opción #{num}
-                          </label>
+                          </Label>
                           <Input
                             placeholder={`Idea de regalo...`}
                             value={formData[`deseo_${num}`]}
@@ -395,12 +397,12 @@ export function RegistroActividadNavidadPage() {
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT - MUY NOTORIO */}
+              {/* BOTÓN SUBMIT - MUY NOTORIO CON DEGRADADO NARANJA */}
               <Button 
                 type="submit"
                 disabled={isSubmitting}
                 variant="primary"
-                className="uppercase tracking-widest text-base md:text-lg lg:text-xl relative z-10 transform hover:scale-[1.03] py-5 md:py-6 shadow-[0_0_40px_rgba(255,103,0,0.6)] hover:shadow-[0_0_50px_rgba(255,103,0,0.8)]"
+                className="uppercase tracking-widest text-base md:text-lg lg:text-xl relative z-10 transform hover:scale-[1.03] py-5 md:py-6 animate-pulse"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2 md:gap-3">
