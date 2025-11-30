@@ -5,7 +5,8 @@ import { Badge } from './ui/badge';
 import { useAuth } from '../contexts/AuthContext';
 
 interface HeaderMainProps {
-  onNavigate: (page: string) => void;
+  // Acepta el segundo parámetro opcional para la sección
+  onNavigate: (page: string, sectionId?: string) => void;
   onOpenMatricula: () => void;
   onCartClick: () => void;
   cartItemsCount: number;
@@ -47,33 +48,19 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
   const handleMouseLeaveProgramas = () => {
     const timeout = setTimeout(() => {
       setIsProgramasDesktopOpen(false);
-    }, 200); // Delay de 200ms para dar tiempo a mover el mouse
+    }, 200);
     setCloseTimeout(timeout);
   };
 
+  // --- NUEVA LÓGICA SIMPLIFICADA ---
+  // Ya no hace scroll manual, solo le dice a la App a dónde ir
   const handleNavigateToSection = (sectionId: string) => {
-    // Primero navegar al home si no estamos ahí
-    onNavigate('home');
+    onNavigate('home', sectionId);
     
-    // Esperar un momento para que el home se renderice y luego hacer scroll
-    setTimeout(() => {
-      const element = document.getElementById(sectionId);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 150);
-    
+    // Cerrar todos los menús
     setIsMobileMenuOpen(false);
     setIsProgramasOpen(false);
-  };
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    setIsMobileMenuOpen(false);
-    setIsProgramasOpen(false);
+    setIsProgramasDesktopOpen(false);
   };
 
   return (
@@ -138,10 +125,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 <div className="absolute left-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-xl rounded-lg border border-[#FA7B21]/30 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="py-2">
                     <button
-                      onClick={() => {
-                        handleNavigateToSection('programas');
-                        setIsProgramasDesktopOpen(false);
-                      }}
+                      onClick={() => handleNavigateToSection('programas')}
                       className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors"
                     >
                       Basic Program
@@ -330,10 +314,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               {isProgramasOpen && (
                 <div className="pl-4 mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <button
-                    onClick={() => {
-                      handleNavigateToSection('programas');
-                      setIsProgramasOpen(false);
-                    }}
+                    onClick={() => handleNavigateToSection('programas')}
                     className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
                     style={{
                       touchAction: 'manipulation',
