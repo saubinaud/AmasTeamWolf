@@ -7,7 +7,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- IMPORTS REALES (Listos para tu web) ---
-// Estos funcionan en tu proyecto local aunque aquí den error visual
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 
@@ -36,7 +35,7 @@ interface FormErrors {
   [key: string]: string | undefined;
 }
 
-// --- COMPONENTES UI LOCALES (Estilos personalizados navideños) ---
+// --- COMPONENTES UI LOCALES ---
 
 const Label = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <label className={`block text-[#d4af37] text-xs font-bold mb-2 uppercase tracking-widest ${className}`}>
@@ -44,10 +43,10 @@ const Label = ({ children, className = "" }: { children: React.ReactNode, classN
   </label>
 );
 
+// Input con estilo Glassmorphism oscuro y borde sutil
 const Input = ({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
   <input 
-    // Estilo Glassmorphism oscuro como en tu referencia
-    className={`w-full bg-[#1a1a1a]/80 border border-white/10 rounded-2xl px-5 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base shadow-inner ${className}`}
+    className={`w-full bg-[#1a1a1a]/90 border border-white/10 rounded-xl px-4 py-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#d4af37] focus:ring-1 focus:ring-[#d4af37] transition-all text-base shadow-inner ${className}`}
     {...props}
   />
 );
@@ -176,26 +175,28 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
       />
 
       {/* --- CONTENIDO PRINCIPAL --- */}
-      {/* pt-32 y pb-40 para dar aire arriba y abajo */}
-      <main className="flex-grow flex flex-col items-center justify-start px-4 pt-32 pb-40 relative z-10">
+      {/* pt-40: Margen superior grande para que el título no toque el header */}
+      {/* pb-32: Margen inferior para que el formulario no toque el footer */}
+      <main className="flex-grow flex flex-col items-center justify-start px-4 pt-40 pb-32 relative z-10 w-full">
         
         {/* TITULAR GRANDE */}
-        <div className="text-center mb-12 max-w-4xl mx-auto">
+        <div className="text-center mb-10 w-full max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
             <div className="inline-flex items-center gap-2 mb-4 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-              <span className="text-xl">🎅</span>
+              <span className="text-lg">🎅</span>
               <span className="text-xs font-bold tracking-[0.2em] uppercase text-[#d4af37]">Evento Fin de Año</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-2xl">
-              Gran Clausura
+            <h1 className="text-4xl md:text-7xl font-serif text-white mb-6 leading-tight drop-shadow-2xl">
+              Gran Clausura <br />
+              <span className="text-[#d4af37]">Navideña</span>
             </h1>
             
-            <p className="text-white/80 text-lg md:text-xl font-light max-w-xl mx-auto leading-relaxed px-4">
+            <p className="text-white/80 text-base md:text-xl font-light max-w-xl mx-auto leading-relaxed px-4">
               Regístrate para la gran actividad navideña, no te la pierdas. Los esperamos a todos.
             </p>
           </motion.div>
@@ -230,87 +231,92 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              // Fondo oscuro similar al de tu referencia
               className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 md:p-8 shadow-2xl relative overflow-hidden"
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-50" />
+              {/* Cinta decorativa */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#d4af37] to-transparent opacity-70" />
 
               {/* 1. DATOS PERSONALES */}
-              <div className="space-y-6 mb-10 mt-2">
+              <div className="space-y-6 mb-8 mt-2">
                 <div>
-                  <Label>Nombre del Apoderado <User className="inline w-3 h-3 ml-1 text-[#d4af37]"/></Label>
-                  <Input 
-                    placeholder="Ej: Juan Pérez" 
-                    value={formData.nombre_padre}
-                    onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                    className={formErrors.nombre_padre ? 'border-red-500 bg-red-900/10' : ''}
-                  />
+                  <Label>Nombre del Apoderado</Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#d4af37]" />
+                    <Input 
+                      placeholder="Ej: Juan Pérez" 
+                      value={formData.nombre_padre}
+                      onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
+                      className={`pl-12 ${formErrors.nombre_padre ? 'border-red-500 bg-red-900/20' : ''}`}
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <Label>Nombre del Alumno/a <Sparkles className="inline w-3 h-3 ml-1 text-[#d4af37]"/></Label>
-                  <Input 
-                    placeholder="Ej: Sofía Pérez"
-                    value={formData.nombre_alumno}
-                    onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                    className={formErrors.nombre_alumno ? 'border-red-500 bg-red-900/10' : ''}
-                  />
+                  <Label>Nombre del Alumno/a</Label>
+                  <div className="relative">
+                    <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#d4af37]" />
+                    <Input 
+                      placeholder="Ej: Sofía Pérez"
+                      value={formData.nombre_alumno}
+                      onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
+                      className={`pl-12 ${formErrors.nombre_alumno ? 'border-red-500 bg-red-900/20' : ''}`}
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <Label>Correo Electrónico <Mail className="inline w-3 h-3 ml-1 text-[#d4af37]"/></Label>
-                  <Input 
-                    type="email"
-                    placeholder="correo@ejemplo.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={formErrors.email ? 'border-red-500 bg-red-900/10' : ''}
-                  />
+                  <Label>Correo Electrónico</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#d4af37]" />
+                    <Input 
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      className={`pl-12 ${formErrors.email ? 'border-red-500 bg-red-900/20' : ''}`}
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* 2. ASISTENCIA - BOTONES VIVOS */}
-              <div className="mb-10">
-                <Label className="text-center block text-sm mb-6 text-white tracking-widest">¿Asistirán al evento?</Label>
+              {/* 2. ASISTENCIA */}
+              <div className="mb-8">
+                <Label className="text-center block text-sm mb-4 text-white tracking-widest">¿Asistirán al evento?</Label>
                 
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Botón SÍ - Verde Vibrante */}
                   <button
                     type="button"
                     onClick={() => handleAttendance('confirmado')}
-                    className={`relative p-6 rounded-2xl border flex flex-col items-center justify-center gap-3 transition-all duration-200 group overflow-hidden ${
+                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 group overflow-hidden ${
                       formData.asistencia === 'confirmado'
-                        ? 'border-green-500 bg-green-600/20 shadow-[0_0_30px_rgba(34,197,94,0.3)] scale-[1.02]'
-                        : 'border-white/10 bg-white/5 hover:bg-green-500/10 hover:border-green-500/50'
+                        ? 'border-[#d4af37] bg-[#d4af37]/20 shadow-[0_0_15px_rgba(212,175,55,0.4)]'
+                        : 'border-white/10 bg-white/5 hover:border-[#d4af37]/50'
                     }`}
                   >
-                    <CalendarHeart className={`w-8 h-8 ${formData.asistencia === 'confirmado' ? 'text-green-400' : 'text-gray-400 group-hover:text-green-400'}`} />
-                    <span className={`font-black text-sm uppercase tracking-widest ${formData.asistencia === 'confirmado' ? 'text-green-400' : 'text-white/60 group-hover:text-white'}`}>
+                    <CalendarHeart className={`w-8 h-8 ${formData.asistencia === 'confirmado' ? 'text-[#d4af37]' : 'text-gray-400 group-hover:text-[#d4af37]'}`} />
+                    <span className={`font-bold text-xs uppercase tracking-widest ${formData.asistencia === 'confirmado' ? 'text-[#d4af37]' : 'text-gray-400 group-hover:text-white'}`}>
                       ¡Sí, Vamos!
                     </span>
                   </button>
 
-                  {/* Botón NO - Rojo Intenso */}
                   <button
                     type="button"
                     onClick={() => handleAttendance('no_asistire')}
-                    className={`relative p-6 rounded-2xl border flex flex-col items-center justify-center gap-3 transition-all duration-200 group ${
+                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 group ${
                       formData.asistencia === 'no_asistire'
-                        ? 'border-red-500 bg-red-600/20 shadow-[0_0_30px_rgba(239,68,68,0.3)] scale-[1.02]'
-                        : 'border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/50'
+                        ? 'border-red-500 bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.4)]'
+                        : 'border-white/10 bg-white/5 hover:border-red-500/50'
                     }`}
                   >
-                    <XCircle className={`w-8 h-8 ${formData.asistencia === 'no_asistire' ? 'text-red-400' : 'text-gray-400 group-hover:text-red-500'}`} />
-                    <span className={`font-black text-sm uppercase tracking-widest ${formData.asistencia === 'no_asistire' ? 'text-red-400' : 'text-white/60 group-hover:text-white'}`}>
+                    <XCircle className={`w-8 h-8 ${formData.asistencia === 'no_asistire' ? 'text-red-500' : 'text-gray-400 group-hover:text-red-500'}`} />
+                    <span className={`font-bold text-xs uppercase tracking-widest ${formData.asistencia === 'no_asistire' ? 'text-red-500' : 'text-gray-400 group-hover:text-white'}`}>
                       No Podré
                     </span>
                   </button>
                 </div>
                 
                 {formErrors.asistencia && (
-                  <p className="text-red-400 text-xs text-center mt-4 font-bold bg-red-500/10 py-2 rounded-lg border border-red-500/20">
-                    ⚠️ Por favor confirma tu asistencia
-                  </p>
+                  <p className="text-red-400 text-xs text-center mt-3 font-bold">⚠️ Por favor confirma</p>
                 )}
               </div>
 
@@ -323,11 +329,10 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     exit={{ opacity: 0, height: 0 }}
                     className="overflow-hidden"
                   >
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center mb-8">
-                      <Frown className="w-10 h-10 text-white/40 mx-auto mb-3" />
-                      <p className="text-white/80">
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center mb-8">
+                      <p className="text-white/80 text-sm">
                         ¡Qué pena! Los extrañaremos. <br/>
-                        <span className="text-[#d4af37] block mt-2">¡Feliz Navidad! 🎄</span>
+                        <span className="text-[#d4af37] font-bold block mt-2">¡Feliz Navidad! 🎄</span>
                       </p>
                     </div>
                   </motion.div>
@@ -341,8 +346,8 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
                     className="overflow-hidden"
                   >
                     <div className="bg-[#d4af37]/10 border-l-2 border-[#d4af37] pl-4 py-3 mb-6 rounded-r-lg">
-                      <h4 className="text-[#d4af37] font-bold text-sm uppercase flex items-center gap-2 mb-1">
-                        <Gift className="w-4 h-4" /> Misión Intercambio
+                      <h4 className="text-[#d4af37] font-bold text-xs uppercase flex items-center gap-2 mb-1">
+                        <Gift className="w-3 h-3" /> Misión Intercambio
                       </h4>
                       <p className="text-white/60 text-xs">
                         Ayuda al "Amigo Secreto". <span className="text-white font-bold">Mínimo S/ 40.</span>
@@ -351,25 +356,28 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
 
                     <div className="space-y-4 mb-8">
                       {[1, 2, 3].map((num) => (
-                        <Input
-                          key={num}
-                          placeholder={`Opción de regalo #${num}...`}
-                          value={formData[`deseo_${num}`]}
-                          onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
-                        />
+                        <div key={num} className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-xs font-bold">#{num}</span>
+                          <Input
+                            placeholder={`Opción de regalo...`}
+                            value={formData[`deseo_${num}`]}
+                            onChange={(e) => handleInputChange(`deseo_${num}`, e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
                       ))}
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT - GIGANTE Y VISIBLE */}
+              {/* BOTÓN SUBMIT - SÓLIDO DORADO */}
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-[#d4af37] via-[#eecf5b] to-[#b4941f] hover:brightness-110 text-black font-black text-lg py-5 rounded-2xl shadow-[0_4px_30px_rgba(212,175,55,0.3)] uppercase tracking-[0.2em] relative overflow-hidden group active:scale-[0.98] transition-all mt-4"
+                className="w-full bg-[#d4af37] hover:bg-[#c29f2d] text-black font-black text-lg py-5 rounded-xl shadow-lg shadow-orange-500/20 uppercase tracking-widest relative overflow-hidden group active:scale-[0.98] transition-all mt-2"
               >
-                <span className="relative z-10 flex items-center justify-center gap-3">
+                <span className="relative z-10 flex items-center justify-center gap-2">
                   {isSubmitting ? (
                     <>Enviando... <Loader2 className="w-5 h-5 animate-spin"/></>
                   ) : (
@@ -383,7 +391,7 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         </div>
       </main>
 
-      {/* --- FOOTER --- */}
+      {/* --- FOOTER REAL --- */}
       <div className="relative z-20">
         <FooterMain 
           onNavigate={onNavigate}
@@ -391,12 +399,9 @@ export function RegistroActividadNavidadPage({ onNavigate }: RegistroActividadNa
         />
       </div>
 
-      {/* --- LOBO ANIMADO --- 
-          FIXED en la esquina inferior derecha.
-          Pequeño (w-24 en móvil, w-40 en desktop).
-          NO MOLESTA.
-      */}
-      <div className="fixed bottom-0 right-0 z-50 pointer-events-none w-24 md:w-40 opacity-100 filter drop-shadow-2xl">
+      {/* --- LOBO ANIMADO --- */}
+      {/* Fixed, z-index 50 para que se vea sobre el fondo pero no tape interacciones críticas */}
+      <div className="fixed bottom-0 right-0 z-50 pointer-events-none w-24 md:w-36 opacity-100 filter drop-shadow-2xl">
         <img
           src="https://res.cloudinary.com/dkoocok3j/image/upload/v1764451372/lobo_sin_fondo_navidad_Mesa_de_trabajo_1_copia_5_r4cl8x.png"
           alt="Lobo Santa"
