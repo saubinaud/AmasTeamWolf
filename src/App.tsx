@@ -47,7 +47,7 @@ function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
 
-  // --- NUEVA FUNCIÓN: SCROLL ROBUSTO (POLLING) ---
+  // --- FUNCIÓN: SCROLL ROBUSTO (POLLING) ---
   // Busca el elemento repetidamente hasta que aparece (máx 2.5 seg)
   const robustScrollToSection = (sectionId: string) => {
     let intentos = 0;
@@ -146,7 +146,7 @@ function App() {
 
   // Scroll to top whenever page changes
   useEffect(() => {
-    // MODIFICADO: Solo hacer scroll top si NO hay una sección específica en la URL
+    // Solo hacer scroll top si NO hay una sección específica en la URL
     // Esto evita que el "scroll top" cancele el "scroll a sección"
     const urlParams = new URLSearchParams(window.location.search);
     const sectionParam = urlParams.get('section');
@@ -158,7 +158,7 @@ function App() {
     }
   }, [currentPage]);
 
-  // MODIFICADO: Acepta sectionId opcional
+  // Acepta sectionId opcional
   const handleNavigate = (page: string, sectionId?: string) => {
     // 1. Actualizar estado de página
     setCurrentPage(page as any);
@@ -422,8 +422,39 @@ function App() {
           url="https://amasteamwolf.com/navidad"
           image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg"
         />
-        <RegistroActividadNavidadPage onNavigate={handleNavigate} />
+        
+        {/* MODIFICADO: Pasamos todas las props y añadimos los componentes de carrito/pago */}
+        <RegistroActividadNavidadPage 
+          onNavigate={handleNavigate}
+          onOpenMatricula={handleEnrollProgram}
+          onCartClick={() => setIsCartOpen(true)}
+          cartItemsCount={cartItemsCount}
+        />
+
         <Toaster theme="dark" position="bottom-right" />
+        
+        {/* Componentes para que funcione el header en esta página */}
+        <CartDrawerHome
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onCheckout={handleCheckout}
+        />
+
+        <PopupPago
+          isOpen={isPagoOpen}
+          onClose={() => {
+            setIsPagoOpen(false);
+            if (checkoutItems.length > 0) {
+              setCartItems([]);
+              setCheckoutItems([]);
+            }
+          }}
+          totalAmount={totalAmount}
+          cartItems={checkoutItems}
+        />
       </>
     );
   }
