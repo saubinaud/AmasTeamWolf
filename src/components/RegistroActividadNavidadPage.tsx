@@ -17,14 +17,14 @@ const Label = ({ children, className = "" }) => (
 
 const Input = ({ className = "", ...props }) => (
   <input 
-    className={`w-full bg-white/95 border-2 border-zinc-300 rounded-lg px-4 py-3.5 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/20 transition-all text-sm font-medium ${className}`}
+    className={`w-full bg-white border-2 border-zinc-300 rounded-lg px-4 py-3.5 text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/30 transition-all text-base font-medium ${className}`}
     {...props}
   />
 );
 
 const Button = ({ children, className = "", disabled, onClick, variant = "primary", ...props }) => {
   const variants = {
-    primary: "bg-gradient-to-r from-[#FF6700] to-[#ff8800] hover:from-[#ff7a1f] hover:to-[#ff9933] text-white font-black border-b-4 border-[#cc5200] active:border-b-2 shadow-[0_0_50px_rgba(255,103,0,0.8)] hover:shadow-[0_0_60px_rgba(255,103,0,1)]",
+    primary: "bg-gradient-to-r from-[#FF6700] via-[#ff7a1f] to-[#ff8800] hover:from-[#ff8800] hover:via-[#ff9933] hover:to-[#ffaa00] text-white font-black border-b-4 border-[#cc5200] active:border-b-2 shadow-[0_0_40px_rgba(255,103,0,0.9),0_0_80px_rgba(255,103,0,0.5)] hover:shadow-[0_0_60px_rgba(255,103,0,1),0_0_100px_rgba(255,103,0,0.7)]",
     secondary: "bg-white hover:bg-zinc-50 text-zinc-900 font-bold border-2 border-zinc-300 shadow-lg hover:shadow-xl"
   };
 
@@ -146,26 +146,26 @@ export function RegistroActividadNavidadPage() {
       
       {/* FONDO - MÓVIL (4_guugpt.png) y DESKTOP (3_dat4ln.png) DIFERENTES */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {/* FONDO MÓVIL - Solo visible en pantallas pequeñas */}
+        {/* FONDO MÓVIL */}
         <div 
           className="absolute inset-0 bg-center bg-cover block md:hidden"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/4_guugpt.png')`,
-            opacity: 0.9
+            opacity: 0.85
           }} 
         />
         
-        {/* FONDO DESKTOP - Solo visible en pantallas medianas y grandes */}
+        {/* FONDO DESKTOP */}
         <div 
           className="absolute inset-0 bg-center bg-cover hidden md:block"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764494534/3_dat4ln.png')`,
-            opacity: 0.9
+            opacity: 0.85
           }} 
         />
         
-        {/* Gradiente sutil */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/20 via-transparent to-[#0a2818]/30" />
+        {/* Gradiente para crear más profundidad */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/40 via-transparent to-[#0a2818]/60" />
       </div>
 
       {/* HEADER */}
@@ -174,7 +174,7 @@ export function RegistroActividadNavidadPage() {
       </div>
 
       {/* CONTENIDO */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 md:py-12 lg:py-16 relative z-10 w-full max-w-7xl mx-auto">
+      <main className="flex-grow flex flex-col items-center justify-center px-4 py-6 md:py-12 lg:py-16 relative z-10 w-full max-w-7xl mx-auto">
         
         {/* HEADER DE PÁGINA */}
         <div className="text-center mb-6 md:mb-10 w-full max-w-2xl mx-auto">
@@ -184,19 +184,11 @@ export function RegistroActividadNavidadPage() {
             transition={{ duration: 0.5 }}
             className="space-y-3 md:space-y-4"
           >
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-black/70 backdrop-blur-sm px-4 py-2 rounded-full border border-[#FF6700]/50">
-              <span className="text-base md:text-lg">🎅</span>
-              <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] uppercase text-[#FF6700]">
-                Evento Fin de Año
-              </span>
-            </div>
-            
             {/* Título */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight px-4">
               Gran Clausura
               <br />
-              <span className="text-[#FF6700] font-black drop-shadow-[0_2px_10px_rgba(255,103,0,0.8)]">
+              <span className="text-[#FF6700] font-black drop-shadow-[0_4px_15px_rgba(255,103,0,1)]">
                 Navideña
               </span>
             </h1>
@@ -241,19 +233,19 @@ export function RegistroActividadNavidadPage() {
               </Button>
             </motion.div>
           ) : (
-            // FORMULARIO - FONDO MUY OSCURO
+            // FORMULARIO - CON MEJOR CONTRASTE
             <motion.form
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="bg-[#050d0a]/95 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-2xl relative overflow-hidden"
+              className="bg-gradient-to-br from-[#1a3d2e]/98 to-[#0f261b]/98 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.8)] relative overflow-hidden"
             >
               {/* Decoración superior brillante */}
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700]" />
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700] shadow-[0_0_20px_rgba(255,103,0,0.8)]" />
               
-              {/* Brillo interno */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/10 via-transparent to-transparent pointer-events-none" />
+              {/* Brillo interno sutil */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/5 via-transparent to-transparent pointer-events-none" />
 
               {/* DATOS PERSONALES */}
               <div className="space-y-4 md:space-y-5 mb-6 md:mb-8 relative z-10">
@@ -291,7 +283,7 @@ export function RegistroActividadNavidadPage() {
 
               {/* ASISTENCIA */}
               <div className="mb-6 md:mb-8 relative z-10">
-                <Label className="text-center block mb-4 md:mb-5 text-sm md:text-base">
+                <Label className="text-center block mb-4 md:mb-5">
                   ¿Asistirán al evento?
                 </Label>
                 
@@ -302,12 +294,12 @@ export function RegistroActividadNavidadPage() {
                     onClick={() => handleAttendance('confirmado')}
                     className={`relative p-4 md:p-5 rounded-2xl border-4 flex flex-col items-center justify-center gap-2 md:gap-3 transition-all duration-200 font-bold ${
                       formData.asistencia === 'confirmado'
-                        ? 'border-green-500 bg-green-500/30 text-white shadow-[0_0_30px_rgba(34,197,94,0.5)] scale-105'
-                        : 'border-white/30 bg-white/10 text-white/70 hover:border-green-400 hover:bg-green-500/20 hover:text-white'
+                        ? 'border-green-500 bg-green-500/40 text-white shadow-[0_0_30px_rgba(34,197,94,0.6)] scale-105'
+                        : 'border-white/40 bg-white/15 text-white hover:border-green-400 hover:bg-green-500/25 hover:text-white'
                     }`}
                   >
                     <CalendarHeart className="w-8 h-8 md:w-10 md:h-10" />
-                    <span className="text-[10px] md:text-xs uppercase tracking-wider">
+                    <span className="text-xs md:text-sm uppercase tracking-wider">
                       ¡Sí, vamos!
                     </span>
                   </button>
@@ -318,12 +310,12 @@ export function RegistroActividadNavidadPage() {
                     onClick={() => handleAttendance('no_asistire')}
                     className={`relative p-4 md:p-5 rounded-2xl border-4 flex flex-col items-center justify-center gap-2 md:gap-3 transition-all duration-200 font-bold ${
                       formData.asistencia === 'no_asistire'
-                        ? 'border-red-500 bg-red-500/30 text-white shadow-[0_0_30px_rgba(239,68,68,0.5)] scale-105'
-                        : 'border-white/30 bg-white/10 text-white/70 hover:border-red-400 hover:bg-red-500/20 hover:text-white'
+                        ? 'border-red-500 bg-red-500/40 text-white shadow-[0_0_30px_rgba(239,68,68,0.6)] scale-105'
+                        : 'border-white/40 bg-white/15 text-white hover:border-red-400 hover:bg-red-500/25 hover:text-white'
                     }`}
                   >
                     <XCircle className="w-8 h-8 md:w-10 md:h-10" />
-                    <span className="text-[10px] md:text-xs uppercase tracking-wider">
+                    <span className="text-xs md:text-sm uppercase tracking-wider">
                       No podré
                     </span>
                   </button>
@@ -347,7 +339,7 @@ export function RegistroActividadNavidadPage() {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden mb-6 md:mb-8 relative z-10"
                   >
-                    <div className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-5 md:p-6 text-center">
+                    <div className="bg-white/15 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-5 md:p-6 text-center">
                       <p className="text-white text-sm md:text-base leading-relaxed">
                         ¡Qué pena! Los extrañaremos.
                         <span className="text-[#FF6700] font-black block mt-2 text-lg md:text-xl drop-shadow-lg">
@@ -368,7 +360,7 @@ export function RegistroActividadNavidadPage() {
                     className="overflow-hidden mb-6 md:mb-8 relative z-10"
                   >
                     {/* Info del intercambio */}
-                    <div className="bg-[#FF6700]/20 border-l-4 border-[#FF6700] pl-4 pr-3 py-4 mb-5 rounded-r-xl backdrop-blur-sm">
+                    <div className="bg-[#FF6700]/25 border-l-4 border-[#FF6700] pl-4 pr-3 py-4 mb-5 rounded-r-xl backdrop-blur-sm">
                       <h4 className="text-[#FF6700] font-extrabold text-xs md:text-sm uppercase flex items-center gap-2 mb-1.5">
                         <Gift className="w-4 h-4 md:w-5 md:h-5" /> Intercambio de Regalos
                       </h4>
@@ -397,12 +389,12 @@ export function RegistroActividadNavidadPage() {
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT - MUY NOTORIO CON DEGRADADO NARANJA */}
+              {/* BOTÓN SUBMIT - MUY VISIBLE CON DEGRADADO Y BRILLO */}
               <Button 
                 type="submit"
                 disabled={isSubmitting}
                 variant="primary"
-                className="uppercase tracking-widest text-base md:text-lg lg:text-xl relative z-10 transform hover:scale-[1.03] py-5 md:py-6 animate-pulse"
+                className="uppercase tracking-widest text-base md:text-lg lg:text-xl relative z-10 transform hover:scale-[1.02] py-5 md:py-6"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2 md:gap-3">
