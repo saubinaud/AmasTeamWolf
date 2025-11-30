@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // --- COMPONENTES UI ---
 
 const Label = ({ children, className = "" }) => (
-  <label className={`block text-[#FF6700] text-[11px] font-bold mb-2 uppercase tracking-wider ${className}`}>
+  <label className={`block text-white text-xs font-bold mb-2 uppercase tracking-wide ${className}`}>
     {children}
   </label>
 );
@@ -16,10 +16,10 @@ const Label = ({ children, className = "" }) => (
 const Input = ({ className = "", icon: Icon, ...props }) => (
   <div className="relative">
     {Icon && (
-      <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FF6700]/70 z-10 pointer-events-none" />
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 z-10 pointer-events-none" />
     )}
     <input 
-      className={`w-full bg-zinc-900/90 border border-zinc-700/50 rounded-lg ${Icon ? 'pl-11' : 'pl-4'} pr-4 py-3.5 text-white placeholder:text-zinc-500 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/30 transition-all text-sm ${className}`}
+      className={`w-full bg-white/95 border-2 border-zinc-300 rounded-lg ${Icon ? 'pl-12' : 'pl-4'} pr-4 py-3.5 text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/20 transition-all text-sm font-medium ${className}`}
       {...props}
     />
   </div>
@@ -27,15 +27,15 @@ const Input = ({ className = "", icon: Icon, ...props }) => (
 
 const Button = ({ children, className = "", disabled, onClick, variant = "primary", ...props }) => {
   const variants = {
-    primary: "bg-[#FF6700] hover:bg-[#e55c00] text-black font-bold border-b-4 border-[#cc5200] active:border-b-0",
-    secondary: "bg-zinc-800 hover:bg-zinc-700 text-white font-medium border-b-4 border-zinc-900 active:border-b-0"
+    primary: "bg-[#FF6700] hover:bg-[#ff7a1f] text-white font-extrabold border-b-4 border-[#cc5200] active:border-b-2 shadow-xl hover:shadow-2xl",
+    secondary: "bg-white hover:bg-zinc-50 text-zinc-900 font-bold border-2 border-zinc-300 shadow-lg hover:shadow-xl"
   };
 
   return (
     <button 
       onClick={onClick}
       disabled={disabled}
-      className={`w-full py-3.5 rounded-lg transition-all active:translate-y-1 ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`w-full py-4 rounded-xl transition-all active:translate-y-0.5 ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       {...props}
     >
       {children}
@@ -144,104 +144,108 @@ export function RegistroActividadNavidadPage() {
   };
 
   return (
-    <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-black bg-black text-white overflow-x-hidden">
+    <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-white bg-[#0a2818] text-white overflow-x-hidden">
       <Toaster position="top-center" richColors />
       
-      {/* FONDO */}
-      <div className="fixed inset-0 z-0 pointer-events-none bg-[#051a0d]">
+      {/* FONDO - MÁS CLARO Y VISIBLE */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-center bg-no-repeat md:bg-cover"
           style={{ 
             backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/v1764452535/Green_Red_Festive_Christmas_Card_w0ox9n.png')`,
-            opacity: 0.4
+            backgroundSize: 'contain',
+            backgroundPosition: 'top center',
+            opacity: 0.85
           }} 
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/80" />
+        {/* Gradiente sutil solo en los bordes */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a2818]/30 via-transparent to-[#0a2818]/50" />
       </div>
 
       {/* CONTENIDO */}
-      <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 md:py-16 relative z-10 w-full">
+      <main className="flex-grow flex flex-col items-center justify-center px-4 py-8 md:py-12 lg:py-16 relative z-10 w-full max-w-7xl mx-auto">
         
         {/* HEADER */}
-        <div className="text-center mb-8 md:mb-12 w-full max-w-2xl mx-auto">
+        <div className="text-center mb-6 md:mb-10 w-full max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-4"
+            transition={{ duration: 0.5 }}
+            className="space-y-3 md:space-y-4"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-full border border-[#FF6700]/30">
-              <span className="text-lg">🎅</span>
-              <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-[#FF6700]">
+            <div className="inline-flex items-center gap-2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-[#FF6700]/40">
+              <span className="text-base md:text-lg">🎅</span>
+              <span className="text-[9px] md:text-[10px] font-bold tracking-[0.15em] uppercase text-[#FF6700]">
                 Evento Fin de Año
               </span>
             </div>
             
             {/* Título */}
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif text-white leading-tight px-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-tight px-4">
               Gran Clausura
               <br />
-              <span className="text-[#FF6700] font-black" style={{ 
-                textShadow: '0 0 20px rgba(255, 103, 0, 0.5), 2px 2px 4px rgba(0,0,0,0.8)' 
-              }}>
+              <span className="text-[#FF6700] font-black drop-shadow-[0_2px_8px_rgba(255,103,0,0.6)]">
                 Navideña
               </span>
             </h1>
             
             {/* Descripción */}
-            <p className="text-white/90 text-sm md:text-base max-w-md mx-auto leading-relaxed px-4">
-              Regístrate para la gran actividad navideña. <br className="hidden md:block" />
-              <span className="text-[#FF6700] font-semibold">¡Los esperamos a todos!</span>
+            <p className="text-white text-sm md:text-base lg:text-lg max-w-md mx-auto leading-relaxed px-4 drop-shadow-lg">
+              Regístrate para la gran actividad navideña.
+              <span className="block text-[#FF6700] font-bold mt-1">¡Los esperamos a todos!</span>
             </p>
           </motion.div>
         </div>
 
         {/* FORMULARIO */}
-        <div className="w-full max-w-md mx-auto"> 
+        <div className="w-full max-w-md lg:max-w-lg mx-auto"> 
           
           {isSubmitted ? (
             // ESTADO DE ÉXITO
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-black/90 backdrop-blur-xl border-2 border-[#FF6700] rounded-2xl p-6 md:p-8 text-center shadow-2xl"
+              className="bg-white/95 backdrop-blur-xl border-4 border-[#FF6700] rounded-3xl p-6 md:p-10 text-center shadow-2xl"
             >
               <div className="mb-6 flex justify-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center shadow-lg animate-bounce">
-                  <PartyPopper className="w-10 h-10 text-white" />
+                <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-2xl animate-bounce">
+                  <PartyPopper className="w-12 h-12 text-white" />
                 </div>
               </div>
               
-              <h3 className="text-2xl md:text-3xl font-serif text-[#FF6700] mb-2">
+              <h3 className="text-3xl md:text-4xl font-serif text-[#FF6700] mb-3 font-black">
                 ¡Gracias!
               </h3>
-              <p className="text-gray-300 mb-6 text-sm md:text-base">
+              <p className="text-zinc-700 mb-8 text-base md:text-lg font-medium">
                 Hemos registrado tu respuesta correctamente.
               </p>
               
               <Button 
                 onClick={handleReset}
                 variant="primary"
-                className="text-sm md:text-base"
+                className="text-base md:text-lg"
               >
                 Volver al Inicio
               </Button>
             </motion.div>
           ) : (
-            // FORMULARIO
+            // FORMULARIO - MÁS VIDA Y CONTRASTE
             <motion.form
               onSubmit={handleSubmit}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="bg-black/85 backdrop-blur-xl border-2 border-[#FF6700]/80 rounded-2xl p-5 md:p-7 shadow-2xl relative overflow-hidden"
+              transition={{ duration: 0.4 }}
+              className="bg-gradient-to-br from-[#1a3a2e]/95 to-[#0f2419]/95 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-5 md:p-8 lg:p-10 shadow-2xl relative overflow-hidden"
             >
-              {/* Decoración superior */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#FF6700] to-transparent" />
+              {/* Decoración superior brillante */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700]" />
+              
+              {/* Brillo interno */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6700]/5 via-transparent to-transparent pointer-events-none" />
 
               {/* DATOS PERSONALES */}
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4 md:space-y-5 mb-6 md:mb-8 relative z-10">
                 <div>
                   <Label>Nombre del Apoderado</Label>
                   <Input 
@@ -249,7 +253,7 @@ export function RegistroActividadNavidadPage() {
                     placeholder="Ej: Juan Pérez" 
                     value={formData.nombre_padre}
                     onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                    className={formErrors.nombre_padre ? 'border-red-500 ring-2 ring-red-500/30' : ''}
+                    className={formErrors.nombre_padre ? 'border-red-500 ring-4 ring-red-500/30' : ''}
                   />
                 </div>
                 
@@ -260,7 +264,7 @@ export function RegistroActividadNavidadPage() {
                     placeholder="Ej: Sofía Pérez"
                     value={formData.nombre_alumno}
                     onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                    className={formErrors.nombre_alumno ? 'border-red-500 ring-2 ring-red-500/30' : ''}
+                    className={formErrors.nombre_alumno ? 'border-red-500 ring-4 ring-red-500/30' : ''}
                   />
                 </div>
 
@@ -272,30 +276,30 @@ export function RegistroActividadNavidadPage() {
                     placeholder="correo@ejemplo.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={formErrors.email ? 'border-red-500 ring-2 ring-red-500/30' : ''}
+                    className={formErrors.email ? 'border-red-500 ring-4 ring-red-500/30' : ''}
                   />
                 </div>
               </div>
 
               {/* ASISTENCIA */}
-              <div className="mb-6">
-                <Label className="text-center block mb-4">
+              <div className="mb-6 md:mb-8 relative z-10">
+                <Label className="text-center block mb-4 md:mb-5 text-sm md:text-base">
                   ¿Asistirán al evento?
                 </Label>
                 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
                   {/* SÍ ASISTIRÉ */}
                   <button
                     type="button"
                     onClick={() => handleAttendance('confirmado')}
-                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
+                    className={`relative p-4 md:p-5 rounded-2xl border-4 flex flex-col items-center justify-center gap-2 md:gap-3 transition-all duration-200 font-bold ${
                       formData.asistencia === 'confirmado'
-                        ? 'border-green-500 bg-green-500/20 text-white shadow-lg shadow-green-500/20'
-                        : 'border-zinc-700 bg-zinc-900/50 text-zinc-400 hover:border-green-500/50 hover:text-green-300'
+                        ? 'border-green-500 bg-green-500/30 text-white shadow-[0_0_30px_rgba(34,197,94,0.5)] scale-105'
+                        : 'border-white/30 bg-white/10 text-white/70 hover:border-green-400 hover:bg-green-500/20 hover:text-white'
                     }`}
                   >
-                    <CalendarHeart className="w-7 h-7" />
-                    <span className="font-bold text-[10px] uppercase tracking-wider">
+                    <CalendarHeart className="w-8 h-8 md:w-10 md:h-10" />
+                    <span className="text-[10px] md:text-xs uppercase tracking-wider">
                       ¡Sí, vamos!
                     </span>
                   </button>
@@ -304,21 +308,21 @@ export function RegistroActividadNavidadPage() {
                   <button
                     type="button"
                     onClick={() => handleAttendance('no_asistire')}
-                    className={`relative p-4 rounded-xl border-2 flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
+                    className={`relative p-4 md:p-5 rounded-2xl border-4 flex flex-col items-center justify-center gap-2 md:gap-3 transition-all duration-200 font-bold ${
                       formData.asistencia === 'no_asistire'
-                        ? 'border-red-500 bg-red-500/20 text-white shadow-lg shadow-red-500/20'
-                        : 'border-zinc-700 bg-zinc-900/50 text-zinc-400 hover:border-red-500/50 hover:text-red-300'
+                        ? 'border-red-500 bg-red-500/30 text-white shadow-[0_0_30px_rgba(239,68,68,0.5)] scale-105'
+                        : 'border-white/30 bg-white/10 text-white/70 hover:border-red-400 hover:bg-red-500/20 hover:text-white'
                     }`}
                   >
-                    <XCircle className="w-7 h-7" />
-                    <span className="font-bold text-[10px] uppercase tracking-wider">
+                    <XCircle className="w-8 h-8 md:w-10 md:h-10" />
+                    <span className="text-[10px] md:text-xs uppercase tracking-wider">
                       No podré
                     </span>
                   </button>
                 </div>
                 
                 {formErrors.asistencia && (
-                  <p className="text-red-400 text-xs text-center mt-3 bg-red-500/10 py-2 rounded-lg">
+                  <p className="text-red-300 text-xs md:text-sm text-center mt-3 md:mt-4 bg-red-500/20 py-2 md:py-2.5 rounded-xl font-bold border-2 border-red-500">
                     ⚠️ Selecciona una opción
                   </p>
                 )}
@@ -333,12 +337,12 @@ export function RegistroActividadNavidadPage() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="overflow-hidden mb-6"
+                    className="overflow-hidden mb-6 md:mb-8 relative z-10"
                   >
-                    <div className="bg-zinc-900/70 border border-zinc-700/50 rounded-xl p-5 text-center">
-                      <p className="text-zinc-300 text-sm leading-relaxed">
+                    <div className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-5 md:p-6 text-center">
+                      <p className="text-white text-sm md:text-base leading-relaxed">
                         ¡Qué pena! Los extrañaremos.
-                        <span className="text-[#FF6700] font-bold block mt-2 text-base">
+                        <span className="text-[#FF6700] font-black block mt-2 text-lg md:text-xl drop-shadow-lg">
                           ¡Feliz Navidad! 🎄
                         </span>
                       </p>
@@ -353,24 +357,24 @@ export function RegistroActividadNavidadPage() {
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
-                    className="overflow-hidden mb-6"
+                    className="overflow-hidden mb-6 md:mb-8 relative z-10"
                   >
                     {/* Info del intercambio */}
-                    <div className="bg-[#FF6700]/10 border-l-4 border-[#FF6700] pl-4 pr-3 py-3 mb-4 rounded-r-lg">
-                      <h4 className="text-[#FF6700] font-bold text-xs uppercase flex items-center gap-2 mb-1">
-                        <Gift className="w-3.5 h-3.5" /> Intercambio de Regalos
+                    <div className="bg-[#FF6700]/20 border-l-4 border-[#FF6700] pl-4 pr-3 py-4 mb-5 rounded-r-xl backdrop-blur-sm">
+                      <h4 className="text-[#FF6700] font-extrabold text-xs md:text-sm uppercase flex items-center gap-2 mb-1.5">
+                        <Gift className="w-4 h-4 md:w-5 md:h-5" /> Intercambio de Regalos
                       </h4>
-                      <p className="text-white/80 text-xs leading-relaxed">
+                      <p className="text-white text-xs md:text-sm leading-relaxed">
                         Ayuda al "Amigo Secreto" con ideas.{' '}
-                        <span className="text-white font-semibold">Valor mínimo: S/ 40</span>
+                        <span className="text-white font-black">Valor mínimo: S/ 40</span>
                       </p>
                     </div>
 
                     {/* Lista de deseos */}
-                    <div className="space-y-3">
+                    <div className="space-y-3 md:space-y-4">
                       {[1, 2, 3].map((num) => (
                         <div key={num}>
-                          <label className="text-zinc-400 text-[10px] font-semibold mb-1.5 block uppercase tracking-wider">
+                          <label className="text-white/90 text-[10px] md:text-xs font-bold mb-2 block uppercase tracking-wide">
                             Opción #{num}
                           </label>
                           <Input
@@ -385,20 +389,20 @@ export function RegistroActividadNavidadPage() {
                 )}
               </AnimatePresence>
 
-              {/* BOTÓN SUBMIT */}
+              {/* BOTÓN SUBMIT - MUY VISIBLE */}
               <Button 
                 type="submit"
                 disabled={isSubmitting}
                 variant="primary"
-                className="uppercase tracking-wider text-sm font-extrabold shadow-lg shadow-[#FF6700]/30"
+                className="uppercase tracking-widest text-sm md:text-base lg:text-lg relative z-10 transform hover:scale-[1.02]"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    Enviando... <Loader2 className="w-4 h-4 animate-spin"/>
+                  <span className="flex items-center justify-center gap-2 md:gap-3">
+                    ENVIANDO... <Loader2 className="w-5 h-5 md:w-6 md:h-6 animate-spin"/>
                   </span>
                 ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    Enviar Respuesta <Send className="w-4 h-4" />
+                  <span className="flex items-center justify-center gap-2 md:gap-3">
+                    ENVIAR RESPUESTA <Send className="w-5 h-5 md:w-6 md:h-6" />
                   </span>
                 )}
               </Button>
@@ -407,10 +411,10 @@ export function RegistroActividadNavidadPage() {
           )}
         </div>
 
-        {/* Footer minimalista */}
-        <div className="mt-8 text-center">
-          <p className="text-zinc-500 text-xs">
-            🎄 AMAS Team Wolf © 2024
+        {/* Footer */}
+        <div className="mt-8 md:mt-12 text-center">
+          <p className="text-white/60 text-xs md:text-sm font-medium flex items-center justify-center gap-2">
+            🎄 <span className="font-bold">AMAS Team Wolf</span> © 2024
           </p>
         </div>
 
