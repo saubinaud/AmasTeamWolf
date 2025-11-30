@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { toast, Toaster } from 'sonner';
-import { HeaderMain } from './HeaderMain';
-import { FooterMain } from './FooterMain';
 import { 
   Gift, CheckCircle, PartyPopper, 
   XCircle, CalendarHeart, Frown, Send, Loader2, User, Sparkles, Mail
