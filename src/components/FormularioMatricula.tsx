@@ -42,19 +42,22 @@ const FERIADOS_MOVILES: Record<number, Array<{ fecha: string; nombre: string }>>
 // Clases por programa
 const PROGRAMA_CLASES: Record<string, number> = {
   "1mes": 8,
-  "full": 24 // 3 meses
+  "full": 24, // 3 meses
+  "6meses": 48 // 6 meses (2 veces por semana)
 };
 
 // Precios base por programa
 const PRECIOS_BASE: Record<string, number> = {
   "1mes": 330,
-  "full": 869
+  "full": 869,
+  "6meses": 1699
 };
 
 // Nombres de programas
 const NOMBRES_PROGRAMA: Record<string, string> = {
   "1mes": "Programa 1 Mes",
-  "full": "Programa 3 Meses FULL"
+  "full": "Programa 3 Meses FULL",
+  "6meses": "Programa 6 Meses"
 };
 
 // Códigos promocionales
@@ -72,35 +75,35 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
     tipo: "descuento_dinero",
     valor: 50,
     descripcion: "Descuento de S/ 50",
-    programasAplicables: ["1mes", "full"],
+    programasAplicables: ["1mes", "full", "6meses"],
     activo: true
   },
   "AMAS-DESC100": {
     tipo: "descuento_dinero",
     valor: 100,
     descripcion: "Descuento de S/ 100",
-    programasAplicables: ["1mes", "full"],
+    programasAplicables: ["1mes", "full", "6meses"],
     activo: true
   },
   "AMAS-DESC150": {
     tipo: "descuento_dinero",
     valor: 150,
     descripcion: "Descuento de S/ 150",
-    programasAplicables: ["full"],
+    programasAplicables: ["full", "6meses"],
     activo: true
   },
   "AMAS-DESC200": {
     tipo: "descuento_dinero",
     valor: 200,
     descripcion: "Descuento de S/ 200",
-    programasAplicables: ["full"],
+    programasAplicables: ["full", "6meses"],
     activo: true
   },
   "PRIMAVEZ": {
     tipo: "descuento_dinero",
     valor: 80,
     descripcion: "Descuento de S/ 80 para nuevos alumnos",
-    programasAplicables: ["1mes", "full"],
+    programasAplicables: ["1mes", "full", "6meses"],
     activo: true
   },
 
@@ -109,28 +112,28 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
     tipo: "descuento_porcentaje",
     valor: 10,
     descripcion: "10% de descuento",
-    programasAplicables: ["1mes", "full"],
+    programasAplicables: ["1mes", "full", "6meses"],
     activo: true
   },
   "AMAS15OFF": {
     tipo: "descuento_porcentaje",
     valor: 15,
     descripcion: "15% de descuento",
-    programasAplicables: ["1mes", "full"],
+    programasAplicables: ["1mes", "full", "6meses"],
     activo: true
   },
   "AMAS20OFF": {
     tipo: "descuento_porcentaje",
     valor: 20,
     descripcion: "20% de descuento",
-    programasAplicables: ["full"],
+    programasAplicables: ["full", "6meses"],
     activo: true
   },
   "BLACKFRIDAY": {
     tipo: "descuento_porcentaje",
     valor: 25,
     descripcion: "25% de descuento Black Friday",
-    programasAplicables: ["1mes", "full"],
+    programasAplicables: ["1mes", "full", "6meses"],
     activo: true
   },
 
@@ -329,7 +332,7 @@ interface CodigoAplicado {
 interface FormularioMatriculaProps {
   isOpen: boolean;
   onClose: () => void;
-  programa: 'full' | '1mes';
+  programa: 'full' | '1mes' | '6meses';
   onSuccess: (total: number) => void;
 }
 
@@ -684,7 +687,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
   const total = Math.max(0, subtotal - descuentoPorcentualMonto);
 
-  const needsUniformSize = programa === 'full' || (programa === '1mes' && includeUniform);
+  const needsUniformSize = programa === 'full' || programa === '6meses' || (programa === '1mes' && includeUniform);
   const needsPoloSize = polosOption !== '0';
 
   const handlePolosChange = useCallback((value: '0' | '1' | '2' | '3') => {
@@ -885,7 +888,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     try {
       const payload = {
         // Información del programa
-        programa: programa === 'full' ? '3 Meses Full' : '1 Mes',
+        programa: programa === 'full' ? '3 Meses Full' : programa === '6meses' ? '6 Meses' : '1 Mes',
         clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programa] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa]),
 
         // Datos del alumno
@@ -949,8 +952,10 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         fechaRegistro: new Date().toISOString()
       };
 
-      const webhookUrl = programa === 'full' 
+      const webhookUrl = programa === 'full'
         ? 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/programa3meses'
+        : programa === '6meses'
+        ? 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/programa6meses'
         : 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/mensual';
 
       const response = await fetch(webhookUrl, {
@@ -1021,7 +1026,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             </DialogTitle>
             <DialogDescription className="text-white/70 text-xs sm:text-sm">
               Programa: <span className="text-[#FA7B21] font-semibold">
-                {programa === 'full' ? '3 Meses Full (S/ 869)' : '1 Mes (S/ 330)'}
+                {programa === 'full' ? '3 Meses Full (S/ 869)' : programa === '6meses' ? '6 Meses (S/ 1699)' : '1 Mes (S/ 330)'}
               </span>
             </DialogDescription>
           </div>
@@ -1270,8 +1275,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
             </div>
           )}
 
-          {/* Talla de uniforme para programa 3 meses */}
-          {programa === 'full' && (
+          {/* Talla de uniforme para programas 3 meses y 6 meses */}
+          {(programa === 'full' || programa === '6meses') && (
             <div>
               <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
                 Talla de Uniforme

@@ -4,13 +4,14 @@ import { Badge } from './ui/badge';
 import { Check, Star } from 'lucide-react';
 
 interface ProgramasSectionProps {
-  onOpenMatricula: (programa: 'full' | '1mes') => void;
+  onOpenMatricula: (programa: 'full' | '1mes' | '6meses') => void;
 }
 
 export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula }: ProgramasSectionProps) {
   // Variables editables
   const precioFull = 869;
   const precioAnteriorFull = 1199;
+  const precio6Meses = 1699;
   const precio1Mes = 330;
   const fechaValidez = '30/10/25';
 
@@ -22,6 +23,18 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
     'Asistencia rotativa (Lunes a Sábado)',
     'Congelamiento',
     'Cartilla de deberes y seguimiento'
+  ];
+
+  const beneficios6Meses = [
+    '48 clases - 6 meses (2 veces por semana)',
+    'Uniforme completo incluido',
+    'Clases recuperables',
+    '1 Congelamiento del programa',
+    'Cartilla de deberes programa completo',
+    '2 Graduaciones',
+    '2 Nuevos cinturones con ceremonia',
+    '2 Certificados del nuevo rango',
+    'Implemento de regalo'
   ];
 
   const beneficios1Mes = [
@@ -71,7 +84,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
           {/* Programa Full - Destacado */}
           <div className="md:col-span-2 lg:col-span-1">
             <Card className="relative bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-black border-2 border-[#FA7B21] overflow-hidden hover:shadow-2xl hover:shadow-[#FA7B21]/30 transition-shadow duration-500 group">
@@ -163,6 +176,83 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                     onOpenMatricula('full');
                   }}
                   className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 sm:py-7 text-sm sm:text-base shadow-2xl shadow-[#FA7B21]/40 hover:shadow-[#FA7B21]/60 transition-colors duration-200 rounded-lg active:scale-[0.98]"
+                  style={{
+                    touchAction: 'manipulation',
+                    WebkitTapHighlightColor: 'transparent'
+                  }}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    Matricularme ahora
+                    <span>→</span>
+                  </span>
+                </button>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Programa 6 Meses */}
+          <div className="md:col-span-2 lg:col-span-1">
+            <Card className="relative bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-zinc-900/90 border-2 border-[#FCA929]/50 overflow-hidden hover:shadow-2xl hover:shadow-[#FCA929]/30 transition-shadow duration-500 group h-full">
+              {/* Glow effect on hover */}
+              <div className="absolute inset-0 bg-gradient-to-r from-[#FCA929]/0 via-[#FCA929]/10 to-[#FCA929]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+              {/* Badge "Recomendado" */}
+              <div className="absolute top-0 right-0 bg-gradient-to-r from-[#FCA929] to-[#FA7B21] text-white px-5 py-2.5 text-xs sm:text-sm flex items-center gap-2 rounded-bl-xl shadow-lg z-10 pointer-events-none select-none">
+                <Star className="w-4 h-4 fill-current" />
+                Recomendado
+              </div>
+
+              {/* Corner accent */}
+              <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-[#FCA929]/20 to-transparent rounded-br-full pointer-events-none" />
+
+              <CardContent className="p-6 sm:p-8 md:p-10 relative">
+                <div className="mb-6">
+                  <Badge className="bg-gradient-to-r from-[#FCA929]/30 to-[#FA7B21]/30 text-[#FCA929] border border-[#FCA929]/50 mb-4 text-xs px-3 py-1 shadow-lg pointer-events-none select-none">
+                    ⭐ MEJOR VALOR
+                  </Badge>
+                  <h3 className="text-white mb-3 text-xl sm:text-2xl md:text-3xl flex items-center gap-3">
+                    <span className="text-3xl sm:text-4xl">🥋</span>
+                    <span>Programa 6 Meses</span>
+                  </h3>
+                  <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+                    Programa semestral con seguimiento completo
+                  </p>
+                </div>
+
+                {/* Beneficios */}
+                <div className="space-y-2 mb-6 max-h-[300px] overflow-y-auto">
+                  {beneficios6Meses.map((beneficio, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3"
+                    >
+                      <Check className="h-5 w-5 text-[#FCA929] flex-shrink-0 mt-0.5" />
+                      <span className="text-white/90 text-sm">{beneficio}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Precio */}
+                <div className="bg-gradient-to-br from-black/50 to-zinc-900/50 rounded-xl p-5 sm:p-7 mb-6 border border-white/5 backdrop-blur-sm">
+                  <div className="flex items-baseline justify-center gap-2 mb-2">
+                    <span className="text-white text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
+                      S/ {precio6Meses}
+                    </span>
+                  </div>
+                  <p className="text-center text-white/60 text-xs">
+                    Incluye uniforme y todos los beneficios
+                  </p>
+                </div>
+
+                {/* Botón */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onOpenMatricula('6meses');
+                  }}
+                  className="w-full bg-gradient-to-r from-[#FCA929] to-[#FA7B21] hover:from-[#FA7B21] hover:to-[#F36A15] text-white py-6 sm:py-7 text-sm sm:text-base shadow-2xl shadow-[#FCA929]/40 hover:shadow-[#FCA929]/60 transition-colors duration-200 rounded-lg active:scale-[0.98]"
                   style={{
                     touchAction: 'manipulation',
                     WebkitTapHighlightColor: 'transparent'

@@ -2,6 +2,7 @@ import { useState, lazy, Suspense, useEffect } from 'react';
 import { HomePage } from './components/HomePage';
 import { TiendaPage } from './components/TiendaPage';
 import { RegistroTresMesesPage } from './components/RegistroTresMesesPage';
+import { RegistroSeisMesesPage } from './components/RegistroSeisMesesPage';
 import { RegistroMensualPage } from './components/RegistroMensualPage';
 import { RegistroLeadershipPage } from './components/RegistroLeadershipPage';
 import { GraduacionPage } from './components/GraduacionPage';
@@ -39,7 +40,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad'>('home');
   
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -114,6 +115,8 @@ function App() {
         setCurrentPage('tienda');
       } else if (path === '/registro-3-meses') {
         setCurrentPage('registro-3-meses');
+      } else if (path === '/registro-6-meses') {
+        setCurrentPage('registro-6-meses');
       } else if (path === '/registro-mensual') {
         setCurrentPage('registro-mensual');
       } else if (path === '/registro-leadership') {
@@ -276,6 +279,33 @@ function App() {
           url="https://amasteamwolf.com/registro-3-meses"
         />
         <RegistroTresMesesPage
+          onNavigateHome={() => handleNavigate('home')}
+          onSuccess={handleRegistrationSuccess}
+        />
+        <Toaster theme="dark" position="bottom-right" />
+        <PopupPago
+          isOpen={isPagoOpen}
+          onClose={() => {
+            setIsPagoOpen(false);
+            handleNavigate('home');
+          }}
+          totalAmount={totalAmount}
+          cartItems={[]}
+        />
+      </>
+    );
+  }
+
+  if (currentPage === 'registro-6-meses') {
+    return (
+      <>
+        <SEO
+          title="Matrícula Programa 6 Meses - AMAS Team Wolf"
+          description="Matricúlate en el Programa de 6 meses de AMAS Team Wolf. Incluye uniforme, 2 graduaciones, seguimiento personalizado y más. ¡Inscripción abierta!"
+          keywords="matrícula taekwondo, inscripción artes marciales Lima, programa 6 meses AMAS, registro taekwondo niños, programa semestral"
+          url="https://amasteamwolf.com/registro-6-meses"
+        />
+        <RegistroSeisMesesPage
           onNavigateHome={() => handleNavigate('home')}
           onSuccess={handleRegistrationSuccess}
         />
