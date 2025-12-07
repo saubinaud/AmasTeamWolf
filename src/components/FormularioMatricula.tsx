@@ -314,6 +314,7 @@ interface HorariosInfo {
   horarioSabado: string;
   diasSemana: string;
   categoria: string;
+  horarioManana: string; // Nuevo campo para horario de mañana
 }
 
 interface CodigoAplicado {
@@ -343,49 +344,61 @@ function calcularHorarios(fechaNacimiento: string): HorariosInfo {
 
   let horarioSemana = "";
   let horarioSabado = "";
+  let horarioManana = "";
   let diasSemana = "Lunes a Viernes";
   let categoria = "";
 
   if (edadMeses >= 11 && edadMeses <= 15) {
     horarioSemana = "3:00 PM";
     horarioSabado = "9:00 AM";
+    horarioManana = "9:00 AM";
   } else if (edadMeses >= 16 && edadMeses <= 20) {
     horarioSemana = "3:30 PM";
     horarioSabado = "9:30 AM";
+    horarioManana = "9:30 AM";
   } else if (edadMeses >= 21 && edadMeses <= 26) {
     horarioSemana = "4:00 PM";
     horarioSabado = "10:00 AM";
+    horarioManana = "10:00 AM";
   } else if (edadMeses >= 27 && edadMeses <= 32) {
     horarioSemana = "4:30 PM";
     horarioSabado = "10:30 AM";
+    horarioManana = "10:30 AM";
   } else if (edadMeses >= 33 && edadMeses <= 38) {
     horarioSemana = "5:00 PM";
     horarioSabado = "11:00 AM";
+    horarioManana = "11:00 AM";
   } else if (edadMeses >= 39 && edadMeses <= 48) {
     horarioSemana = "5:30 PM";
     horarioSabado = "11:30 AM";
+    horarioManana = "11:30 AM";
   } else if (edadMeses >= 49 && edadMeses <= 71) {
     horarioSemana = "6:00 PM";
     horarioSabado = "12:00 PM";
+    horarioManana = "12:00 PM";
   } else if (edadAnios >= 6 && edadAnios <= 11) {
     horarioSemana = "6:30 PM";
     horarioSabado = "12:30 PM";
+    horarioManana = "12:30 PM";
     diasSemana = "Lunes, Miércoles y Viernes";
     categoria = "Juniors";
   } else if (edadAnios >= 12 && edadAnios <= 17) {
     horarioSemana = "6:30 PM";
     horarioSabado = "1:30 PM";
+    horarioManana = "1:30 PM";
     diasSemana = "Martes y Jueves";
     categoria = "Adolescentes";
   } else {
     horarioSemana = "Por definir";
     horarioSabado = "Por definir";
+    horarioManana = "Por definir";
     diasSemana = "Consultar en academia";
   }
 
   return {
     horarioSemana,
     horarioSabado,
+    horarioManana,
     diasSemana,
     categoria
   };
@@ -579,6 +592,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
   const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
   const [mostrarOtraFecha, setMostrarOtraFecha] = useState(false);
   const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
+  const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
 
   // Recalcular fechas disponibles cuando cambia la fecha de nacimiento
   useEffect(() => {
@@ -632,6 +646,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       setFechasDisponibles([]);
       setMostrarOtraFecha(false);
       setOpcionFechaSeleccionada('fechas');
+      setTurnoSeleccionado('tarde');
     }
   }, [isOpen]);
 
@@ -848,45 +863,68 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
     try {
       const payload = {
+        // Información del programa
         programa: programa === 'full' ? '3 Meses Full' : '1 Mes',
+        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programa] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa]),
+
+        // Datos del alumno
         nombreAlumno: formData.nombreAlumno,
         dniAlumno: formData.dniAlumno,
         fechaNacimiento: formData.fechaNacimiento,
         categoriaAlumno: categoriaAlumno || 'No especificada',
+
+        // Horarios y turnos
+        turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
         horariosDisponibles: horariosInfo ? {
-          horarioSemana: horariosInfo.horarioSemana,
+          horarioSemana: turnoSeleccionado === 'manana' ? horariosInfo.horarioManana : horariosInfo.horarioSemana,
           horarioSabado: horariosInfo.horarioSabado,
+          horarioManana: horariosInfo.horarioManana,
+          horarioTarde: horariosInfo.horarioSemana,
           diasSemana: horariosInfo.diasSemana
         } : null,
+
+        // Uniformes y tallas
         tallaUniforme: needsUniformSize ? formData.tallaUniforme : 'No aplica',
         tallasPolos: needsPoloSize ? tallasPolos : [],
+
+        // Datos del padre/tutor
         nombrePadre: formData.nombrePadre,
         dniPadre: formData.dniPadre,
         direccion: formData.direccion,
         email: formData.email,
+
+        // Adicionales
         polos: polosOption === '0' ? 'No' : `${polosOption} polo(s)`,
         precioPolos: preciosPolos[polosOption],
         uniformeAdicional: programa === '1mes' ? (includeUniform ? 'Sí' : 'No') : 'Incluido',
         precioUniforme: precioUniforme,
+
+        // Fechas y asistencia
         fechaInicio: formData.fechaInicio,
         diasTentativos: formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : diasTentativos.join(', '),
         fechaFin: formData.fechaInicio === 'no-especificado' ? 'Por calcular' : fechaFinCalculada,
-        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programa] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa]),
         semanasAproximadas: formData.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas || 0),
+
+        // Códigos promocionales y descuentos
         codigoPromocional: codigoAplicado?.codigo || 'No aplicado',
         tipoDescuento: codigoAplicado?.tipo || 'ninguno',
         descuentoDinero: descuentoDinero,
         descuentoPorcentaje: descuentoPorcentaje,
         descuentoPorcentualMonto: descuentoPorcentualMonto,
+
+        // Precios
         precioPrograma: precioBase,
         subtotal: subtotal,
         total: total,
+
+        // Contrato
         contratoFirmado: uploadedFile ? {
           nombre: uploadedFile.name,
           tipo: uploadedFile.type,
           tamaño: uploadedFile.size,
           base64: fileBase64
         } : null,
+
         fechaRegistro: new Date().toISOString()
       };
 
@@ -1029,23 +1067,73 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
                 {/* Mostrar horarios disponibles después de ingresar fecha de nacimiento */}
                 {horariosInfo && (
-                  <div className="mt-4 p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                    <p className="text-white font-semibold mb-3 text-sm sm:text-base">
-                      📍 Horarios disponibles{horariosInfo.categoria ? ` - Categoría ${horariosInfo.categoria}` : ''}
-                    </p>
-                    <div className="space-y-2 text-xs sm:text-sm">
-                      <p className="text-white/80">
-                        <strong className="text-white">Lunes a Viernes:</strong> {horariosInfo.horarioSemana}
+                  <div className="mt-4 space-y-4">
+                    {/* Selector de Turno */}
+                    <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
+                      <p className="text-white font-semibold mb-3 text-sm sm:text-base">
+                        🌅 Selecciona tu turno preferido
                       </p>
-                      <p className="text-white/80">
-                        <strong className="text-white">Días disponibles:</strong> {horariosInfo.diasSemana}
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setTurnoSeleccionado('manana')}
+                          className={`p-4 rounded-lg border-2 transition-all ${
+                            turnoSeleccionado === 'manana'
+                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                              : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
+                          }`}
+                        >
+                          <div className="text-center">
+                            <div className="text-3xl mb-2">🌄</div>
+                            <div className={`font-semibold ${turnoSeleccionado === 'manana' ? 'text-[#FA7B21]' : 'text-white'}`}>
+                              Mañana
+                            </div>
+                            <div className="text-white/60 text-sm mt-1">
+                              {horariosInfo.horarioManana}
+                            </div>
+                          </div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTurnoSeleccionado('tarde')}
+                          className={`p-4 rounded-lg border-2 transition-all ${
+                            turnoSeleccionado === 'tarde'
+                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                              : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
+                          }`}
+                        >
+                          <div className="text-center">
+                            <div className="text-3xl mb-2">🌆</div>
+                            <div className={`font-semibold ${turnoSeleccionado === 'tarde' ? 'text-[#FA7B21]' : 'text-white'}`}>
+                              Tarde
+                            </div>
+                            <div className="text-white/60 text-sm mt-1">
+                              {horariosInfo.horarioSemana}
+                            </div>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Información de horarios */}
+                    <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
+                      <p className="text-white font-semibold mb-3 text-sm sm:text-base">
+                        📍 Horarios disponibles{horariosInfo.categoria ? ` - Categoría ${horariosInfo.categoria}` : ''}
                       </p>
-                      <p className="text-white/80">
-                        <strong className="text-white">Sábados:</strong> {horariosInfo.horarioSabado}
-                      </p>
-                      <p className="text-white/60 text-xs mt-3">
-                        ℹ️ Podrás asistir cualquier día dentro de estos horarios según tu disponibilidad.
-                      </p>
+                      <div className="space-y-2 text-xs sm:text-sm">
+                        <p className="text-white/80">
+                          <strong className="text-white">Turno seleccionado:</strong> {turnoSeleccionado === 'manana' ? `Mañana (${horariosInfo.horarioManana})` : `Tarde (${horariosInfo.horarioSemana})`}
+                        </p>
+                        <p className="text-white/80">
+                          <strong className="text-white">Días disponibles:</strong> {horariosInfo.diasSemana}
+                        </p>
+                        <p className="text-white/80">
+                          <strong className="text-white">Sábados:</strong> {horariosInfo.horarioSabado}
+                        </p>
+                        <p className="text-white/60 text-xs mt-3">
+                          ℹ️ Podrás asistir cualquier día dentro de estos horarios según tu disponibilidad.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1404,15 +1492,17 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                       Horarios Disponibles {horariosInfo.categoria && `- ${horariosInfo.categoria}`}
                     </h4>
                     <p className="text-white/70 text-sm">
-                      Según tu edad, estos son tus horarios de clase
+                      Según tu edad y turno seleccionado
                     </p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <div className="bg-zinc-800/50 rounded-lg p-4">
-                    <p className="text-white/60 text-xs mb-1">Lunes a Viernes</p>
-                    <p className="text-white font-semibold text-lg">{horariosInfo.horarioSemana}</p>
+                    <p className="text-white/60 text-xs mb-1">Turno seleccionado</p>
+                    <p className="text-white font-semibold text-lg">
+                      {turnoSeleccionado === 'manana' ? `🌄 Mañana (${horariosInfo.horarioManana})` : `🌆 Tarde (${horariosInfo.horarioSemana})`}
+                    </p>
                   </div>
                   <div className="bg-zinc-800/50 rounded-lg p-4">
                     <p className="text-white/60 text-xs mb-1">Sábados</p>
