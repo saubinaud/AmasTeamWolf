@@ -44,10 +44,12 @@ export function HomePage({ onNavigate }: HomePageProps) {
     localStorage.setItem('amasCart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const handleOpenMatricula = useCallback((programa: 'full' | '1mes' = 'full') => {
+  const handleOpenMatricula = useCallback((programa: 'full' | '1mes' | '6meses' = 'full') => {
     // Navegar a la página de registro correspondiente
     if (programa === 'full') {
       onNavigate('registro-3-meses');
+    } else if (programa === '6meses') {
+      onNavigate('registro-6-meses');
     } else {
       onNavigate('registro-mensual');
     }
