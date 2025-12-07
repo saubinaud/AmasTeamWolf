@@ -351,7 +351,7 @@ function calcularHorarios(fechaNacimiento: string): HorariosInfo {
   if (edadMeses >= 11 && edadMeses <= 15) {
     horarioSemana = "3:00 PM";
     horarioSabado = "9:00 AM";
-    horarioManana = "9:00 AM";
+    horarioManana = "9:00 AM"; // Mañana: martes, jueves y sábado
   } else if (edadMeses >= 16 && edadMeses <= 20) {
     horarioSemana = "3:30 PM";
     horarioSabado = "9:30 AM";
@@ -388,11 +388,6 @@ function calcularHorarios(fechaNacimiento: string): HorariosInfo {
     horarioManana = "1:30 PM";
     diasSemana = "Martes y Jueves";
     categoria = "Adolescentes";
-  } else {
-    horarioSemana = "Por definir";
-    horarioSabado = "Por definir";
-    horarioManana = "Por definir";
-    diasSemana = "Consultar en academia";
   }
 
   return {
@@ -594,21 +589,28 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
   const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
 
-  // Recalcular fechas disponibles cuando cambia la fecha de nacimiento
+  // Recalcular fechas disponibles cuando cambia la fecha de nacimiento o el turno
   useEffect(() => {
     if (isOpen && formData.fechaNacimiento) {
       const todasLasFechas = obtenerFechasDisponiblesInicio();
       const horarios = calcularHorarios(formData.fechaNacimiento);
 
-      // Filtrar fechas según categoría del alumno (solo días de clase)
+      // Filtrar fechas según el turno seleccionado
       let diasPermitidos: string[] = [];
-      if (horarios.categoria === 'Juniors') {
-        diasPermitidos = ['Lunes', 'Miércoles', 'Viernes'];  // Solo días de clase
-      } else if (horarios.categoria === 'Adolescentes') {
-        diasPermitidos = ['Martes', 'Jueves'];  // Solo días de clase
+
+      if (turnoSeleccionado === 'manana') {
+        // Mañana: siempre martes, jueves y sábado
+        diasPermitidos = ['Martes', 'Jueves', 'Sábado'];
       } else {
-        // Para bebés y niños pequeños, todos los días excepto domingo
-        diasPermitidos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        // Tarde: según categoría
+        if (horarios.categoria === 'Juniors') {
+          diasPermitidos = ['Lunes', 'Miércoles', 'Viernes'];
+        } else if (horarios.categoria === 'Adolescentes') {
+          diasPermitidos = ['Martes', 'Jueves'];
+        } else {
+          // Para bebés y niños pequeños, todos los días excepto domingo
+          diasPermitidos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        }
       }
 
       const fechasFiltradas = todasLasFechas.filter(fecha => {
@@ -622,7 +624,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
       const fechas = obtenerFechasDisponiblesInicio();
       setFechasDisponibles(fechas);
     }
-  }, [isOpen, formData.fechaNacimiento]);
+  }, [isOpen, formData.fechaNacimiento, turnoSeleccionado]);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -799,6 +801,25 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     toast.info('Código promocional removido');
   }, []);
 
+  // Limpiar días tentativos cuando cambia el turno
+  useEffect(() => {
+    if (turnoSeleccionado && diasTentativos.length > 0) {
+      // Filtrar días tentativos para mantener solo los válidos según el turno
+      const diasValidos = turnoSeleccionado === 'manana'
+        ? ['Martes', 'Jueves', 'Sábado']
+        : categoriaAlumno === 'Juniors'
+        ? ['Lunes', 'Miércoles', 'Viernes']
+        : categoriaAlumno === 'Adolescentes'
+        ? ['Martes', 'Jueves']
+        : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+      const diasFiltrados = diasTentativos.filter(dia => diasValidos.includes(dia));
+      if (diasFiltrados.length !== diasTentativos.length) {
+        setDiasTentativos(diasFiltrados);
+      }
+    }
+  }, [turnoSeleccionado]);
+
   // Effect para calcular fecha de fin automáticamente
   useEffect(() => {
     if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 2) {
@@ -880,7 +901,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
           horarioSabado: horariosInfo.horarioSabado,
           horarioManana: horariosInfo.horarioManana,
           horarioTarde: horariosInfo.horarioSemana,
-          diasSemana: horariosInfo.diasSemana
+          diasSemana: turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana
         } : null,
 
         // Uniformes y tallas
@@ -1066,9 +1087,9 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                 />
 
                 {/* Mostrar horarios disponibles después de ingresar fecha de nacimiento */}
-                {horariosInfo && (
+                {horariosInfo && horariosInfo.horarioSemana && (
                   <div className="mt-4 space-y-4">
-                    {/* Selector de Turno */}
+                    {/* Selector de Turno - Solo si hay horarios definidos */}
                     <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
                       <p className="text-white font-semibold mb-3 text-sm sm:text-base">
                         🌅 Selecciona tu turno preferido
@@ -1125,7 +1146,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                           <strong className="text-white">Turno seleccionado:</strong> {turnoSeleccionado === 'manana' ? `Mañana (${horariosInfo.horarioManana})` : `Tarde (${horariosInfo.horarioSemana})`}
                         </p>
                         <p className="text-white/80">
-                          <strong className="text-white">Días disponibles:</strong> {horariosInfo.diasSemana}
+                          <strong className="text-white">Días disponibles:</strong> {turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana}
                         </p>
                         <p className="text-white/80">
                           <strong className="text-white">Sábados:</strong> {horariosInfo.horarioSabado}
@@ -1529,10 +1550,19 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
                     let isDisabled = false;
-                    if (categoriaAlumno === 'Juniors') {
-                      isDisabled = !['Lunes', 'Miércoles', 'Viernes'].includes(dia);  // Solo días de clase
-                    } else if (categoriaAlumno === 'Adolescentes') {
-                      isDisabled = !['Martes', 'Jueves'].includes(dia);  // Solo días de clase
+
+                    // Filtrar según turno seleccionado
+                    if (turnoSeleccionado === 'manana') {
+                      // Mañana: solo martes, jueves y sábado
+                      isDisabled = !['Martes', 'Jueves', 'Sábado'].includes(dia);
+                    } else {
+                      // Tarde: según categoría
+                      if (categoriaAlumno === 'Juniors') {
+                        isDisabled = !['Lunes', 'Miércoles', 'Viernes'].includes(dia);
+                      } else if (categoriaAlumno === 'Adolescentes') {
+                        isDisabled = !['Martes', 'Jueves'].includes(dia);
+                      }
+                      // Para bebés y niños pequeños, todos los días están habilitados excepto domingo
                     }
 
                     return (
