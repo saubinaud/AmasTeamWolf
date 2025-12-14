@@ -77,6 +77,7 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
     descripcion: "Descuento de S/ 10",
     programasAplicables: ["1mes", "full", "6meses"],
     activo: true
+  },
   "AMAS-DESC20": {
     tipo: "descuento_dinero",
     valor: 20,
