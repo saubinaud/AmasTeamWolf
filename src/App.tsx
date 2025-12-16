@@ -11,6 +11,7 @@ import { InicioSesionPage } from './components/InicioSesionPage';
 import { PerfilPage } from './components/PerfilPage';
 import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
 import { RegistroActividadNavidadPage } from './components/RegistroActividadNavidadPage';
+import { RenovacionPage } from './pages/RenovacionPage';
 
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
@@ -40,7 +41,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'renovacion'>('home');
   
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -133,6 +134,8 @@ function App() {
         setCurrentPage('renovacion-navidad');
       } else if (path === '/navidad' || path === '/evento-navidad') {
         setCurrentPage('registro-actividad-navidad');
+      } else if (path === '/renovacion' || path === '/renovar') {
+        setCurrentPage('renovacion');
       } else {
         setCurrentPage('home');
         // Si estamos en home y hay sección, activar scroll robusto
@@ -437,6 +440,27 @@ function App() {
           url="https://amasteamwolf.com/renovacion-navidad"
         />
         <RenovacionNavidadPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  if (currentPage === 'renovacion') {
+    return (
+      <>
+        <SEO
+          title="Renovación de Membresía - AMAS Team Wolf"
+          description="Renueva tu membresía de AMAS Team Wolf. Elige entre programas de 1, 3 o 6 meses. Continúa tu entrenamiento sin interrupciones."
+          keywords="renovación membresía, renovar inscripción taekwondo, renovación AMAS, continuar programa artes marciales"
+          url="https://amasteamwolf.com/renovacion"
+        />
+        <RenovacionPage
+          onNavigateHome={() => handleNavigate('home')}
+          onSuccess={() => {
+            toast.success('¡Renovación exitosa!');
+            handleNavigate('home');
+          }}
+        />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );

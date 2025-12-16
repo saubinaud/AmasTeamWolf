@@ -118,6 +118,14 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
                   Matrícula
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={() => onNavigate('renovacion')}
+                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
+                >
+                  Renovar Membresía
+                </button>
+              </li>
             </ul>
           </div>
 
