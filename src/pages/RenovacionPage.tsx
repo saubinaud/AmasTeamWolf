@@ -39,7 +39,8 @@ export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProp
       <HeaderMain
         onNavigate={handleNavigate}
         onOpenMatricula={() => {}}
-        onOpenCart={() => {}}
+        onCartClick={() => {}}
+        cartItemsCount={0}
       />
 
       {/* Contenido principal */}
