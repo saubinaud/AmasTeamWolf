@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 // Imágenes del carrusel (URLs de Cloudinary actualizadas)
 const CAROUSEL_IMAGES = [
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg",
   "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg",
   "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847478/Valencia_2_t8q3hl.jpg",
   "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg",
