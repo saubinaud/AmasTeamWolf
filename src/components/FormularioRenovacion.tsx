@@ -800,16 +800,16 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
     return (
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950">
         {/* Hero Section Mejorado */}
-        <div className="relative overflow-hidden">
+        <div className="relative overflow-hidden pt-32 sm:pt-40">
           {/* Background decorative elements */}
-          <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FA7B21]/10 rounded-full blur-3xl"></div>
             <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative container mx-auto px-4 py-12 sm:py-20">
+          <div className="relative container mx-auto px-4 py-12 sm:py-16 pb-16 sm:pb-20">
             {/* Hero content con Grid de 2 columnas */}
-            <div className="grid lg:grid-cols-2 gap-12 items-center mb-16 max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12 sm:mb-16 max-w-7xl mx-auto">
               {/* Columna izquierda - Contenido emocional */}
               <div className="text-left">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
@@ -817,7 +817,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   <span className="text-white/90 text-sm font-medium">El legado de su hijo continúa</span>
                 </div>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
                   <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
                     No Detenga la Transformación
                   </span>
@@ -825,13 +825,13 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   <span className="text-white">de Su Hijo</span>
                 </h1>
 
-                <p className="text-white/80 text-lg sm:text-xl mb-8 leading-relaxed">
+                <p className="text-white/80 text-base sm:text-lg lg:text-xl mb-10 leading-relaxed">
                   Cada clase acerca más a su hijo a la mejor versión de sí mismo.
                   <span className="text-[#FCA929] font-semibold"> Renueve hoy</span> y siga construyendo el camino del guerrero.
                 </p>
 
                 {/* Stats emocionales */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-3 gap-4 mb-10">
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
                     <Trophy className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
                     <p className="text-white font-bold text-xl">+500</p>
@@ -882,8 +882,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
               </div>
 
               {/* Columna derecha - Carrusel de imágenes */}
-              <div className="relative">
-                <div className="relative h-[400px] sm:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+              <div className="relative mt-8 lg:mt-0">
+                <div className="relative h-[400px] sm:h-[500px] lg:h-[550px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#FA7B21]/30">
                   {/* Imágenes del carrusel */}
                   {CAROUSEL_IMAGES.map((image, index) => (
                     <div
@@ -896,9 +896,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                         src={image}
                         alt={`Alumno AMAS ${index + 1}`}
                         className="w-full h-full object-cover"
+                        loading={index === 0 ? "eager" : "lazy"}
                       />
                       {/* Overlay gradiente */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                     </div>
                   ))}
 
@@ -931,11 +932,11 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
             </div>
 
             {/* Cards de planes */}
-            <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-4">
+            <div className="max-w-7xl mx-auto mt-20">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-6">
                 Elija el Plan de Renovación
               </h2>
-              <p className="text-white/60 text-center mb-10 max-w-2xl mx-auto">
+              <p className="text-white/60 text-center mb-12 max-w-2xl mx-auto">
                 Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
 
