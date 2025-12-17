@@ -799,39 +799,39 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   if (!planSeleccionado) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950">
-        {/* Hero Section Mejorado */}
-        <div className="relative overflow-hidden pt-32 sm:pt-40">
+        {/* Hero Section Impactante */}
+        <div className="relative overflow-hidden pt-28 sm:pt-32 lg:pt-20">
           {/* Background decorative elements */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FA7B21]/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl"></div>
+            <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-[#FA7B21]/20 rounded-full blur-3xl animate-pulse"></div>
+            <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-[#FCA929]/15 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative container mx-auto px-4 py-12 sm:py-16 pb-16 sm:pb-20">
+          <div className="relative container mx-auto px-4 lg:px-6 py-8 lg:py-20">
             {/* Hero content con Grid de 2 columnas */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center mb-12 sm:mb-16 max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center max-w-7xl mx-auto min-h-[600px] lg:min-h-[700px]">
               {/* Columna izquierda - Contenido emocional */}
-              <div className="text-left">
+              <div className="text-left order-2 lg:order-1">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
                   <Heart className="w-4 h-4 text-[#FCA929]" />
                   <span className="text-white/90 text-sm font-medium">El legado de su hijo continúa</span>
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 leading-tight">
-                  <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-[1.1]">
+                  <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent animate-gradient">
                     No Detenga la Transformación
                   </span>
                   <br />
-                  <span className="text-white">de Su Hijo</span>
+                  <span className="text-white drop-shadow-2xl">de Su Hijo</span>
                 </h1>
 
-                <p className="text-white/80 text-base sm:text-lg lg:text-xl mb-10 leading-relaxed">
+                <p className="text-white/90 text-lg sm:text-xl lg:text-2xl mb-12 leading-relaxed font-light">
                   Cada clase acerca más a su hijo a la mejor versión de sí mismo.
-                  <span className="text-[#FCA929] font-semibold"> Renueve hoy</span> y siga construyendo el camino del guerrero.
+                  <span className="text-[#FCA929] font-bold"> Renueve hoy</span> y continúe el camino del guerrero.
                 </p>
 
-                {/* Stats emocionales */}
-                <div className="grid grid-cols-3 gap-4 mb-10">
+                {/* Stats emocionales - más compactos */}
+                <div className="grid grid-cols-3 gap-3 mb-8">
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
                     <Trophy className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
                     <p className="text-white font-bold text-xl">+500</p>
@@ -849,90 +849,62 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </div>
                 </div>
 
-                {/* Beneficios destacados */}
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] flex items-center justify-center flex-shrink-0">
-                      <Check className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">Sin interrupciones en el progreso</p>
-                      <p className="text-white/60 text-sm">Su hijo continúa desde donde lo dejó</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] flex items-center justify-center flex-shrink-0">
-                      <Check className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">Beneficios exclusivos por renovar</p>
-                      <p className="text-white/60 text-sm">Descuentos especiales y bonos</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] flex items-center justify-center flex-shrink-0">
-                      <Check className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-white font-semibold">Flexibilidad para su familia</p>
-                      <p className="text-white/60 text-sm">Elija el plan que mejor se adapte</p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
-              {/* Columna derecha - Carrusel de imágenes */}
-              <div className="relative mt-8 lg:mt-0">
-                <div className="relative h-[400px] sm:h-[500px] lg:h-[550px] rounded-2xl overflow-hidden shadow-2xl border-2 border-[#FA7B21]/30">
+              {/* Columna derecha - Carrusel de imágenes PROMINENTE */}
+              <div className="relative order-1 lg:order-2">
+                <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(250,123,33,0.4)] border-4 border-[#FA7B21]/50">
                   {/* Imágenes del carrusel */}
                   {CAROUSEL_IMAGES.map((image, index) => (
                     <div
                       key={index}
-                      className={`absolute inset-0 transition-opacity duration-1000 ${
-                        index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                      className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                        index === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
                       }`}
                     >
                       <img
                         src={image}
                         alt={`Alumno AMAS ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                         loading={index === 0 ? "eager" : "lazy"}
                       />
-                      {/* Overlay gradiente */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                      {/* Overlay gradiente suave */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
                     </div>
                   ))}
 
-                  {/* Indicadores del carrusel */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                  {/* Indicadores del carrusel más grandes */}
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/40 backdrop-blur-sm px-4 py-3 rounded-full">
                     {CAROUSEL_IMAGES.map((_, index) => (
                       <button
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
+                        className={`h-3 rounded-full transition-all duration-300 ${
                           index === currentImageIndex
-                            ? 'bg-[#FA7B21] w-8'
-                            : 'bg-white/50 hover:bg-white/80'
+                            ? 'bg-[#FA7B21] w-12 shadow-lg shadow-[#FA7B21]/50'
+                            : 'bg-white/60 hover:bg-white/90 w-3'
                         }`}
                       />
                     ))}
                   </div>
 
-                  {/* Badge sobre la imagen */}
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-                    <Sparkles className="w-4 h-4 inline mr-1" />
-                    Forma parte de esta familia
+                  {/* Badge superior más llamativo */}
+                  <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
+                    <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-3 rounded-full text-base font-bold shadow-2xl shadow-[#FA7B21]/50 backdrop-blur-sm">
+                      <Sparkles className="w-5 h-5 inline mr-2" />
+                      Nuestros Guerreros
+                    </div>
                   </div>
                 </div>
 
-                {/* Decoración */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#FA7B21]/20 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-[#FCA929]/20 rounded-full blur-2xl"></div>
+                {/* Efectos de decoración más pronunciados */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FA7B21]/30 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#FCA929]/25 rounded-full blur-3xl"></div>
               </div>
             </div>
 
-            {/* Cards de planes */}
-            <div className="max-w-7xl mx-auto mt-20">
+            {/* Cards de planes con mejor separación */}
+            <div className="max-w-7xl mx-auto mt-24 lg:mt-32">
               <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-6">
                 Elija el Plan de Renovación
               </h2>
