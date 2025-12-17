@@ -7,18 +7,6 @@ import { toast } from 'sonner';
 
 // ========== CONSTANTES ==========
 
-// Imágenes del carrusel (URLs de Cloudinary actualizadas)
-const CAROUSEL_IMAGES = [
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847478/Valencia_2_t8q3hl.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124686/AMAS_-_graduacio%CC%81n_profesores_6_c3qvlk.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg"
-];
-
 // Feriados fijos de Perú
 const FERIADOS_FIJOS_PERU = [
   { mes: 1, dia: 1, nombre: "Año Nuevo" },
@@ -439,20 +427,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
   const [codigoExpanded, setCodigoExpanded] = useState(false);
 
-  // Estado para el carrusel
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
   // Ref para scroll al formulario
   const formularioRef = useRef<HTMLDivElement>(null);
-
-  // Carrusel automático (solo primeras 5 imágenes)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % 5);
-    }, 4000); // Cambiar cada 4 segundos
-
-    return () => clearInterval(interval);
-  }, []);
 
   // Verificar si hay código de desbloqueo de 1 mes
   useEffect(() => {
@@ -811,118 +787,87 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
             <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-[#FCA929]/15 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative container mx-auto px-4 lg:px-6 py-8 lg:py-16">
-            {/* Hero content con Grid de 2 columnas */}
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
-              {/* Columna izquierda - Contenido emocional */}
-              <div className="text-left order-2 lg:order-1">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
-                  <Heart className="w-4 h-4 text-[#FCA929]" />
-                  <span className="text-white/90 text-sm font-medium">El legado de su hijo continúa</span>
-                </div>
+          <div className="relative container mx-auto px-4 lg:px-6 py-12 lg:py-20">
+            {/* Hero content - Una columna centrada */}
+            <div className="max-w-4xl mx-auto text-center">
+              {/* Badge superior */}
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
+                <Heart className="w-4 h-4 text-[#FCA929]" />
+                <span className="text-white/90 text-sm font-medium">El legado de su hijo continúa</span>
+              </div>
 
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-[1.1]">
-                  <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
-                    No Detenga la Transformación
-                  </span>
-                  <br />
-                  <span className="text-white drop-shadow-2xl">de Su Hijo</span>
-                </h1>
+              {/* Título principal */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-[1.1]">
+                <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
+                  No Detenga la Transformación
+                </span>
+                <br />
+                <span className="text-white drop-shadow-2xl">de Su Hijo</span>
+              </h1>
 
-                <p className="text-white/90 text-lg sm:text-xl lg:text-2xl mb-12 leading-relaxed font-light">
-                  Cada clase acerca más a su hijo a la mejor versión de sí mismo.
-                  <span className="text-[#FCA929] font-bold"> Renueve hoy</span> y continúe el camino del guerrero.
-                </p>
+              {/* Descripción */}
+              <p className="text-white/90 text-xl sm:text-2xl lg:text-3xl mb-12 leading-relaxed font-light max-w-3xl mx-auto">
+                Cada clase acerca más a su hijo a la mejor versión de sí mismo.
+                <span className="text-[#FCA929] font-bold"> Renueve hoy</span> y continúe el camino del guerrero.
+              </p>
 
-                {/* Stats emocionales - más compactos */}
-                <div className="grid grid-cols-2 gap-4 mb-8 max-w-md">
-                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
-                    <Trophy className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
-                    <p className="text-white font-bold text-xl">+300</p>
+              {/* Stats emocionales - en fila */}
+              <div className="flex flex-wrap justify-center gap-6 lg:gap-12 mb-12">
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-6 py-3">
+                  <Trophy className="w-8 h-8 text-[#FCA929]" />
+                  <div className="text-left">
+                    <p className="text-white font-bold text-2xl">+300</p>
                     <p className="text-white/60 text-xs">Alumnos Renovados</p>
                   </div>
-                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
-                    <Award className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
-                    <p className="text-white font-bold text-xl">10+</p>
+                </div>
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-6 py-3">
+                  <Award className="w-8 h-8 text-[#FCA929]" />
+                  <div className="text-left">
+                    <p className="text-white font-bold text-2xl">10+</p>
                     <p className="text-white/60 text-xs">Años Formando</p>
                   </div>
                 </div>
-
+                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-6 py-3">
+                  <Sparkles className="w-8 h-8 text-[#FCA929]" />
+                  <div className="text-left">
+                    <p className="text-white font-bold text-2xl">100%</p>
+                    <p className="text-white/60 text-xs">Compromiso</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Columna derecha - Carrusel Simple y Proporcionado */}
-              <div className="relative order-1 lg:order-2 w-full">
-                {/* Contenedor con aspect ratio */}
-                <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] max-h-[600px] rounded-2xl overflow-hidden shadow-[0_15px_50px_rgba(250,123,33,0.4)] border-2 border-[#FA7B21]/50">
-
-                  {/* Imagen actual */}
-                  <img
-                    key={currentImageIndex}
-                    src={CAROUSEL_IMAGES[currentImageIndex]}
-                    alt={`Guerreros AMAS - Imagen ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover transition-opacity duration-500"
-                    style={{ opacity: 1 }}
-                    onError={(e) => {
-                      console.error('Error cargando imagen:', CAROUSEL_IMAGES[currentImageIndex]);
-                      e.currentTarget.src = 'https://via.placeholder.com/800x1000/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
-                    }}
-                  />
-
-                  {/* Overlay sutil */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none"></div>
-
-                  {/* Badge */}
-                  <div className="absolute top-4 left-4 z-20">
-                    <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg backdrop-blur-sm flex items-center gap-2">
-                      <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
-                      <span>Nuestros Guerreros</span>
-                    </div>
+              {/* Elementos visuales decorativos */}
+              <div className="relative mx-auto max-w-2xl">
+                {/* Patrón de grid */}
+                <div className="absolute inset-0 opacity-10">
+                  <div className="grid grid-cols-8 gap-4 h-full">
+                    {Array.from({ length: 32 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-lg animate-pulse"
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      ></div>
+                    ))}
                   </div>
-
-                  {/* Indicadores */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
-                    <div className="flex gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
-                      {CAROUSEL_IMAGES.slice(0, 5).map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentImageIndex(index)}
-                          className={`h-1.5 rounded-full transition-all duration-300 ${
-                            index === currentImageIndex
-                              ? 'bg-[#FA7B21] w-8'
-                              : 'bg-white/50 hover:bg-white/80 w-1.5'
-                          }`}
-                          aria-label={`Ver imagen ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Flechas - solo en desktop */}
-                  <button
-                    onClick={() => setCurrentImageIndex((prev) => (prev - 1 + 5) % 5)}
-                    className="hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-sm hover:bg-[#FA7B21]/80 text-white p-2 rounded-full transition-all"
-                    aria-label="Imagen anterior"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={() => setCurrentImageIndex((prev) => (prev + 1) % 5)}
-                    className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-sm hover:bg-[#FA7B21]/80 text-white p-2 rounded-full transition-all"
-                    aria-label="Siguiente imagen"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
                 </div>
 
-                {/* Efectos decorativos - más pequeños */}
-                <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#FA7B21]/20 rounded-full blur-2xl animate-pulse pointer-events-none"></div>
-                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-[#FCA929]/15 rounded-full blur-2xl pointer-events-none"></div>
+                {/* Círculos decorativos flotantes */}
+                <div className="relative h-40 sm:h-48">
+                  <div className="absolute top-0 left-1/4 w-20 h-20 bg-[#FA7B21]/30 rounded-full blur-xl animate-bounce" style={{ animationDuration: '3s' }}></div>
+                  <div className="absolute top-10 right-1/4 w-16 h-16 bg-[#FCA929]/40 rounded-full blur-xl animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}></div>
+                  <div className="absolute bottom-0 left-1/2 w-24 h-24 bg-[#FA7B21]/20 rounded-full blur-2xl animate-pulse"></div>
+                </div>
               </div>
+
+              {/* CTA visual */}
+              <div className="mt-8">
+                <div className="inline-flex items-center gap-3 text-white/70 text-sm animate-bounce">
+                  <ChevronDown className="w-5 h-5 text-[#FCA929]" />
+                  <span>Elige tu plan y renueva ahora</span>
+                  <ChevronDown className="w-5 h-5 text-[#FCA929]" />
+                </div>
+              </div>
+
             </div>
 
             {/* Cards de planes con mejor separación */}
