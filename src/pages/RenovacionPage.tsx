@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { FormularioRenovacion } from '../components/FormularioRenovacion';
-import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 
 interface RenovacionPageProps {
@@ -9,22 +8,10 @@ interface RenovacionPageProps {
 }
 
 export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProps) {
-  const [isFormOpen, setIsFormOpen] = useState(true);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-
-  useEffect(() => {
-    if (!isFormOpen && !showSuccessMessage) {
-      onNavigateHome();
-    }
-  }, [isFormOpen, showSuccessMessage, onNavigateHome]);
-
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-  };
 
   const handleFormSuccess = (total: number) => {
     setShowSuccessMessage(true);
-    setIsFormOpen(false);
     toast.success(`¡Renovación completada! Total: S/ ${total}`);
 
     if (onSuccess) {
@@ -56,8 +43,7 @@ export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProp
       )}
 
       <FormularioRenovacion
-        isOpen={isFormOpen}
-        onClose={handleFormClose}
+        onClose={onNavigateHome}
         onSuccess={handleFormSuccess}
       />
     </div>
