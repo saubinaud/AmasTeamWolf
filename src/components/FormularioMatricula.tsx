@@ -71,6 +71,20 @@ interface CodigoPromocional {
 
 const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
   // ========== DESCUENTOS EN DINERO ==========
+  "AMAS-DESC10": {
+    tipo: "descuento_dinero",
+    valor: 10,
+    descripcion: "Descuento de S/ 10",
+    programasAplicables: ["1mes", "full", "6meses"],
+    activo: true
+  },
+  "AMAS-DESC20": {
+    tipo: "descuento_dinero",
+    valor: 20,
+    descripcion: "Descuento de S/ 20",
+    programasAplicables: ["1mes", "full", "6meses"],
+    activo: true
+  },
   "AMAS-DESC50": {
     tipo: "descuento_dinero",
     valor: 50,
