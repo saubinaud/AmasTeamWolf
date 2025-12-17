@@ -1,11 +1,20 @@
-import { useState, useCallback, memo, useEffect } from 'react';
-import { X, Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Calendar, Gift } from 'lucide-react';
+import { useState, useCallback, memo, useEffect, useRef } from 'react';
+import { Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Calendar, Gift, Heart, Trophy, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
 
 // ========== CONSTANTES ==========
+
+// Imágenes del carrusel (URLs de Cloudinary o similares)
+const CAROUSEL_IMAGES = [
+  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/16_1_xrkf1b.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/24_1_o4gkqh.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/14_1_vkcnnm.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/17_1_bpqcwp.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/23_1_kwzjec.jpg"
+];
 
 // Feriados fijos de Perú
 const FERIADOS_FIJOS_PERU = [
@@ -40,9 +49,9 @@ const FERIADOS_MOVILES: Record<number, Array<{ fecha: string; nombre: string }>>
 // Clases por programa
 const PROGRAMA_CLASES: Record<string, number> = {
   "1mes": 8,
-  "full": 24, // 3 meses
-  "6meses": 48, // 6 meses (2 veces por semana)
-  "12meses": 96 // 12 meses (2 veces por semana)
+  "full": 24,
+  "6meses": 48,
+  "12meses": 96
 };
 
 // Precios base por programa
@@ -203,7 +212,7 @@ interface CodigoAplicado {
 }
 
 interface FormularioRenovacionProps {
-  onClose: () => void;
+  onClose?: () => void;
   onSuccess: (total: number) => void;
 }
 
@@ -399,7 +408,7 @@ const INITIAL_FORM_STATE = {
   fechaFin: ''
 };
 
-export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose, onSuccess }: FormularioRenovacionProps) {
+export const FormularioRenovacion = memo(function FormularioRenovacion({ onSuccess }: FormularioRenovacionProps) {
   // Estados
   const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses' | '1mes' | null>(null);
   const [mostrar1Mes, setMostrar1Mes] = useState(false);
@@ -425,6 +434,21 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
   const [mostrarOtraFecha, setMostrarOtraFecha] = useState(false);
   const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
+
+  // Estado para el carrusel
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Ref para scroll al formulario
+  const formularioRef = useRef<HTMLDivElement>(null);
+
+  // Carrusel automático
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % CAROUSEL_IMAGES.length);
+    }, 4000); // Cambiar cada 4 segundos
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Verificar si hay código de desbloqueo de 1 mes
   useEffect(() => {
@@ -580,7 +604,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
       return;
     }
 
-    // Para códigos de desbloqueo, usar programa especial
     const validacion = validarCodigoPromocional(codigoPromocional, planSeleccionado || '1mes');
 
     if (!validacion.valido) {
@@ -603,6 +626,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
     setCodigoAplicado(null);
     setMostrar1Mes(false);
     toast.info('Código promocional removido');
+  }, []);
+
+  const handleSelectPlan = useCallback((plan: 'full' | '6meses' | '12meses' | '1mes') => {
+    setPlanSeleccionado(plan);
+    // Scroll al inicio del formulario
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   }, []);
 
   // Limpiar días tentativos cuando cambia el turno
@@ -751,7 +782,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
       if (response.ok || response.status === 200) {
         toast.success('¡Renovación registrada correctamente! Los detalles se enviarán por correo.');
         onSuccess(total);
-        onClose();
       } else {
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
       }
@@ -769,7 +799,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
   if (!planSeleccionado) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950">
-        {/* Hero Section */}
+        {/* Hero Section Mejorado */}
         <div className="relative overflow-hidden">
           {/* Background decorative elements */}
           <div className="absolute inset-0 overflow-hidden">
@@ -778,64 +808,142 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
           </div>
 
           <div className="relative container mx-auto px-4 py-12 sm:py-20">
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 text-white/60 hover:text-white transition-colors bg-white/5 rounded-lg hover:bg-white/10"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            {/* Hero content con Grid de 2 columnas */}
+            <div className="grid lg:grid-cols-2 gap-12 items-center mb-16 max-w-7xl mx-auto">
+              {/* Columna izquierda - Contenido emocional */}
+              <div className="text-left">
+                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
+                  <Heart className="w-4 h-4 text-[#FCA929]" />
+                  <span className="text-white/90 text-sm font-medium">Tu legado continúa</span>
+                </div>
 
-            {/* Hero content */}
-            <div className="max-w-4xl mx-auto text-center mb-16">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
-                <Sparkles className="w-4 h-4 text-[#FCA929]" />
-                <span className="text-white/90 text-sm font-medium">Renovación de Membresía</span>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                  <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
+                    No Detengas
+                  </span>
+                  <br />
+                  <span className="text-white">Tu Transformación</span>
+                </h1>
+
+                <p className="text-white/80 text-lg sm:text-xl mb-8 leading-relaxed">
+                  Cada clase te acerca más a la mejor versión de ti mismo.
+                  <span className="text-[#FCA929] font-semibold"> Renueva hoy</span> y sigue construyendo el camino del guerrero.
+                </p>
+
+                {/* Stats emocionales */}
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
+                    <Trophy className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
+                    <p className="text-white font-bold text-xl">+500</p>
+                    <p className="text-white/60 text-xs">Alumnos Renovados</p>
+                  </div>
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
+                    <Users className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
+                    <p className="text-white font-bold text-xl">95%</p>
+                    <p className="text-white/60 text-xs">Satisfacción</p>
+                  </div>
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
+                    <Award className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
+                    <p className="text-white font-bold text-xl">10+</p>
+                    <p className="text-white/60 text-xs">Años Formando</p>
+                  </div>
+                </div>
+
+                {/* Beneficios destacados */}
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] flex items-center justify-center flex-shrink-0">
+                      <Check className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold">Sin interrupciones en tu progreso</p>
+                      <p className="text-white/60 text-sm">Continúa desde donde lo dejaste</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] flex items-center justify-center flex-shrink-0">
+                      <Check className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold">Beneficios exclusivos por renovar</p>
+                      <p className="text-white/60 text-sm">Descuentos especiales y bonos</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] flex items-center justify-center flex-shrink-0">
+                      <Check className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-semibold">Flexibilidad para tu familia</p>
+                      <p className="text-white/60 text-sm">Elige el plan que mejor se adapte</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
-                <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
-                  Continúa Tu Camino
-                </span>
-                <br />
-                <span className="text-white">Como Guerrero</span>
-              </h1>
+              {/* Columna derecha - Carrusel de imágenes */}
+              <div className="relative">
+                <div className="relative h-[400px] sm:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
+                  {/* Imágenes del carrusel */}
+                  {CAROUSEL_IMAGES.map((image, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${
+                        index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`Alumno AMAS ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Overlay gradiente */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                    </div>
+                  ))}
 
-              <p className="text-white/70 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
-                Renueva tu membresía y sigue creciendo. Ahora con beneficios exclusivos y programas extendidos.
-              </p>
+                  {/* Indicadores del carrusel */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                    {CAROUSEL_IMAGES.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentImageIndex(index)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === currentImageIndex
+                            ? 'bg-[#FA7B21] w-8'
+                            : 'bg-white/50 hover:bg-white/80'
+                        }`}
+                      />
+                    ))}
+                  </div>
 
-              {/* Beneficios de renovar */}
-              <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-                  <Award className="w-8 h-8 text-[#FCA929] mx-auto mb-2" />
-                  <p className="text-white font-semibold mb-1">Sin Interrupción</p>
-                  <p className="text-white/60 text-sm">Continúa sin perder progreso</p>
+                  {/* Badge sobre la imagen */}
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                    <Sparkles className="w-4 h-4 inline mr-1" />
+                    Forma parte de esta familia
+                  </div>
                 </div>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-                  <Gift className="w-8 h-8 text-[#FCA929] mx-auto mb-2" />
-                  <p className="text-white font-semibold mb-1">Bonos Especiales</p>
-                  <p className="text-white/60 text-sm">Implementos y clases extra</p>
-                </div>
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-                  <Calendar className="w-8 h-8 text-[#FCA929] mx-auto mb-2" />
-                  <p className="text-white font-semibold mb-1">Flexibilidad</p>
-                  <p className="text-white/60 text-sm">Elige el plan que mejor te convenga</p>
-                </div>
+
+                {/* Decoración */}
+                <div className="absolute -top-4 -right-4 w-24 h-24 bg-[#FA7B21]/20 rounded-full blur-2xl"></div>
+                <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-[#FCA929]/20 rounded-full blur-2xl"></div>
               </div>
             </div>
 
             {/* Cards de planes */}
             <div className="max-w-7xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-4">
                 Elige Tu Plan de Renovación
               </h2>
+              <p className="text-white/60 text-center mb-10 max-w-2xl mx-auto">
+                Selecciona el plan que mejor se adapte a tus objetivos y continúa tu camino como guerrero
+              </p>
 
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
                 {/* Plan 3 meses */}
                 <div
-                  onClick={() => setPlanSeleccionado('full')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/50 transition-all cursor-pointer group hover:transform hover:scale-105"
+                  onClick={() => handleSelectPlan('full')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
                 >
                   <div className="text-center mb-6">
                     <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
@@ -856,18 +964,18 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
                     ))}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
-                    Seleccionar Plan
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-6 text-lg font-bold shadow-lg">
+                    Renovar con este Plan
                   </Button>
                 </div>
 
                 {/* Plan 6 meses - Popular */}
                 <div
-                  onClick={() => setPlanSeleccionado('6meses')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105"
+                  onClick={() => handleSelectPlan('6meses')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/30"
                 >
                   {/* Badge Popular */}
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-1 rounded-full text-sm font-bold">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
                     MÁS POPULAR
                   </div>
 
@@ -890,18 +998,18 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
                     ))}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white">
-                    Seleccionar Plan
+                  <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-lg font-bold shadow-lg">
+                    Renovar con este Plan
                   </Button>
                 </div>
 
                 {/* Plan 12 meses - Mejor valor */}
                 <div
-                  onClick={() => setPlanSeleccionado('12meses')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-purple-500/50 rounded-2xl p-6 sm:p-8 hover:border-purple-500 transition-all cursor-pointer group hover:transform hover:scale-105"
+                  onClick={() => handleSelectPlan('12meses')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-purple-500/50 rounded-2xl p-6 sm:p-8 hover:border-purple-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/30"
                 >
                   {/* Badge Mejor Valor */}
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-1 rounded-full text-sm font-bold">
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
                     MEJOR VALOR
                   </div>
 
@@ -924,41 +1032,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
                     ))}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
-                    Seleccionar Plan
+                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-6 text-lg font-bold shadow-lg">
+                    Renovar con este Plan
                   </Button>
-                </div>
-              </div>
-
-              {/* Código promocional para desbloquear 1 mes */}
-              <div className="mt-12 max-w-2xl mx-auto">
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                  <p className="text-white/70 text-center mb-4">
-                    ¿Quieres renovar solo por 1 mes? Ingresa tu código especial
-                  </p>
-                  <div className="flex gap-3">
-                    <Input
-                      type="text"
-                      placeholder="Ingresa código para 1 mes"
-                      value={codigoPromocional}
-                      onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                      className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
-                    />
-                    <Button
-                      onClick={handleAplicarCodigo}
-                      className="bg-[#FA7B21] hover:bg-[#F36A15] text-white"
-                    >
-                      Aplicar
-                    </Button>
-                  </div>
-                  {mostrar1Mes && (
-                    <Button
-                      onClick={() => setPlanSeleccionado('1mes')}
-                      className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                    >
-                      ✅ Plan 1 Mes Desbloqueado - Seleccionar
-                    </Button>
-                  )}
                 </div>
               </div>
             </div>
@@ -970,14 +1046,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
 
   // Formulario completo cuando ya hay un plan seleccionado
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div ref={formularioRef} className="min-h-screen bg-zinc-950">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header con plan seleccionado */}
         <div className="bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-2xl p-6 mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-4">
             <div>
               <p className="text-white/70 text-sm mb-1">Plan seleccionado:</p>
-              <h2 className="text-2xl font-bold text-white">
+              <h2 className="text-xl sm:text-2xl font-bold text-white">
                 {NOMBRES_PROGRAMA[planSeleccionado]} - S/ {PRECIOS_BASE[planSeleccionado]}
               </h2>
             </div>
@@ -1515,9 +1591,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose
                     type="button"
                     onClick={handleQuitarCodigo}
                     className="text-green-300 hover:text-green-100 transition-colors ml-4"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
+                  />
                 </div>
               </div>
             )}
