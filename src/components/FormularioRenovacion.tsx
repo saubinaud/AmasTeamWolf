@@ -849,52 +849,85 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
               </div>
 
-              {/* Columna derecha - Grid de Imágenes Impactante */}
+              {/* Columna derecha - Carrusel Impactante con Fade */}
               <div className="relative order-1 lg:order-2">
-                {/* Grid 2x2 de imágenes */}
-                <div className="grid grid-cols-2 gap-3 sm:gap-4 h-[500px] sm:h-[600px] lg:h-[700px]">
-                  {/* Imagen principal grande - ocupa las 2 filas superiores */}
-                  <div className="col-span-2 row-span-2 relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(250,123,33,0.4)] border-3 border-[#FA7B21]/50 group">
-                    <img
-                      src={CAROUSEL_IMAGES[currentImageIndex]}
-                      alt="Alumnos AMAS Team Wolf"
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      onError={(e) => {
-                        e.currentTarget.src = 'https://via.placeholder.com/800x600/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
-                      }}
-                    />
-                    {/* Overlay gradiente */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+                {/* Contenedor principal del carrusel */}
+                <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(250,123,33,0.5)] border-4 border-[#FA7B21]/60 group">
 
-                    {/* Badge flotante */}
-                    <div className="absolute top-4 sm:top-6 left-4 sm:left-6">
-                      <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base font-bold shadow-2xl backdrop-blur-sm">
-                        <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 inline mr-2" />
-                        Nuestros Guerreros
-                      </div>
+                  {/* Stack de imágenes con fade */}
+                  {CAROUSEL_IMAGES.slice(0, 5).map((image, index) => (
+                    <div
+                      key={index}
+                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+                        index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`Guerreros AMAS ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        loading={index === 0 ? "eager" : "lazy"}
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://via.placeholder.com/1200x800/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
+                        }}
+                      />
+                      {/* Overlay sutil */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
                     </div>
+                  ))}
 
-                    {/* Controles del carrusel - minimalistas */}
-                    <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3">
+                  {/* Badge animado */}
+                  <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20 animate-in fade-in slide-in-from-top-4 duration-700">
+                    <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-full text-sm sm:text-base font-bold shadow-2xl shadow-[#FA7B21]/60 backdrop-blur-sm flex items-center gap-2">
+                      <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
+                      <span>Nuestros Guerreros</span>
+                    </div>
+                  </div>
+
+                  {/* Controles del carrusel - elegantes */}
+                  <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+                    <div className="flex gap-2.5 sm:gap-3 bg-black/50 backdrop-blur-md px-5 sm:px-6 py-3 sm:py-4 rounded-full border border-white/20">
                       {CAROUSEL_IMAGES.slice(0, 5).map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
-                          className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
+                          className={`h-2.5 sm:h-3 rounded-full transition-all duration-500 ${
                             index === currentImageIndex
-                              ? 'bg-[#FA7B21] w-8 sm:w-12 shadow-lg shadow-[#FA7B21]/50'
-                              : 'bg-white/60 hover:bg-white w-2 sm:w-3'
+                              ? 'bg-[#FA7B21] w-10 sm:w-14 shadow-lg shadow-[#FA7B21]/70'
+                              : 'bg-white/40 hover:bg-white/70 w-2.5 sm:w-3'
                           }`}
                           aria-label={`Ver imagen ${index + 1}`}
                         />
                       ))}
                     </div>
                   </div>
+
+                  {/* Flecha de navegación izquierda */}
+                  <button
+                    onClick={() => setCurrentImageIndex((prev) => (prev - 1 + 5) % 5)}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    aria-label="Imagen anterior"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Flecha de navegación derecha */}
+                  <button
+                    onClick={() => setCurrentImageIndex((prev) => (prev + 1) % 5)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    aria-label="Siguiente imagen"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
 
-                {/* Efectos decorativos */}
-                <div className="absolute -top-10 -right-10 w-32 sm:w-40 h-32 sm:h-40 bg-[#FA7B21]/30 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
-                <div className="absolute -bottom-10 -left-10 w-40 sm:w-48 h-40 sm:h-48 bg-[#FCA929]/25 rounded-full blur-3xl pointer-events-none"></div>
+                {/* Efectos decorativos animados */}
+                <div className="absolute -top-10 -right-10 w-36 sm:w-44 h-36 sm:h-44 bg-[#FA7B21]/30 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+                <div className="absolute -bottom-10 -left-10 w-44 sm:w-52 h-44 sm:h-52 bg-[#FCA929]/25 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '1s' }}></div>
               </div>
             </div>
 
@@ -903,9 +936,47 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
               <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-6">
                 Elija el Plan de Renovación
               </h2>
-              <p className="text-white/60 text-center mb-12 max-w-2xl mx-auto">
+              <p className="text-white/60 text-center mb-8 max-w-2xl mx-auto">
                 Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
+
+              {/* Campo de código promocional */}
+              <div className="max-w-md mx-auto mb-12">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                  <Label className="text-white text-sm font-semibold mb-3 block flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-[#FCA929]" />
+                    ¿Tienes un código promocional?
+                  </Label>
+                  <div className="flex gap-3">
+                    <Input
+                      type="text"
+                      placeholder="Ingresa tu código aquí"
+                      value={codigoPromocional}
+                      onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
+                      className="flex-1 bg-zinc-800 border-white/20 text-white placeholder:text-white/40 uppercase"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAplicarCodigo}
+                      disabled={!codigoPromocional.trim()}
+                      className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+
+                  {codigoAplicado?.valido && (
+                    <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
+                        <Check className="w-4 h-4" />
+                        {codigoAplicado.tipo === 'desbloquear_1mes'
+                          ? '¡Código válido! Plan de 1 mes desbloqueado'
+                          : `${codigoAplicado.descripcion}`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
                 {/* Plan 3 meses */}
@@ -1005,6 +1076,50 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </Button>
                 </div>
               </div>
+
+              {/* Plan 1 mes - Solo visible con código */}
+              {mostrar1Mes && (
+                <div className="mt-8 max-w-lg mx-auto">
+                  <div className="relative bg-gradient-to-b from-green-500/10 to-green-500/5 backdrop-blur-sm border-2 border-green-500/50 rounded-2xl p-6 sm:p-8">
+                    {/* Badge Código Desbloqueado */}
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
+                      🔓 CÓDIGO DESBLOQUEADO
+                    </div>
+
+                    <div className="text-center mb-6 mt-4">
+                      <div className="text-5xl mb-4">⚡</div>
+                      <h3 className="text-2xl font-bold text-white mb-2">1 MES</h3>
+                      <div className="flex items-baseline justify-center gap-2 mb-4">
+                        <span className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                          S/ 330
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 mb-6">
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">1 mes de clase 2 veces por semana</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">Clases recuperables</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">Flexibilidad de horarios</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={() => handleSelectPlan('1mes')}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-6 text-lg font-bold shadow-lg"
+                    >
+                      Renovar con este Plan
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
