@@ -811,9 +811,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
             <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-[#FCA929]/15 rounded-full blur-3xl"></div>
           </div>
 
-          <div className="relative container mx-auto px-4 lg:px-6 py-8 lg:py-20">
+          <div className="relative container mx-auto px-4 lg:px-6 py-8 lg:py-16">
             {/* Hero content con Grid de 2 columnas */}
-            <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center max-w-7xl mx-auto min-h-[600px] lg:min-h-[700px]">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-7xl mx-auto">
               {/* Columna izquierda - Contenido emocional */}
               <div className="text-left order-2 lg:order-1">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
@@ -822,7 +822,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-8 leading-[1.1]">
-                  <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent animate-gradient">
+                  <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
                     No Detenga la Transformación
                   </span>
                   <br />
@@ -850,45 +850,46 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
               </div>
 
-              {/* Columna derecha - Carrusel Simple y Funcional */}
-              <div className="relative order-1 lg:order-2">
-                {/* Contenedor principal del carrusel */}
-                <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(250,123,33,0.5)] border-4 border-[#FA7B21]/60">
+              {/* Columna derecha - Carrusel Simple y Proporcionado */}
+              <div className="relative order-1 lg:order-2 w-full">
+                {/* Contenedor con aspect ratio */}
+                <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] max-h-[600px] rounded-2xl overflow-hidden shadow-[0_15px_50px_rgba(250,123,33,0.4)] border-2 border-[#FA7B21]/50">
 
-                  {/* Imagen actual - Simple display con key para forzar re-render */}
+                  {/* Imagen actual */}
                   <img
-                    key={`carousel-${currentImageIndex}`}
+                    key={currentImageIndex}
                     src={CAROUSEL_IMAGES[currentImageIndex]}
                     alt={`Guerreros AMAS - Imagen ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover animate-in fade-in duration-700"
+                    className="w-full h-full object-cover transition-opacity duration-500"
+                    style={{ opacity: 1 }}
                     onError={(e) => {
                       console.error('Error cargando imagen:', CAROUSEL_IMAGES[currentImageIndex]);
-                      e.currentTarget.src = 'https://via.placeholder.com/1200x800/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
+                      e.currentTarget.src = 'https://via.placeholder.com/800x1000/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
                     }}
                   />
 
                   {/* Overlay sutil */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none"></div>
 
-                  {/* Badge animado */}
-                  <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20">
-                    <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-full text-sm sm:text-base font-bold shadow-2xl shadow-[#FA7B21]/60 backdrop-blur-sm flex items-center gap-2">
-                      <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
+                  {/* Badge */}
+                  <div className="absolute top-4 left-4 z-20">
+                    <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-lg backdrop-blur-sm flex items-center gap-2">
+                      <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
                       <span>Nuestros Guerreros</span>
                     </div>
                   </div>
 
-                  {/* Controles del carrusel - elegantes */}
-                  <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-                    <div className="flex gap-2.5 sm:gap-3 bg-black/60 backdrop-blur-md px-5 sm:px-6 py-3 sm:py-4 rounded-full border border-white/20">
+                  {/* Indicadores */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+                    <div className="flex gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-full">
                       {CAROUSEL_IMAGES.slice(0, 5).map((_, index) => (
                         <button
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
-                          className={`h-2.5 sm:h-3 rounded-full transition-all duration-500 ${
+                          className={`h-1.5 rounded-full transition-all duration-300 ${
                             index === currentImageIndex
-                              ? 'bg-[#FA7B21] w-10 sm:w-14 shadow-lg shadow-[#FA7B21]/70'
-                              : 'bg-white/40 hover:bg-white/70 w-2.5 sm:w-3'
+                              ? 'bg-[#FA7B21] w-8'
+                              : 'bg-white/50 hover:bg-white/80 w-1.5'
                           }`}
                           aria-label={`Ver imagen ${index + 1}`}
                         />
@@ -896,32 +897,31 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     </div>
                   </div>
 
-                  {/* Flecha izquierda - siempre visible */}
+                  {/* Flechas - solo en desktop */}
                   <button
                     onClick={() => setCurrentImageIndex((prev) => (prev - 1 + 5) % 5)}
-                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110"
+                    className="hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-sm hover:bg-[#FA7B21]/80 text-white p-2 rounded-full transition-all"
                     aria-label="Imagen anterior"
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
 
-                  {/* Flecha derecha - siempre visible */}
                   <button
                     onClick={() => setCurrentImageIndex((prev) => (prev + 1) % 5)}
-                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110"
+                    className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 backdrop-blur-sm hover:bg-[#FA7B21]/80 text-white p-2 rounded-full transition-all"
                     aria-label="Siguiente imagen"
                   >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
 
-                {/* Efectos decorativos animados */}
-                <div className="absolute -top-10 -right-10 w-36 sm:w-44 h-36 sm:h-44 bg-[#FA7B21]/30 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
-                <div className="absolute -bottom-10 -left-10 w-44 sm:w-52 h-44 sm:h-52 bg-[#FCA929]/25 rounded-full blur-3xl animate-pulse pointer-events-none" style={{ animationDelay: '1s' }}></div>
+                {/* Efectos decorativos - más pequeños */}
+                <div className="absolute -top-6 -right-6 w-24 h-24 bg-[#FA7B21]/20 rounded-full blur-2xl animate-pulse pointer-events-none"></div>
+                <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-[#FCA929]/15 rounded-full blur-2xl pointer-events-none"></div>
               </div>
             </div>
 
