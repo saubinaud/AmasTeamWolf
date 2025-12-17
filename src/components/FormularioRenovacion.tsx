@@ -1047,7 +1047,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
   // Formulario completo cuando ya hay un plan seleccionado
   return (
-    <div ref={formularioRef} className="min-h-screen bg-zinc-950">
+    <div ref={formularioRef} className="min-h-screen bg-zinc-950 pt-24 sm:pt-28">
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Header con plan seleccionado */}
         <div className="bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-2xl p-6 mb-8">
