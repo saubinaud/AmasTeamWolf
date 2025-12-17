@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { FormularioRenovacion } from '../components/FormularioRenovacion';
+import { HeaderMain } from '../components/HeaderMain';
+import { FooterMain } from '../components/FooterMain';
 import { toast } from 'sonner';
 
 interface RenovacionPageProps {
@@ -24,27 +26,49 @@ export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProp
     }, 3000);
   };
 
-  return (
-    <div className="min-h-screen bg-zinc-950">
-      {showSuccessMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-          <div className="bg-zinc-900 border-2 border-[#FA7B21] rounded-2xl p-8 max-w-md mx-4 text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-white text-2xl font-bold mb-2">
-              ¡Renovación Exitosa!
-            </h2>
-            <p className="text-white/70 mb-4">
-              Gracias por renovar tu membresía. Recibirás un correo con todos los detalles.
-            </p>
-            <div className="animate-spin w-8 h-8 border-4 border-[#FA7B21] border-t-transparent rounded-full mx-auto"></div>
-            <p className="text-white/50 text-sm mt-4">Redirigiendo...</p>
-          </div>
-        </div>
-      )}
+  const handleNavigate = (page: string) => {
+    if (page === 'home') {
+      onNavigateHome();
+    }
+    // Puedes agregar más navegaciones si es necesario
+  };
 
-      <FormularioRenovacion
-        onClose={onNavigateHome}
-        onSuccess={handleFormSuccess}
+  return (
+    <div className="min-h-screen bg-zinc-950 flex flex-col">
+      {/* Header */}
+      <HeaderMain
+        onNavigate={handleNavigate}
+        onOpenMatricula={() => {}}
+        onOpenCart={() => {}}
+      />
+
+      {/* Contenido principal */}
+      <div className="flex-1">
+        {showSuccessMessage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+            <div className="bg-zinc-900 border-2 border-[#FA7B21] rounded-2xl p-8 max-w-md mx-4 text-center">
+              <div className="text-6xl mb-4">🎉</div>
+              <h2 className="text-white text-2xl font-bold mb-2">
+                ¡Renovación Exitosa!
+              </h2>
+              <p className="text-white/70 mb-4">
+                Gracias por renovar tu membresía. Recibirás un correo con todos los detalles.
+              </p>
+              <div className="animate-spin w-8 h-8 border-4 border-[#FA7B21] border-t-transparent rounded-full mx-auto"></div>
+              <p className="text-white/50 text-sm mt-4">Redirigiendo...</p>
+            </div>
+          </div>
+        )}
+
+        <FormularioRenovacion
+          onSuccess={handleFormSuccess}
+        />
+      </div>
+
+      {/* Footer */}
+      <FooterMain
+        onNavigate={handleNavigate}
+        onOpenMatricula={() => {}}
       />
     </div>
   );
