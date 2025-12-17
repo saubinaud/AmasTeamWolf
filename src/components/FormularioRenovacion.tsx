@@ -437,6 +437,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   const [mostrarOtraFecha, setMostrarOtraFecha] = useState(false);
   const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
+  const [codigoExpanded, setCodigoExpanded] = useState(false);
 
   // Estado para el carrusel
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -849,35 +850,28 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
               </div>
 
-              {/* Columna derecha - Carrusel Impactante con Fade */}
+              {/* Columna derecha - Carrusel Simple y Funcional */}
               <div className="relative order-1 lg:order-2">
                 {/* Contenedor principal del carrusel */}
-                <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(250,123,33,0.5)] border-4 border-[#FA7B21]/60 group">
+                <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(250,123,33,0.5)] border-4 border-[#FA7B21]/60">
 
-                  {/* Stack de imágenes con fade */}
-                  {CAROUSEL_IMAGES.slice(0, 5).map((image, index) => (
-                    <div
-                      key={index}
-                      className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                        index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`Guerreros AMAS ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        loading={index === 0 ? "eager" : "lazy"}
-                        onError={(e) => {
-                          e.currentTarget.src = 'https://via.placeholder.com/1200x800/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
-                        }}
-                      />
-                      {/* Overlay sutil */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent"></div>
-                    </div>
-                  ))}
+                  {/* Imagen actual - Simple display con key para forzar re-render */}
+                  <img
+                    key={`carousel-${currentImageIndex}`}
+                    src={CAROUSEL_IMAGES[currentImageIndex]}
+                    alt={`Guerreros AMAS - Imagen ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover animate-in fade-in duration-700"
+                    onError={(e) => {
+                      console.error('Error cargando imagen:', CAROUSEL_IMAGES[currentImageIndex]);
+                      e.currentTarget.src = 'https://via.placeholder.com/1200x800/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
+                    }}
+                  />
+
+                  {/* Overlay sutil */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none"></div>
 
                   {/* Badge animado */}
-                  <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20 animate-in fade-in slide-in-from-top-4 duration-700">
+                  <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-20">
                     <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-full text-sm sm:text-base font-bold shadow-2xl shadow-[#FA7B21]/60 backdrop-blur-sm flex items-center gap-2">
                       <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
                       <span>Nuestros Guerreros</span>
@@ -886,7 +880,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
                   {/* Controles del carrusel - elegantes */}
                   <div className="absolute bottom-6 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-                    <div className="flex gap-2.5 sm:gap-3 bg-black/50 backdrop-blur-md px-5 sm:px-6 py-3 sm:py-4 rounded-full border border-white/20">
+                    <div className="flex gap-2.5 sm:gap-3 bg-black/60 backdrop-blur-md px-5 sm:px-6 py-3 sm:py-4 rounded-full border border-white/20">
                       {CAROUSEL_IMAGES.slice(0, 5).map((_, index) => (
                         <button
                           key={index}
@@ -902,10 +896,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     </div>
                   </div>
 
-                  {/* Flecha de navegación izquierda */}
+                  {/* Flecha izquierda - siempre visible */}
                   <button
                     onClick={() => setCurrentImageIndex((prev) => (prev - 1 + 5) % 5)}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110"
                     aria-label="Imagen anterior"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -913,10 +907,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     </svg>
                   </button>
 
-                  {/* Flecha de navegación derecha */}
+                  {/* Flecha derecha - siempre visible */}
                   <button
                     onClick={() => setCurrentImageIndex((prev) => (prev + 1) % 5)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/50 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100"
+                    className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-black/60 backdrop-blur-sm hover:bg-[#FA7B21] text-white p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110"
                     aria-label="Siguiente imagen"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -936,47 +930,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
               <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-6">
                 Elija el Plan de Renovación
               </h2>
-              <p className="text-white/60 text-center mb-8 max-w-2xl mx-auto">
+              <p className="text-white/60 text-center mb-12 max-w-2xl mx-auto">
                 Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
-
-              {/* Campo de código promocional */}
-              <div className="max-w-md mx-auto mb-12">
-                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
-                  <Label className="text-white text-sm font-semibold mb-3 block flex items-center gap-2">
-                    <Gift className="w-4 h-4 text-[#FCA929]" />
-                    ¿Tienes un código promocional?
-                  </Label>
-                  <div className="flex gap-3">
-                    <Input
-                      type="text"
-                      placeholder="Ingresa tu código aquí"
-                      value={codigoPromocional}
-                      onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                      className="flex-1 bg-zinc-800 border-white/20 text-white placeholder:text-white/40 uppercase"
-                    />
-                    <Button
-                      type="button"
-                      onClick={handleAplicarCodigo}
-                      disabled={!codigoPromocional.trim()}
-                      className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Aplicar
-                    </Button>
-                  </div>
-
-                  {codigoAplicado?.valido && (
-                    <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                      <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
-                        <Check className="w-4 h-4" />
-                        {codigoAplicado.tipo === 'desbloquear_1mes'
-                          ? '¡Código válido! Plan de 1 mes desbloqueado'
-                          : `${codigoAplicado.descripcion}`}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
 
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
                 {/* Plan 3 meses */}
@@ -1120,6 +1076,51 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </div>
                 </div>
               )}
+
+              {/* Código Promocional - Desplegable discreto */}
+              <div className="mt-12 max-w-2xl mx-auto">
+                <button
+                  onClick={() => setCodigoExpanded(!codigoExpanded)}
+                  className="w-full flex items-center justify-center gap-2 text-white/60 hover:text-white/90 transition-colors py-3 text-sm group"
+                >
+                  <Gift className="w-4 h-4 text-[#FCA929] group-hover:scale-110 transition-transform" />
+                  <span>¿Tienes un código exclusivo?</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${codigoExpanded ? 'rotate-180' : ''}`} />
+                </button>
+
+                {codigoExpanded && (
+                  <div className="mt-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex gap-3">
+                      <Input
+                        type="text"
+                        placeholder="Ingresa tu código aquí"
+                        value={codigoPromocional}
+                        onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
+                        className="flex-1 bg-zinc-800 border-white/20 text-white placeholder:text-white/40 uppercase"
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleAplicarCodigo}
+                        disabled={!codigoPromocional.trim()}
+                        className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Aplicar
+                      </Button>
+                    </div>
+
+                    {codigoAplicado?.valido && (
+                      <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg animate-in fade-in duration-500">
+                        <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
+                          <Check className="w-4 h-4" />
+                          {codigoAplicado.tipo === 'desbloquear_1mes'
+                            ? '¡Código válido! Plan de 1 mes desbloqueado ✨'
+                            : `${codigoAplicado.descripcion}`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
