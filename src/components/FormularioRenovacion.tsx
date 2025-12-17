@@ -7,13 +7,16 @@ import { toast } from 'sonner';
 
 // ========== CONSTANTES ==========
 
-// Imágenes del carrusel (URLs de Cloudinary o similares)
+// Imágenes del carrusel (URLs de Cloudinary actualizadas)
 const CAROUSEL_IMAGES = [
-  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/16_1_xrkf1b.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/24_1_o4gkqh.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/14_1_vkcnnm.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/17_1_bpqcwp.jpg",
-  "https://res.cloudinary.com/dkoocok3j/image/upload/v1734577890/23_1_kwzjec.jpg"
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847478/Valencia_2_t8q3hl.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763124686/AMAS_-_graduacio%CC%81n_profesores_6_c3qvlk.jpg",
+  "https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1200/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg"
 ];
 
 // Feriados fijos de Perú
@@ -831,16 +834,11 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 </p>
 
                 {/* Stats emocionales - más compactos */}
-                <div className="grid grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-2 gap-4 mb-8 max-w-md">
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
                     <Trophy className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
-                    <p className="text-white font-bold text-xl">+500</p>
+                    <p className="text-white font-bold text-xl">+300</p>
                     <p className="text-white/60 text-xs">Alumnos Renovados</p>
-                  </div>
-                  <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
-                    <Users className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
-                    <p className="text-white font-bold text-xl">95%</p>
-                    <p className="text-white/60 text-xs">Satisfacción</p>
                   </div>
                   <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 text-center">
                     <Award className="w-6 h-6 text-[#FCA929] mx-auto mb-2" />
