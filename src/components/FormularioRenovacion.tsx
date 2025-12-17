@@ -444,10 +444,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   // Ref para scroll al formulario
   const formularioRef = useRef<HTMLDivElement>(null);
 
-  // Carrusel automático
+  // Carrusel automático (solo primeras 5 imágenes)
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % CAROUSEL_IMAGES.length);
+      setCurrentImageIndex((prev) => (prev + 1) % 5);
     }, 4000); // Cambiar cada 4 segundos
 
     return () => clearInterval(interval);
@@ -849,55 +849,52 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
               </div>
 
-              {/* Columna derecha - Carrusel de imágenes PROMINENTE */}
+              {/* Columna derecha - Grid de Imágenes Impactante */}
               <div className="relative order-1 lg:order-2">
-                <div className="relative w-full h-[500px] sm:h-[600px] lg:h-[700px] rounded-3xl overflow-hidden shadow-[0_20px_80px_rgba(250,123,33,0.4)] border-4 border-[#FA7B21]/50">
-                  {/* Imágenes del carrusel */}
-                  {CAROUSEL_IMAGES.map((image, index) => (
-                    <div
-                      key={index}
-                      className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                        index === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`Alumno AMAS ${index + 1}`}
-                        className="w-full h-full object-cover object-center"
-                        loading={index === 0 ? "eager" : "lazy"}
-                      />
-                      {/* Overlay gradiente suave */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30"></div>
+                {/* Grid 2x2 de imágenes */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 h-[500px] sm:h-[600px] lg:h-[700px]">
+                  {/* Imagen principal grande - ocupa las 2 filas superiores */}
+                  <div className="col-span-2 row-span-2 relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(250,123,33,0.4)] border-3 border-[#FA7B21]/50 group">
+                    <img
+                      src={CAROUSEL_IMAGES[currentImageIndex]}
+                      alt="Alumnos AMAS Team Wolf"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://via.placeholder.com/800x600/1a1a1a/FA7B21?text=AMAS+Team+Wolf';
+                      }}
+                    />
+                    {/* Overlay gradiente */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+
+                    {/* Badge flotante */}
+                    <div className="absolute top-4 sm:top-6 left-4 sm:left-6">
+                      <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm sm:text-base font-bold shadow-2xl backdrop-blur-sm">
+                        <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 inline mr-2" />
+                        Nuestros Guerreros
+                      </div>
                     </div>
-                  ))}
 
-                  {/* Indicadores del carrusel más grandes */}
-                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/40 backdrop-blur-sm px-4 py-3 rounded-full">
-                    {CAROUSEL_IMAGES.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`h-3 rounded-full transition-all duration-300 ${
-                          index === currentImageIndex
-                            ? 'bg-[#FA7B21] w-12 shadow-lg shadow-[#FA7B21]/50'
-                            : 'bg-white/60 hover:bg-white/90 w-3'
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Badge superior más llamativo */}
-                  <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
-                    <div className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-3 rounded-full text-base font-bold shadow-2xl shadow-[#FA7B21]/50 backdrop-blur-sm">
-                      <Sparkles className="w-5 h-5 inline mr-2" />
-                      Nuestros Guerreros
+                    {/* Controles del carrusel - minimalistas */}
+                    <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3">
+                      {CAROUSEL_IMAGES.slice(0, 5).map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`h-2 sm:h-3 rounded-full transition-all duration-300 ${
+                            index === currentImageIndex
+                              ? 'bg-[#FA7B21] w-8 sm:w-12 shadow-lg shadow-[#FA7B21]/50'
+                              : 'bg-white/60 hover:bg-white w-2 sm:w-3'
+                          }`}
+                          aria-label={`Ver imagen ${index + 1}`}
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
 
-                {/* Efectos de decoración más pronunciados */}
-                <div className="absolute -top-10 -right-10 w-40 h-40 bg-[#FA7B21]/30 rounded-full blur-3xl animate-pulse"></div>
-                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#FCA929]/25 rounded-full blur-3xl"></div>
+                {/* Efectos decorativos */}
+                <div className="absolute -top-10 -right-10 w-32 sm:w-40 h-32 sm:h-40 bg-[#FA7B21]/30 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 sm:w-48 h-40 sm:h-48 bg-[#FCA929]/25 rounded-full blur-3xl pointer-events-none"></div>
               </div>
             </div>
 
