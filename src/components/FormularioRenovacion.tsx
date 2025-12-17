@@ -814,20 +814,20 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
               <div className="text-left">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
                   <Heart className="w-4 h-4 text-[#FCA929]" />
-                  <span className="text-white/90 text-sm font-medium">Tu legado continúa</span>
+                  <span className="text-white/90 text-sm font-medium">El legado de su hijo continúa</span>
                 </div>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
                   <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
-                    No Detengas
+                    No Detenga la Transformación
                   </span>
                   <br />
-                  <span className="text-white">Tu Transformación</span>
+                  <span className="text-white">de Su Hijo</span>
                 </h1>
 
                 <p className="text-white/80 text-lg sm:text-xl mb-8 leading-relaxed">
-                  Cada clase te acerca más a la mejor versión de ti mismo.
-                  <span className="text-[#FCA929] font-semibold"> Renueva hoy</span> y sigue construyendo el camino del guerrero.
+                  Cada clase acerca más a su hijo a la mejor versión de sí mismo.
+                  <span className="text-[#FCA929] font-semibold"> Renueve hoy</span> y siga construyendo el camino del guerrero.
                 </p>
 
                 {/* Stats emocionales */}
@@ -856,8 +856,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                       <Check className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-white font-semibold">Sin interrupciones en tu progreso</p>
-                      <p className="text-white/60 text-sm">Continúa desde donde lo dejaste</p>
+                      <p className="text-white font-semibold">Sin interrupciones en el progreso</p>
+                      <p className="text-white/60 text-sm">Su hijo continúa desde donde lo dejó</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -874,8 +874,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                       <Check className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-white font-semibold">Flexibilidad para tu familia</p>
-                      <p className="text-white/60 text-sm">Elige el plan que mejor se adapte</p>
+                      <p className="text-white font-semibold">Flexibilidad para su familia</p>
+                      <p className="text-white/60 text-sm">Elija el plan que mejor se adapte</p>
                     </div>
                   </div>
                 </div>
@@ -933,10 +933,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
             {/* Cards de planes */}
             <div className="max-w-7xl mx-auto">
               <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-4">
-                Elige Tu Plan de Renovación
+                Elija el Plan de Renovación
               </h2>
               <p className="text-white/60 text-center mb-10 max-w-2xl mx-auto">
-                Selecciona el plan que mejor se adapte a tus objetivos y continúa tu camino como guerrero
+                Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
 
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
