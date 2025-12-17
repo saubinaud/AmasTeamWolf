@@ -1,6 +1,5 @@
 import { useState, useCallback, memo, useEffect } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
-import { X, Loader2, Upload, File, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Calendar, Gift } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -8,7 +7,7 @@ import { toast } from 'sonner';
 
 // ========== CONSTANTES ==========
 
-// Feriados fijos de Perú - Feriados obligatorios no laborables según Decreto Legislativo 713
+// Feriados fijos de Perú
 const FERIADOS_FIJOS_PERU = [
   { mes: 1, dia: 1, nombre: "Año Nuevo" },
   { mes: 5, dia: 1, nombre: "Día del Trabajo" },
@@ -42,26 +41,83 @@ const FERIADOS_MOVILES: Record<number, Array<{ fecha: string; nombre: string }>>
 const PROGRAMA_CLASES: Record<string, number> = {
   "1mes": 8,
   "full": 24, // 3 meses
-  "6meses": 48 // 6 meses (2 veces por semana)
+  "6meses": 48, // 6 meses (2 veces por semana)
+  "12meses": 96 // 12 meses (2 veces por semana)
 };
 
-// Precios base por programa (SIN UNIFORME - Solo clases)
+// Precios base por programa
 const PRECIOS_BASE: Record<string, number> = {
   "1mes": 330,
   "full": 869,
-  "6meses": 1699
+  "6meses": 1699,
+  "12meses": 3299
 };
 
 // Nombres de programas
 const NOMBRES_PROGRAMA: Record<string, string> = {
   "1mes": "Programa 1 Mes",
-  "full": "Programa 3 Meses FULL",
-  "6meses": "Programa 6 Meses"
+  "full": "Programa 3 Meses",
+  "6meses": "Programa 6 Meses",
+  "12meses": "Programa 12 Meses"
+};
+
+// Información de planes
+const PLANES_INFO = {
+  full: {
+    duracion: "3 MESES",
+    precio: 869,
+    beneficios: [
+      "3 meses de clase 2 veces x semana",
+      "Clases recuperables",
+      "1 Congelamiento del programa por inasistencia o viaje",
+      "Cartilla de deberes programa completo (Seguimiento del progreso)",
+      "1 Graduación",
+      "1 Nuevo cinturón con ceremonia",
+      "2 Certificados del nuevo rango"
+    ],
+    icon: "🥋",
+    color: "from-blue-500 to-cyan-500"
+  },
+  "6meses": {
+    duracion: "6 MESES",
+    precio: 1699,
+    beneficios: [
+      "6 meses de clase 2 veces x semana",
+      "Clases recuperables",
+      "1 Congelamiento del programa por inasistencia o viaje",
+      "Cartilla de deberes programa completo (Seguimiento del progreso)",
+      "2 Graduaciones",
+      "2 Nuevos cinturones con ceremonia",
+      "2 Certificados del nuevo rango",
+      "Implemento de regalo para el próximo torneo 🥊 🥇"
+    ],
+    icon: "⚡",
+    color: "from-orange-500 to-red-500",
+    popular: true
+  },
+  "12meses": {
+    duracion: "12 MESES",
+    precio: 3299,
+    beneficios: [
+      "12 meses de clase 2 veces x semana",
+      "Clases recuperables",
+      "1 Congelamiento del programa por inasistencia o viaje",
+      "Cartilla de deberes programa completo (Seguimiento del progreso)",
+      "4 Graduaciones",
+      "4 Nuevos cinturones con ceremonia",
+      "4 Certificados del nuevo rango",
+      "1 mes de clase gratis añadidos al periodo 🥋 (14 meses)",
+      "Implemento de regalo para el próximo torneo 🥊 🥇"
+    ],
+    icon: "👑",
+    color: "from-purple-500 to-pink-500",
+    destacado: "MEJOR VALOR"
+  }
 };
 
 // Códigos promocionales
 interface CodigoPromocional {
-  tipo: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  tipo: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'desbloquear_1mes';
   valor: number;
   descripcion: string;
   programasAplicables: string[];
@@ -69,120 +125,60 @@ interface CodigoPromocional {
 }
 
 const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
-  // ========== DESCUENTOS EN DINERO ==========
+  // Código especial para desbloquear 1 mes
+  "RENOVAR1MES": {
+    tipo: "desbloquear_1mes",
+    valor: 0,
+    descripcion: "Desbloquea el programa de 1 mes",
+    programasAplicables: ["1mes"],
+    activo: true
+  },
+
+  // Descuentos en dinero
   "AMAS-DESC50": {
     tipo: "descuento_dinero",
     valor: 50,
     descripcion: "Descuento de S/ 50",
-    programasAplicables: ["1mes", "full", "6meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses"],
     activo: true
   },
   "AMAS-DESC100": {
     tipo: "descuento_dinero",
     valor: 100,
     descripcion: "Descuento de S/ 100",
-    programasAplicables: ["1mes", "full", "6meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses"],
     activo: true
   },
-  "AMAS-DESC150": {
+  "RENUEVA100": {
     tipo: "descuento_dinero",
-    valor: 150,
-    descripcion: "Descuento de S/ 150",
-    programasAplicables: ["full", "6meses"],
-    activo: true
-  },
-  "AMAS-DESC200": {
-    tipo: "descuento_dinero",
-    valor: 200,
-    descripcion: "Descuento de S/ 200",
-    programasAplicables: ["full", "6meses"],
+    valor: 100,
+    descripcion: "S/ 100 descuento por renovación anticipada",
+    programasAplicables: ["full", "6meses", "12meses"],
     activo: true
   },
 
-  // ========== DESCUENTOS PORCENTUALES ==========
+  // Descuentos porcentuales
   "AMAS10OFF": {
     tipo: "descuento_porcentaje",
     valor: 10,
     descripcion: "10% de descuento",
-    programasAplicables: ["1mes", "full", "6meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses"],
     activo: true
   },
   "AMAS15OFF": {
     tipo: "descuento_porcentaje",
     valor: 15,
     descripcion: "15% de descuento",
-    programasAplicables: ["1mes", "full", "6meses"],
-    activo: true
-  },
-  "AMAS20OFF": {
-    tipo: "descuento_porcentaje",
-    valor: 20,
-    descripcion: "20% de descuento",
-    programasAplicables: ["full", "6meses"],
-    activo: true
-  },
-  "BLACKFRIDAY": {
-    tipo: "descuento_porcentaje",
-    valor: 25,
-    descripcion: "25% de descuento Black Friday",
-    programasAplicables: ["1mes", "full", "6meses"],
+    programasAplicables: ["full", "6meses", "12meses"],
     activo: true
   },
 
-  // ========== CLASES EXTRA ==========
-  "AMAS-4CLASES": {
-    tipo: "clases_extra",
-    valor: 4,
-    descripcion: "+4 clases gratis",
-    programasAplicables: ["1mes", "full"],
-    activo: true
-  },
-  "AMAS-8CLASES": {
-    tipo: "clases_extra",
-    valor: 8,
-    descripcion: "+8 clases gratis",
-    programasAplicables: ["1mes", "full"],
-    activo: true
-  },
-  "AMAS-12CLASES": {
-    tipo: "clases_extra",
-    valor: 12,
-    descripcion: "+12 clases gratis",
-    programasAplicables: ["full"],
-    activo: true
-  },
-
-  // ========== MES GRATIS ==========
-  "MESGRATIS": {
-    tipo: "mes_gratis",
-    valor: 8,
-    descripcion: "+1 mes gratis (8 clases)",
-    programasAplicables: ["full"],
-    activo: true
-  },
-
-  // ========== POLOS ==========
+  // Polos gratis
   "POLO1GRATIS": {
     tipo: "polo_gratis",
     valor: 1,
     descripcion: "+1 polo oficial gratis (S/ 60)",
-    programasAplicables: ["1mes", "full", "6meses"],
-    activo: true
-  },
-  "POLO2GRATIS": {
-    tipo: "polo_gratis",
-    valor: 2,
-    descripcion: "+2 polos oficiales gratis (S/ 110)",
-    programasAplicables: ["1mes", "full", "6meses"],
-    activo: true
-  },
-
-  // ========== RENOVACIONES ==========
-  "RENUEVA100": {
-    tipo: "descuento_dinero",
-    valor: 100,
-    descripcion: "S/ 100 descuento por renovación anticipada",
-    programasAplicables: ["1mes", "full", "6meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses"],
     activo: true
   }
 };
@@ -199,7 +195,7 @@ interface HorariosInfo {
 
 interface CodigoAplicado {
   valido: boolean;
-  tipo?: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  tipo?: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'desbloquear_1mes';
   valor?: number;
   descripcion?: string;
   codigo?: string;
@@ -207,14 +203,12 @@ interface CodigoAplicado {
 }
 
 interface FormularioRenovacionProps {
-  isOpen: boolean;
   onClose: () => void;
   onSuccess: (total: number) => void;
 }
 
 // ========== FUNCIONES AUXILIARES ==========
 
-// Calcular horarios según edad
 function calcularHorarios(fechaNacimiento: string): HorariosInfo {
   const hoy = new Date();
   const nacimiento = new Date(fechaNacimiento);
@@ -269,16 +263,9 @@ function calcularHorarios(fechaNacimiento: string): HorariosInfo {
     categoria = "Adolescentes";
   }
 
-  return {
-    horarioSemana,
-    horarioSabado,
-    horarioManana,
-    diasSemana,
-    categoria
-  };
+  return { horarioSemana, horarioSabado, horarioManana, diasSemana, categoria };
 }
 
-// Verificar si una fecha es feriado
 function esFeriado(fecha: Date): boolean {
   const anio = fecha.getFullYear();
   const mes = fecha.getMonth() + 1;
@@ -292,7 +279,6 @@ function esFeriado(fecha: Date): boolean {
   return moviles.some(f => f.fecha === fechaStr);
 }
 
-// Verificar si es cierre vacacional de AMAS
 function esCierreVacacionalAMAS(fecha: Date): boolean {
   const mes = fecha.getMonth() + 1;
   const dia = fecha.getDate();
@@ -303,7 +289,6 @@ function esCierreVacacionalAMAS(fecha: Date): boolean {
   return false;
 }
 
-// Obtener fechas disponibles para inicio (5 días hábiles)
 function obtenerFechasDisponiblesInicio(): Date[] {
   const hoy = new Date();
   const fechasDisponibles: Date[] = [];
@@ -330,13 +315,11 @@ function obtenerFechasDisponiblesInicio(): Date[] {
   return fechasDisponibles;
 }
 
-// Obtener nombre del día
 function obtenerNombreDia(fecha: Date): string {
   const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
   return dias[fecha.getDay()];
 }
 
-// Calcular fecha de fin
 function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: string[], clasesExtra: number = 0): {
   fechaFin: Date;
   clasesTotales: number;
@@ -351,30 +334,22 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
     fechaActual.setDate(fechaActual.getDate() + 1);
 
     if (fechaActual.getDay() === 0) continue;
-
-    if (esCierreVacacionalAMAS(fechaActual)) {
-      continue;
-    }
+    if (esCierreVacacionalAMAS(fechaActual)) continue;
 
     const nombreDia = obtenerNombreDia(fechaActual);
     if (diasTentativos.includes(nombreDia)) {
-      if (esFeriado(fechaActual)) {
-        continue;
-      }
+      if (esFeriado(fechaActual)) continue;
       clasesContadas++;
     }
   }
 
-  const resultado = {
+  return {
     fechaFin: fechaActual,
     clasesTotales,
     semanasAproximadas: Math.ceil((fechaActual.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000))
   };
-
-  return resultado;
 }
 
-// Validar código promocional
 function validarCodigoPromocional(codigo: string, programaActual: string): CodigoAplicado {
   const codigoUpper = codigo.toUpperCase().trim();
   const promo = CODIGOS_PROMOCIONALES[codigoUpper];
@@ -403,7 +378,6 @@ function validarCodigoPromocional(codigo: string, programaActual: string): Codig
   };
 }
 
-// Obtener clases extra de un código promo
 function obtenerClasesExtraDePromo(codigo: string): number {
   const promo = CODIGOS_PROMOCIONALES[codigo];
   if (!promo) return 0;
@@ -425,17 +399,17 @@ const INITIAL_FORM_STATE = {
   fechaFin: ''
 };
 
-export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen, onClose, onSuccess }: FormularioRenovacionProps) {
+export const FormularioRenovacion = memo(function FormularioRenovacion({ onClose, onSuccess }: FormularioRenovacionProps) {
   // Estados
+  const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses' | '1mes' | null>(null);
+  const [mostrar1Mes, setMostrar1Mes] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [programaSeleccionado, setProgramaSeleccionado] = useState<'1mes' | 'full' | '6meses'>('full');
   const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileBase64, setFileBase64] = useState<string>('');
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
 
-  // Estados para funcionalidades adicionales
   const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
   const [categoriaAlumno, setCategoriaAlumno] = useState<string>('');
   const [diasTentativos, setDiasTentativos] = useState<string[]>([]);
@@ -452,9 +426,16 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
   const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
   const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
 
-  // Recalcular fechas disponibles cuando cambia la fecha de nacimiento o el turno
+  // Verificar si hay código de desbloqueo de 1 mes
   useEffect(() => {
-    if (isOpen && formData.fechaNacimiento) {
+    if (codigoAplicado?.tipo === 'desbloquear_1mes' && codigoAplicado.valido) {
+      setMostrar1Mes(true);
+    }
+  }, [codigoAplicado]);
+
+  // Recalcular fechas disponibles
+  useEffect(() => {
+    if (formData.fechaNacimiento && planSeleccionado) {
       const todasLasFechas = obtenerFechasDisponiblesInicio();
       const horarios = calcularHorarios(formData.fechaNacimiento);
 
@@ -478,47 +459,21 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
       });
 
       setFechasDisponibles(fechasFiltradas.slice(0, 5));
-    } else if (isOpen) {
+    } else if (planSeleccionado) {
       const fechas = obtenerFechasDisponiblesInicio();
       setFechasDisponibles(fechas);
     }
-  }, [isOpen, formData.fechaNacimiento, turnoSeleccionado]);
-
-  // Reset form when dialog closes
-  useEffect(() => {
-    if (!isOpen) {
-      setFormData(INITIAL_FORM_STATE);
-      setProgramaSeleccionado('full');
-      setPolosOption('0');
-      setTallasPolos([]);
-      setUploadedFile(null);
-      setFileBase64('');
-      setIsSubmitting(false);
-      setHorariosInfo(null);
-      setCategoriaAlumno('');
-      setDiasTentativos([]);
-      setCodigoPromocional('');
-      setCodigoAplicado(null);
-      setContratoExpanded(false);
-      setFechaFinCalculada('');
-      setDetallesFechaFin(null);
-      setFechasDisponibles([]);
-      setMostrarOtraFecha(false);
-      setOpcionFechaSeleccionada('fechas');
-      setTurnoSeleccionado('tarde');
-    }
-  }, [isOpen]);
+  }, [formData.fechaNacimiento, turnoSeleccionado, planSeleccionado]);
 
   // Cálculos de precio
-  const precioBase = PRECIOS_BASE[programaSeleccionado];
+  const precioBase = planSeleccionado ? PRECIOS_BASE[planSeleccionado] : 0;
   const preciosPolos = { '0': 0, '1': 60, '2': 110, '3': 150 };
   let precioPolosAjustado = preciosPolos[polosOption];
 
-  // Calcular descuento de código promocional
   let descuentoDinero = 0;
   let descuentoPorcentaje = 0;
 
-  if (codigoAplicado?.valido && codigoAplicado.valor) {
+  if (codigoAplicado?.valido && codigoAplicado.valor && codigoAplicado.tipo !== 'desbloquear_1mes') {
     if (codigoAplicado.tipo === 'descuento_dinero') {
       descuentoDinero = codigoAplicado.valor;
     } else if (codigoAplicado.tipo === 'descuento_porcentaje') {
@@ -529,12 +484,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
     }
   }
 
-  // Calcular subtotal antes de descuento porcentual
   const subtotal = precioBase + precioPolosAjustado - descuentoDinero;
-
-  // Aplicar descuento porcentual
   const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
-
   const total = Math.max(0, subtotal - descuentoPorcentualMonto);
 
   const needsPoloSize = polosOption !== '0';
@@ -601,7 +552,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
     setFileBase64('');
   }, []);
 
-  // Handler para cuando cambia la fecha de nacimiento
   const handleFechaNacimientoChange = useCallback((fecha: string) => {
     handleInputChange('fechaNacimiento', fecha);
     if (fecha) {
@@ -614,7 +564,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
     }
   }, []);
 
-  // Handler para días tentativos
   const handleDiaTentativoChange = useCallback((dia: string, checked: boolean) => {
     setDiasTentativos(prev => {
       if (checked) {
@@ -625,14 +574,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
     });
   }, []);
 
-  // Handler para aplicar código promocional
   const handleAplicarCodigo = useCallback(() => {
     if (!codigoPromocional.trim()) {
       toast.error('Ingrese un código promocional');
       return;
     }
 
-    const validacion = validarCodigoPromocional(codigoPromocional, programaSeleccionado);
+    // Para códigos de desbloqueo, usar programa especial
+    const validacion = validarCodigoPromocional(codigoPromocional, planSeleccionado || '1mes');
 
     if (!validacion.valido) {
       toast.error(validacion.mensaje || 'Código no válido');
@@ -641,13 +590,18 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
     }
 
     setCodigoAplicado(validacion);
-    toast.success(`✅ Código "${validacion.codigo}" aplicado exitosamente`);
-  }, [codigoPromocional, programaSeleccionado]);
 
-  // Handler para quitar código promocional
+    if (validacion.tipo === 'desbloquear_1mes') {
+      toast.success('✅ Programa de 1 mes desbloqueado');
+    } else {
+      toast.success(`✅ Código "${validacion.codigo}" aplicado exitosamente`);
+    }
+  }, [codigoPromocional, planSeleccionado]);
+
   const handleQuitarCodigo = useCallback(() => {
     setCodigoPromocional('');
     setCodigoAplicado(null);
+    setMostrar1Mes(false);
     toast.info('Código promocional removido');
   }, []);
 
@@ -667,28 +621,33 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
         setDiasTentativos(diasFiltrados);
       }
     }
-  }, [turnoSeleccionado]);
+  }, [turnoSeleccionado, categoriaAlumno, diasTentativos]);
 
-  // Effect para calcular fecha de fin automáticamente
+  // Effect para calcular fecha de fin
   useEffect(() => {
-    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 2) {
+    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 2 || !planSeleccionado) {
       setFechaFinCalculada('');
       setDetallesFechaFin(null);
       return;
     }
 
     const clasesExtra = codigoAplicado?.codigo ? obtenerClasesExtraDePromo(codigoAplicado.codigo) : 0;
-    const resultado = calcularFechaFin(new Date(formData.fechaInicio), programaSeleccionado, diasTentativos, clasesExtra);
+    const resultado = calcularFechaFin(new Date(formData.fechaInicio), planSeleccionado, diasTentativos, clasesExtra);
 
     setFechaFinCalculada(resultado.fechaFin.toISOString().split('T')[0]);
     setDetallesFechaFin({
       clasesTotales: resultado.clasesTotales,
       semanasAproximadas: resultado.semanasAproximadas
     });
-  }, [formData.fechaInicio, diasTentativos, codigoAplicado, programaSeleccionado]);
+  }, [formData.fechaInicio, diasTentativos, codigoAplicado, planSeleccionado]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!planSeleccionado) {
+      toast.error('Por favor seleccione un plan');
+      return;
+    }
 
     // Validaciones básicas
     if (!formData.nombreAlumno || !formData.dniAlumno || !formData.nombrePadre || !formData.dniPadre || !formData.email || !formData.fechaInicio) {
@@ -726,8 +685,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
     try {
       const payload = {
         tipoFormulario: 'Renovación',
-        programa: programaSeleccionado === 'full' ? '3 Meses Full' : programaSeleccionado === '6meses' ? '6 Meses' : '1 Mes',
-        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programaSeleccionado] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programaSeleccionado]),
+        programa: NOMBRES_PROGRAMA[planSeleccionado],
+        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[planSeleccionado] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[planSeleccionado]),
 
         nombreAlumno: formData.nombreAlumno,
         dniAlumno: formData.dniAlumno,
@@ -793,14 +752,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
         toast.success('¡Renovación registrada correctamente! Los detalles se enviarán por correo.');
         onSuccess(total);
         onClose();
-
-        // Reset form
-        setFormData(INITIAL_FORM_STATE);
-        setProgramaSeleccionado('full');
-        setPolosOption('0');
-        setTallasPolos([]);
-        setUploadedFile(null);
-        setFileBase64('');
       } else {
         throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
       }
@@ -814,119 +765,240 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
 
   const tallasOptions = ['2', '4', '6', '8', '10', '12', '14', 'S', 'M', 'L', 'XL'];
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        showCloseButton={false}
-        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-full max-w-[calc(100%-2rem)] sm:max-w-[95vw] md:max-w-4xl p-0 m-4 sm:m-6"
-        style={{
-          maxHeight: 'calc(100vh - 4rem)',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-y',
-          overscrollBehavior: 'contain'
-        }}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        {/* Header Sticky */}
-        <div className="flex items-start justify-between sticky top-0 bg-zinc-900 z-20 pb-3 sm:pb-4 border-b border-white/10 px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="flex-1 pr-4 sm:pr-8">
-            <DialogTitle className="text-white text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
-              Formulario de Renovación
-            </DialogTitle>
-            <DialogDescription className="text-white/70 text-xs sm:text-sm">
-              Renueva tu membresía y continúa tu entrenamiento
-            </DialogDescription>
+  // Si no hay plan seleccionado, mostrar hero y cards de planes
+  if (!planSeleccionado) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950">
+        {/* Hero Section */}
+        <div className="relative overflow-hidden">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FA7B21]/10 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl"></div>
           </div>
-          <DialogClose asChild>
+
+          <div className="relative container mx-auto px-4 py-12 sm:py-20">
+            {/* Close button */}
             <button
-              className="text-white/60 hover:text-white transition-colors flex-shrink-0 p-2 hover:bg-white/5 rounded-lg"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              onClick={onClose}
+              className="absolute top-4 right-4 sm:top-8 sm:right-8 p-2 text-white/60 hover:text-white transition-colors bg-white/5 rounded-lg hover:bg-white/10"
             >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              <X className="w-6 h-6" />
             </button>
-          </DialogClose>
-        </div>
 
-        {/* Form Content */}
-        <div className="px-4 sm:px-6 py-4 sm:py-6 pb-6 sm:pb-8">
-          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+            {/* Hero content */}
+            <div className="max-w-4xl mx-auto text-center mb-16">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
+                <Sparkles className="w-4 h-4 text-[#FCA929]" />
+                <span className="text-white/90 text-sm font-medium">Renovación de Membresía</span>
+              </div>
 
-          {/* Selector de Programa */}
-          <div>
-            <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-              Selecciona tu Programa
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* 1 Mes */}
-              <button
-                type="button"
-                onClick={() => setProgramaSeleccionado('1mes')}
-                className={`p-6 rounded-xl border-2 transition-all ${
-                  programaSeleccionado === '1mes'
-                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                    : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                }`}
-              >
-                <div className="text-center">
-                  <div className="text-4xl mb-3">📅</div>
-                  <h4 className={`font-bold text-lg mb-2 ${programaSeleccionado === '1mes' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                    1 Mes
-                  </h4>
-                  <p className="text-white/60 text-sm mb-3">8 clases</p>
-                  <p className="text-[#FCA929] font-bold text-2xl">S/ 330</p>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
+                <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
+                  Continúa Tu Camino
+                </span>
+                <br />
+                <span className="text-white">Como Guerrero</span>
+              </h1>
+
+              <p className="text-white/70 text-lg sm:text-xl max-w-2xl mx-auto mb-8">
+                Renueva tu membresía y sigue creciendo. Ahora con beneficios exclusivos y programas extendidos.
+              </p>
+
+              {/* Beneficios de renovar */}
+              <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <Award className="w-8 h-8 text-[#FCA929] mx-auto mb-2" />
+                  <p className="text-white font-semibold mb-1">Sin Interrupción</p>
+                  <p className="text-white/60 text-sm">Continúa sin perder progreso</p>
                 </div>
-              </button>
-
-              {/* 3 Meses */}
-              <button
-                type="button"
-                onClick={() => setProgramaSeleccionado('full')}
-                className={`p-6 rounded-xl border-2 transition-all ${
-                  programaSeleccionado === 'full'
-                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                    : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                }`}
-              >
-                <div className="text-center">
-                  <div className="text-4xl mb-3">🔥</div>
-                  <h4 className={`font-bold text-lg mb-2 ${programaSeleccionado === 'full' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                    3 Meses
-                  </h4>
-                  <p className="text-white/60 text-sm mb-3">24 clases</p>
-                  <p className="text-[#FCA929] font-bold text-2xl">S/ 869</p>
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <Gift className="w-8 h-8 text-[#FCA929] mx-auto mb-2" />
+                  <p className="text-white font-semibold mb-1">Bonos Especiales</p>
+                  <p className="text-white/60 text-sm">Implementos y clases extra</p>
                 </div>
-              </button>
-
-              {/* 6 Meses */}
-              <button
-                type="button"
-                onClick={() => setProgramaSeleccionado('6meses')}
-                className={`p-6 rounded-xl border-2 transition-all ${
-                  programaSeleccionado === '6meses'
-                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                    : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                }`}
-              >
-                <div className="text-center">
-                  <div className="text-4xl mb-3">⚡</div>
-                  <h4 className={`font-bold text-lg mb-2 ${programaSeleccionado === '6meses' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                    6 Meses
-                  </h4>
-                  <p className="text-white/60 text-sm mb-3">48 clases</p>
-                  <p className="text-[#FCA929] font-bold text-2xl">S/ 1699</p>
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                  <Calendar className="w-8 h-8 text-[#FCA929] mx-auto mb-2" />
+                  <p className="text-white font-semibold mb-1">Flexibilidad</p>
+                  <p className="text-white/60 text-sm">Elige el plan que mejor te convenga</p>
                 </div>
-              </button>
+              </div>
+            </div>
+
+            {/* Cards de planes */}
+            <div className="max-w-7xl mx-auto">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-8">
+                Elige Tu Plan de Renovación
+              </h2>
+
+              <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+                {/* Plan 3 meses */}
+                <div
+                  onClick={() => setPlanSeleccionado('full')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/50 transition-all cursor-pointer group hover:transform hover:scale-105"
+                >
+                  <div className="text-center mb-6">
+                    <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-2">{PLANES_INFO.full.duracion}</h3>
+                    <div className="flex items-baseline justify-center gap-2 mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        S/ {PLANES_INFO.full.precio}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {PLANES_INFO.full.beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white">
+                    Seleccionar Plan
+                  </Button>
+                </div>
+
+                {/* Plan 6 meses - Popular */}
+                <div
+                  onClick={() => setPlanSeleccionado('6meses')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105"
+                >
+                  {/* Badge Popular */}
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-1 rounded-full text-sm font-bold">
+                    MÁS POPULAR
+                  </div>
+
+                  <div className="text-center mb-6 mt-4">
+                    <div className="text-5xl mb-4">{PLANES_INFO["6meses"].icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-2">{PLANES_INFO["6meses"].duracion}</h3>
+                    <div className="flex items-baseline justify-center gap-2 mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">
+                        S/ {PLANES_INFO["6meses"].precio}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {PLANES_INFO["6meses"].beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white">
+                    Seleccionar Plan
+                  </Button>
+                </div>
+
+                {/* Plan 12 meses - Mejor valor */}
+                <div
+                  onClick={() => setPlanSeleccionado('12meses')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-purple-500/50 rounded-2xl p-6 sm:p-8 hover:border-purple-500 transition-all cursor-pointer group hover:transform hover:scale-105"
+                >
+                  {/* Badge Mejor Valor */}
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-1 rounded-full text-sm font-bold">
+                    MEJOR VALOR
+                  </div>
+
+                  <div className="text-center mb-6 mt-4">
+                    <div className="text-5xl mb-4">{PLANES_INFO["12meses"].icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-2">{PLANES_INFO["12meses"].duracion}</h3>
+                    <div className="flex items-baseline justify-center gap-2 mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        S/ {PLANES_INFO["12meses"].precio}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {PLANES_INFO["12meses"].beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white">
+                    Seleccionar Plan
+                  </Button>
+                </div>
+              </div>
+
+              {/* Código promocional para desbloquear 1 mes */}
+              <div className="mt-12 max-w-2xl mx-auto">
+                <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+                  <p className="text-white/70 text-center mb-4">
+                    ¿Quieres renovar solo por 1 mes? Ingresa tu código especial
+                  </p>
+                  <div className="flex gap-3">
+                    <Input
+                      type="text"
+                      placeholder="Ingresa código para 1 mes"
+                      value={codigoPromocional}
+                      onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
+                      className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
+                    />
+                    <Button
+                      onClick={handleAplicarCodigo}
+                      className="bg-[#FA7B21] hover:bg-[#F36A15] text-white"
+                    >
+                      Aplicar
+                    </Button>
+                  </div>
+                  {mostrar1Mes && (
+                    <Button
+                      onClick={() => setPlanSeleccionado('1mes')}
+                      className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                    >
+                      ✅ Plan 1 Mes Desbloqueado - Seleccionar
+                    </Button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    );
+  }
 
+  // Formulario completo cuando ya hay un plan seleccionado
+  return (
+    <div className="min-h-screen bg-zinc-950">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Header con plan seleccionado */}
+        <div className="bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-2xl p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white/70 text-sm mb-1">Plan seleccionado:</p>
+              <h2 className="text-2xl font-bold text-white">
+                {NOMBRES_PROGRAMA[planSeleccionado]} - S/ {PRECIOS_BASE[planSeleccionado]}
+              </h2>
+            </div>
+            <Button
+              onClick={() => {
+                setPlanSeleccionado(null);
+                setFormData(INITIAL_FORM_STATE);
+              }}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              Cambiar Plan
+            </Button>
+          </div>
+        </div>
+
+        {/* Formulario */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Datos del Alumno */}
-          <div>
-            <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Datos del Alumno
             </h3>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -956,7 +1028,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
                   required
                 />
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <Label htmlFor="fechaNacimiento" className="text-white mb-2">
                   Fecha de nacimiento *
                 </Label>
@@ -974,25 +1046,25 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
                   <div className="mt-4 space-y-4">
                     {/* Selector de Turno */}
                     <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                      <p className="text-white font-semibold mb-3 text-sm sm:text-base">
+                      <p className="text-white font-semibold mb-3 text-sm">
                         🌅 Selecciona tu turno preferido
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                         <button
                           type="button"
                           onClick={() => setTurnoSeleccionado('manana')}
-                          className={`p-4 rounded-lg border-2 transition-all ${
+                          className={`p-3 rounded-lg border-2 transition-all ${
                             turnoSeleccionado === 'manana'
                               ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                               : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
                           }`}
                         >
                           <div className="text-center">
-                            <div className="text-3xl mb-2">🌄</div>
-                            <div className={`font-semibold ${turnoSeleccionado === 'manana' ? 'text-[#FA7B21]' : 'text-white'}`}>
+                            <div className="text-2xl mb-1">🌄</div>
+                            <div className={`font-semibold text-sm ${turnoSeleccionado === 'manana' ? 'text-[#FA7B21]' : 'text-white'}`}>
                               Mañana
                             </div>
-                            <div className="text-white/60 text-sm mt-1">
+                            <div className="text-white/60 text-xs mt-1">
                               {horariosInfo.horarioManana}
                             </div>
                           </div>
@@ -1000,18 +1072,18 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
                         <button
                           type="button"
                           onClick={() => setTurnoSeleccionado('tarde')}
-                          className={`p-4 rounded-lg border-2 transition-all ${
+                          className={`p-3 rounded-lg border-2 transition-all ${
                             turnoSeleccionado === 'tarde'
                               ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                               : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
                           }`}
                         >
                           <div className="text-center">
-                            <div className="text-3xl mb-2">🌆</div>
-                            <div className={`font-semibold ${turnoSeleccionado === 'tarde' ? 'text-[#FA7B21]' : 'text-white'}`}>
+                            <div className="text-2xl mb-1">🌆</div>
+                            <div className={`font-semibold text-sm ${turnoSeleccionado === 'tarde' ? 'text-[#FA7B21]' : 'text-white'}`}>
                               Tarde
                             </div>
-                            <div className="text-white/60 text-sm mt-1">
+                            <div className="text-white/60 text-xs mt-1">
                               {horariosInfo.horarioSemana}
                             </div>
                           </div>
@@ -1021,10 +1093,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
 
                     {/* Información de horarios */}
                     <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                      <p className="text-white font-semibold mb-3 text-sm sm:text-base">
+                      <p className="text-white font-semibold mb-3 text-sm">
                         📍 Horarios disponibles{horariosInfo.categoria ? ` - Categoría ${horariosInfo.categoria}` : ''}
                       </p>
-                      <div className="space-y-2 text-xs sm:text-sm">
+                      <div className="space-y-2 text-xs">
                         <p className="text-white/80">
                           <strong className="text-white">Turno seleccionado:</strong> {turnoSeleccionado === 'manana' ? `Mañana (${horariosInfo.horarioManana})` : `Tarde (${horariosInfo.horarioSemana})`}
                         </p>
@@ -1043,8 +1115,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
           </div>
 
           {/* Datos del Padre */}
-          <div>
-            <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Datos del Padre de Familia
             </h3>
             <div className="grid sm:grid-cols-2 gap-4">
@@ -1104,8 +1176,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
           </div>
 
           {/* Polos Adicionales */}
-          <div>
-            <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Adicionales (Opcional)
             </h3>
             <div className="space-y-4">
@@ -1134,7 +1206,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
                         onChange={(e) => handlePolosChange(e.target.value as '0' | '1' | '2' | '3')}
                         className="w-4 h-4 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 bg-zinc-800 border-white/20"
                       />
-                      <div className="text-white text-sm sm:text-base flex-1">
+                      <div className="text-white text-sm flex-1">
                         {option.label === 'Ninguno' ? option.label : `${option.label} × ${option.price}`}
                       </div>
                     </label>
@@ -1168,13 +1240,13 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
             </div>
           </div>
 
-          {/* Fecha de Inicio, Días Tentativos y Fecha de Fin */}
-          <div>
-            <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
+          {/* Fechas del Programa */}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Fechas del Programa
             </h3>
 
-            {/* Fecha de Inicio - Selector Visual */}
+            {/* Fecha de Inicio */}
             <div className="mb-6">
               <Label className="text-white mb-3 block text-base font-semibold">
                 1. Selecciona tu fecha de inicio *
@@ -1301,41 +1373,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
               )}
             </div>
 
-            {/* Horarios Disponibles según Edad */}
-            {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && horariosInfo && (
-              <div className="mb-6 p-5 bg-gradient-to-br from-[#FA7B21]/10 to-[#FA7B21]/5 border-2 border-[#FA7B21]/30 rounded-xl">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="text-3xl">🕐</div>
-                  <div className="flex-1">
-                    <h4 className="text-[#FA7B21] font-bold text-lg mb-1">
-                      Horarios Disponibles {horariosInfo.categoria && `- ${horariosInfo.categoria}`}
-                    </h4>
-                    <p className="text-white/70 text-sm">
-                      Según tu edad y turno seleccionado
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="bg-zinc-800/50 rounded-lg p-4">
-                    <p className="text-white/60 text-xs mb-1">Turno seleccionado</p>
-                    <p className="text-white font-semibold text-lg">
-                      {turnoSeleccionado === 'manana' ? `🌄 Mañana (${horariosInfo.horarioManana})` : `🌆 Tarde (${horariosInfo.horarioSemana})`}
-                    </p>
-                  </div>
-                  <div className="bg-zinc-800/50 rounded-lg p-4">
-                    <p className="text-white/60 text-xs mb-1">Sábados</p>
-                    <p className="text-white font-semibold text-lg">{horariosInfo.horarioSabado}</p>
-                  </div>
-                  <div className="bg-zinc-800/50 rounded-lg p-4">
-                    <p className="text-white/60 text-xs mb-1">Días disponibles</p>
-                    <p className="text-white font-semibold">{horariosInfo.diasSemana}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Días Tentativos de Asistencia */}
+            {/* Días Tentativos */}
             {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && (
               <div className="mb-6">
                 <Label className="text-white mb-2 block text-base font-semibold">
@@ -1392,9 +1430,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
               </div>
             )}
 
-            {/* Fecha de Fin (Calculada Automáticamente) */}
+            {/* Fecha de Fin (Calculada) */}
             {diasTentativos.length >= 2 && fechaFinCalculada && (
-              <div className="mb-6 p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
+              <div className="p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="text-3xl">📅</div>
                   <div className="flex-1">
@@ -1438,20 +1476,11 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
                 )}
               </div>
             )}
-
-            {/* Mensaje si faltan días tentativos */}
-            {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && diasTentativos.length < 2 && (
-              <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                <p className="text-yellow-200 text-sm">
-                  ⏳ Selecciona al menos 2 días tentativos arriba para calcular tu fecha de fin
-                </p>
-              </div>
-            )}
           </div>
 
           {/* Código Promocional */}
-          <div>
-            <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Código Promocional (Opcional)
             </h3>
             <div className="flex gap-3">
@@ -1465,28 +1494,22 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
               <Button
                 type="button"
                 onClick={handleAplicarCodigo}
-                className="bg-[#FA7B21] hover:bg-[#F36A15] text-white px-6"
+                className="bg-[#FA7B21] hover:bg-[#F36A15] text-white"
               >
                 Aplicar
               </Button>
             </div>
 
-            {/* Mensaje de código aplicado */}
-            {codigoAplicado?.valido && (
+            {codigoAplicado?.valido && codigoAplicado.tipo !== 'desbloquear_1mes' && (
               <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <p className="text-green-400 font-semibold mb-2">
                       ✅ Código "{codigoAplicado.codigo}" aplicado
                     </p>
-                    <p className="text-green-300 text-sm mb-1">
+                    <p className="text-green-300 text-sm">
                       🎁 {codigoAplicado.descripcion}
                     </p>
-                    {(codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis') && (
-                      <p className="text-green-200 text-xs mt-2">
-                        Se recalculará tu fecha de fin con las clases adicionales.
-                      </p>
-                    )}
                   </div>
                   <button
                     type="button"
@@ -1500,14 +1523,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
             )}
           </div>
 
-          {/* File Upload Section - Collapsible */}
-          <div>
+          {/* Contrato Firmado */}
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
             <button
               type="button"
               onClick={() => setContratoExpanded(!contratoExpanded)}
-              className="w-full flex items-center justify-between p-4 bg-zinc-800/30 border border-white/10 rounded-lg hover:border-white/20 transition-colors"
+              className="w-full flex items-center justify-between"
             >
-              <h3 className="text-white text-lg">
+              <h3 className="text-white text-lg font-semibold">
                 Contrato Firmado (Opcional)
               </h3>
               {contratoExpanded ? (
@@ -1518,7 +1541,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
             </button>
 
             {contratoExpanded && (
-              <div className="mt-4 p-4 bg-zinc-800/20 border border-white/10 rounded-lg">
+              <div className="mt-4">
                 <p className="text-white/60 text-sm mb-4">
                   Si ya tienes el contrato firmado físicamente, puedes subirlo aquí:
                 </p>
@@ -1554,72 +1577,27 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
                       type="button"
                       onClick={handleRemoveFile}
                       className="text-white/60 hover:text-red-500 transition-colors p-2"
-                      style={{
-                        touchAction: 'manipulation',
-                        WebkitTapHighlightColor: 'transparent'
-                      }}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
                   </div>
                 )}
-
-                <p className="mt-4 text-white/50 text-xs p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  ℹ️ No es necesario subirlo ahora. Recibirás un email para firmarlo digitalmente después del pago.
-                </p>
               </div>
             )}
           </div>
 
-          {/* Resumen de Renovación */}
-          <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border-2 border-[#FA7B21]/30 rounded-lg p-6">
+          {/* Resumen */}
+          <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border-2 border-[#FA7B21]/30 rounded-xl p-6">
             <h3 className="text-white text-xl font-bold mb-4">📋 Resumen de tu Renovación</h3>
 
-            {/* Información del Programa */}
-            <div className="mb-4 space-y-2 text-sm">
-              <p className="text-white">
-                <strong>Programa:</strong> {NOMBRES_PROGRAMA[programaSeleccionado]}
-              </p>
-              <p className="text-white">
-                <strong>Clases incluidas:</strong> {PROGRAMA_CLASES[programaSeleccionado]}
-                {detallesFechaFin && detallesFechaFin.clasesTotales > PROGRAMA_CLASES[programaSeleccionado] && (
-                  <span className="text-green-400"> + {detallesFechaFin.clasesTotales - PROGRAMA_CLASES[programaSeleccionado]} bonus = {detallesFechaFin.clasesTotales} total</span>
-                )}
-              </p>
-              {diasTentativos.length >= 2 && formData.fechaInicio !== 'no-especificado' && (
-                <p className="text-white">
-                  <strong>Días tentativos:</strong> {diasTentativos.join(', ')}
-                </p>
-              )}
-              {formData.fechaInicio && (
-                <p className="text-white">
-                  <strong>Inicio:</strong> {formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : new Date(formData.fechaInicio).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-              )}
-              {fechaFinCalculada && (
-                <p className="text-white">
-                  <strong>Fin estimado:</strong> {new Date(fechaFinCalculada).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-              )}
-            </div>
-
-            {/* Bonus de Código Promocional */}
-            {codigoAplicado?.valido && (codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis' || codigoAplicado.tipo === 'polo_gratis') && (
-              <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <p className="text-green-400 font-semibold text-sm mb-2">🎁 Promoción aplicada:</p>
-                <p className="text-green-300 text-xs">✓ {codigoAplicado.descripcion}</p>
-              </div>
-            )}
-
-            {/* Desglose de Precios */}
             <div className="space-y-2 py-4 border-t border-white/10">
               <div className="flex justify-between text-white/80 text-sm">
-                <span>{NOMBRES_PROGRAMA[programaSeleccionado]}</span>
+                <span>{NOMBRES_PROGRAMA[planSeleccionado]}</span>
                 <span>S/ {precioBase}</span>
               </div>
               {polosOption !== '0' && (
                 <div className="flex justify-between text-white/80 text-sm">
-                  <span>Polos ({polosOption}) {codigoAplicado?.tipo === 'polo_gratis' && '(Descuento aplicado 🎁)'}</span>
+                  <span>Polos ({polosOption})</span>
                   <span>S/ {precioPolosAjustado}</span>
                 </div>
               )}
@@ -1637,7 +1615,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
               )}
             </div>
 
-            {/* Total Final */}
             <div className="flex justify-between items-center pt-4 border-t-2 border-white/20">
               <span className="text-white text-lg font-bold">TOTAL A PAGAR:</span>
               <span className="text-[#FCA929] text-3xl font-bold">S/ {total}</span>
@@ -1645,29 +1622,22 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ isOpen,
           </div>
 
           {/* Submit Button */}
-          <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 bg-zinc-900 border-t border-white/10">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-5 sm:py-6 text-sm sm:text-base md:text-lg shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                  Enviando datos...
-                </>
-              ) : (
-                'Confirmar Renovación'
-              )}
-            </Button>
-          </div>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-lg shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Enviando datos...
+              </>
+            ) : (
+              'Confirmar Renovación'
+            )}
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 });
