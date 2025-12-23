@@ -139,7 +139,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
               <h3 className="text-white text-lg sm:text-xl">Yape / Plin</h3>
             </div>
             <p className="text-white/70 text-sm mb-4">
-              Realice su pago vía Yape o Plin
+              Realice su pago vía Yape
             </p>
             {selectedMethod === 'yape' && (
               <div className="mt-4 bg-gradient-to-br from-zinc-800 to-zinc-900 p-6 rounded-lg border border-[#FA7B21]/30">
@@ -152,10 +152,10 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
                   </p>
                   <div className="bg-black/30 rounded-lg p-4 border border-white/10">
                     <p className="text-white text-lg mb-1">Nombre: David</p>
-                    <p className="text-[#FCA929] text-2xl font-mono">940 758 712</p>
+                    <p className="text-[#FCA929] text-2xl font-mono">#####</p>
                   </div>
                   <p className="text-white/60 text-sm mt-4">
-                    💡 Puede usar Yape o Plin
+                    💡 Puede usar Yape
                   </p>
                 </div>
               </div>
