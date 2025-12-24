@@ -1,49 +1,43 @@
 # Base de Datos AMAS Team Wolf
 
-Scripts SQL para PostgreSQL.
+Scripts SQL para PostgreSQL con Dockerfile para EasyPanel.
 
 ## Estructura de Archivos
 
 ```
 database/
+├── Dockerfile       ← Para deploy en EasyPanel
 ├── 01_schema.sql    ← Crea todas las tablas
 ├── 02_views.sql     ← Vistas con campos calculados
 └── README.md        ← Este archivo
 ```
 
-## Instalación en EasyPanel
+## Instalación en EasyPanel (Recomendado)
 
-### 1. Crear servicio PostgreSQL
+### 1. Crear servicio desde Git
 
 En EasyPanel Dashboard:
-1. Create Service → Database → PostgreSQL
-2. Configurar:
-   - **Service Name**: `amas-db`
-   - **Database**: `amas_database`
-   - **User**: `amas_user`
-   - **Password**: [generar uno seguro]
-3. Deploy
 
-### 2. Ejecutar los scripts
+1. **Create Service** → **App**
+2. En la configuración:
+   - **Source**: Git
+   - **Repository**: `https://github.com/saubinaud/AmasTeamWolf`
+   - **Branch**: `main` (o la rama que uses)
+   - **Build Path**: `/database`
+3. En **Environment Variables**, agregar:
+   ```
+   POSTGRES_DB=amas_database
+   POSTGRES_USER=amas_user
+   POSTGRES_PASSWORD=TU_PASSWORD_SEGURO
+   ```
+4. En **Volumes**, agregar persistencia:
+   - **Volume Name**: `amas-db-data`
+   - **Mount Path**: `/var/lib/postgresql/data`
+5. **Deploy**
 
-**Opción A: Desde terminal SSH**
+Los scripts SQL se ejecutan automáticamente en el primer inicio.
 
-```bash
-# Conectar al contenedor de PostgreSQL
-docker exec -it amas-db psql -U amas_user -d amas_database
-
-# Dentro de psql, ejecutar:
-\i /path/to/01_schema.sql
-\i /path/to/02_views.sql
-```
-
-**Opción B: Copiar y pegar en pgAdmin o cliente SQL**
-
-1. Conectar a la base de datos con credenciales
-2. Copiar contenido de `01_schema.sql` y ejecutar
-3. Copiar contenido de `02_views.sql` y ejecutar
-
-### 3. Conectar n8n
+### 2. Conectar n8n
 
 En n8n → Credentials → PostgreSQL:
 - **Host**: `amas-db` (nombre del servicio en EasyPanel)
