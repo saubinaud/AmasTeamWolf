@@ -1,25 +1,38 @@
 # ============================================
-# AMAS Team Wolf - PostgreSQL Database
+# AMAS Team Wolf - Migration Runner
 # ============================================
-# Imagen base de PostgreSQL con scripts de inicialización
-# Los scripts en /docker-entrypoint-initdb.d/ se ejecutan
-# automáticamente la primera vez que se crea el contenedor
+# Contenedor ligero para ejecutar migraciones SQL
 # ============================================
 
-FROM postgres:16-alpine
+FROM alpine:3.19
 
-# Variables de entorno (pueden sobrescribirse en EasyPanel)
-ENV POSTGRES_DB=amas_database
-ENV POSTGRES_USER=amas_user
-ENV POSTGRES_PASSWORD=changeme_in_easypanel
+# Instalar PostgreSQL client
+RUN apk add --no-cache postgresql-client bash
 
-# Copiar scripts de inicialización
-# Se ejecutan en orden alfabético al crear la BD
-COPY 01_schema.sql /docker-entrypoint-initdb.d/
-COPY 02_views.sql /docker-entrypoint-initdb.d/
+# Crear directorio de trabajo
+WORKDIR /migrations
 
-# Puerto estándar de PostgreSQL
-EXPOSE 5432
+# Copiar scripts SQL
+COPY database/01_schema.sql .
+COPY database/02_views.sql .
 
-# Volumen para persistencia de datos
-VOLUME ["/var/lib/postgresql/data"]
+# Script de ejecución
+COPY <<'EOF' /migrations/run.sh
+#!/bin/bash
+echo "Esperando a que PostgreSQL esté listo..."
+until pg_isready -h pallium_amas-db -p 5432 -U amas_user; do
+  sleep 2
+done
+
+echo "Ejecutando migraciones..."
+psql "$DATABASE_URL" -f /migrations/01_schema.sql
+psql "$DATABASE_URL" -f /migrations/02_views.sql
+echo "Migraciones completadas"
+
+# Mantener el contenedor vivo
+tail -f /dev/null
+EOF
+
+RUN chmod +x /migrations/run.sh
+
+CMD ["/migrations/run.sh"]
