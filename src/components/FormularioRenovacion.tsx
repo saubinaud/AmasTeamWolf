@@ -55,10 +55,10 @@ const PRECIOS_BASE: Record<string, number> = {
 
 // Nombres de programas
 const NOMBRES_PROGRAMA: Record<string, string> = {
-  "1mes": "Programa 1 Mes",
-  "full": "Programa 3 Meses",
-  "6meses": "Programa 6 Meses",
-  "12meses": "Programa 12 Meses"
+  "1mes": "1 Mes",
+  "full": "3 Meses Full",
+  "6meses": "6 Meses Full",
+  "12meses": "12 Meses Full"
 };
 
 // Información de planes
