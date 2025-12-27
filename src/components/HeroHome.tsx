@@ -92,6 +92,8 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
               type="button"
               onClick={scrollToProgramas}
               size="lg"
+              data-umami-event="Click Ver Programas"
+              data-umami-event-ubicacion="hero"
               className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto shadow-2xl shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 relative overflow-hidden group active:scale-95"
               style={{
                 touchAction: 'manipulation',
@@ -109,6 +111,8 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
                 onOpenMatricula();
               }}
               size="lg"
+              data-umami-event="Click Matricular Ahora"
+              data-umami-event-ubicacion="hero"
               className="bg-transparent border border-[#FA7B21]/30 text-white hover:bg-[#FA7B21]/10 hover:border-[#FA7B21]/50 px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto transition-all duration-300 backdrop-blur-sm active:scale-95"
               style={{
                 touchAction: 'manipulation',

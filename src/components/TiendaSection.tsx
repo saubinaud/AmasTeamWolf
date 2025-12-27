@@ -110,6 +110,8 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
           <Button
             onClick={() => onNavigate('tienda')}
             size="lg"
+            data-umami-event="Click Ver Tienda"
+            data-umami-event-ubicacion="home"
             className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white px-8 sm:px-12 py-5 sm:py-6 text-sm sm:text-base shadow-2xl shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 group active:scale-95"
             style={{
               touchAction: 'manipulation',
