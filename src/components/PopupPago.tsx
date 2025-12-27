@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } fr
 import { X, QrCode, Building2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
+import { useUmami } from '../hooks/useUmami';
 
 interface CartItem {
   id: string;
@@ -22,6 +23,9 @@ interface PopupPagoProps {
 }
 
 export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount, cartItems = [], customerEmail = '' }: PopupPagoProps) {
+  // Umami analytics
+  const { trackPaymentMethod, trackPurchase } = useUmami();
+
   const [selectedMethod, setSelectedMethod] = useState<'yape' | 'transfer' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,10 +67,16 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
         if (!response.ok) {
           throw new Error('Error al procesar el pedido');
         }
-        
+
+        // Track payment with Umami
+        trackPaymentMethod(selectedMethod === 'yape' ? 'Yape' : 'Transferencia Bancaria', totalAmount);
+        trackPurchase('Productos Tienda', totalAmount);
+
         toast.success('¡Pedido registrado! Se ha enviado un correo con los detalles. Los productos serán entregados una vez confirmado el pago.');
       } else {
         // Si viene desde matrícula, solo mostrar éxito
+        trackPaymentMethod(selectedMethod === 'yape' ? 'Yape' : 'Transferencia Bancaria', totalAmount);
+
         toast.success('Información de pago confirmada. Por favor realice su pago y envíe el comprobante al WhatsApp indicado.');
       }
       

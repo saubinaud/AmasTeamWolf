@@ -139,13 +139,13 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
               </li>
               <li className="flex items-start gap-2 text-white/60 text-sm">
                 <Phone className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <a href="tel:+51987654321" className="hover:text-[#FCA929] transition-colors">
+                <a href="tel:+51987654321" className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Telefono" data-umami-event-ubicacion="footer">
                   ‪+51 989 717 412‬
                 </a>
               </li>
               <li className="flex items-start gap-2 text-white/60 text-sm">
                 <Mail className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <a href="mailto:info@amasteamwolf.com" className="hover:text-[#FCA929] transition-colors">
+                <a href="mailto:info@amasteamwolf.com" className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Email" data-umami-event-ubicacion="footer">
                   amasteamwolf@gmail.com
                 </a>
               </li>
