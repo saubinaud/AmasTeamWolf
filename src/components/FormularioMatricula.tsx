@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
+import { useUmami } from '../hooks/useUmami';
 
 // ========== CONSTANTES ==========
 
@@ -580,6 +581,9 @@ const INITIAL_FORM_STATE = {
 };
 
 export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, onClose, programa, onSuccess }: FormularioMatriculaProps) {
+  // Umami analytics
+  const { trackFormSubmit } = useUmami();
+
   // Estados existentes
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
@@ -983,6 +987,10 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
       if (response.ok || response.status === 200) {
         toast.success('¡Datos enviados correctamente! La fecha de vencimiento se enviará por correo.');
+
+        // Track enrollment with Umami
+        trackFormSubmit(`Formulario Matrícula ${NOMBRES_PROGRAMA[programa]}`, total);
+
         onSuccess(total);
         onClose();
         

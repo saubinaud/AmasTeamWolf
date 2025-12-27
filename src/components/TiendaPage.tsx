@@ -12,12 +12,16 @@ import { FooterMain } from './FooterMain';
 import { CartDrawerHome, CartItem } from './CartDrawerHome';
 import { PopupPago } from './PopupPago';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
+import { useUmami } from '../hooks/useUmami';
 
 interface TiendaPageProps {
   onNavigate: (page: string) => void;
 }
 
 export function TiendaPage({ onNavigate }: TiendaPageProps) {
+  // Umami analytics
+  const { trackAddToCart, trackEvent } = useUmami();
+
   const [isMobile, setIsMobile] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Implement | null>(null);
   const [selectedColor, setSelectedColor] = useState('');
@@ -119,6 +123,10 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
     }
     
     toast.success(`${selectedProduct.name} añadido al carrito`);
+
+    // Track add to cart with Umami
+    trackAddToCart(selectedProduct.name, selectedProduct.price * quantity);
+
     setSelectedProduct(null);
   };
 
@@ -139,6 +147,13 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
     setTotalAmount(total);
     setCheckoutItems(items);
     setIsPagoOpen(true);
+
+    // Track checkout initiation with Umami
+    trackEvent('Iniciar Checkout Tienda', {
+      valor: total,
+      moneda: 'PEN',
+      cantidad_items: items.length
+    });
   };
 
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);

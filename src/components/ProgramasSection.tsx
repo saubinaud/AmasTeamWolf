@@ -175,6 +175,9 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                     e.stopPropagation();
                     onOpenMatricula('full');
                   }}
+                  data-umami-event="Click Matricularme"
+                  data-umami-event-programa="Programa Full 3 Meses"
+                  data-umami-event-valor="869"
                   className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 sm:py-7 text-sm sm:text-base shadow-2xl shadow-[#FA7B21]/40 hover:shadow-[#FA7B21]/60 transition-colors duration-200 rounded-lg active:scale-[0.98]"
                   style={{
                     touchAction: 'manipulation',
@@ -252,6 +255,9 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                     e.stopPropagation();
                     onOpenMatricula('6meses');
                   }}
+                  data-umami-event="Click Matricularme"
+                  data-umami-event-programa="Programa 6 Meses"
+                  data-umami-event-valor="1699"
                   className="w-full bg-gradient-to-r from-[#FCA929] to-[#FA7B21] hover:from-[#FA7B21] hover:to-[#F36A15] text-white py-6 sm:py-7 text-sm sm:text-base shadow-2xl shadow-[#FCA929]/40 hover:shadow-[#FCA929]/60 transition-colors duration-200 rounded-lg active:scale-[0.98]"
                   style={{
                     touchAction: 'manipulation',
@@ -323,6 +329,9 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                     e.stopPropagation();
                     onOpenMatricula('1mes');
                   }}
+                  data-umami-event="Click Matricularme"
+                  data-umami-event-programa="Programa 1 Mes"
+                  data-umami-event-valor="330"
                   className="w-full bg-transparent border-2 border-[#FA7B21]/40 text-white hover:bg-[#FA7B21]/15 hover:border-[#FA7B21]/60 py-6 sm:py-7 text-sm sm:text-base transition-colors duration-200 backdrop-blur-sm rounded-lg active:scale-[0.98]"
                   style={{
                     touchAction: 'manipulation',
