@@ -11,6 +11,7 @@ import { InicioSesionPage } from './components/InicioSesionPage';
 import { PerfilPage } from './components/PerfilPage';
 import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
 import { RegistroActividadNavidadPage } from './components/RegistroActividadNavidadPage';
+import { RegistroShowroomPage } from './components/RegistroShowroomPage';
 import { RenovacionPage } from './pages/RenovacionPage';
 
 import { HeaderMain } from './components/HeaderMain';
@@ -41,7 +42,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'renovacion'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion'>('home');
   
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -134,6 +135,8 @@ function App() {
         setCurrentPage('renovacion-navidad');
       } else if (path === '/navidad' || path === '/evento-navidad') {
         setCurrentPage('registro-actividad-navidad');
+      } else if (path === '/showroom' || path === '/registro-showroom') {
+        setCurrentPage('registro-showroom');
       } else if (path === '/renovacion' || path === '/renovar') {
         setCurrentPage('renovacion');
       } else {
@@ -488,6 +491,51 @@ function App() {
         <Toaster theme="dark" position="bottom-right" />
         
         {/* Componentes para que funcione el header en esta página */}
+        <CartDrawerHome
+          isOpen={isCartOpen}
+          onClose={() => setIsCartOpen(false)}
+          items={cartItems}
+          onUpdateQuantity={handleUpdateQuantity}
+          onRemoveItem={handleRemoveItem}
+          onCheckout={handleCheckout}
+        />
+
+        <PopupPago
+          isOpen={isPagoOpen}
+          onClose={() => {
+            setIsPagoOpen(false);
+            if (checkoutItems.length > 0) {
+              setCartItems([]);
+              setCheckoutItems([]);
+            }
+          }}
+          totalAmount={totalAmount}
+          cartItems={checkoutItems}
+        />
+      </>
+    );
+  }
+
+  if (currentPage === 'registro-showroom') {
+    return (
+      <>
+        <SEO
+          title="Showroom AMAS Team Wolf - Conoce Nuestras Instalaciones"
+          description="Regístrate para asistir al Showroom de AMAS Team Wolf. Conoce nuestras instalaciones, profesoras y programa de formación integral."
+          keywords="showroom amas team wolf, visita instalaciones taekwondo, conocer academia artes marciales, showroom San Borja"
+          url="https://amasteamwolf.com/showroom"
+          image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg"
+        />
+
+        <RegistroShowroomPage
+          onNavigate={handleNavigate}
+          onOpenMatricula={handleEnrollProgram}
+          onCartClick={() => setIsCartOpen(true)}
+          cartItemsCount={cartItemsCount}
+        />
+
+        <Toaster theme="dark" position="bottom-right" />
+
         <CartDrawerHome
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
