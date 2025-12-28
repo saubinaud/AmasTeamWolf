@@ -40,7 +40,7 @@ const Input = ({ className = "", ...props }: any) => (
 );
 
 // --- IMAGEN HERO ---
-const HERO_IMG = "https://res.cloudinary.com/dkoocok3j/image/upload/f_auto,q_auto,w_1200/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg";
+const HERO_IMG = "https://res.cloudinary.com/dkoocok3j/image/upload/f_auto,q_auto,w_1200/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg";
 
 // --- TESTIMONIOS ---
 const testimonials = [
@@ -69,14 +69,14 @@ const testimonials = [
 
 // --- IMÁGENES DE GALERÍA ---
 const galleryImages = [
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg', alt: 'Clase de taekwondo' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg', alt: 'Instalaciones AMAS' },
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg'},
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg'},
   { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847478/Valencia_2_t8q3hl.jpg', alt: 'Alumnos practicando' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg', alt: 'Graduación profesores' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg', alt: 'Entrenamiento grupo' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg', alt: 'Ceremonia' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg', alt: 'Formación' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125698/Requested_Photos_and_Videos_8660_vy633p.jpg', alt: 'Estudiantes' }
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg'},
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg'},
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg'},
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg'},
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125698/Requested_Photos_and_Videos_8660_vy633p.jpg'}
 ];
 
 // --- CARRUSEL INFINITO DE GALERÍA ---
@@ -444,7 +444,7 @@ export function RegistroShowroomPage({
           >
             Clase de Prueba
             <br />
-            <span className="bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] bg-clip-text text-transparent drop-shadow-2xl">
+            <span className="bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] bg-clip-text text-transparent-50 drop-shadow-2xl">
               Especial Showroom
             </span>
           </motion.h1>
@@ -487,7 +487,6 @@ export function RegistroShowroomPage({
           >
             {[
               { icon: Gift, text: 'Sorpresa exclusiva' },
-              { icon: Users, text: 'Grupos reducidos' },
               { icon: MapPin, text: 'Te Quiero Fuerte y Claro' }
             ].map((item, i) => (
               <div
@@ -692,7 +691,7 @@ export function RegistroShowroomPage({
                       disabled={isSubmitting}
                       data-umami-event="Click Boton Showroom"
                       data-umami-event-tipo="registro"
-                      className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mb-2 gap-3"
                     >
                       {/* Animated gradient background */}
                       <div className="absolute inset-0 bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] animate-gradient-xy" />
