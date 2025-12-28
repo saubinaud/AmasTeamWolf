@@ -293,6 +293,7 @@ export function RegistroShowroomPage({
     nombre_padre: '',
     telefono: '',
     nombre_alumno: '',
+    edad_alumno: '',
     email: ''
   };
 
@@ -300,6 +301,7 @@ export function RegistroShowroomPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formErrors, setFormErrors] = useState<any>({});
+  const [horario, setHorario] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -309,9 +311,47 @@ export function RegistroShowroomPage({
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone: string) => /^[0-9]{9}$/.test(phone.replace(/\s/g, ''));
 
+  // Calcular horario basado en edad
+  const calcularHorario = (edadTexto: string) => {
+    const edad = parseInt(edadTexto);
+    if (isNaN(edad) || edad < 1) {
+      setHorario(null);
+      return;
+    }
+
+    // Convertir edad a meses para comparación más precisa
+    let edadEnMeses = edad * 12;
+
+    // Si el texto incluye "meses" o tiene decimales, calcular meses exactos
+    if (edadTexto.includes('.')) {
+      const partes = edadTexto.split('.');
+      const años = parseInt(partes[0]);
+      const meses = partes[1] ? parseInt(partes[1].substring(0, 2)) : 0;
+      edadEnMeses = (años * 12) + meses;
+    }
+
+    if (edad >= 1 && edadEnMeses <= 29) {
+      // De 1 año a 2 años y 5 meses (29 meses)
+      setHorario('11:00 AM');
+    } else if (edadEnMeses >= 30 && edadEnMeses <= 47) {
+      // De 2 años y 6 meses a 3 años y 11 meses (30-47 meses)
+      setHorario('11:30 AM');
+    } else if (edad >= 4) {
+      // De 4 años a más
+      setHorario('12:00 PM');
+    } else {
+      setHorario(null);
+    }
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (formErrors[field]) setFormErrors((prev: any) => ({ ...prev, [field]: '' }));
+
+    // Si es el campo de edad, calcular horario
+    if (field === 'edad_alumno') {
+      calcularHorario(value);
+    }
   };
 
   const handleReset = () => {
@@ -327,6 +367,14 @@ export function RegistroShowroomPage({
     const errors: any = {};
     if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
     if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
+    if (!formData.edad_alumno.trim()) {
+      errors.edad_alumno = 'Requerido';
+    } else {
+      const edad = parseInt(formData.edad_alumno);
+      if (isNaN(edad) || edad < 1) {
+        errors.edad_alumno = 'Edad inválida';
+      }
+    }
     if (!formData.telefono.trim() || !validatePhone(formData.telefono)) {
       errors.telefono = 'Teléfono inválido (9 dígitos)';
     }
@@ -359,6 +407,7 @@ export function RegistroShowroomPage({
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({
            ...formData,
+           horario: horario,
            timestamp: new Date().toISOString(),
            source: 'landing_showroom'
          }),
@@ -663,6 +712,57 @@ export function RegistroShowroomPage({
                           <span>⚠</span> {formErrors.nombre_alumno}
                         </p>
                       )}
+                    </div>
+
+                    {/* Edad del Alumno */}
+                    <div className="space-y-2">
+                      <Label>
+                        Edad del Niño/a *
+                      </Label>
+                      <Input
+                        type="number"
+                        placeholder="Ej: 3"
+                        value={formData.edad_alumno}
+                        onChange={(e: any) => handleInputChange('edad_alumno', e.target.value)}
+                        className={formErrors.edad_alumno ? 'border-red-500 ring-4 ring-red-500/30' : ''}
+                        min="1"
+                        step="1"
+                      />
+                      {formErrors.edad_alumno && (
+                        <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
+                          <span>⚠</span> {formErrors.edad_alumno}
+                        </p>
+                      )}
+
+                      {/* Mostrar horario dinámicamente */}
+                      <AnimatePresence>
+                        {horario && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                            transition={{ duration: 0.3 }}
+                            className="relative"
+                          >
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6700] to-[#ff8800] rounded-2xl blur opacity-30" />
+                            <div className="relative bg-gradient-to-r from-[#FF6700]/20 to-[#ff8800]/20 border-2 border-[#FF6700]/50 rounded-2xl p-4 backdrop-blur-sm">
+                              <div className="flex items-center gap-3">
+                                <div className="flex-shrink-0">
+                                  <Calendar className="w-6 h-6 text-[#FF6700]" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-white/80 text-xs md:text-sm font-medium">
+                                    Tu horario asignado:
+                                  </p>
+                                  <p className="text-white text-lg md:text-xl font-black">
+                                    {horario}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
                     {/* Correo Electrónico */}
