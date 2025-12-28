@@ -293,7 +293,7 @@ export function RegistroShowroomPage({
     nombre_padre: '',
     telefono: '',
     nombre_alumno: '',
-    edad_alumno: '',
+    fecha_nacimiento: '',
     email: ''
   };
 
@@ -311,33 +311,52 @@ export function RegistroShowroomPage({
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const validatePhone = (phone: string) => /^[0-9]{9}$/.test(phone.replace(/\s/g, ''));
 
-  // Calcular horario basado en edad
-  const calcularHorario = (edadTexto: string) => {
-    const edad = parseInt(edadTexto);
-    if (isNaN(edad) || edad < 1) {
+  // Calcular horario basado en fecha de nacimiento
+  const calcularHorario = (fechaNacimiento: string) => {
+    if (!fechaNacimiento) {
       setHorario(null);
       return;
     }
 
-    // Convertir edad a meses para comparación más precisa
-    let edadEnMeses = edad * 12;
+    const hoy = new Date();
+    const fechaNac = new Date(fechaNacimiento);
 
-    // Si el texto incluye "meses" o tiene decimales, calcular meses exactos
-    if (edadTexto.includes('.')) {
-      const partes = edadTexto.split('.');
-      const años = parseInt(partes[0]);
-      const meses = partes[1] ? parseInt(partes[1].substring(0, 2)) : 0;
-      edadEnMeses = (años * 12) + meses;
+    // Calcular la diferencia en años y meses
+    let años = hoy.getFullYear() - fechaNac.getFullYear();
+    let meses = hoy.getMonth() - fechaNac.getMonth();
+
+    // Ajustar si el mes actual es anterior al mes de nacimiento
+    if (meses < 0) {
+      años--;
+      meses += 12;
     }
 
-    if (edad >= 1 && edadEnMeses <= 29) {
-      // De 1 año a 2 años y 5 meses (29 meses)
+    // Ajustar si el día actual es anterior al día de nacimiento
+    if (hoy.getDate() < fechaNac.getDate()) {
+      meses--;
+      if (meses < 0) {
+        años--;
+        meses += 12;
+      }
+    }
+
+    // Convertir todo a meses para facilitar la comparación
+    const edadEnMeses = (años * 12) + meses;
+
+    if (edadEnMeses < 12) {
+      // Menor de 1 año, no mostrar horario
+      setHorario(null);
+      return;
+    }
+
+    if (edadEnMeses >= 12 && edadEnMeses <= 29) {
+      // De 1 año a 2 años y 5 meses (12-29 meses)
       setHorario('11:00 AM');
     } else if (edadEnMeses >= 30 && edadEnMeses <= 47) {
       // De 2 años y 6 meses a 3 años y 11 meses (30-47 meses)
       setHorario('11:30 AM');
-    } else if (edad >= 4) {
-      // De 4 años a más
+    } else if (edadEnMeses >= 48) {
+      // De 4 años a más (48+ meses)
       setHorario('12:00 PM');
     } else {
       setHorario(null);
@@ -348,8 +367,8 @@ export function RegistroShowroomPage({
     setFormData(prev => ({ ...prev, [field]: value }));
     if (formErrors[field]) setFormErrors((prev: any) => ({ ...prev, [field]: '' }));
 
-    // Si es el campo de edad, calcular horario
-    if (field === 'edad_alumno') {
+    // Si es el campo de fecha de nacimiento, calcular horario
+    if (field === 'fecha_nacimiento') {
       calcularHorario(value);
     }
   };
@@ -367,12 +386,13 @@ export function RegistroShowroomPage({
     const errors: any = {};
     if (!formData.nombre_padre.trim()) errors.nombre_padre = 'Requerido';
     if (!formData.nombre_alumno.trim()) errors.nombre_alumno = 'Requerido';
-    if (!formData.edad_alumno.trim()) {
-      errors.edad_alumno = 'Requerido';
+    if (!formData.fecha_nacimiento.trim()) {
+      errors.fecha_nacimiento = 'Requerido';
     } else {
-      const edad = parseInt(formData.edad_alumno);
-      if (isNaN(edad) || edad < 1) {
-        errors.edad_alumno = 'Edad inválida';
+      const fechaNac = new Date(formData.fecha_nacimiento);
+      const hoy = new Date();
+      if (fechaNac >= hoy) {
+        errors.fecha_nacimiento = 'Fecha inválida';
       }
     }
     if (!formData.telefono.trim() || !validatePhone(formData.telefono)) {
@@ -714,23 +734,21 @@ export function RegistroShowroomPage({
                       )}
                     </div>
 
-                    {/* Edad del Alumno */}
+                    {/* Fecha de Nacimiento del Alumno */}
                     <div className="space-y-2">
                       <Label>
-                        Edad del Niño/a *
+                        Fecha de Nacimiento del Niño/a *
                       </Label>
                       <Input
-                        type="number"
-                        placeholder="Ej: 3"
-                        value={formData.edad_alumno}
-                        onChange={(e: any) => handleInputChange('edad_alumno', e.target.value)}
-                        className={formErrors.edad_alumno ? 'border-red-500 ring-4 ring-red-500/30' : ''}
-                        min="1"
-                        step="1"
+                        type="date"
+                        value={formData.fecha_nacimiento}
+                        onChange={(e: any) => handleInputChange('fecha_nacimiento', e.target.value)}
+                        className={formErrors.fecha_nacimiento ? 'border-red-500 ring-4 ring-red-500/30' : ''}
+                        max={new Date().toISOString().split('T')[0]}
                       />
-                      {formErrors.edad_alumno && (
+                      {formErrors.fecha_nacimiento && (
                         <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
-                          <span>⚠</span> {formErrors.edad_alumno}
+                          <span>⚠</span> {formErrors.fecha_nacimiento}
                         </p>
                       )}
 
