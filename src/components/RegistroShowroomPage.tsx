@@ -406,7 +406,7 @@ export function RegistroShowroomPage({
           <img
             src={HERO_IMG}
             alt="AMAS Team Wolf"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black" />
         </div>
@@ -685,7 +685,7 @@ export function RegistroShowroomPage({
                   </div>
 
                   {/* BOTÓN SUBMIT */}
-                  <div className="mt-10">
+                  <div className="mt-14 md:mt-16">
                     <button
                       type="submit"
                       disabled={isSubmitting}
@@ -752,7 +752,7 @@ export function RegistroShowroomPage({
             className="text-center mb-12"
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-              Nuestras <span className="bg-gradient-to-r from-[#FF6700] to-[#ff8800] bg-clip-text text-transparent">Instalaciones</span>
+              Nuestras
             </h2>
             <p className="text-white/70 text-lg md:text-xl">
               El espacio perfecto para el crecimiento de tu hijo
@@ -773,7 +773,7 @@ export function RegistroShowroomPage({
             className="text-center mb-12 md:mb-16"
           >
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-              Familias <span className="bg-gradient-to-r from-[#FF6700] to-[#ff8800] bg-clip-text text-transparent">Transformadas</span>
+              Familias
             </h2>
             <p className="text-white/70 text-lg md:text-xl">
               Testimonios reales de padres que confiaron en AMAS
