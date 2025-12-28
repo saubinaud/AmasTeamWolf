@@ -40,7 +40,7 @@ const Input = ({ className = "", ...props }: any) => (
 );
 
 // --- IMAGEN HERO ---
-const HERO_IMG = "https://res.cloudinary.com/dkoocok3j/image/upload/f_auto,q_auto,w_1200/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg";
+const HERO_IMG = "https://res.cloudinary.com/dkoocok3j/image/upload/f_auto,q_auto,w_1200/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg";
 
 // --- TESTIMONIOS ---
 const testimonials = [
