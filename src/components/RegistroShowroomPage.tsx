@@ -528,7 +528,7 @@ export function RegistroShowroomPage({
             <div className="inline-flex items-center gap-3 bg-black/60 backdrop-blur-md px-8 py-4 rounded-2xl border-2 border-[#FF6700]/50 shadow-xl">
               <Calendar className="w-6 h-6 md:w-8 md:h-8 text-[#FF6700]" />
               <span className="text-white font-bold text-xl md:text-3xl">
-                4 de Enero
+                11 de Enero
               </span>
             </div>
           </motion.div>
