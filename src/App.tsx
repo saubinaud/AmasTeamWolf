@@ -13,11 +13,15 @@ import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
 import { RegistroActividadNavidadPage } from './components/RegistroActividadNavidadPage';
 import { RegistroShowroomPage } from './components/RegistroShowroomPage';
 import { RenovacionPage } from './pages/RenovacionPage';
+import { LogtoCallback } from './components/LogtoCallback';
+import { TerminosCondicionesPage } from './components/TerminosCondicionesPage';
+import { VincularCuentaPage } from './components/VincularCuentaPage';
 
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
 import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
 import { Toaster } from './components/ui/sonner';
+import { toast } from 'sonner';
 import { CartDrawerHome, CartItem } from './components/CartDrawerHome';
 import { PopupPago } from './components/PopupPago';
 import { LeadershipProgramCard } from './components/LeadershipProgramCard';
@@ -42,8 +46,8 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion'>('home');
-  
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta'>('home');
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -73,7 +77,7 @@ function App() {
         setTimeout(buscar, 100); // Reintentar en 100ms
       }
     };
-    
+
     // Iniciar búsqueda
     buscar();
   };
@@ -139,11 +143,17 @@ function App() {
         setCurrentPage('registro-showroom');
       } else if (path === '/renovacion' || path === '/renovar') {
         setCurrentPage('renovacion');
+      } else if (path === '/callback') {
+        setCurrentPage('callback');
+      } else if (path === '/terminos' || path === '/terminos-condiciones') {
+        setCurrentPage('terminos');
+      } else if (path === '/vincular-cuenta' || path === '/vincular') {
+        setCurrentPage('vincular-cuenta');
       } else {
         setCurrentPage('home');
         // Si estamos en home y hay sección, activar scroll robusto
         if (sectionParam) {
-           setTimeout(() => robustScrollToSection(sectionParam), 100);
+          setTimeout(() => robustScrollToSection(sectionParam), 100);
         }
       }
     };
@@ -171,7 +181,7 @@ function App() {
   const handleNavigate = (page: string, sectionId?: string) => {
     // 1. Actualizar estado de página
     setCurrentPage(page as any);
-    
+
     // 2. Construir path y query params
     let path = '/';
     if (page === 'home') {
@@ -181,7 +191,7 @@ function App() {
     } else {
       path = `/${page}`;
     }
-    
+
     // Si hay sección, agregarla a la URL (ej: /?section=tienda)
     if (sectionId) {
       path += `?section=${sectionId}`;
@@ -191,7 +201,7 @@ function App() {
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     }
-    
+
     window.history.pushState({}, '', path);
 
     // 3. Ejecutar scroll inteligente si hay sección
@@ -397,7 +407,55 @@ function App() {
     return (
       <>
         <SEO {...seoConfigs.clasePrueba} />
-        <LandingConversion onNavigate={handleNavigate} />
+        <LandingConversion
+          onNavigate={handleNavigate}
+          onOpenMatricula={handleEnrollProgram}
+          onCartClick={() => setIsCartOpen(true)}
+          cartItemsCount={cartItemsCount}
+        />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  // Logto OAuth Callback page
+  if (currentPage === 'callback') {
+    return (
+      <LogtoCallback
+        onNavigate={handleNavigate}
+        onLoadProfile={async (authId, email) => {
+          // Profile loading is handled in AuthContext
+          console.log('Callback: Loading profile for', authId, email);
+        }}
+      />
+    );
+  }
+
+  if (currentPage === 'terminos') {
+    return (
+      <>
+        <SEO
+          title="Términos y Condiciones - AMAS Team Wolf"
+          description="Términos y condiciones de uso del sitio web de la Academia de Artes Marciales AMAS."
+          keywords="terminos condiciones, politica privacidad, academia amas"
+          url="https://amasteamwolf.com/terminos"
+        />
+        <TerminosCondicionesPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  if (currentPage === 'vincular-cuenta') {
+    return (
+      <>
+        <SEO
+          title="Vincular Cuenta - AMAS Team Wolf"
+          description="Vincula tu cuenta con tu perfil de alumno en AMAS Team Wolf."
+          keywords="vincular cuenta, conectar perfil, amas team wolf"
+          url="https://amasteamwolf.com/vincular-cuenta"
+        />
+        <VincularCuentaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
@@ -442,7 +500,12 @@ function App() {
           keywords="renovación navidad, renovación anticipada, promoción navideña AMAS, beneficios navidad taekwondo"
           url="https://amasteamwolf.com/renovacion-navidad"
         />
-        <RenovacionNavidadPage onNavigate={handleNavigate} />
+        <RenovacionNavidadPage
+          onNavigate={handleNavigate}
+          onOpenMatricula={handleEnrollProgram}
+          onCartClick={() => setIsCartOpen(true)}
+          cartItemsCount={cartItemsCount}
+        />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
@@ -459,6 +522,10 @@ function App() {
         />
         <RenovacionPage
           onNavigateHome={() => handleNavigate('home')}
+          onNavigate={handleNavigate}
+          onOpenMatricula={handleEnrollProgram}
+          onCartClick={() => setIsCartOpen(true)}
+          cartItemsCount={cartItemsCount}
           onSuccess={() => {
             toast.success('¡Renovación exitosa!');
             handleNavigate('home');
@@ -479,9 +546,9 @@ function App() {
           url="https://amasteamwolf.com/navidad"
           image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg"
         />
-        
+
         {/* MODIFICADO: Pasamos todas las props y añadimos los componentes de carrito/pago */}
-        <RegistroActividadNavidadPage 
+        <RegistroActividadNavidadPage
           onNavigate={handleNavigate}
           onOpenMatricula={handleEnrollProgram}
           onCartClick={() => setIsCartOpen(true)}
@@ -489,7 +556,7 @@ function App() {
         />
 
         <Toaster theme="dark" position="bottom-right" />
-        
+
         {/* Componentes para que funcione el header en esta página */}
         <CartDrawerHome
           isOpen={isCartOpen}
@@ -564,7 +631,7 @@ function App() {
   return (
     <div className="min-h-screen relative overflow-hidden">
       <SEO {...seoConfigs.leadership} />
-      
+
       {/* Background Gradients */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />

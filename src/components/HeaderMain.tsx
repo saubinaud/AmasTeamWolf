@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, ShoppingCart, User } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingCart, User, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '../contexts/AuthContext';
+import { useLogto } from '@logto/react';
 
 interface HeaderMainProps {
   // Usamos la nueva firma que soporta secciones
@@ -14,6 +15,7 @@ interface HeaderMainProps {
 
 export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: HeaderMainProps) {
   const { isAuthenticated, user } = useAuth();
+  const { signIn } = useLogto();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProgramasOpen, setIsProgramasOpen] = useState(false);
@@ -67,14 +69,14 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
   const linkStyles = "text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base";
 
   return (
-    <header 
+    <header
       className="fixed top-0 left-0 right-0 transition-all duration-500 backdrop-blur-xl"
       style={{
         zIndex: 9999,
-        background: isScrolled 
+        background: isScrolled
           ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.80))'
           : 'linear-gradient(to bottom, rgba(250, 123, 33, 0.12), rgba(252, 169, 41, 0.08), rgba(0, 0, 0, 0.25))',
-        boxShadow: isScrolled 
+        boxShadow: isScrolled
           ? '0 10px 40px rgba(250, 123, 33, 0.25), 0 0 80px rgba(250, 123, 33, 0.1)'
           : '0 8px 32px rgba(250, 123, 33, 0.15), 0 0 60px rgba(250, 123, 33, 0.05)',
         borderBottom: isScrolled
@@ -91,7 +93,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
             <div className="flex flex-col">
-              <span 
+              <span
                 className="text-base sm:text-lg transition-all duration-300"
                 style={{
                   background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 100%)',
@@ -109,7 +111,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           {/* DESKTOP NAVIGATION               */}
           {/* ========================================== */}
           <nav className="hidden md:flex items-center gap-4 lg:gap-6">
-            
+
             {/* 1. Programas (Dropdown) */}
             <div
               className="relative programas-dropdown"
@@ -120,7 +122,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 Programas
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasDesktopOpen ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {isProgramasDesktopOpen && (
                 <div className="absolute left-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-xl rounded-lg border border-[#FA7B21]/30 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="py-2">
@@ -143,7 +145,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 </div>
               )}
             </div>
-            
+
             {/* 2. Tienda */}
             <button onClick={() => handleNavigateToSection('tienda')} className={linkStyles}>
               Tienda
@@ -177,7 +179,18 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             </Button>
 
             <Button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion'); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isAuthenticated) {
+                  onNavigate('perfil');
+                } else {
+                  const callbackUrl = window.location.hostname === 'localhost'
+                    ? 'http://localhost:5173/callback'
+                    : 'https://amasteamwolf.com/callback';
+                  signIn(callbackUrl);
+                }
+              }}
               variant="ghost"
               className={`${linkStyles} flex items-center`}
             >
@@ -212,7 +225,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 </Badge>
               )}
             </Button>
-            
+
             <Button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMobileMenuOpen(!isMobileMenuOpen); }}
               variant="ghost"
@@ -230,7 +243,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
       {/* MOBILE MENU CONTENT              */}
       {/* ========================================== */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="md:hidden backdrop-blur-xl border-t border-[#FA7B21]/30 animate-in slide-in-from-top-4 duration-300"
           style={{
             background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.98))',
@@ -238,7 +251,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           }}
         >
           <nav className="container mx-auto px-4 py-6 flex flex-col gap-4">
-            
+
             {/* 1. Programas (Dropdown Mobile) */}
             <div>
               <button
@@ -249,7 +262,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 Programas
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasOpen ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {isProgramasOpen && (
                 <div className="pl-4 mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                   <button
@@ -274,7 +287,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 </div>
               )}
             </div>
-            
+
             {/* 2. Tienda */}
             <button
               onClick={() => handleNavigateToSection('tienda')}
@@ -308,7 +321,14 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             {/* Botón de perfil/login móvil */}
             <button
               onClick={() => {
-                onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion');
+                if (isAuthenticated) {
+                  onNavigate('perfil');
+                } else {
+                  const callbackUrl = window.location.hostname === 'localhost'
+                    ? 'http://localhost:5173/callback'
+                    : 'https://amasteamwolf.com/callback';
+                  signIn(callbackUrl);
+                }
                 setIsMobileMenuOpen(false);
               }}
               className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base flex items-center gap-2"
