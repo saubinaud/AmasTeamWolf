@@ -6,10 +6,21 @@ import { toast } from 'sonner';
 
 interface RenovacionPageProps {
   onNavigateHome: () => void;
+  onNavigate: (page: string, sectionId?: string) => void;
+  onOpenMatricula: () => void;
+  onCartClick: () => void;
+  cartItemsCount: number;
   onSuccess?: () => void;
 }
 
-export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProps) {
+export function RenovacionPage({
+  onNavigateHome,
+  onNavigate,
+  onOpenMatricula,
+  onCartClick,
+  cartItemsCount,
+  onSuccess
+}: RenovacionPageProps) {
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const handleFormSuccess = (total: number) => {
@@ -22,25 +33,18 @@ export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProp
 
     setTimeout(() => {
       setShowSuccessMessage(false);
-      onNavigateHome();
-    }, 3000);
-  };
-
-  const handleNavigate = (page: string) => {
-    if (page === 'home') {
-      onNavigateHome();
-    }
-    // Puedes agregar más navegaciones si es necesario
+      window.location.href = 'https://amasteamwolf.com';
+    }, 1500);
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header */}
       <HeaderMain
-        onNavigate={handleNavigate}
-        onOpenMatricula={() => {}}
-        onCartClick={() => {}}
-        cartItemsCount={0}
+        onNavigate={onNavigate}
+        onOpenMatricula={onOpenMatricula}
+        onCartClick={onCartClick}
+        cartItemsCount={cartItemsCount}
       />
 
       {/* Contenido principal */}
@@ -53,10 +57,9 @@ export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProp
                 ¡Renovación Exitosa!
               </h2>
               <p className="text-white/70 mb-4">
-                Gracias por renovar tu membresía. Recibirás un correo con todos los detalles.
+                Gracias por renovar tu membresía.
               </p>
-              <div className="animate-spin w-8 h-8 border-4 border-[#FA7B21] border-t-transparent rounded-full mx-auto"></div>
-              <p className="text-white/50 text-sm mt-4">Redirigiendo...</p>
+              <p className="text-[#FA7B21] font-semibold text-sm mt-4">Redirigiendo al inicio...</p>
             </div>
           </div>
         )}
@@ -68,8 +71,8 @@ export function RenovacionPage({ onNavigateHome, onSuccess }: RenovacionPageProp
 
       {/* Footer */}
       <FooterMain
-        onNavigate={handleNavigate}
-        onOpenMatricula={() => {}}
+        onNavigate={onNavigate}
+        onOpenMatricula={onOpenMatricula}
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 import { Button } from './ui/button';
@@ -9,10 +9,13 @@ import { toast } from 'sonner';
 import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, MessageSquare, Clock, Users, Sparkles } from 'lucide-react';
 
 interface RenovacionNavidadPageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, sectionId?: string) => void;
+  onOpenMatricula: () => void;
+  onCartClick: () => void;
+  cartItemsCount: number;
 }
 
-export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps) {
+export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: RenovacionNavidadPageProps) {
   const [formData, setFormData] = useState({
     nombre_padre: '',
     nombre_alumno: '',
@@ -164,9 +167,9 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
       <div className="relative z-10">
         <HeaderMain
           onNavigate={onNavigate}
-          onOpenMatricula={() => onNavigate('registro-leadership')}
-          onCartClick={() => {}}
-          cartItemsCount={0}
+          onOpenMatricula={onOpenMatricula}
+          onCartClick={onCartClick}
+          cartItemsCount={cartItemsCount}
         />
 
         {isSubmitted ? (
@@ -372,9 +375,8 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Ej: María González"
                           value={formData.nombre_padre}
                           onChange={(e) => handleInputChange('nombre_padre', e.target.value)}
-                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${
-                            formErrors.nombre_padre ? 'border-red-500' : ''
-                          }`}
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${formErrors.nombre_padre ? 'border-red-500' : ''
+                            }`}
                           disabled={isSubmitting}
                         />
                         {formErrors.nombre_padre && (
@@ -395,9 +397,8 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Ej: maria.gonzalez@gmail.com"
                           value={formData.email}
                           onChange={(e) => handleInputChange('email', e.target.value)}
-                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${
-                            formErrors.email ? 'border-red-500' : ''
-                          }`}
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${formErrors.email ? 'border-red-500' : ''
+                            }`}
                           disabled={isSubmitting}
                         />
                         {formErrors.email && (
@@ -426,9 +427,8 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                           placeholder="Ej: Sebastián González"
                           value={formData.nombre_alumno}
                           onChange={(e) => handleInputChange('nombre_alumno', e.target.value)}
-                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${
-                            formErrors.nombre_alumno ? 'border-red-500' : ''
-                          }`}
+                          className={`bg-zinc-800/80 border-zinc-700 text-white placeholder:text-white/40 h-12 ${formErrors.nombre_alumno ? 'border-red-500' : ''
+                            }`}
                           disabled={isSubmitting}
                         />
                         {formErrors.nombre_alumno && (
@@ -457,11 +457,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                             type="button"
                             onClick={() => handleInputChange('plan', '3-meses')}
                             disabled={isSubmitting}
-                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${
-                              formData.plan === '3-meses'
-                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
-                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
-                            } ${formErrors.plan ? 'border-red-500' : ''}`}
+                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${formData.plan === '3-meses'
+                              ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                              : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                              } ${formErrors.plan ? 'border-red-500' : ''}`}
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex flex-col gap-2 flex-1">
@@ -482,11 +481,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                             type="button"
                             onClick={() => handleInputChange('plan', '6-meses')}
                             disabled={isSubmitting}
-                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${
-                              formData.plan === '6-meses'
-                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
-                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
-                            } ${formErrors.plan ? 'border-red-500' : ''}`}
+                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${formData.plan === '6-meses'
+                              ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                              : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                              } ${formErrors.plan ? 'border-red-500' : ''}`}
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex flex-col gap-2 flex-1">
@@ -513,11 +511,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                             type="button"
                             onClick={() => handleInputChange('plan', 'no-decido')}
                             disabled={isSubmitting}
-                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                              formData.plan === 'no-decido'
-                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
-                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
-                            } ${formErrors.plan ? 'border-red-500' : ''}`}
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${formData.plan === 'no-decido'
+                              ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                              : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                              } ${formErrors.plan ? 'border-red-500' : ''}`}
                           >
                             <div className="flex items-center justify-between">
                               <span className="text-white/70">Aún no decido</span>
@@ -553,11 +550,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                             type="button"
                             onClick={() => handleInputChange('experiencia', 'excelente')}
                             disabled={isSubmitting}
-                            className={`p-4 rounded-lg border-2 transition-all ${
-                              formData.experiencia === 'excelente'
-                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
-                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
-                            }`}
+                            className={`p-4 rounded-lg border-2 transition-all ${formData.experiencia === 'excelente'
+                              ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                              : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                              }`}
                           >
                             <div className="flex flex-col items-center gap-2">
                               <span className="text-yellow-400 text-xl">⭐⭐⭐⭐⭐</span>
@@ -570,11 +566,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                             type="button"
                             onClick={() => handleInputChange('experiencia', 'buena')}
                             disabled={isSubmitting}
-                            className={`p-4 rounded-lg border-2 transition-all ${
-                              formData.experiencia === 'buena'
-                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
-                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
-                            }`}
+                            className={`p-4 rounded-lg border-2 transition-all ${formData.experiencia === 'buena'
+                              ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                              : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                              }`}
                           >
                             <div className="flex flex-col items-center gap-2">
                               <span className="text-yellow-400 text-xl">⭐⭐⭐⭐</span>
@@ -587,11 +582,10 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
                             type="button"
                             onClick={() => handleInputChange('experiencia', 'podria-mejorar')}
                             disabled={isSubmitting}
-                            className={`p-4 rounded-lg border-2 transition-all ${
-                              formData.experiencia === 'podria-mejorar'
-                                ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
-                                : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
-                            }`}
+                            className={`p-4 rounded-lg border-2 transition-all ${formData.experiencia === 'podria-mejorar'
+                              ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
+                              : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
+                              }`}
                           >
                             <div className="flex flex-col items-center gap-2">
                               <span className="text-yellow-400 text-xl">⭐⭐⭐</span>
@@ -639,7 +633,7 @@ export function RenovacionNavidadPage({ onNavigate }: RenovacionNavidadPageProps
 
         <FooterMain
           onNavigate={onNavigate}
-          onOpenMatricula={() => onNavigate('registro-leadership')}
+          onOpenMatricula={onOpenMatricula}
         />
       </div>
     </div>

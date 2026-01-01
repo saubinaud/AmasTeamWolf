@@ -1,14 +1,16 @@
-import { useState, useEffect, memo } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { toast } from 'sonner';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
-import { 
-  Check, 
-  X, 
-  Star, 
-  Award, 
+import {
+  Check,
+  X,
+  Star,
+  Award,
   MessageCircle,
   ArrowRight,
   Target,
@@ -27,7 +29,10 @@ import { FooterMain } from './FooterMain';
 import { ImageLightbox } from './ImageLightbox';
 
 interface LandingConversionProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, sectionId?: string) => void;
+  onOpenMatricula: () => void;
+  onCartClick: () => void;
+  cartItemsCount: number;
 }
 
 // Componente de animación al scroll mejorado
@@ -54,9 +59,8 @@ const ScrollReveal = memo(({ children, delay = 0 }: { children: React.ReactNode;
   return (
     <div
       ref={setElementRef}
-      className={`transition-all duration-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-      }`}
+      className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+        }`}
     >
       {children}
     </div>
@@ -65,25 +69,29 @@ const ScrollReveal = memo(({ children, delay = 0 }: { children: React.ReactNode;
 
 ScrollReveal.displayName = 'ScrollReveal';
 
-export function LandingConversion({ onNavigate }: LandingConversionProps) {
+export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: LandingConversionProps) {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    nombre: '',
-    whatsapp: '',
-    edad: '',
+    nombrePadre: '',
+    nombreAlumno: '',
+    telefono: '',
+    email: '',
+    fechaNacimiento: '',
     objetivo: ''
   });
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const galleryImages = [
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847478/Valencia_2_t8q3hl.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124686/AMAS_-_graduacio%CC%81n_profesores_6_c3qvlk.jpg' },
-    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg' }
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg', alt: 'Entrenamiento niños' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg', alt: 'Medallas academia' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847478/Valencia_2_t8q3hl.jpg', alt: 'Clase grupo' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg', alt: 'Graduación' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg', alt: 'Entrenamiento' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg', alt: 'Clase niños' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763124686/AMAS_-_graduacio%CC%81n_profesores_6_c3qvlk.jpg', alt: 'Profesores' },
+    { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_800/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg', alt: 'Evento' }
   ];
 
   // Scroll suave a sección
@@ -95,17 +103,69 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
   };
 
   // WhatsApp handlers
-  const openWhatsAppProof = () => {
-    const message = encodeURIComponent('Hola, quiero agendar clase de prueba para mi hijo/a');
-    window.open(`https://wa.me/51989717412?text=${message}`, '_blank');
+  const openTrialModal = () => {
+    setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const message = encodeURIComponent(
-      `Hola, soy ${formData.nombre}. Me interesa más información sobre AMAS.\n\nWhatsApp: ${formData.whatsapp}\nEdad de mi hijo/a: ${formData.edad}\n${formData.objetivo ? `Objetivo: ${formData.objetivo}` : ''}`
-    );
-    window.open(`https://wa.me/51989717412?text=${message}`, '_blank');
+
+    // Validaciones
+    if (!formData.nombrePadre || !formData.nombreAlumno || !formData.telefono || !formData.email || !formData.fechaNacimiento) {
+      toast.error('Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // 1. Enviar a Webhook
+      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/regsitro-showroom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre_padre: formData.nombrePadre,
+          nombre_alumno: formData.nombreAlumno,
+          telefono: formData.telefono,
+          email: formData.email,
+          fecha_nacimiento: formData.fechaNacimiento,
+          objetivo: formData.objetivo,
+          source: 'landing_clase_prueba',
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('¡Registro enviado con éxito! Redirigiendo a WhatsApp...');
+
+        // 2. Abrir WhatsApp
+        const message = encodeURIComponent(
+          `Hola, soy ${formData.nombrePadre}. Acabo de registrarme para la clase de prueba de mi hijo/a ${formData.nombreAlumno}.`
+        );
+        window.open(`https://wa.me/51989717412?text=${message}`, '_blank');
+
+        setIsModalOpen(false);
+        setFormData({
+          nombrePadre: '',
+          nombreAlumno: '',
+          telefono: '',
+          email: '',
+          fechaNacimiento: '',
+          objetivo: ''
+        });
+      } else {
+        throw new Error('Error en el servidor');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al enviar el registro. Por favor intenta de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -114,10 +174,15 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
 
   return (
     <div className="min-h-screen bg-black">
-      <HeaderMain onNavigate={onNavigate} />
+      <HeaderMain
+        onNavigate={onNavigate}
+        onOpenMatricula={onOpenMatricula}
+        onCartClick={onCartClick}
+        cartItemsCount={cartItemsCount}
+      />
 
       {/* 1. HERO SECTION - Optimizado para móvil */}
-      <section 
+      <section
         className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 md:pt-0"
         style={{
           backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1920/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg')`,
@@ -128,7 +193,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
       >
         {/* Overlay con degradado */}
         <div className="absolute inset-0 bg-gradient-to-b from-black via-black/70 to-black" />
-        
+
         {/* Patrón de puntos */}
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: 'radial-gradient(circle, #FA7B21 1px, transparent 1px)',
@@ -173,7 +238,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
           <ScrollReveal delay={300}>
             <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center mb-8 md:mb-12 px-2">
               <button
-                onClick={openWhatsAppProof}
+                onClick={openTrialModal}
                 className="group relative px-8 py-4 md:px-12 md:py-6 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-base md:text-xl font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/50 w-full sm:w-auto"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-[#FCA929] to-[#FA7B21] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -182,7 +247,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
                   <span className="whitespace-nowrap">Agendar clase de prueba</span>
                 </span>
               </button>
-              
+
               <button
                 onClick={() => scrollToSection('problemas')}
                 className="text-white/80 hover:text-white flex items-center gap-2 text-base md:text-lg transition-all duration-300 group"
@@ -242,21 +307,21 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
 
           <div className="grid md:grid-cols-3 gap-6 md:gap-8">
             {[
-              { 
-                emoji: '😔', 
-                title: 'Niño tímido', 
+              {
+                emoji: '😔',
+                title: 'Niño tímido',
                 desc: 'Se esconde detrás de ti, no habla en el cole, tiene miedo a todo',
                 gradient: 'from-blue-500/20 to-purple-500/20'
               },
-              { 
-                emoji: '😤', 
-                title: 'No obedece', 
+              {
+                emoji: '😤',
+                title: 'No obedece',
                 desc: 'Tienes que repetirle las cosas 10 veces, hace berrinches, no sigue reglas',
                 gradient: 'from-red-500/20 to-orange-500/20'
               },
-              { 
-                emoji: '😰', 
-                title: 'Baja confianza', 
+              {
+                emoji: '😰',
+                title: 'Baja confianza',
                 desc: 'No cree en sí mismo, dice "no puedo", se rinde fácil',
                 gradient: 'from-yellow-500/20 to-red-500/20'
               }
@@ -265,7 +330,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
                 <div className="group relative h-full">
                   {/* Glow effect */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                  
+
                   <div className="relative h-full bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-500 hover:transform hover:scale-105">
                     <div className="text-5xl md:text-7xl mb-4 md:mb-6">{item.emoji}</div>
                     <h3 className="text-xl md:text-2xl text-white font-bold mb-3 md:mb-4">{item.title}</h3>
@@ -446,7 +511,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
           <ScrollReveal delay={500}>
             <div className="text-center mt-8 md:mt-12">
               <button
-                onClick={openWhatsAppProof}
+                onClick={openTrialModal}
                 className="group relative px-8 py-4 md:px-12 md:py-6 bg-white text-black text-base md:text-xl font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-white/20 w-full sm:w-auto"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -716,7 +781,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
           <ScrollReveal delay={400}>
             <div className="text-center">
               <button
-                onClick={openWhatsAppProof}
+                onClick={openTrialModal}
                 className="group relative px-8 py-5 md:px-16 md:py-8 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-lg md:text-2xl font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 shadow-2xl hover:shadow-[#FA7B21]/50 w-full sm:w-auto"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-[#FCA929] to-[#FA7B21] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -799,8 +864,105 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
         </div>
       </section>
 
+      {/* Modal de Registro para Clase de Prueba */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="bg-zinc-950 border border-[#FA7B21]/30 text-white sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">
+              Agendar Clase de Prueba
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              Completa tus datos para coordinar tu visita.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="nombrePadre">Nombre del Padre/Madre *</Label>
+              <Input
+                id="nombrePadre"
+                value={formData.nombrePadre}
+                onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
+                placeholder="Tu nombre completo"
+                required
+                className="bg-zinc-900 border-zinc-800 focus:border-[#FA7B21]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="telefono">WhatsApp *</Label>
+              <Input
+                id="telefono"
+                type="tel"
+                value={formData.telefono}
+                onChange={(e) => handleInputChange('telefono', e.target.value)}
+                placeholder="999 999 999"
+                required
+                className="bg-zinc-900 border-zinc-800 focus:border-[#FA7B21]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="nombreAlumno">Nombre del Alumno/a *</Label>
+              <Input
+                id="nombreAlumno"
+                value={formData.nombreAlumno}
+                onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
+                placeholder="Nombre de tu hijo/a"
+                required
+                className="bg-zinc-900 border-zinc-800 focus:border-[#FA7B21]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="fechaNacimiento">Fecha de Nacimiento del Alumno/a *</Label>
+              <Input
+                id="fechaNacimiento"
+                type="date"
+                value={formData.fechaNacimiento}
+                onChange={(e) => handleInputChange('fechaNacimiento', e.target.value)}
+                required
+                className="bg-zinc-900 border-zinc-800 focus:border-[#FA7B21]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo Electrónico *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="tu@email.com"
+                required
+                className="bg-zinc-900 border-zinc-800 focus:border-[#FA7B21]"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="objetivo">Objetivo Principal (Opcional)</Label>
+              <Textarea
+                id="objetivo"
+                value={formData.objetivo}
+                onChange={(e) => handleInputChange('objetivo', e.target.value)}
+                placeholder="Ej: Mejorar disciplina, confianza, defensa personal..."
+                className="bg-zinc-900 border-zinc-800 focus:border-[#FA7B21]"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-bold py-6 mt-6"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Enviando...' : 'Confirmar Clase de Prueba'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* 11. CTA FINAL - Rediseñado */}
-      <section 
+      <section
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
         style={{
           backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/q_80.w_1920/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg')`,
@@ -810,7 +972,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/80 via-[#FCA929]/70 to-[#FA7B21]/80" />
-        
+
         {/* Animated circles */}
         <div className="absolute top-20 left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-20 right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -845,7 +1007,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
 
           <ScrollReveal delay={300}>
             <button
-              onClick={openWhatsAppProof}
+              onClick={openTrialModal}
               className="group relative px-20 py-10 bg-white text-black text-3xl font-bold rounded-full overflow-hidden transition-all duration-300 hover:scale-110 shadow-2xl hover:shadow-white/50 mb-8"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-black to-gray-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -870,7 +1032,7 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
 
       {/* Botón flotante de WhatsApp - Optimizado para móvil */}
       <button
-        onClick={openWhatsAppProof}
+        onClick={openTrialModal}
         className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 group"
         aria-label="Contactar por WhatsApp"
       >
@@ -888,7 +1050,10 @@ export function LandingConversion({ onNavigate }: LandingConversionProps) {
         </div>
       </button>
 
-      <FooterMain onNavigate={onNavigate} />
+      <FooterMain
+        onNavigate={onNavigate}
+        onOpenMatricula={onOpenMatricula}
+      />
     </div>
   );
 }

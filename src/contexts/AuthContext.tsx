@@ -1,11 +1,13 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { useLogto } from '@logto/react';
+
+// ============ INTERFACES ============
 
 interface FamiliaData {
   email: string;
   nombreFamilia: string;
   telefono: string;
   estudiante: string;
-  // NUEVOS CAMPOS
   dniFamilia: string;
   dniEstudiante: string;
   direccion: string;
@@ -16,7 +18,6 @@ interface Matricula {
   fechaInicio: string;
   fechaFin: string;
   estado: string;
-  // NUEVOS CAMPOS
   categoria: string;
   fechaInscripcion: string;
 }
@@ -34,7 +35,6 @@ interface PagoData {
 interface Pagos {
   proximoPago: PagoData;
   ultimoPago?: PagoData;
-  // NUEVOS CAMPOS
   precioPrograma: number;
   precioAPagar: number;
   descuento: number;
@@ -49,7 +49,6 @@ interface Notificacion {
   leido: boolean;
 }
 
-// NUEVA INTERFACE - Datos del estudiante
 interface EstudianteData {
   nombre: string;
   dni: string;
@@ -60,10 +59,21 @@ interface EstudianteData {
   tallaPolo: string;
 }
 
-// NUEVA INTERFACE - Mensaje/Comunicado
 interface MensajeData {
   fecha: string;
   contenido: string;
+}
+
+interface Asistencia {
+  fecha: string;
+  estado: 'asistio' | 'falta' | 'tardanza' | 'justificado';
+}
+
+interface Congelacion {
+  fechaInicio: string;
+  fechaFin: string;
+  estado: 'activo' | 'finalizado';
+  dias: number;
 }
 
 interface UserData {
@@ -72,306 +82,247 @@ interface UserData {
   clases: Clase[];
   pagos: Pagos;
   notificaciones: Notificacion[];
-  // NUEVOS CAMPOS
   estudiante: EstudianteData;
   mensaje: MensajeData;
-}
-
-interface AuthSession {
-  token: string;
-  expiresAt: string;
-  data: UserData;
+  asistencias: Asistencia[];
+  congelaciones: Congelacion[];
 }
 
 interface AuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean;
   user: UserData | null;
-  token: string | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; requirePasswordChange?: boolean; message?: string }>;
-  register: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  authId: string | null;
+  loadUserProfile: (authId: string, email?: string) => Promise<void>;
   logout: () => void;
   refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook';
+// API URL for profile fetching (n8n webhook)
+const PROFILE_API_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/perfil-usuario';
 
-// FUNCIÓN HELPER para transformar datos de Google Sheets
-function transformUserData(userData: any, email: string): UserData {
+// Transform database response to UserData format
+function transformDatabaseProfile(data: any): UserData {
+  // Handle the response from PostgreSQL view or query
   return {
     familia: {
-      email: userData.Correo || email,
-      nombreFamilia: userData['Nombre del padre'] || 'Familia',
-      telefono: userData['Teléfono'] || userData['Celular'] || 'No registrado',
-      estudiante: userData['Nombre del alumno'] || 'Estudiante',
-      // NUEVOS
-      dniFamilia: String(userData['DNI del padre'] || ''),
-      dniEstudiante: String(userData['DNI del alumno'] || ''),
-      direccion: userData['Dirección'] || '',
+      email: data.apoderado_correo || data.correo || '',
+      nombreFamilia: data.apoderado_nombre || data.nombre_padre || 'Familia',
+      telefono: data.apoderado_telefono || data.telefono || 'No registrado',
+      estudiante: data.alumno_nombre || data.nombre_alumno || 'Estudiante',
+      dniFamilia: String(data.apoderado_dni || data.dni_padre || ''),
+      dniEstudiante: String(data.alumno_dni || data.dni_alumno || ''),
+      direccion: data.direccion || '',
     },
     matricula: {
-      programa: userData.Programa || 'Programa',
-      fechaInicio: userData['Fecha inicio'] || '',
-      fechaFin: userData['Fecha final'] || '',
-      estado: 'activa',
-      // NUEVOS
-      categoria: userData['Categoría'] || '',
-      fechaInscripcion: userData['Fecha inscripción'] || '',
+      programa: data.programa || 'Sin programa activo',
+      fechaInicio: data.fecha_inicio || '',
+      fechaFin: data.fecha_fin || '',
+      estado: data.estado || 'activa',
+      categoria: data.categoria || '',
+      fechaInscripcion: data.fecha_inscripcion || '',
     },
-    clases: userData['Días tentativos']
-      ? [{ horario: userData['Días tentativos'] }]
+    clases: data.dias_tentativos
+      ? [{ horario: data.dias_tentativos }]
       : [],
     pagos: {
       proximoPago: {
-        fecha: userData['Próxima fecha de pago'] || userData['Fecha final'] || '',
-        monto: Number(userData['Precio a pagar']) || Number(userData['Precio del programa']) || 0,
+        fecha: data.fecha_fin || '',
+        monto: Number(data.precio_pagado) || 0,
         estado: 'pendiente',
       },
-      ultimoPago: userData['Último pago']
-        ? {
-            fecha: userData['Último pago'],
-            monto: Number(userData['Último monto pagado']) || 0,
-            estado: 'pagado',
-          }
-        : undefined,
-      // NUEVOS
-      precioPrograma: Number(userData['Precio del programa']) || 0,
-      precioAPagar: Number(userData['Precio a pagar']) || 0,
-      descuento: Number(userData['Descuento']) || 0,
-      estadoPago: userData['Estado'] || 'Pendiente',
+      ultimoPago: undefined,
+      precioPrograma: Number(data.precio_programa) || 0,
+      precioAPagar: Number(data.precio_pagado) || 0,
+      descuento: Number(data.descuento) || 0,
+      estadoPago: data.estado_pago || 'Pendiente',
     },
     notificaciones: [],
-    // NUEVOS - Datos del estudiante
     estudiante: {
-      nombre: userData['Nombre del alumno'] || '',
-      dni: String(userData['DNI del alumno'] || ''),
-      fechaNacimiento: userData['Fecha de nacimiento alumno'] || '',
-      edad: userData['Edad del alumno'] || '',
-      categoria: userData['Categoría'] || '',
-      tallaUniforme: userData['Talla uniforme'] || '',
-      tallaPolo: userData['Talla Polo'] || '',
+      nombre: data.alumno_nombre || '',
+      dni: String(data.alumno_dni || ''),
+      fechaNacimiento: data.fecha_nacimiento || '',
+      edad: calculateAge(data.fecha_nacimiento) || (data.edad ? String(data.edad) : ''),
+      categoria: data.categoria || '',
+      tallaUniforme: data.talla_uniforme || 'S',
+      tallaPolo: data.talla_polo || 'S',
     },
-    // NUEVOS - Mensaje/Comunicado
     mensaje: {
-      fecha: userData['Fecha'] || '',
-      contenido: userData['Mensaje'] || '',
+      fecha: data.mensaje_fecha || '',
+      contenido: data.mensaje_contenido || '',
     },
+    asistencias: Array.isArray(data.asistencias) ? data.asistencias : [],
+    congelaciones: Array.isArray(data.congelaciones) ? data.congelaciones : [],
   };
 }
 
+function calculateAge(birthDate: string): string {
+  if (!birthDate) return '';
+  const today = new Date();
+  const birth = new Date(birthDate);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age.toString();
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [authId, setAuthId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Verificar sesión al cargar
+  // Get Logto authentication state
+  const { isAuthenticated: logtoAuthenticated, getIdTokenClaims } = useLogto();
+
+  // Check for stored profile on mount
   useEffect(() => {
-    const sessionData = localStorage.getItem('amasUserSession');
-    if (sessionData) {
-      try {
-        const session: AuthSession = JSON.parse(sessionData);
-        const expiresAt = new Date(session.expiresAt);
-        const now = new Date();
+    const storedProfile = localStorage.getItem('amasUserProfile');
+    const storedAuthId = localStorage.getItem('amasAuthId');
 
-        if (expiresAt > now) {
-          // Sesión válida
-          setIsAuthenticated(true);
-          setUser(session.data);
-          setToken(session.token);
-        } else {
-          // Sesión expirada
-          localStorage.removeItem('amasUserSession');
-        }
+    if (storedProfile && storedAuthId) {
+      try {
+        const profile = JSON.parse(storedProfile);
+        // Ensure arrays exist (migration for old stored data)
+        if (!profile.asistencias) profile.asistencias = [];
+        if (!profile.congelaciones) profile.congelaciones = [];
+        setUser(profile);
+        setAuthId(storedAuthId);
       } catch (error) {
-        console.error('Error al cargar sesión:', error);
-        localStorage.removeItem('amasUserSession');
+        console.error('Error loading stored profile:', error);
+        localStorage.removeItem('amasUserProfile');
+        localStorage.removeItem('amasAuthId');
       }
     }
+
+    setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  // Load user profile from PostgreSQL via API
+  const loadUserProfile = useCallback(async (newAuthId: string, email?: string) => {
+    setIsLoading(true);
+
     try {
-      const response = await fetch(`${API_BASE_URL}/login-usuarios`, {
+      const response = await fetch(PROFILE_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          auth_id: newAuthId,
+          email: email
+        }),
       });
 
       if (!response.ok) {
-        return {
-          success: false,
-          message: 'Email o contraseña incorrectos',
-        };
+        throw new Error(`Error fetching profile: ${response.status}`);
       }
 
       const result = await response.json();
 
-      // Verificar si es un array (formato Google Sheets)
-      if (Array.isArray(result) && result.length > 0) {
-        const userData = result[0];
+      // Handle array response (from n8n/SQL)
+      const data = Array.isArray(result) && result.length > 0 ? result[0] : result;
 
-        // Verificar contraseña
-        if (!userData.Contraseña) {
-          return {
-            success: true,
-            requirePasswordChange: true,
-          };
+      if (data && (data.apoderado_nombre || data.alumno_nombre || data.nombre_padre)) {
+        const transformedUser = transformDatabaseProfile(data);
+
+        // Store in localStorage
+        localStorage.setItem('amasUserProfile', JSON.stringify(transformedUser));
+        localStorage.setItem('amasAuthId', newAuthId);
+
+        setUser(transformedUser);
+        setAuthId(newAuthId);
+
+        // Update auth_id in database if it was matched by email
+        if (data.auth_id !== newAuthId) {
+          // Send update to link the Logto auth_id to the apoderado
+          await fetch(PROFILE_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'link_auth_id',
+              auth_id: newAuthId,
+              email: email,
+              apoderado_id: data.apoderado_id || data.id
+            }),
+          }).catch(err => console.error('Error linking auth_id:', err));
         }
-
-        if (userData.Contraseña !== password) {
-          return {
-            success: false,
-            message: 'Contraseña incorrecta',
-          };
-        }
-
-        // Transformar datos de Google Sheets al formato de la app
-        const token = btoa(`${email}:${Date.now()}`);
-        const expiresAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
-
-        const transformedData = transformUserData(userData, email);
-
-        const session: AuthSession = {
-          token,
-          expiresAt,
-          data: transformedData,
-        };
-
-        localStorage.setItem('amasUserSession', JSON.stringify(session));
-        setIsAuthenticated(true);
-        setUser(transformedData);
-        setToken(token);
-
-        return { success: true };
-      }
-
-      // Formato estándar (si n8n lo envía estructurado)
-      if (result.success) {
-        // Verificar si requiere cambio de contraseña (primera vez)
-        if (result.requirePasswordChange) {
-          return {
-            success: true,
-            requirePasswordChange: true,
-          };
-        }
-
-        // Login exitoso
-        const session: AuthSession = {
-          token: result.token,
-          expiresAt: result.expiresAt,
-          data: result.data,
-        };
-
-        localStorage.setItem('amasUserSession', JSON.stringify(session));
-        setIsAuthenticated(true);
-        setUser(result.data);
-        setToken(result.token);
-
-        return { success: true };
       } else {
-        return {
-          success: false,
-          message: result.message || 'Error al iniciar sesión',
-        };
+        console.warn('No profile found for user');
+        // Create minimal user data
+        setUser({
+          familia: {
+            email: email || '',
+            nombreFamilia: 'Usuario',
+            telefono: '',
+            estudiante: '',
+            dniFamilia: '',
+            dniEstudiante: '',
+            direccion: '',
+          },
+          matricula: { programa: '', fechaInicio: '', fechaFin: '', estado: '', categoria: '', fechaInscripcion: '' },
+          clases: [],
+          pagos: { proximoPago: { fecha: '', monto: 0, estado: '' }, precioPrograma: 0, precioAPagar: 0, descuento: 0, estadoPago: '' },
+          notificaciones: [],
+          estudiante: { nombre: '', dni: '', fechaNacimiento: '', edad: '', categoria: '', tallaUniforme: '', tallaPolo: '' },
+          mensaje: { fecha: '', contenido: '' },
+          asistencias: [],
+          congelaciones: [],
+        });
+        setAuthId(newAuthId);
       }
     } catch (error) {
-      console.error('Error en login:', error);
-      return {
-        success: false,
-        message: 'Error de conexión. Por favor, intenta nuevamente.',
-      };
+      console.error('Error loading user profile:', error);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const register = async (email: string, password: string) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/registro-usuario`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        return { success: true, message: 'Contraseña establecida correctamente' };
-      } else {
-        return {
-          success: false,
-          message: result.message || 'Error al establecer contraseña',
-        };
-      }
-    } catch (error) {
-      console.error('Error en registro:', error);
-      return {
-        success: false,
-        message: 'Error de conexión. Por favor, intenta nuevamente.',
-      };
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('amasUserSession');
-    setIsAuthenticated(false);
+  const logout = useCallback(() => {
+    localStorage.removeItem('amasUserProfile');
+    localStorage.removeItem('amasAuthId');
     setUser(null);
-    setToken(null);
-  };
+    setAuthId(null);
+  }, []);
 
-  const refreshUserData = async () => {
-    if (!token) return;
-
-    try {
-      // Extraer email del token para hacer el refresh
-      const sessionData = localStorage.getItem('amasUserSession');
-      if (!sessionData) return;
-
-      const session: AuthSession = JSON.parse(sessionData);
-      const email = session.data.familia.email;
-
-      const response = await fetch(`${API_BASE_URL}/refresh-usuarios`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) return;
-
-      const result = await response.json();
-
-      // Verificar si es un array (formato Google Sheets)
-      if (Array.isArray(result) && result.length > 0) {
-        const userData = result[0];
-        const transformedData = transformUserData(userData, email);
-
-        session.data = transformedData;
-        localStorage.setItem('amasUserSession', JSON.stringify(session));
-        setUser(transformedData);
-      } else if (result.success) {
-        // Formato estándar
-        session.data = result.data;
-        localStorage.setItem('amasUserSession', JSON.stringify(session));
-        setUser(result.data);
-      }
-    } catch (error) {
-      console.error('Error al refrescar datos:', error);
+  const refreshUserData = useCallback(async () => {
+    if (authId && user?.familia?.email) {
+      await loadUserProfile(authId, user.familia.email);
     }
-  };
+  }, [authId, user, loadUserProfile]);
+
+  // Sync with Logto auth state - only on mount
+  useEffect(() => {
+    const syncWithLogto = async () => {
+      if (logtoAuthenticated && !authId && !user) {
+        try {
+          const claims = await getIdTokenClaims();
+          if (claims?.sub) {
+            await loadUserProfile(claims.sub, claims.email as string);
+          }
+        } catch (error) {
+          console.error('Error syncing with Logto:', error);
+        }
+      }
+    };
+
+    syncWithLogto();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [logtoAuthenticated]); // Only run when auth state changes
+
+  const isAuthenticated = logtoAuthenticated && user !== null;
 
   return (
     <AuthContext.Provider
       value={{
         isAuthenticated,
+        isLoading,
         user,
-        token,
-        login,
-        register,
+        authId,
+        loadUserProfile,
         logout,
         refreshUserData,
       }}
