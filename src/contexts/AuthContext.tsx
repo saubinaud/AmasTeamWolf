@@ -103,6 +103,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // API URL for profile fetching (n8n webhook)
 const PROFILE_API_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/perfil-usuario';
 
+// Session timeout in milliseconds (12 hours)
+const SESSION_TIMEOUT_MS = 12 * 60 * 60 * 1000;
+
 // Transform database response to UserData format
 function transformDatabaseProfile(data: any): UserData {
   // Handle the response from PostgreSQL view or query
@@ -178,10 +181,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Get Logto authentication state
   const { isAuthenticated: logtoAuthenticated, getIdTokenClaims } = useLogto();
 
-  // Check for stored profile on mount
+  // Check for stored profile and session expiry on mount
   useEffect(() => {
     const storedProfile = localStorage.getItem('amasUserProfile');
     const storedAuthId = localStorage.getItem('amasAuthId');
+    const sessionTimestamp = localStorage.getItem('amasSessionTimestamp');
+
+    // Check if session has expired (12 hours)
+    if (sessionTimestamp) {
+      const sessionAge = Date.now() - parseInt(sessionTimestamp, 10);
+      if (sessionAge > SESSION_TIMEOUT_MS) {
+        console.log('Session expired, clearing stored data');
+        localStorage.removeItem('amasUserProfile');
+        localStorage.removeItem('amasAuthId');
+        localStorage.removeItem('amasSessionTimestamp');
+        setIsLoading(false);
+        return;
+      }
+    }
 
     if (storedProfile && storedAuthId) {
       try {
@@ -195,6 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Error loading stored profile:', error);
         localStorage.removeItem('amasUserProfile');
         localStorage.removeItem('amasAuthId');
+        localStorage.removeItem('amasSessionTimestamp');
       }
     }
 
@@ -229,9 +247,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data && (data.apoderado_nombre || data.alumno_nombre || data.nombre_padre)) {
         const transformedUser = transformDatabaseProfile(data);
 
-        // Store in localStorage
+        // Store in localStorage with session timestamp
         localStorage.setItem('amasUserProfile', JSON.stringify(transformedUser));
         localStorage.setItem('amasAuthId', newAuthId);
+        localStorage.setItem('amasSessionTimestamp', Date.now().toString());
 
         setUser(transformedUser);
         setAuthId(newAuthId);
@@ -284,6 +303,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem('amasUserProfile');
     localStorage.removeItem('amasAuthId');
+    localStorage.removeItem('amasSessionTimestamp');
     setUser(null);
     setAuthId(null);
   }, []);

@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { useLogto } from '@logto/react';
-import { Loader2, Lock, ArrowLeft, LogOut } from 'lucide-react';
+import { Loader2, Lock, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface InicioSesionPageProps {
@@ -7,12 +8,19 @@ interface InicioSesionPageProps {
 }
 
 export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
-  const { signIn, signOut, isAuthenticated, isLoading } = useLogto();
+  const { signIn, isAuthenticated, isLoading } = useLogto();
 
   // Determine callback URL based on environment
   const callbackUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:5173/callback'
     : 'https://amasteamwolf.com/callback';
+
+  // Auto-redirect to profile if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      onNavigate('perfil');
+    }
+  }, [isAuthenticated, isLoading, onNavigate]);
 
   const handleSignIn = async () => {
     try {
@@ -22,19 +30,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      // Clear local storage
-      localStorage.removeItem('amasUserSession');
-      localStorage.removeItem('amasUserProfile');
-
-      // Sign out from Logto
-      await signOut('https://amasteamwolf.com');
-    } catch (error) {
-      console.error('Error during sign-out:', error);
-    }
-  };
-
+  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950">
@@ -46,6 +42,19 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     );
   }
 
+  // If authenticated, show redirecting (will auto-redirect via useEffect)
+  if (isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-[#FA7B21] animate-spin mx-auto mb-4" />
+          <p className="text-white text-lg">Redirigiendo a tu perfil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated - show login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
       {/* Background decorative elements */}
@@ -63,52 +72,26 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
               <span className="text-4xl">🐺</span>
             </div>
             <h2 className="text-2xl font-bold text-white">
-              {isAuthenticated ? '¡Bienvenido de vuelta!' : 'Iniciar Sesión'}
+              Iniciar Sesión
             </h2>
             <p className="mt-2 text-white/60 text-sm">
-              {isAuthenticated
-                ? 'Ya has iniciado sesión en tu cuenta'
-                : 'Acceso exclusivo para miembros de AMAS Team Wolf'}
+              Acceso exclusivo para miembros de AMAS Team Wolf
             </p>
           </div>
 
-          {/* Content */}
+          {/* Sign In Button */}
           <div className="space-y-4">
-            {isAuthenticated ? (
-              <>
-                {/* Authenticated State */}
-                <Button
-                  onClick={() => onNavigate('perfil')}
-                  className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30"
-                >
-                  Ir a mi Perfil
-                </Button>
+            <Button
+              onClick={handleSignIn}
+              className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02]"
+            >
+              <Lock className="w-5 h-5 mr-2" />
+              Entrar con mi cuenta
+            </Button>
 
-                <Button
-                  onClick={handleSignOut}
-                  variant="outline"
-                  className="w-full border-white/20 text-white hover:bg-white/10 py-6"
-                >
-                  <LogOut className="w-5 h-5 mr-2" />
-                  Cerrar Sesión
-                </Button>
-              </>
-            ) : (
-              <>
-                {/* Sign In Button */}
-                <Button
-                  onClick={handleSignIn}
-                  className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02]"
-                >
-                  <Lock className="w-5 h-5 mr-2" />
-                  Entrar con mi cuenta
-                </Button>
-
-                <p className="text-center text-white/50 text-xs">
-                  Al iniciar sesión, serás redirigido a nuestra página de autenticación segura
-                </p>
-              </>
-            )}
+            <p className="text-center text-white/50 text-xs">
+              Al iniciar sesión, serás redirigido a nuestra página de autenticación segura
+            </p>
           </div>
 
           {/* Back to home */}

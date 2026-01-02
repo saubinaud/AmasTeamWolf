@@ -39,6 +39,7 @@ import { es } from 'date-fns/locale';
 import { cn } from './ui/utils';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
 import { PerfilDesktop } from './PerfilDesktop';
+import { AccountLinkingStep } from './AccountLinkingStep';
 
 interface PerfilPageProps {
   onNavigate: (page: string) => void;
@@ -195,16 +196,16 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     return Math.min(Math.max(((now - start) / (end - start)) * 100, 0), 100);
   }, [user?.matricula?.fechaInicio, user?.matricula?.fechaFin]);
 
-  // Loading
-  if (!user) {
+  // Check if user has linked profile data
+  const hasLinkedProfile = user && user.estudiante && user.estudiante.nombre;
+
+  // If authenticated but no linked profile, show linking step
+  if (!hasLinkedProfile) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-8 h-8 border-2 border-[#FA7B21] border-t-transparent rounded-full"
-        />
-      </div>
+      <AccountLinkingStep
+        onComplete={() => window.location.reload()}
+        onLogout={handleLogout}
+      />
     );
   }
 
