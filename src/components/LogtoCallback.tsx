@@ -7,10 +7,8 @@ interface LogtoCallbackProps {
     onLoadProfile: (authId: string, email?: string) => Promise<void>;
 }
 
-const PROFILE_CHECK_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/perfil-usuario';
-
 export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps) {
-    const [status, setStatus] = useState<'loading' | 'checking' | 'success' | 'error'>('loading');
+    const [status, setStatus] = useState<'loading' | 'processing' | 'success' | 'error'>('loading');
     const [errorMessage, setErrorMessage] = useState<string>('');
     const hasProcessed = useRef(false);
 
@@ -29,7 +27,7 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
             hasProcessed.current = true;
 
             try {
-                setStatus('checking');
+                setStatus('processing');
 
                 const claims = await getIdTokenClaims();
                 if (!claims) {
@@ -41,65 +39,20 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
                 const authId = claims.sub;
                 const email = claims.email as string | undefined;
 
-                console.log('=== CALLBACK DEBUG ===');
-                console.log('Logto user authenticated:', { authId, email });
+                console.log('Authenticated user:', { authId, email });
 
-                // Check if user already has a linked profile
-                console.log('Sending profile check to:', PROFILE_CHECK_URL);
-
-                const response = await fetch(PROFILE_CHECK_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ auth_id: authId, email }),
-                });
-
-                console.log('Response status:', response.status, response.ok);
-
-                if (response.ok) {
-                    const result = await response.json();
-                    console.log('Profile check result:', JSON.stringify(result, null, 2));
-
-                    // Handle different response formats
-                    const data = Array.isArray(result) && result.length > 0 ? result[0] : result;
-                    console.log('Extracted data keys:', data ? Object.keys(data) : 'null');
-
-                    // Check multiple possible fields that indicate a valid profile
-                    const checks = {
-                        hasAuthIdMatch: data?.auth_id === authId,
-                        hasApoderadoId: !!data?.apoderado_id,
-                        hasAlumnoId: !!data?.alumno_id,
-                        hasEstudianteNombre: !!data?.estudiante?.nombre,
-                        hasFamiliaNombre: !!(data?.familia?.nombreFamilia),
-                        hasAlumnoNombre: !!data?.alumno_nombre,
-                        hasApoderadoNombre: !!data?.apoderado_nombre,
-                        // Check for any data at all (webhook returned something)
-                        hasAnyData: data && typeof data === 'object' && Object.keys(data).length > 0,
-                    };
-                    console.log('Profile checks:', checks);
-
-                    const hasValidProfile = checks.hasAnyData || checks.hasAuthIdMatch || checks.hasApoderadoId ||
-                        checks.hasAlumnoId || checks.hasEstudianteNombre ||
-                        checks.hasFamiliaNombre || checks.hasAlumnoNombre ||
-                        checks.hasApoderadoNombre;
-
-                    console.log('Has valid profile:', hasValidProfile);
-
-                    if (hasValidProfile) {
-                        console.log('✅ Valid profile found! Loading and navigating to perfil');
-                        setStatus('success');
-                        await onLoadProfile(authId, email);
-                        onNavigate('perfil');
-                        return;
-                    } else {
-                        console.log('❌ No valid profile fields found in response');
-                    }
-                } else {
-                    console.log('❌ Response not OK:', response.status);
+                // Try to load the profile - this will work if account is linked
+                // If not linked, PerfilPage will handle the linking flow
+                try {
+                    await onLoadProfile(authId, email);
+                } catch (profileError) {
+                    console.log('Profile load error (expected for new accounts):', profileError);
                 }
 
-                // No valid profile - redirect to link account
-                console.log('Redirecting to vincular-cuenta');
-                onNavigate('vincular-cuenta');
+                // Always redirect to perfil - the page will handle unlinked accounts
+                setStatus('success');
+                console.log('Redirecting to perfil');
+                onNavigate('perfil');
 
             } catch (err) {
                 console.error('Error in callback:', err);
@@ -145,8 +98,8 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
 
     const statusMessages = {
         loading: 'Iniciando sesión...',
-        checking: 'Verificando tu perfil...',
-        success: '¡Listo! Redirigiendo a tu perfil...',
+        processing: 'Preparando tu perfil...',
+        success: '¡Listo! Redirigiendo...',
         error: 'Error de conexión',
     };
 
@@ -155,10 +108,6 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
             <div className="text-center">
                 <Loader2 className="w-12 h-12 text-[#FA7B21] animate-spin mx-auto mb-4" />
                 <p className="text-white text-lg">{statusMessages[status]}</p>
-                <p className="text-white/60 text-sm mt-2">
-                    {status === 'checking' && 'Buscando tu perfil de alumno...'}
-                    {status === 'success' && 'Cargando información...'}
-                </p>
             </div>
         </div>
     );
