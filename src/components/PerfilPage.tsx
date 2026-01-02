@@ -41,6 +41,30 @@ import { motion, AnimatePresence, useMotionValue, useTransform, animate } from '
 import { PerfilDesktop } from './PerfilDesktop';
 import { AccountLinkingStep } from './AccountLinkingStep';
 import { HeaderMain } from './HeaderMain';
+import { DayPicker, DateRange } from 'react-day-picker';
+import { eachDayOfInterval, getDay } from 'date-fns';
+
+// Helper functions for Freeze Logic
+function esFeriado(fecha: Date): boolean {
+  const feriados = [
+    "2025-01-01", "2025-04-17", "2025-04-18", "2025-05-01", "2025-06-29",
+    "2025-07-28", "2025-07-29", "2025-08-06", "2025-08-30", "2025-10-08",
+    "2025-11-01", "2025-12-08", "2025-12-25",
+    "2026-01-01", "2026-04-02", "2026-04-03" // Semana Santa 2026 estimada
+  ];
+  return feriados.includes(format(fecha, 'yyyy-MM-dd'));
+}
+
+function esCierreVacacionalAMAS(fecha: Date): boolean {
+  const mes = fecha.getMonth() + 1; // 1-12
+  const dia = fecha.getDate();
+  // Del 20 de Dic al 4 de Enero
+  return (mes === 12 && dia >= 20) || (mes === 1 && dia <= 4);
+}
+
+function isDiaHabil(fecha: Date): boolean {
+  return getDay(fecha) !== 0 && !esFeriado(fecha) && !esCierreVacacionalAMAS(fecha);
+}
 
 interface PerfilPageProps {
   onNavigate: (page: string) => void;
@@ -69,11 +93,59 @@ function useIsMobile() {
   return isMobile;
 }
 
+// Custom Date Parser for "DD MMMM" (Spanish)
+const parseSpanishDate = (dateStr: string): Date | null => {
+  const months: { [key: string]: number } = {
+    enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+    julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+  };
+
+  try {
+    const parts = dateStr.trim().toLowerCase().split(' ');
+    if (parts.length < 2) return null;
+
+    const day = parseInt(parts[0]);
+    const monthStr = parts[1];
+    const month = months[monthStr];
+
+    if (isNaN(day) || month === undefined) return null;
+
+    const now = new Date();
+    let year = now.getFullYear();
+
+    // Construct date
+    let date = new Date(year, month, day);
+
+    // Heuristic: If date is very old (e.g. today is May, date is January), assume next year.
+    if (date.getTime() < now.getTime() - 30 * 24 * 60 * 60 * 1000) {
+      date.setFullYear(year + 1);
+    }
+    return date;
+  } catch (e) {
+    console.error("Error parsing date:", dateStr, e);
+    return null;
+  }
+};
+
+const BeltDisplay = ({ color, name }: { color: string, name: string }) => (
+  <div className="flex flex-col items-center gap-2">
+    <div className="relative w-40 h-16 flex items-center justify-center filter drop-shadow-lg">
+      <svg viewBox="0 0 200 80" className="w-full h-full">
+        <path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z" fill={color} className="drop-shadow-sm" />
+        <path d="M85,15 L115,15 L125,65 L75,65 Z" fill={color} filter="brightness(0.9)" />
+        <path d="M85,40 L60,95 L80,95 L95,60 Z" fill={color} filter="brightness(0.8)" />
+        <path d="M115,40 L140,95 L120,95 L105,60 Z" fill={color} filter="brightness(0.8)" />
+      </svg>
+    </div>
+    <span className="text-xs font-medium text-white/80 uppercase tracking-widest">{name}</span>
+  </div>
+);
+
 export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const { user, logout, refreshUserData, isAuthenticated } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [activeSection, setActiveSection] = useState<'home' | 'calendar' | 'plan' | 'messages'>('home');
+  const [activeSection, setActiveSection] = useState<'home' | 'calendar' | 'plan' | 'messages' | 'graduacion'>('home');
   const isMobile = useIsMobile();
 
   // Calendar
@@ -81,10 +153,87 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const calendarContainerRef = useRef<HTMLDivElement>(null);
 
   // Freeze
-  const [freezeDate, setFreezeDate] = useState<Date | undefined>(undefined);
-  const [freezeDays, setFreezeDays] = useState(7);
+  // Freeze
+  const [freezeRange, setFreezeRange] = useState<DateRange | undefined>(undefined);
   const [isFreezing, setIsFreezing] = useState(false);
   const [isFreezeDialogOpen, setIsFreezeDialogOpen] = useState(false);
+
+  // Graduation
+  const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
+  const [graduationError, setGraduationError] = useState<string | null>(null);
+  const [userGraduation, setUserGraduation] = useState<any>(null);
+
+  // Fetch Graduation
+  useEffect(() => {
+    if (activeSection === 'graduacion') {
+      setGraduationError(null);
+      fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/graduaci%C3%B3n')
+        .then(res => res.json())
+        .then(data => {
+          console.log('Mobile Graduation Data:', data);
+          let dates: Date[] = [];
+          const items = Array.isArray(data) ? data : (data.records || [data]);
+
+          let foundUserItem = null;
+          const normalize = (s: string) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "";
+          const userFullName = normalize(user.estudiante?.nombre || "");
+
+          // Find user and collect dates
+          items.forEach((item: any) => {
+            // Check for user match
+            if (item.NOMBRE || item.APELLIDO) {
+              const n = normalize(item.NOMBRE || "");
+              const a = normalize(item.APELLIDO || "");
+
+              // Robust Match: Check if user's full name contains the webhook name parts
+              // or vice versa (handling cases where webhook has "Dariel Mathias" and user is "Dariel Mathias Valdez")
+              const nameMatch = n && userFullName.includes(n);
+              const surMatch = a && userFullName.includes(a);
+
+              // If we match at least one significant part (and maybe verify length to avoid short match?)
+              // Assuming unique enough names.
+              if (nameMatch || surMatch) {
+                foundUserItem = item;
+              }
+            }
+
+            // Parse Date
+            let d = item?.date || item?.fecha || item?.graduationDate || item?.start;
+            if (item?.FECHA) {
+              const parsed = parseSpanishDate(item.FECHA);
+              if (parsed) dates.push(parsed);
+              if (foundUserItem === item && parsed) {
+                foundUserItem.parsedDate = parsed;
+              }
+            } else if (d) {
+              const parsed = new Date(d);
+              dates.push(parsed);
+              if (foundUserItem === item) foundUserItem.parsedDate = parsed;
+            }
+          });
+
+          if (foundUserItem) {
+            setUserGraduation(foundUserItem);
+            if (foundUserItem.parsedDate) {
+              setGraduacionDate(foundUserItem.parsedDate.toISOString());
+            }
+          } else {
+            setUserGraduation(null);
+            // General next date logic
+            dates = dates.filter(d => !isNaN(d.getTime())).sort((a, b) => a.getTime() - b.getTime());
+            const now = new Date();
+            const nextDate = dates.find(d => d >= now) || dates[dates.length - 1];
+            if (nextDate) {
+              setGraduacionDate(nextDate.toISOString());
+            }
+          }
+        })
+        .catch(err => {
+          console.error('Error fetching graduation:', err);
+          setGraduationError('Error cargando fecha');
+        });
+    }
+  }, [activeSection, user.estudiante?.nombre]);
 
   // Touch handling for calendar swipe
   const touchStartX = useRef(0);
@@ -160,8 +309,8 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const puedeCongelar = maxDiasCongelar > 0;
 
   const handleFreezeConfirm = async () => {
-    if (!freezeDate) {
-      toast.error('Selecciona una fecha');
+    if (!freezeRange?.from || !freezeRange?.to) {
+      toast.error('Selecciona un rango de fechas');
       return;
     }
     setIsFreezing(true);
@@ -171,6 +320,12 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
       toast.success('Congelamiento solicitado');
     }, 1500);
   };
+
+  const effectiveFreezeDays = useMemo(() => {
+    if (!freezeRange?.from || !freezeRange?.to) return 0;
+    return eachDayOfInterval({ start: freezeRange.from, end: freezeRange.to })
+      .filter(d => isDiaHabil(d)).length;
+  }, [freezeRange]);
 
   // Calendar days - more on desktop, fewer on mobile
   const calendarDays = useMemo(() => {
@@ -668,44 +823,83 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       Solicitar Congelamiento
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="bg-zinc-900 border-white/10 text-white sm:max-w-sm rounded-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Congelar Plan</DialogTitle>
-                      <DialogDescription className="text-zinc-400">
-                        Máximo {maxDiasCongelar} días.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                      <div>
-                        <label className="text-xs text-zinc-500 mb-2 block">Fecha de inicio</label>
-                        <input
-                          type="date"
-                          className="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#FA7B21]/50"
-                          min={new Date().toISOString().split('T')[0]}
-                          onChange={(e) => setFreezeDate(new Date(e.target.value))}
-                        />
+                  <DialogContent className="bg-[#09090b] border-white/10 text-white sm:max-w-md w-[95%] rounded-3xl p-0 overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="flex-1 overflow-y-auto">
+                      {/* Calendar Section */}
+                      <div className="p-6 bg-black/20 border-b border-white/5">
+                        <div className="mb-4">
+                          <DialogTitle className="text-white flex items-center gap-2 mb-2">
+                            <Snowflake className="w-5 h-5 text-cyan-400" />
+                            Selecciona las fechas
+                          </DialogTitle>
+                          <DialogDescription className="text-white/60 text-xs">
+                            Elige inicio y fin. Tienes <span className="text-cyan-300 font-medium">{maxDiasCongelar} días</span>.
+                          </DialogDescription>
+                        </div>
+                        <div className="flex justify-center bg-zinc-900 rounded-2xl p-2 border border-white/5">
+                          <style>{`
+                                        .rdp { --rdp-accent-color: #FA7B21; --rdp-background-color: rgba(250, 123, 33, 0.2); margin: 0; }
+                                        .rdp-day_selected:not([disabled]) { font-weight: bold; border: 2px solid #FA7B21; }
+                                        .rdp-day_selected:hover:not([disabled]) { border-color: #FA7B21; color: white; }
+                                        .rdp-day { color: #e4e4e7; font-size: 0.85rem; width: 36px; height: 36px; }
+                                        .rdp-caption_label { font-size: 0.9rem; }
+                                        .rdp-head_cell { font-size: 0.75rem; }
+                                    `}</style>
+                          <DayPicker
+                            mode="range"
+                            selected={freezeRange}
+                            onSelect={setFreezeRange}
+                            disabled={{ before: new Date() }}
+                            numberOfMonths={1}
+                            locale={es}
+                            className="text-white"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-xs text-zinc-500 mb-2 block">Días a congelar</label>
-                        <input
-                          type="number"
-                          value={freezeDays}
-                          onChange={(e) => setFreezeDays(Math.min(maxDiasCongelar, Math.max(1, parseInt(e.target.value) || 1)))}
-                          className="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-[#FA7B21]/50"
-                          min={1}
-                          max={maxDiasCongelar}
-                        />
+
+                      {/* Summary Section (Stacked) */}
+                      <div className="p-6 bg-zinc-900/80">
+                        {/* Days Balance */}
+                        <div className="bg-gradient-to-b from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-2xl p-4 mb-6">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-cyan-200/70 text-xs font-medium">Disponible</span>
+                            <Badge variant="outline" className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 px-2 py-0 text-[10px]">
+                              {maxDiasCongelar} días
+                            </Badge>
+                          </div>
+                          <div className="flex items-end justify-between">
+                            <span className="text-white/60 text-xs">A consumir</span>
+                            <div>
+                              <span className={cn(
+                                "text-2xl font-bold",
+                                effectiveFreezeDays > maxDiasCongelar ? "text-red-400" : "text-white"
+                              )}>
+                                {effectiveFreezeDays}
+                              </span>
+                              <span className="text-xs text-white/40 ml-1">días</span>
+                            </div>
+                          </div>
+                          {effectiveFreezeDays > maxDiasCongelar && (
+                            <div className="mt-3 flex items-center gap-2 text-red-300 text-[10px] bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                              <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                              Excedes el límite
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Confirm Button */}
+                        <Button
+                          onClick={handleFreezeConfirm}
+                          disabled={!freezeRange?.from || !freezeRange?.to || isFreezing || effectiveFreezeDays > maxDiasCongelar}
+                          className="w-full h-12 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-cyan-900/20 disabled:opacity-50 disabled:shadow-none transition-all"
+                        >
+                          {isFreezing ? (
+                            <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                          ) : null}
+                          {isFreezing ? 'Procesando...' : 'Confirmar'}
+                        </Button>
                       </div>
                     </div>
-                    <DialogFooter>
-                      <Button
-                        onClick={handleFreezeConfirm}
-                        disabled={!freezeDate || isFreezing}
-                        className="w-full bg-[#FA7B21] hover:bg-[#F36A15] h-12 rounded-xl"
-                      >
-                        {isFreezing ? 'Procesando...' : 'Confirmar'}
-                      </Button>
-                    </DialogFooter>
                   </DialogContent>
                 </Dialog>
               </motion.div>
@@ -723,6 +917,131 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           </motion.div>
         );
 
+      case 'graduacion':
+        return (
+          <motion.div
+            key="graduacion"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+              {userGraduation ? (
+                <>
+                  {(() => {
+                    const d = graduacionDate ? new Date(graduacionDate) : new Date();
+                    const now = new Date();
+                    d.setHours(0, 0, 0, 0);
+                    now.setHours(0, 0, 0, 0);
+                    const isPast = d.getTime() < now.getTime();
+                    const isToday = d.getTime() === now.getTime();
+
+                    return (
+                      <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                        <Award className={cn("w-5 h-5", isPast ? "text-zinc-400" : "text-[#FCA929]")} />
+                        {isPast ? "Última Graduación" : isToday ? "¡Día de la Graduación!" : "Próxima Graduación"}
+                      </h3>
+                    );
+                  })()}
+
+                  <div className="text-center py-4">
+                    {/* Celebration Effect Background */}
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FA7B21]/20 to-orange-600/10 flex items-center justify-center mx-auto mb-4 border border-[#FA7B21]/30 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-[#FA7B21]/5 animate-pulse rounded-full" />
+                      <Calendar className="w-10 h-10 text-[#FA7B21] relative z-10" />
+                    </div>
+
+                    <div className="space-y-1 mb-6">
+                      <p className="text-white/60 uppercase tracking-widest text-[10px]">Fecha Confirmada</p>
+                      <p className="text-3xl font-bold text-white">
+                        {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : '-'}
+                      </p>
+                      <p className="text-[#FCA929] font-medium capitalize">
+                        {graduacionDate ? format(new Date(graduacionDate), "EEEE", { locale: es }) : ''}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mt-6">
+                      <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                        <p className="text-zinc-500 text-[10px] uppercase mb-1">Horario</p>
+                        <div className="flex items-center justify-center gap-1.5 text-white font-semibold">
+                          <Clock className="w-3.5 h-3.5 text-[#FCA929]" />
+                          {userGraduation.HORARIO || '-'}
+                        </div>
+                      </div>
+                      <div className="bg-white/5 rounded-xl p-3 border border-white/5">
+                        <p className="text-zinc-500 text-[10px] uppercase mb-1">Turno</p>
+                        <div className="text-white font-semibold flex items-center justify-center gap-1.5 text-center leading-tight text-xs">
+                          <Zap className="w-3.5 h-3.5 text-[#FCA929] flex-shrink-0" />
+                          {userGraduation.TURNO || '-'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {userGraduation.RANGO && (
+                      <div className="mt-4 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-xl p-3 flex items-center justify-center gap-2">
+                        <Award className="w-4 h-4 text-[#FA7B21]" />
+                        <p className="text-[#FA7B21] text-xs font-medium">
+                          {userGraduation.RANGO}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-zinc-400" />
+                    Próxima Graduación
+                  </h3>
+
+                  {graduacionDate ? (
+                    <div className="text-center py-8">
+                      <div className="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-4 border border-white/5">
+                        <Calendar className="w-10 h-10 text-zinc-600" />
+                      </div>
+                      <p className="text-white/60 uppercase tracking-widest text-sm mb-2">Próxima Fecha General</p>
+                      <p className="text-3xl font-bold text-zinc-300 mb-2">
+                        {format(new Date(graduacionDate), "d 'de' MMMM", { locale: es })}
+                      </p>
+                      <div className="inline-block px-4 py-1.5 rounded-full bg-zinc-800 text-zinc-500 text-xs mt-4 border border-white/5">
+                        No se encontró tu inscripción
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-white/40">
+                        {graduationError ? "No pudimos cargar la fecha" : "Buscando próxima fecha..."}
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[#FCA929]" />
+                Mi Progreso
+              </h3>
+              <div className="flex justify-between items-end gap-4 py-8 relative">
+                {/* Connecting Line */}
+                <div className="absolute top-1/2 left-20 right-20 h-0.5 bg-gradient-to-r from-white/20 to-white/5 -z-10" />
+
+                <BeltDisplay color="#FFFFFF" name="Actual" />
+
+                <div className="flex flex-col items-center gap-2 opacity-50">
+                  <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                    <div className="w-1 h-1 rounded-full bg-white/50" />
+                  </div>
+                </div>
+
+                <BeltDisplay color="#FFFF00" name="Siguiente" />
+              </div>
+            </div>
+          </motion.div>
+        );
       case 'messages':
         return (
           <motion.div
@@ -824,6 +1143,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           "relative z-10 mx-auto pb-28",
           isMobile ? "max-w-md px-5" : "max-w-2xl px-8"
         )}
+        style={{ paddingTop: isMobile ? '65px' : '100px' }}
       >
         {/* Expiration Banner */}
         <AnimatePresence>
@@ -911,6 +1231,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 { id: 'home', icon: Home, label: 'Inicio' },
                 { id: 'calendar', icon: Calendar, label: 'Asistencias' },
                 { id: 'plan', icon: CreditCard, label: 'Plan' },
+                { id: 'graduacion', icon: Award, label: 'Graduación' },
                 { id: 'messages', icon: MessageCircle, label: 'Mensajes' },
               ].map(item => (
                 <motion.button
