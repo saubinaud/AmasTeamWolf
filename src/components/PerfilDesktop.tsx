@@ -105,18 +105,18 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
     };
     const maxDiasCongelar = getMaxFreezeDays();
 
-    // Calendar with full week grid
+    // Calendar with 6-day week grid (Mon-Sat only)
     const calendarGrid = useMemo(() => {
         const monthStart = startOfMonth(calendarMonth);
-        const monthEnd = endOfMonth(calendarMonth);
         const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Monday
-        const days = [];
-        let currentDay = startDate;
+        const days: Date[] = [];
 
-        // Generate 6 weeks (42 days) to ensure full grid
-        for (let i = 0; i < 42; i++) {
-            days.push(currentDay);
-            currentDay = addDays(currentDay, 1);
+        // Generate 6 weeks worth of Mon-Sat days (36 days total)
+        for (let week = 0; week < 6; week++) {
+            for (let dayOfWeek = 0; dayOfWeek < 6; dayOfWeek++) { // Mon-Sat only (0-5)
+                const currentDay = addDays(startDate, (week * 7) + dayOfWeek);
+                days.push(currentDay);
+            }
         }
         return days;
     }, [calendarMonth]);
@@ -495,63 +495,58 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                     {/* Calendar Grid - Full Month, Monday to Saturday */}
                                     <div className="grid grid-cols-6 gap-3">
-                                        {calendarGrid
-                                            .filter(day => {
-                                                const dayOfWeek = day.getDay();
-                                                return dayOfWeek >= 1 && dayOfWeek <= 6; // Mon-Sat only
-                                            })
-                                            .map((day, idx) => {
-                                                const attendance = getAttendance(day);
-                                                const inCurrentMonth = isCurrentMonth(day);
-                                                const today = isToday(day);
+                                        {calendarGrid.map((day, idx) => {
+                                            const attendance = getAttendance(day);
+                                            const inCurrentMonth = isCurrentMonth(day);
+                                            const today = isToday(day);
 
-                                                return (
-                                                    <motion.div
-                                                        key={idx}
-                                                        whileHover={{ scale: 1.02 }}
-                                                        className={cn(
-                                                            "min-h-[80px] rounded-xl p-3 flex flex-col transition-all cursor-pointer relative",
-                                                            !inCurrentMonth && "opacity-40",
-                                                            today && "ring-2 ring-[#FCA929] bg-[#FA7B21]/10",
-                                                            attendance?.estado === 'asistio' && "bg-emerald-500/15 border border-emerald-500/30",
-                                                            attendance?.estado === 'tardanza' && "bg-amber-500/15 border border-amber-500/30",
-                                                            !attendance && inCurrentMonth && !today && "bg-white/[0.02] hover:bg-white/[0.05] border border-white/5"
-                                                        )}
-                                                    >
-                                                        {/* Date number */}
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className={cn(
-                                                                "text-lg font-semibold",
-                                                                today ? "text-[#FCA929]" : "text-white/80",
-                                                                attendance?.estado === 'asistio' && "text-emerald-400",
-                                                                attendance?.estado === 'tardanza' && "text-amber-400"
-                                                            )}>
-                                                                {format(day, 'd')}
+                                            return (
+                                                <motion.div
+                                                    key={idx}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    className={cn(
+                                                        "min-h-[80px] rounded-xl p-3 flex flex-col transition-all cursor-pointer relative",
+                                                        !inCurrentMonth && "opacity-40",
+                                                        today && "ring-2 ring-[#FCA929] bg-[#FA7B21]/10",
+                                                        attendance?.estado === 'asistio' && "bg-emerald-500/15 border border-emerald-500/30",
+                                                        attendance?.estado === 'tardanza' && "bg-amber-500/15 border border-amber-500/30",
+                                                        !attendance && inCurrentMonth && !today && "bg-white/[0.02] hover:bg-white/[0.05] border border-white/5"
+                                                    )}
+                                                >
+                                                    {/* Date number */}
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className={cn(
+                                                            "text-lg font-semibold",
+                                                            today ? "text-[#FCA929]" : "text-white/80",
+                                                            attendance?.estado === 'asistio' && "text-emerald-400",
+                                                            attendance?.estado === 'tardanza' && "text-amber-400"
+                                                        )}>
+                                                            {format(day, 'd')}
+                                                        </span>
+                                                        {today && (
+                                                            <span className="text-[10px] uppercase tracking-wider text-[#FCA929] font-medium bg-[#FA7B21]/20 px-2 py-0.5 rounded">
+                                                                Hoy
                                                             </span>
-                                                            {today && (
-                                                                <span className="text-[10px] uppercase tracking-wider text-[#FCA929] font-medium bg-[#FA7B21]/20 px-2 py-0.5 rounded">
-                                                                    Hoy
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Attendance indicator */}
-                                                        {attendance && (
-                                                            <div className="flex-1 flex items-end">
-                                                                <div className={cn(
-                                                                    "flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-lg",
-                                                                    attendance.estado === 'asistio' && "bg-emerald-500/20 text-emerald-400",
-                                                                    attendance.estado === 'tardanza' && "bg-amber-500/20 text-amber-400"
-                                                                )}>
-                                                                    {attendance.estado === 'asistio' && <CheckCircle2 className="w-3.5 h-3.5" />}
-                                                                    {attendance.estado === 'tardanza' && <AlertTriangle className="w-3.5 h-3.5" />}
-                                                                    <span className="capitalize">{attendance.estado === 'asistio' ? 'Asistió' : 'Tardanza'}</span>
-                                                                </div>
-                                                            </div>
                                                         )}
-                                                    </motion.div>
-                                                );
-                                            })}
+                                                    </div>
+
+                                                    {/* Attendance indicator */}
+                                                    {attendance && (
+                                                        <div className="flex-1 flex items-end">
+                                                            <div className={cn(
+                                                                "flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-lg",
+                                                                attendance.estado === 'asistio' && "bg-emerald-500/20 text-emerald-400",
+                                                                attendance.estado === 'tardanza' && "bg-amber-500/20 text-amber-400"
+                                                            )}>
+                                                                {attendance.estado === 'asistio' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                                                {attendance.estado === 'tardanza' && <AlertTriangle className="w-3.5 h-3.5" />}
+                                                                <span className="capitalize">{attendance.estado === 'asistio' ? 'Asistió' : 'Tardanza'}</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </motion.div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
