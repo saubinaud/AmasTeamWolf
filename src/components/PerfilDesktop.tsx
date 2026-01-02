@@ -112,6 +112,39 @@ function toTitleCase(str: string): string {
     return str.toLowerCase().replace(/(?:^|\s)\S/g, (match) => match.toUpperCase());
 }
 
+// Custom Date Parser for "DD MMMM" (Spanish)
+const parseSpanishDate = (dateStr: string): Date | null => {
+    const months: { [key: string]: number } = {
+        enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
+        julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
+    };
+
+    try {
+        const parts = dateStr.trim().toLowerCase().split(' ');
+        if (parts.length < 2) return null;
+
+        const day = parseInt(parts[0]);
+        const monthStr = parts[1];
+        const month = months[monthStr];
+
+        if (isNaN(day) || month === undefined) return null;
+
+        const now = new Date();
+        let year = now.getFullYear();
+
+        // Construct date
+        let date = new Date(year, month, day);
+
+        // Heuristic: If date is very old (e.g. today is May, date is January), assume next year.
+        if (date.getTime() < now.getTime() - 30 * 24 * 60 * 60 * 1000) {
+            date.setFullYear(year + 1);
+        }
+        return date;
+    } catch (e) {
+        console.error("Error parsing date:", dateStr, e);
+        return null;
+    }
+};
 const BeltDisplay = ({ color, name }: { color: string, name: string }) => (
     <div className="flex flex-col items-center gap-2">
         <div className="relative w-48 h-20 flex items-center justify-center filter drop-shadow-lg">
@@ -159,25 +192,77 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
     // Graduation
     const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
+    const [graduationError, setGraduationError] = useState<string | null>(null);
+    const [userGraduation, setUserGraduation] = useState<any>(null);
 
     // Fetch Graduation Date
     useEffect(() => {
         if (activeSection === 'graduacion') {
+            setGraduationError(null);
             fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/graduaci%C3%B3n')
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    return res.json();
+                })
                 .then(data => {
-                    // Try to find a date field in various likely places
-                    // logic: check .date, .fecha, .graduationDate in root or first array item
-                    const possibleDate = data?.date || data?.fecha || data?.graduationDate ||
-                        data?.[0]?.date || data?.[0]?.fecha || data?.[0]?.graduationDate;
+                    console.log('Graduation Webhook Data:', data); // Debug log
 
-                    if (possibleDate) {
-                        setGraduacionDate(possibleDate);
+                    let dates: Date[] = [];
+                    const items = Array.isArray(data) ? data : (data.records || [data]);
+
+                    let foundUserItem = null;
+                    const normalize = (s: string) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "";
+                    const userFullName = normalize(user.estudiante?.nombre || "");
+
+                    items.forEach((item: any) => {
+                        // Check for user match
+                        if (item.NOMBRE || item.APELLIDO) {
+                            const n = normalize(item.NOMBRE || "");
+                            const a = normalize(item.APELLIDO || "");
+                            if ((n && userFullName.includes(n)) || (a && userFullName.includes(a))) {
+                                foundUserItem = item;
+                            }
+                        }
+
+                        let d = item?.date || item?.fecha || item?.graduationDate || item?.start;
+
+                        if (item?.FECHA) {
+                            const parsed = parseSpanishDate(item.FECHA);
+                            if (parsed) dates.push(parsed);
+                            if (foundUserItem === item && parsed) {
+                                foundUserItem.parsedDate = parsed;
+                            }
+                        } else if (d) {
+                            const parsed = new Date(d);
+                            dates.push(parsed);
+                            if (foundUserItem === item) foundUserItem.parsedDate = parsed;
+                        }
+                    });
+
+                    if (foundUserItem) {
+                        setUserGraduation(foundUserItem);
+                        if (foundUserItem.parsedDate) {
+                            setGraduacionDate(foundUserItem.parsedDate.toISOString());
+                        }
+                    } else {
+                        setUserGraduation(null);
+                        // General next date logic
+                        dates = dates.filter(d => !isNaN(d.getTime())).sort((a, b) => a.getTime() - b.getTime());
+                        const now = new Date();
+                        const nextDate = dates.find(d => d >= now) || dates[dates.length - 1];
+                        if (nextDate) {
+                            setGraduacionDate(nextDate.toISOString());
+                        } else {
+                            console.warn('No date found in graduation response:', data);
+                        }
                     }
                 })
-                .catch(err => console.error('Error fetching graduation date:', err));
+                .catch(err => {
+                    console.error('Error fetching graduation date:', err);
+                    setGraduationError(err.message);
+                });
         }
-    }, [activeSection]);
+    }, [activeSection, user.estudiante?.nombre]);
 
     // Calculations
     const diasRestantes = useMemo(() => {
@@ -429,8 +514,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                             >
                                 {/* Stats Cards */}
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6"
-                                    whileHover={{ scale: 1.02, borderColor: 'rgba(250, 123, 33, 0.3)' }}
+                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    whileHover={{ scale: 1.02 }}
                                 >
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-[#FA7B21]/20 flex items-center justify-center">
@@ -444,8 +529,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 </motion.div>
 
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6"
-                                    whileHover={{ scale: 1.02, borderColor: 'rgba(250, 123, 33, 0.3)' }}
+                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    whileHover={{ scale: 1.02 }}
                                 >
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-[#FA7B21]/20 flex items-center justify-center">
@@ -473,8 +558,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 </motion.div>
 
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6"
-                                    whileHover={{ scale: 1.02, borderColor: 'rgba(250, 123, 33, 0.3)' }}
+                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    whileHover={{ scale: 1.02 }}
                                 >
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-[#FA7B21]/20 flex items-center justify-center">
@@ -498,8 +583,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                 {/* Info Section */}
                                 <motion.div
-                                    className="col-span-2 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8"
-                                    whileHover={{ borderColor: 'rgba(250, 123, 33, 0.2)' }}
+                                    className="col-span-2 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8 transition-colors hover:border-[#FA7B21]/20"
+                                    whileHover={{}}
                                 >
                                     <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                                         <User className="w-5 h-5 text-[#FCA929]" />
@@ -539,8 +624,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                 {/* Contact Card */}
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6"
-                                    whileHover={{ scale: 1.02, borderColor: 'rgba(250, 123, 33, 0.3)' }}
+                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    whileHover={{ scale: 1.02 }}
                                 >
                                     <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                                         <Phone className="w-5 h-5 text-[#FCA929]" />
@@ -580,30 +665,103 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         Tu Progreso
                                     </h3>
 
-                                    {/* Next Graduation Card */}
+                                    {/* Graduation Card */}
                                     <div className="bg-gradient-to-br from-[#FA7B21]/10 to-[#FCA929]/5 border border-[#FA7B21]/20 rounded-2xl p-6 mb-8 relative overflow-hidden">
                                         <div className="absolute top-0 right-0 w-64 h-64 bg-[#FA7B21]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-                                        <div className="relative z-10 flex items-center justify-between">
-                                            <div>
-                                                <h4 className="text-white/60 text-sm uppercase tracking-wider font-medium mb-1">Próxima Graduación</h4>
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="text-3xl font-bold text-white">
-                                                        {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Cargando...'}
-                                                    </span>
-                                                    <span className="text-white/40 text-sm">
-                                                        {graduacionDate ? format(new Date(graduacionDate), "yyyy") : ''}
-                                                    </span>
+                                        {userGraduation ? (
+                                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                                                <div className="text-center md:text-left">
+                                                    <h4 className={cn(
+                                                        "text-sm uppercase tracking-wider font-bold mb-2 flex items-center gap-2 justify-center md:justify-start",
+                                                        (() => {
+                                                            const d = graduacionDate ? new Date(graduacionDate) : new Date();
+                                                            const now = new Date();
+                                                            d.setHours(0, 0, 0, 0);
+                                                            now.setHours(0, 0, 0, 0);
+                                                            return d.getTime() < now.getTime() ? "text-zinc-400" : "text-[#FCA929]";
+                                                        })()
+                                                    )}>
+                                                        {(() => {
+                                                            const d = graduacionDate ? new Date(graduacionDate) : new Date();
+                                                            const now = new Date();
+                                                            d.setHours(0, 0, 0, 0);
+                                                            now.setHours(0, 0, 0, 0);
+                                                            const isPast = d.getTime() < now.getTime();
+                                                            const isToday = d.getTime() === now.getTime();
+                                                            return (
+                                                                <>
+                                                                    <Award className="w-4 h-4" />
+                                                                    {isPast ? "Última Graduación" : isToday ? "¡Día de la Graduación!" : "Próxima Graduación"}
+                                                                </>
+                                                            );
+                                                        })()}
+                                                    </h4>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-4xl font-bold text-white mb-1">
+                                                            {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Cargando...'}
+                                                        </span>
+                                                        <span className="text-[#FCA929] text-lg capitalize font-medium">
+                                                            {graduacionDate ? format(new Date(graduacionDate), "EEEE", { locale: es }) : ''}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex gap-4">
+                                                    <div className="bg-black/20 rounded-xl p-4 border border-white/5 text-center min-w-[100px]">
+                                                        <p className="text-white/40 text-xs uppercase mb-1">Horario</p>
+                                                        <div className="flex items-center justify-center gap-2 font-bold text-white">
+                                                            <Clock className="w-4 h-4 text-[#FCA929]" />
+                                                            {userGraduation.HORARIO || '-'}
+                                                        </div>
+                                                    </div>
+                                                    <div className="bg-black/20 rounded-xl p-4 border border-white/5 text-center min-w-[100px]">
+                                                        <p className="text-white/40 text-xs uppercase mb-1">Turno</p>
+                                                        <div className="flex items-center justify-center gap-2 font-bold text-white leading-tight">
+                                                            <Zap className="w-4 h-4 text-[#FCA929]" />
+                                                            {userGraduation.TURNO || '-'}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {userGraduation.RANGO && (
+                                                    <div className="bg-[#FA7B21]/20 rounded-xl p-4 border border-[#FA7B21]/30">
+                                                        <p className="text-[#FCA929] text-xs uppercase font-bold text-center">Rango</p>
+                                                        <p className="text-white font-medium text-center">{userGraduation.RANGO}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="relative z-10 flex items-center justify-between">
+                                                <div>
+                                                    <h4 className="text-white/60 text-sm uppercase tracking-wider font-medium mb-1">Próxima Fecha General</h4>
+                                                    <div className="flex items-baseline gap-2">
+                                                        <span className="text-3xl font-bold text-white">
+                                                            {graduationError ? (
+                                                                <span className="text-red-400 text-lg flex items-center gap-2">
+                                                                    <AlertTriangle className="w-5 h-5" />
+                                                                    Error de conexión
+                                                                </span>
+                                                            ) : (
+                                                                graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Cargando...'
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                    {graduacionDate && !graduationError && (
+                                                        <p className="text-white/30 text-xs mt-1 bg-white/5 py-1 px-3 rounded-full inline-block border border-white/5">
+                                                            No estás programado para esta fecha
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <div className="w-14 h-14 bg-zinc-800 rounded-xl flex items-center justify-center border border-white/5">
+                                                    <CalendarCheck className="w-7 h-7 text-zinc-500" />
                                                 </div>
                                             </div>
-                                            <div className="w-14 h-14 bg-[#FA7B21]/20 rounded-xl flex items-center justify-center border border-[#FA7B21]/30">
-                                                <CalendarCheck className="w-7 h-7 text-[#FCA929]" />
-                                            </div>
-                                        </div>
+                                        )}
                                     </div>
 
-                                    {/* Belt Progress Mock */}
-                                    <div className="space-y-6 mt-12">
+                                    {/* Belt Logic - (Optional: Keep mock or hide?) Keeping mock for visual filler if user wants logic later */}
+                                    <div className="space-y-6 mt-12 bg-black/20 rounded-2xl p-6 border border-white/5">
                                         <div className="flex items-center justify-between px-12">
                                             <div className="flex flex-col items-center gap-3">
                                                 <p className="text-white/40 text-xs uppercase tracking-wider">Cinturón Actual</p>
@@ -676,16 +834,19 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     </div>
 
                                     {/* Calendar Header Row */}
-                                    <div className="grid grid-cols-7 mb-0 rounded-t-lg overflow-hidden border border-white/10 border-b-0">
+                                    <div className="flex w-full mb-0 rounded-t-lg overflow-hidden border border-white/10 border-b-0">
                                         {['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'].map((day) => (
-                                            <div key={day} className="bg-[#1a1a1a] py-3 text-center">
+                                            <div key={day} className="flex-1 bg-[#1a1a1a] py-3 text-center border-r border-[#333] last:border-r-0">
                                                 <span className="text-[10px] font-bold text-white tracking-widest">{day}</span>
                                             </div>
                                         ))}
                                     </div>
 
                                     {/* Calendar Grid - 7 Columns */}
-                                    <div className="grid grid-cols-7 w-full border-l border-t border-white/10 bg-zinc-900">
+                                    <div
+                                        className="grid w-full border-l border-t border-white/10 bg-zinc-900"
+                                        style={{ gridTemplateColumns: 'repeat(7, 1fr)' }}
+                                    >
                                         {calendarGrid.map((day, idx) => {
                                             const isTodayDate = isToday(day);
                                             const isSelectedMonth = isSameMonth(day, calendarMonth);
@@ -700,9 +861,9 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                     )}
                                                 >
                                                     <span className={cn(
-                                                        "text-sm font-medium block mb-1",
+                                                        "text-sm font-medium block mb-1 relative z-10",
                                                         isTodayDate
-                                                            ? "bg-cyan-500 text-black w-6 h-6 rounded-full flex items-center justify-center font-bold"
+                                                            ? "bg-[#FA7B21] text-white w-7 h-7 rounded-full flex items-center justify-center font-bold shadow-[0_0_10px_rgba(250,123,33,0.5)] ring-2 ring-[#FA7B21]/30"
                                                             : isSelectedMonth ? "text-white/80" : "text-white/30"
                                                     )}>
                                                         {format(day, 'd')}
@@ -911,43 +1072,54 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                         </div>
 
                                                         {/* Right: Summary & Legend */}
-                                                        <div className="w-[320px] bg-zinc-900/50 p-6 flex flex-col justify-between">
-                                                            <div className="space-y-6">
+                                                        <div className="w-[340px] bg-zinc-900/80 backdrop-blur-md p-8 flex flex-col justify-between border-l border-white/5 shadow-2xl">
+                                                            <div className="space-y-8">
                                                                 <div>
-                                                                    <h4 className="text-sm font-medium text-white/50 uppercase tracking-wider mb-4">Resumen</h4>
+                                                                    <div className="flex items-center gap-2 mb-6">
+                                                                        <div className="h-px bg-white/10 flex-1" />
+                                                                        <span className="text-xs font-bold text-white/40 uppercase tracking-[0.2em]">Resumen</span>
+                                                                        <div className="h-px bg-white/10 flex-1" />
+                                                                    </div>
 
                                                                     {/* Days Balance */}
-                                                                    <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4 mb-6">
-                                                                        <div className="flex items-center justify-between mb-2">
-                                                                            <span className="text-cyan-200 text-sm">Días disponibles</span>
-                                                                            <span className="text-cyan-400 font-bold">{maxDiasCongelar}</span>
+                                                                    <div className="bg-gradient-to-b from-cyan-500/10 to-transparent border border-cyan-500/20 rounded-2xl p-5 mb-8 shadow-[0_0_20px_rgba(6,182,212,0.05)]">
+                                                                        <div className="flex items-center justify-between mb-3">
+                                                                            <span className="text-cyan-200/70 text-sm font-medium">Disponible</span>
+                                                                            <Badge variant="outline" className="bg-cyan-500/20 text-cyan-300 border-cyan-500/30 px-2 py-0.5 text-xs">
+                                                                                {maxDiasCongelar} días
+                                                                            </Badge>
                                                                         </div>
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-white/60 text-sm">Usarás</span>
-                                                                            <span className={cn(
-                                                                                "font-bold",
-                                                                                effectiveFreezeDays > maxDiasCongelar ? "text-red-400" : "text-white"
-                                                                            )}>
-                                                                                {effectiveFreezeDays} días
-                                                                            </span>
+                                                                        <div className="flex items-end justify-between">
+                                                                            <span className="text-white/60 text-sm">A consumir</span>
+                                                                            <div className="text-right">
+                                                                                <span className={cn(
+                                                                                    "text-3xl font-bold",
+                                                                                    effectiveFreezeDays > maxDiasCongelar ? "text-red-400" : "text-white"
+                                                                                )}>
+                                                                                    {effectiveFreezeDays}
+                                                                                </span>
+                                                                                <span className="text-sm text-white/40 ml-1">días</span>
+                                                                            </div>
                                                                         </div>
                                                                         {effectiveFreezeDays > maxDiasCongelar && (
-                                                                            <div className="mt-3 flex items-center gap-2 text-red-400 text-xs bg-red-500/10 p-2 rounded">
-                                                                                <AlertTriangle className="w-3 h-3" />
+                                                                            <div className="mt-4 flex items-center gap-2 text-red-300 text-xs bg-red-500/10 p-2.5 rounded-lg border border-red-500/20">
+                                                                                <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
                                                                                 Excedes el límite permitido
                                                                             </div>
                                                                         )}
                                                                     </div>
 
                                                                     {/* Dates Summary */}
-                                                                    <div className="space-y-4">
-                                                                        <div className="flex justify-between items-center group">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-cyan-500/30 transition-colors">
-                                                                                    <Calendar className="w-4 h-4 text-cyan-400" />
+                                                                    <div className="space-y-6 relative">
+                                                                        <div className="absolute left-[19px] top-4 bottom-4 w-px bg-gradient-to-b from-cyan-500/20 via-white/10 to-pink-500/20"></div>
+
+                                                                        <div className="flex justify-between items-center group relative z-10">
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="w-10 h-10 rounded-xl bg-[#09090b] flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all duration-300">
+                                                                                    <Calendar className="w-5 h-5 text-cyan-400" />
                                                                                 </div>
                                                                                 <div>
-                                                                                    <p className="text-xs text-white/40 uppercase">Inicio</p>
+                                                                                    <p className="text-[10px] text-white/40 uppercase tracking-wider font-semibold mb-0.5">Inicio</p>
                                                                                     <p className="text-sm font-medium text-white">
                                                                                         {freezeRange?.from ? format(freezeRange.from, "d 'de' MMM", { locale: es }) : '-'}
                                                                                     </p>
@@ -955,15 +1127,13 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                                             </div>
                                                                         </div>
 
-                                                                        <div className="w-px h-4 bg-white/10 ml-4"></div>
-
-                                                                        <div className="flex justify-between items-center group">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center border border-white/5 group-hover:border-cyan-500/30 transition-colors">
-                                                                                    <Calendar className="w-4 h-4 text-cyan-400" />
+                                                                        <div className="flex justify-between items-center group relative z-10">
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="w-10 h-10 rounded-xl bg-[#09090b] flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.15)] transition-all duration-300">
+                                                                                    <Calendar className="w-5 h-5 text-cyan-400" />
                                                                                 </div>
                                                                                 <div>
-                                                                                    <p className="text-xs text-white/40 uppercase">Fin</p>
+                                                                                    <p className="text-[10px] text-white/40 uppercase tracking-wider font-semibold mb-0.5">Fin</p>
                                                                                     <p className="text-sm font-medium text-white">
                                                                                         {freezeRange?.to ? format(freezeRange.to, "d 'de' MMM", { locale: es }) : '-'}
                                                                                     </p>
@@ -971,32 +1141,28 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                                             </div>
                                                                         </div>
 
-                                                                        <div className="w-px h-4 bg-white/10 ml-4"></div>
-
-                                                                        <div className="flex justify-between items-center group">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                                                                                    <Zap className="w-4 h-4 text-emerald-400" />
+                                                                        <div className="flex justify-between items-center group relative z-10">
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="w-10 h-10 rounded-xl bg-[#09090b] flex items-center justify-center border border-emerald-500/30 group-hover:border-emerald-400/60 group-hover:shadow-[0_0_15px_rgba(52,211,153,0.15)] transition-all duration-300">
+                                                                                    <Zap className="w-5 h-5 text-emerald-400" />
                                                                                 </div>
                                                                                 <div>
-                                                                                    <p className="text-xs text-emerald-400/60 uppercase">Retomas</p>
-                                                                                    <p className="text-sm font-medium text-emerald-400">
+                                                                                    <p className="text-[10px] text-emerald-400/60 uppercase tracking-wider font-semibold mb-0.5">Retomas</p>
+                                                                                    <p className="text-sm font-bold text-emerald-400">
                                                                                         {freezeRange?.to ? format(addDays(freezeRange.to, 1), "EEEE d", { locale: es }) : '-'}
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
 
-                                                                        <div className="w-px h-4 bg-white/10 ml-4"></div>
-
-                                                                        <div className="flex justify-between items-center group">
-                                                                            <div className="flex items-center gap-3">
-                                                                                <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center border border-pink-500/20">
-                                                                                    <Sparkles className="w-4 h-4 text-pink-400" />
+                                                                        <div className="flex justify-between items-center group relative z-10">
+                                                                            <div className="flex items-center gap-4">
+                                                                                <div className="w-10 h-10 rounded-xl bg-[#09090b] flex items-center justify-center border border-pink-500/30 group-hover:border-pink-400/60 group-hover:shadow-[0_0_15px_rgba(244,114,182,0.15)] transition-all duration-300">
+                                                                                    <Sparkles className="w-5 h-5 text-pink-400" />
                                                                                 </div>
                                                                                 <div>
-                                                                                    <p className="text-xs text-pink-400/60 uppercase">Nuevo Vencimiento</p>
-                                                                                    <p className="text-sm font-medium text-pink-400">
+                                                                                    <p className="text-[10px] text-pink-400/60 uppercase tracking-wider font-semibold mb-0.5">Nuevo Vencimiento</p>
+                                                                                    <p className="text-sm font-bold text-pink-400">
                                                                                         {nuevaFechaFin ? format(nuevaFechaFin, "d 'de' MMM, yyyy", { locale: es }) : '-'}
                                                                                     </p>
                                                                                 </div>
@@ -1005,9 +1171,9 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="bg-white/5 rounded-lg p-3 text-xs text-white/50 flex gap-2">
-                                                                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                                                                    <p>Los domingos y feriados no se descuentan de tu saldo y no cuentan para la nueva fecha.</p>
+                                                                <div className="bg-white/5 rounded-xl p-4 text-xs text-white/50 flex gap-3 leading-relaxed border border-white/5">
+                                                                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-white/30" />
+                                                                    <p>Los domingos y feriados <strong className="text-white/70">no cuentan</strong> como días congelados ni extienden tu fecha final.</p>
                                                                 </div>
                                                             </div>
 
