@@ -1,6 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useLogto } from '@logto/react';
-import { Loader2, Lock, ArrowLeft } from 'lucide-react';
+import { Lock, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface InicioSesionPageProps {
@@ -8,21 +7,12 @@ interface InicioSesionPageProps {
 }
 
 export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
-  const { signIn, isAuthenticated, isLoading } = useLogto();
-  const hasRedirected = useRef(false);
+  const { signIn } = useLogto();
 
   // Determine callback URL based on environment
   const callbackUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:5173/callback'
     : 'https://amasteamwolf.com/callback';
-
-  // Auto-redirect to profile if already authenticated (only once)
-  useEffect(() => {
-    if (isAuthenticated && !isLoading && !hasRedirected.current) {
-      hasRedirected.current = true;
-      onNavigate('perfil');
-    }
-  }, [isAuthenticated, isLoading, onNavigate]);
 
   const handleSignIn = async () => {
     try {
@@ -32,31 +22,9 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     }
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#FA7B21] animate-spin mx-auto mb-4" />
-          <p className="text-white text-lg">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
+  // AuthGuard handles redirecting authenticated users
+  // This component only shows the login form
 
-  // If authenticated, show redirecting (will auto-redirect via useEffect)
-  if (isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-[#FA7B21] animate-spin mx-auto mb-4" />
-          <p className="text-white text-lg">Redirigiendo a tu perfil...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Not authenticated - show login form
   return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
       {/* Background decorative elements */}
