@@ -402,8 +402,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                 <p className="text-white text-lg">{user?.clases?.[0]?.horario || '-'}</p>
                                             </div>
                                             <div>
-                                                <p className="text-white/40 text-sm">Fecha de inscripción</p>
-                                                <p className="text-white text-lg">{formatDate(user?.matricula?.fechaInscripcion)}</p>
+                                                <p className="text-white/40 text-sm">Talla Uniforme</p>
+                                                <p className="text-white text-lg">{user?.estudiante?.tallaUniforme || '-'}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -692,7 +692,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                 <h4 className="text-lg font-semibold text-white">Congelar Programa</h4>
                                             </div>
                                             <p className="text-white/60 text-sm mb-4">
-                                                Tienes hasta {maxDiasCongelar} días disponibles para congelar tu programa
+                                                Tienes <span className="text-cyan-400 font-semibold">{maxDiasCongelar} días</span> disponibles para congelar
                                             </p>
                                             <Dialog open={isFreezeDialogOpen} onOpenChange={setIsFreezeDialogOpen}>
                                                 <DialogTrigger asChild>
@@ -701,25 +701,113 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                         Solicitar Congelamiento
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10">
+                                                <DialogContent className="bg-zinc-900 border-white/10 max-w-md">
                                                     <DialogHeader>
-                                                        <DialogTitle className="text-white">Congelar Programa</DialogTitle>
+                                                        <DialogTitle className="text-white flex items-center gap-2">
+                                                            <Snowflake className="w-5 h-5 text-cyan-400" />
+                                                            Congelar Programa
+                                                        </DialogTitle>
                                                         <DialogDescription className="text-white/60">
-                                                            Selecciona cuántos días deseas congelar
+                                                            Selecciona cuántos días deseas congelar tu programa
                                                         </DialogDescription>
                                                     </DialogHeader>
-                                                    <div className="py-4">
-                                                        <p className="text-white/60 text-sm text-center">
-                                                            Máximo {maxDiasCongelar} días disponibles
-                                                        </p>
+
+                                                    <div className="py-6 space-y-6">
+                                                        {/* Days Available Banner */}
+                                                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4 text-center">
+                                                            <p className="text-white/60 text-sm">Días disponibles para congelar</p>
+                                                            <p className="text-3xl font-bold text-cyan-400">{maxDiasCongelar}</p>
+                                                        </div>
+
+                                                        {/* Days Selector */}
+                                                        <div className="space-y-3">
+                                                            <label className="text-white text-sm font-medium">¿Cuántos días deseas usar?</label>
+                                                            <div className="flex items-center gap-4">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => setFreezeDays(Math.max(1, freezeDays - 1))}
+                                                                    disabled={freezeDays <= 1}
+                                                                    className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-12 w-12"
+                                                                >
+                                                                    <ChevronLeft className="w-5 h-5" />
+                                                                </Button>
+                                                                <div className="flex-1 text-center">
+                                                                    <span className="text-4xl font-bold text-cyan-400">{freezeDays}</span>
+                                                                    <span className="text-white/60 ml-2">días</span>
+                                                                </div>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="icon"
+                                                                    onClick={() => setFreezeDays(Math.min(maxDiasCongelar, freezeDays + 1))}
+                                                                    disabled={freezeDays >= maxDiasCongelar}
+                                                                    className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-12 w-12"
+                                                                >
+                                                                    <ChevronRight className="w-5 h-5" />
+                                                                </Button>
+                                                            </div>
+                                                            {/* Quick select buttons */}
+                                                            <div className="flex gap-2 justify-center mt-2">
+                                                                {[7, 14, maxDiasCongelar].filter((d, i, arr) => d <= maxDiasCongelar && arr.indexOf(d) === i).map(days => (
+                                                                    <Button
+                                                                        key={days}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        onClick={() => setFreezeDays(days)}
+                                                                        className={cn(
+                                                                            "border-white/10 text-sm",
+                                                                            freezeDays === days ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" : "bg-white/5 text-white/60 hover:bg-white/10"
+                                                                        )}
+                                                                    >
+                                                                        {days === maxDiasCongelar ? 'Máximo' : `${days} días`}
+                                                                    </Button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Summary - Days Used vs Remaining */}
+                                                        <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-white/60">Días que usarás:</span>
+                                                                <span className="text-cyan-400 font-semibold">{freezeDays} días</span>
+                                                            </div>
+                                                            <div className="h-px bg-white/10" />
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-white/60">Te quedarán:</span>
+                                                                <span className={cn(
+                                                                    "font-semibold",
+                                                                    (maxDiasCongelar - freezeDays) > 0 ? "text-emerald-400" : "text-amber-400"
+                                                                )}>
+                                                                    {maxDiasCongelar - freezeDays} días
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Warning if using all days */}
+                                                        {freezeDays === maxDiasCongelar && (
+                                                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2">
+                                                                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                                                                <p className="text-amber-400/80 text-sm">
+                                                                    Estás usando todos tus días de congelamiento disponibles.
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <DialogFooter>
+
+                                                    <DialogFooter className="flex gap-3">
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => setIsFreezeDialogOpen(false)}
+                                                            className="flex-1 border-white/10 bg-white/5 text-white hover:bg-white/10"
+                                                        >
+                                                            Cancelar
+                                                        </Button>
                                                         <Button
                                                             onClick={handleFreezeConfirm}
                                                             disabled={isFreezing}
-                                                            className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                                                            className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white"
                                                         >
-                                                            {isFreezing ? 'Procesando...' : 'Confirmar'}
+                                                            {isFreezing ? 'Procesando...' : `Confirmar ${freezeDays} días`}
                                                         </Button>
                                                     </DialogFooter>
                                                 </DialogContent>
