@@ -203,7 +203,9 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   if (!hasLinkedProfile) {
     return (
       <AccountLinkingStep
-        onComplete={() => window.location.reload()}
+        onComplete={async () => {
+          await refreshUserData();
+        }}
         onLogout={handleLogout}
       />
     );
