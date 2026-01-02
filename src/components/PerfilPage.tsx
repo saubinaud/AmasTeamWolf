@@ -88,19 +88,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   // Touch handling for calendar swipe
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
-  const hasRedirectedToLogin = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    if (!isAuthenticated && !hasRedirectedToLogin.current) {
-      hasRedirectedToLogin.current = true;
-      onNavigate('inicio-sesion');
-    }
-  }, [isAuthenticated, onNavigate]);
+  // AuthGuard handles redirecting unauthenticated users
+  // This component only renders when user is authenticated
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

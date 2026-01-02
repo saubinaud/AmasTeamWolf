@@ -16,6 +16,7 @@ import { RenovacionPage } from './pages/RenovacionPage';
 import { LogtoCallback } from './components/LogtoCallback';
 import { TerminosCondicionesPage } from './components/TerminosCondicionesPage';
 import { VincularCuentaPage } from './components/VincularCuentaPage';
+import { AuthGuard } from './components/AuthGuard';
 
 import { HeaderMain } from './components/HeaderMain';
 import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
@@ -463,31 +464,35 @@ function App() {
 
   if (currentPage === 'inicio-sesion') {
     return (
-      <>
-        <SEO
-          title="Iniciar Sesión - AMAS Team Wolf"
-          description="Acceso para familias de AMAS Team Wolf. Revisa tus clases, pagos y más."
-          keywords="login amas, acceso familias, portal estudiantes"
-          url="https://amasteamwolf.com/inicio-sesion"
-        />
-        <InicioSesionPage onNavigate={handleNavigate} />
-        <Toaster theme="dark" position="bottom-right" />
-      </>
+      <AuthGuard onNavigate={handleNavigate} redirectIfAuth={true}>
+        <>
+          <SEO
+            title="Iniciar Sesión - AMAS Team Wolf"
+            description="Acceso para familias de AMAS Team Wolf. Revisa tus clases, pagos y más."
+            keywords="login amas, acceso familias, portal estudiantes"
+            url="https://amasteamwolf.com/inicio-sesion"
+          />
+          <InicioSesionPage onNavigate={handleNavigate} />
+          <Toaster theme="dark" position="bottom-right" />
+        </>
+      </AuthGuard>
     );
   }
 
   if (currentPage === 'perfil') {
     return (
-      <>
-        <SEO
-          title="Mi Perfil - AMAS Team Wolf"
-          description="Panel de familia AMAS Team Wolf. Consulta tus clases, pagos, matrícula y notificaciones."
-          keywords="perfil amas, panel familias, mis clases"
-          url="https://amasteamwolf.com/perfil"
-        />
-        <PerfilPage onNavigate={handleNavigate} />
-        <Toaster theme="dark" position="bottom-right" />
-      </>
+      <AuthGuard onNavigate={handleNavigate} requireAuth={true}>
+        <>
+          <SEO
+            title="Mi Perfil - AMAS Team Wolf"
+            description="Panel de familia AMAS Team Wolf. Consulta tus clases, pagos, matrícula y notificaciones."
+            keywords="perfil amas, panel familias, mis clases"
+            url="https://amasteamwolf.com/perfil"
+          />
+          <PerfilPage onNavigate={handleNavigate} />
+          <Toaster theme="dark" position="bottom-right" />
+        </>
+      </AuthGuard>
     );
   }
 
