@@ -88,6 +88,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   // Touch handling for calendar swipe
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const hasRedirectedToLogin = useRef(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
@@ -95,7 +96,10 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) onNavigate('inicio-sesion');
+    if (!isAuthenticated && !hasRedirectedToLogin.current) {
+      hasRedirectedToLogin.current = true;
+      onNavigate('inicio-sesion');
+    }
   }, [isAuthenticated, onNavigate]);
 
   const handleRefresh = async () => {
