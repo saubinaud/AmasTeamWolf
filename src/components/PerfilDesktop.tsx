@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import {
@@ -31,7 +31,8 @@ import {
     Shield,
     Sparkles,
     TrendingUp,
-    CalendarCheck
+    CalendarCheck,
+    Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addMonths, subMonths, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfWeek, addDays } from 'date-fns';
@@ -74,6 +75,27 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
     const [freezeDays, setFreezeDays] = useState(7);
     const [isFreezing, setIsFreezing] = useState(false);
     const [isFreezeDialogOpen, setIsFreezeDialogOpen] = useState(false);
+
+    // Graduation
+    const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
+
+    // Fetch Graduation Date
+    useEffect(() => {
+        if (activeSection === 'graduacion') {
+            fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/graduaci%C3%B3n')
+                .then(res => res.json())
+                .then(data => {
+                    // Assuming the webhook returns { date: "YYYY-MM-DD" } or similar
+                    // Adjust based on actual response. Indexing safety.
+                    if (data && data.fecha) {
+                        setGraduacionDate(data.fecha);
+                    } else if (Array.isArray(data) && data.length > 0 && data[0].fecha) {
+                        setGraduacionDate(data[0].fecha);
+                    }
+                })
+                .catch(err => console.error('Error fetching graduation date:', err));
+        }
+    }, [activeSection]);
 
     // Calculations
     const diasRestantes = useMemo(() => {
@@ -138,6 +160,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
         { id: 'home', icon: Home, label: 'Inicio' },
         { id: 'calendar', icon: Calendar, label: 'Asistencias' },
         { id: 'plan', icon: CreditCard, label: 'Plan' },
+        { id: 'graduacion', icon: Award, label: 'Graduación' },
         { id: 'messages', icon: MessageCircle, label: 'Mensajes' },
     ];
 
@@ -394,8 +417,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         </div>
                                         <div className="space-y-4">
                                             <div>
-                                                <p className="text-white/40 text-sm">Categoría</p>
-                                                <p className="text-white text-lg">{user?.estudiante?.categoria || '-'}</p>
+                                                <p className="text-white/40 text-sm">Fecha de Inicio</p>
+                                                <p className="text-white text-lg">{formatDate(user?.matricula?.fechaInicio) || '-'}</p>
                                             </div>
                                             <div>
                                                 <p className="text-white/40 text-sm">Horario</p>
@@ -433,6 +456,81 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         </div>
                                     </div>
                                 </motion.div>
+                            </motion.div>
+                        )}
+
+
+
+                        {activeSection === 'graduacion' && (
+                            <motion.div
+                                key="graduacion"
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                className="space-y-6"
+                            >
+                                <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8">
+                                    <h3 className="text-2xl font-semibold text-white flex items-center gap-3 mb-6">
+                                        <Award className="w-6 h-6 text-[#FCA929]" />
+                                        Tu Progreso
+                                    </h3>
+
+                                    {/* Next Graduation Card */}
+                                    <div className="bg-gradient-to-br from-[#FA7B21]/10 to-[#FCA929]/5 border border-[#FA7B21]/20 rounded-2xl p-6 mb-8 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 w-64 h-64 bg-[#FA7B21]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+                                        <div className="relative z-10 flex items-center justify-between">
+                                            <div>
+                                                <h4 className="text-white/60 text-sm uppercase tracking-wider font-medium mb-1">Próxima Graduación</h4>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-3xl font-bold text-white">
+                                                        {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Cargando...'}
+                                                    </span>
+                                                    <span className="text-white/40 text-sm">
+                                                        {graduacionDate ? format(new Date(graduacionDate), "yyyy") : ''}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="w-14 h-14 bg-[#FA7B21]/20 rounded-xl flex items-center justify-center border border-[#FA7B21]/30">
+                                                <CalendarCheck className="w-7 h-7 text-[#FCA929]" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Belt Progress Mock */}
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center border-4 border-zinc-800 shadow-lg relative">
+                                                    <span className="absolute inset-0 rounded-full border border-black/10"></span>
+                                                    <div className="w-8 h-1 bg-black/20 transform -rotate-45"></div>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Cinturón Actual</p>
+                                                    <p className="text-xl font-bold text-white">Blanco</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex-1 px-8 flex flex-col items-center">
+                                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative">
+                                                    <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-white to-[#FCA929] w-3/4 rounded-full"></div>
+                                                </div>
+                                                <p className="text-white/40 text-xs mt-2">En progreso para siguiente nivel</p>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 text-right">
+                                                <div>
+                                                    <p className="text-white/40 text-xs uppercase tracking-wider mb-1">Siguiente Nivel</p>
+                                                    <p className="text-xl font-bold text-[#FCA929]">Amarillo</p>
+                                                </div>
+                                                <div className="w-16 h-16 bg-[#FCA929] rounded-full flex items-center justify-center border-4 border-zinc-800 shadow-lg shadow-[#FCA929]/20 relative">
+                                                    <span className="absolute inset-0 rounded-full border border-black/10"></span>
+                                                    <div className="w-8 h-1 bg-white/40 transform -rotate-45"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </motion.div>
                         )}
 
@@ -696,39 +794,94 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                         Solicitar Congelamiento
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10 max-w-md">
+                                                <DialogContent className="bg-zinc-900 border-white/10 max-w-lg">
                                                     <DialogHeader>
                                                         <DialogTitle className="text-white flex items-center gap-2">
                                                             <Snowflake className="w-5 h-5 text-cyan-400" />
                                                             Congelar Programa
                                                         </DialogTitle>
                                                         <DialogDescription className="text-white/60">
-                                                            Selecciona cuántos días deseas congelar tu programa
+                                                            Pausa tu programa temporalmente. Los domingos y feriados no se cuentan.
                                                         </DialogDescription>
                                                     </DialogHeader>
 
-                                                    <div className="py-6 space-y-6">
+                                                    <div className="py-4 space-y-5">
                                                         {/* Days Available Banner */}
-                                                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4 text-center">
-                                                            <p className="text-white/60 text-sm">Días disponibles para congelar</p>
-                                                            <p className="text-3xl font-bold text-cyan-400">{maxDiasCongelar}</p>
+                                                        <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-xl p-4 flex items-center justify-between">
+                                                            <div>
+                                                                <p className="text-white/60 text-sm">Días disponibles</p>
+                                                                <p className="text-2xl font-bold text-cyan-400">{maxDiasCongelar} días</p>
+                                                            </div>
+                                                            <Snowflake className="w-10 h-10 text-cyan-400/30" />
+                                                        </div>
+
+                                                        {/* Start Date Selector */}
+                                                        <div className="space-y-2">
+                                                            <label className="text-white text-sm font-medium">¿Desde cuándo deseas congelar?</label>
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => setFreezeDate(new Date())}
+                                                                    className={cn(
+                                                                        "border-white/10 text-sm py-6",
+                                                                        freezeDate && isToday(freezeDate)
+                                                                            ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                                                                            : "bg-white/5 text-white/60 hover:bg-white/10"
+                                                                    )}
+                                                                >
+                                                                    <div className="text-center">
+                                                                        <p className="font-medium">Hoy</p>
+                                                                        <p className="text-xs opacity-60">{format(new Date(), 'd MMM', { locale: es })}</p>
+                                                                    </div>
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => setFreezeDate(addDays(new Date(), 1))}
+                                                                    className={cn(
+                                                                        "border-white/10 text-sm py-6",
+                                                                        freezeDate && isSameDay(freezeDate, addDays(new Date(), 1))
+                                                                            ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                                                                            : "bg-white/5 text-white/60 hover:bg-white/10"
+                                                                    )}
+                                                                >
+                                                                    <div className="text-center">
+                                                                        <p className="font-medium">Mañana</p>
+                                                                        <p className="text-xs opacity-60">{format(addDays(new Date(), 1), 'd MMM', { locale: es })}</p>
+                                                                    </div>
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    onClick={() => setFreezeDate(addDays(new Date(), 7))}
+                                                                    className={cn(
+                                                                        "border-white/10 text-sm py-6",
+                                                                        freezeDate && isSameDay(freezeDate, addDays(new Date(), 7))
+                                                                            ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
+                                                                            : "bg-white/5 text-white/60 hover:bg-white/10"
+                                                                    )}
+                                                                >
+                                                                    <div className="text-center">
+                                                                        <p className="font-medium">En 1 semana</p>
+                                                                        <p className="text-xs opacity-60">{format(addDays(new Date(), 7), 'd MMM', { locale: es })}</p>
+                                                                    </div>
+                                                                </Button>
+                                                            </div>
                                                         </div>
 
                                                         {/* Days Selector */}
-                                                        <div className="space-y-3">
-                                                            <label className="text-white text-sm font-medium">¿Cuántos días deseas usar?</label>
+                                                        <div className="space-y-2">
+                                                            <label className="text-white text-sm font-medium">¿Cuántos días deseas congelar?</label>
                                                             <div className="flex items-center gap-4">
                                                                 <Button
                                                                     variant="outline"
                                                                     size="icon"
                                                                     onClick={() => setFreezeDays(Math.max(1, freezeDays - 1))}
                                                                     disabled={freezeDays <= 1}
-                                                                    className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-12 w-12"
+                                                                    className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 w-10"
                                                                 >
                                                                     <ChevronLeft className="w-5 h-5" />
                                                                 </Button>
                                                                 <div className="flex-1 text-center">
-                                                                    <span className="text-4xl font-bold text-cyan-400">{freezeDays}</span>
+                                                                    <span className="text-3xl font-bold text-cyan-400">{freezeDays}</span>
                                                                     <span className="text-white/60 ml-2">días</span>
                                                                 </div>
                                                                 <Button
@@ -736,13 +889,13 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                                     size="icon"
                                                                     onClick={() => setFreezeDays(Math.min(maxDiasCongelar, freezeDays + 1))}
                                                                     disabled={freezeDays >= maxDiasCongelar}
-                                                                    className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-12 w-12"
+                                                                    className="border-white/10 bg-white/5 hover:bg-white/10 text-white h-10 w-10"
                                                                 >
                                                                     <ChevronRight className="w-5 h-5" />
                                                                 </Button>
                                                             </div>
                                                             {/* Quick select buttons */}
-                                                            <div className="flex gap-2 justify-center mt-2">
+                                                            <div className="flex gap-2 justify-center">
                                                                 {[7, 14, maxDiasCongelar].filter((d, i, arr) => d <= maxDiasCongelar && arr.indexOf(d) === i).map(days => (
                                                                     <Button
                                                                         key={days}
@@ -750,39 +903,60 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                                         size="sm"
                                                                         onClick={() => setFreezeDays(days)}
                                                                         className={cn(
-                                                                            "border-white/10 text-sm",
+                                                                            "border-white/10 text-xs",
                                                                             freezeDays === days ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30" : "bg-white/5 text-white/60 hover:bg-white/10"
                                                                         )}
                                                                     >
-                                                                        {days === maxDiasCongelar ? 'Máximo' : `${days} días`}
+                                                                        {days === maxDiasCongelar ? 'Máx' : `${days}d`}
                                                                     </Button>
                                                                 ))}
                                                             </div>
                                                         </div>
 
-                                                        {/* Summary - Days Used vs Remaining */}
-                                                        <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-white/60">Días que usarás:</span>
-                                                                <span className="text-cyan-400 font-semibold">{freezeDays} días</span>
+                                                        {/* Summary Card */}
+                                                        {freezeDate && (
+                                                            <div className="bg-zinc-800/50 rounded-xl p-4 space-y-3">
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-white/60 text-sm">Inicio de congelamiento:</span>
+                                                                    <span className="text-white font-medium">{format(freezeDate, "EEEE d 'de' MMMM", { locale: es })}</span>
+                                                                </div>
+                                                                <div className="h-px bg-white/10" />
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-white/60 text-sm">Retomarías clases:</span>
+                                                                    <span className="text-emerald-400 font-medium">
+                                                                        {format(addDays(freezeDate, freezeDays), "EEEE d 'de' MMMM", { locale: es })}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="h-px bg-white/10" />
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-white/60 text-sm">Días que usarás:</span>
+                                                                    <span className="text-cyan-400 font-semibold">{freezeDays} de {maxDiasCongelar}</span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-white/60 text-sm">Te quedarán:</span>
+                                                                    <span className={cn(
+                                                                        "font-semibold",
+                                                                        (maxDiasCongelar - freezeDays) > 0 ? "text-emerald-400" : "text-amber-400"
+                                                                    )}>
+                                                                        {maxDiasCongelar - freezeDays} días
+                                                                    </span>
+                                                                </div>
                                                             </div>
-                                                            <div className="h-px bg-white/10" />
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-white/60">Te quedarán:</span>
-                                                                <span className={cn(
-                                                                    "font-semibold",
-                                                                    (maxDiasCongelar - freezeDays) > 0 ? "text-emerald-400" : "text-amber-400"
-                                                                )}>
-                                                                    {maxDiasCongelar - freezeDays} días
-                                                                </span>
-                                                            </div>
+                                                        )}
+
+                                                        {/* Info Note */}
+                                                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 flex items-start gap-2">
+                                                            <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
+                                                            <p className="text-blue-400/80 text-xs">
+                                                                Los domingos y feriados no se cuentan como días de congelamiento.
+                                                            </p>
                                                         </div>
 
                                                         {/* Warning if using all days */}
                                                         {freezeDays === maxDiasCongelar && (
                                                             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start gap-2">
-                                                                <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                                                                <p className="text-amber-400/80 text-sm">
+                                                                <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                                                                <p className="text-amber-400/80 text-xs">
                                                                     Estás usando todos tus días de congelamiento disponibles.
                                                                 </p>
                                                             </div>
@@ -799,8 +973,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                         </Button>
                                                         <Button
                                                             onClick={handleFreezeConfirm}
-                                                            disabled={isFreezing}
-                                                            className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white"
+                                                            disabled={isFreezing || !freezeDate}
+                                                            className="flex-1 bg-cyan-500 hover:bg-cyan-600 text-white disabled:opacity-50"
                                                         >
                                                             {isFreezing ? 'Procesando...' : `Confirmar ${freezeDays} días`}
                                                         </Button>
@@ -875,8 +1049,8 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 }
