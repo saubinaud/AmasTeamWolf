@@ -94,7 +94,7 @@ interface AuthContextType {
   user: UserData | null;
   authId: string | null;
   loadUserProfile: (authId: string, email?: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUserData: () => Promise<void>;
 }
 
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Get Logto authentication state
-  const { isAuthenticated: logtoAuthenticated, getIdTokenClaims } = useLogto();
+  const { isAuthenticated: logtoAuthenticated, getIdTokenClaims, signOut } = useLogto();
 
   // Check for stored profile and session expiry on mount
   useEffect(() => {
@@ -300,13 +300,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    // Clear local storage first
     localStorage.removeItem('amasUserProfile');
     localStorage.removeItem('amasAuthId');
     localStorage.removeItem('amasSessionTimestamp');
     setUser(null);
     setAuthId(null);
-  }, []);
+
+    // Sign out from Logto
+    try {
+      const postLogoutRedirect = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+        ? 'http://localhost:5173/'
+        : 'https://amasteamwolf.com/';
+      await signOut(postLogoutRedirect);
+    } catch (error) {
+      console.error('Error signing out from Logto:', error);
+    }
+  }, [signOut]);
 
   const refreshUserData = useCallback(async () => {
     if (authId && user?.familia?.email) {

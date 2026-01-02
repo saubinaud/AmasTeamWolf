@@ -40,6 +40,7 @@ import { cn } from './ui/utils';
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
 import { PerfilDesktop } from './PerfilDesktop';
 import { AccountLinkingStep } from './AccountLinkingStep';
+import { HeaderMain } from './HeaderMain';
 
 interface PerfilPageProps {
   onNavigate: (page: string) => void;
@@ -801,6 +802,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
+
+      {/* Header for navigation */}
+      <HeaderMain
+        onNavigate={onNavigate}
+        onOpenMatricula={() => onNavigate('planes')}
+        onCartClick={() => { }}
+        cartItemsCount={0}
+      />
 
       {/* Background */}
       <div className="fixed inset-0 pointer-events-none">
