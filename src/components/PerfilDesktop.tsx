@@ -442,124 +442,160 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                className="grid grid-cols-3 gap-6"
+                                className="space-y-6"
                             >
-                                {/* Calendar - Full Width Style */}
-                                <div className="col-span-2 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8">
-                                    <div className="flex items-center justify-between mb-8">
-                                        <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
-                                            <Calendar className="w-6 h-6 text-[#FCA929]" />
-                                            Calendario de Asistencias
-                                        </h3>
+                                {/* Google Calendar Style Header */}
+                                <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+                                    <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-4">
+                                            <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
+                                                <Calendar className="w-6 h-6 text-[#FCA929]" />
+                                                Calendario de Asistencias
+                                            </h3>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setCalendarMonth(new Date())}
+                                                className="border-[#FA7B21]/30 bg-[#FA7B21]/10 hover:bg-[#FA7B21]/20 text-[#FCA929]"
+                                            >
+                                                Hoy
+                                            </Button>
+                                        </div>
+                                        <div className="flex items-center gap-3">
                                             <Button
                                                 variant="outline"
                                                 size="icon"
                                                 onClick={() => setCalendarMonth(subMonths(calendarMonth, 1))}
-                                                className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl"
+                                                className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl h-10 w-10"
                                             >
                                                 <ChevronLeft className="w-5 h-5" />
                                             </Button>
-                                            <span className="text-xl font-medium text-white min-w-[200px] text-center capitalize">
+                                            <span className="text-xl font-medium text-white min-w-[180px] text-center capitalize">
                                                 {format(calendarMonth, 'MMMM yyyy', { locale: es })}
                                             </span>
                                             <Button
                                                 variant="outline"
                                                 size="icon"
                                                 onClick={() => setCalendarMonth(addMonths(calendarMonth, 1))}
-                                                className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl"
+                                                className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl h-10 w-10"
                                             >
                                                 <ChevronRight className="w-5 h-5" />
                                             </Button>
                                         </div>
                                     </div>
 
-                                    {/* Week Headers */}
-                                    <div className="grid grid-cols-7 gap-2 mb-4">
-                                        {weekDays.map(day => (
-                                            <div key={day} className="text-center text-white/40 text-sm font-medium py-2">
+                                    {/* Week Headers - Google Style */}
+                                    <div className="grid grid-cols-6 gap-3 mb-4">
+                                        {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map(day => (
+                                            <div key={day} className="text-center text-white/50 text-sm font-medium py-3 border-b border-white/5">
                                                 {day}
                                             </div>
                                         ))}
                                     </div>
 
-                                    {/* Calendar Grid */}
-                                    <div className="grid grid-cols-7 gap-2">
-                                        {calendarGrid.map((day, idx) => {
-                                            const attendance = getAttendance(day);
-                                            const inCurrentMonth = isCurrentMonth(day);
-                                            const today = isToday(day);
+                                    {/* Calendar Grid - Full Month, Monday to Saturday */}
+                                    <div className="grid grid-cols-6 gap-3">
+                                        {calendarGrid
+                                            .filter(day => {
+                                                const dayOfWeek = day.getDay();
+                                                return dayOfWeek >= 1 && dayOfWeek <= 6; // Mon-Sat only
+                                            })
+                                            .map((day, idx) => {
+                                                const attendance = getAttendance(day);
+                                                const inCurrentMonth = isCurrentMonth(day);
+                                                const today = isToday(day);
 
-                                            return (
-                                                <motion.div
-                                                    key={idx}
-                                                    whileHover={{ scale: 1.05 }}
-                                                    className={cn(
-                                                        "aspect-square rounded-xl flex flex-col items-center justify-center relative transition-all cursor-pointer",
-                                                        !inCurrentMonth && "opacity-30",
-                                                        today && "ring-2 ring-[#FCA929]",
-                                                        attendance?.estado === 'asistio' && "bg-emerald-500/20 border border-emerald-500/30",
-                                                        attendance?.estado === 'falta' && "bg-red-500/20 border border-red-500/30",
-                                                        attendance?.estado === 'tardanza' && "bg-amber-500/20 border border-amber-500/30",
-                                                        !attendance && inCurrentMonth && "bg-white/5 hover:bg-white/10 border border-transparent"
-                                                    )}
-                                                >
-                                                    <span className={cn(
-                                                        "text-lg font-medium",
-                                                        today ? "text-[#FCA929]" : "text-white",
-                                                        attendance?.estado === 'asistio' && "text-emerald-400",
-                                                        attendance?.estado === 'falta' && "text-red-400",
-                                                        attendance?.estado === 'tardanza' && "text-amber-400"
-                                                    )}>
-                                                        {format(day, 'd')}
-                                                    </span>
-                                                    {attendance && (
-                                                        <div className="absolute bottom-2">
-                                                            {attendance.estado === 'asistio' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                                                            {attendance.estado === 'falta' && <Clock className="w-4 h-4 text-red-400" />}
-                                                            {attendance.estado === 'tardanza' && <AlertTriangle className="w-4 h-4 text-amber-400" />}
+                                                return (
+                                                    <motion.div
+                                                        key={idx}
+                                                        whileHover={{ scale: 1.02 }}
+                                                        className={cn(
+                                                            "min-h-[80px] rounded-xl p-3 flex flex-col transition-all cursor-pointer relative",
+                                                            !inCurrentMonth && "opacity-40",
+                                                            today && "ring-2 ring-[#FCA929] bg-[#FA7B21]/10",
+                                                            attendance?.estado === 'asistio' && "bg-emerald-500/15 border border-emerald-500/30",
+                                                            attendance?.estado === 'tardanza' && "bg-amber-500/15 border border-amber-500/30",
+                                                            !attendance && inCurrentMonth && !today && "bg-white/[0.02] hover:bg-white/[0.05] border border-white/5"
+                                                        )}
+                                                    >
+                                                        {/* Date number */}
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className={cn(
+                                                                "text-lg font-semibold",
+                                                                today ? "text-[#FCA929]" : "text-white/80",
+                                                                attendance?.estado === 'asistio' && "text-emerald-400",
+                                                                attendance?.estado === 'tardanza' && "text-amber-400"
+                                                            )}>
+                                                                {format(day, 'd')}
+                                                            </span>
+                                                            {today && (
+                                                                <span className="text-[10px] uppercase tracking-wider text-[#FCA929] font-medium bg-[#FA7B21]/20 px-2 py-0.5 rounded">
+                                                                    Hoy
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                    )}
-                                                </motion.div>
-                                            );
-                                        })}
+
+                                                        {/* Attendance indicator */}
+                                                        {attendance && (
+                                                            <div className="flex-1 flex items-end">
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-lg",
+                                                                    attendance.estado === 'asistio' && "bg-emerald-500/20 text-emerald-400",
+                                                                    attendance.estado === 'tardanza' && "bg-amber-500/20 text-amber-400"
+                                                                )}>
+                                                                    {attendance.estado === 'asistio' && <CheckCircle2 className="w-3.5 h-3.5" />}
+                                                                    {attendance.estado === 'tardanza' && <AlertTriangle className="w-3.5 h-3.5" />}
+                                                                    <span className="capitalize">{attendance.estado === 'asistio' ? 'Asistió' : 'Tardanza'}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </motion.div>
+                                                );
+                                            })}
                                     </div>
                                 </div>
 
-                                {/* Stats & Legend */}
-                                <div className="space-y-6">
-                                    {/* Legend */}
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
-                                        <h4 className="text-lg font-semibold text-white mb-4">Leyenda</h4>
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-4 h-4 rounded bg-emerald-500/50 border border-emerald-500"></div>
-                                                <span className="text-white/70">Asistencia</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-4 h-4 rounded bg-amber-500/50 border border-amber-500"></div>
-                                                <span className="text-white/70">Tardanza</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-4 h-4 rounded ring-2 ring-[#FCA929]"></div>
-                                                <span className="text-white/70">Hoy</span>
-                                            </div>
+                                {/* Stats Row - Horizontal */}
+                                <div className="grid grid-cols-3 gap-4">
+                                    {/* Total Asistencias */}
+                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5 flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                                            <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-white/50 text-sm">Asistencias</p>
+                                            <p className="text-2xl font-bold text-emerald-400">{totalAsistencias}</p>
                                         </div>
                                     </div>
 
-                                    {/* Summary */}
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
-                                        <h4 className="text-lg font-semibold text-white mb-4">Resumen</h4>
-                                        <div className="space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-white/60">Asistencias</span>
-                                                <span className="text-emerald-400 font-semibold text-lg">{totalAsistencias}</span>
+                                    {/* Tardanzas */}
+                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5 flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                                            <AlertTriangle className="w-6 h-6 text-amber-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-white/50 text-sm">Tardanzas</p>
+                                            <p className="text-2xl font-bold text-amber-400">
+                                                {user?.asistencias?.filter((a: any) => a.estado === 'tardanza').length || 0}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Legend */}
+                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5">
+                                        <p className="text-white/50 text-sm mb-3">Leyenda</p>
+                                        <div className="flex flex-wrap gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded bg-emerald-500/50 border border-emerald-500"></div>
+                                                <span className="text-white/70 text-sm">Asistencia</span>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-white/60">Tardanzas</span>
-                                                <span className="text-amber-400 font-semibold text-lg">
-                                                    {user?.asistencias?.filter((a: any) => a.estado === 'tardanza').length || 0}
-                                                </span>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded bg-amber-500/50 border border-amber-500"></div>
+                                                <span className="text-white/70 text-sm">Tardanza</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-3 h-3 rounded ring-2 ring-[#FCA929]"></div>
+                                                <span className="text-white/70 text-sm">Hoy</span>
                                             </div>
                                         </div>
                                     </div>
