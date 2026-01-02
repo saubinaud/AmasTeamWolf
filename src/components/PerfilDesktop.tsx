@@ -59,6 +59,12 @@ function formatDate(dateStr: string | Date | undefined | null): string {
     }
 }
 
+// Normalize name to Title Case
+function toTitleCase(str: string): string {
+    if (!str) return '';
+    return str.toLowerCase().replace(/(?:^|\s)\S/g, (match) => match.toUpperCase());
+}
+
 export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefreshing }: PerfilDesktopProps) {
     const [activeSection, setActiveSection] = useState<'home' | 'calendar' | 'plan' | 'messages'>('home');
     const [calendarMonth, setCalendarMonth] = useState(new Date());
@@ -78,7 +84,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
     const estaVencido = diasRestantes < 0;
     const diasVencido = estaVencido ? Math.abs(diasRestantes) : 0;
-    const estaPorVencer = diasRestantes >= 0 && diasRestantes <= 7;
+    const estaPorVencer = diasRestantes >= 0 && diasRestantes <= 15;
     const getIniciales = (nombre: string) => nombre?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
     const isPagado = user?.pagos?.estadoPago?.toLowerCase().includes('pagado');
     const totalAsistencias = user?.asistencias?.filter((a: any) => a.estado === 'asistio').length || 0;
@@ -147,30 +153,13 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                 cartItemsCount={0}
             />
 
-            {/* Background Effects - Hero Style */}
+            {/* Background - Simple orange glow at bottom */}
             <div className="fixed inset-0 pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
+                <div className="absolute inset-0 bg-[#0f0f0f]" />
                 <div
-                    className="absolute inset-0 opacity-20"
+                    className="absolute inset-0"
                     style={{
-                        background: 'radial-gradient(circle at 20% 30%, rgba(250, 123, 33, 0.15) 0%, transparent 50%)'
-                    }}
-                />
-                <div
-                    className="absolute inset-0 opacity-15"
-                    style={{
-                        background: 'radial-gradient(circle at 80% 70%, rgba(252, 169, 41, 0.2) 0%, transparent 60%)'
-                    }}
-                />
-                {/* Grid pattern */}
-                <div
-                    className="absolute inset-0 opacity-[0.02]"
-                    style={{
-                        backgroundImage: `
-                            linear-gradient(rgba(252, 169, 41, 0.5) 1px, transparent 1px),
-                            linear-gradient(90deg, rgba(252, 169, 41, 0.5) 1px, transparent 1px)
-                        `,
-                        backgroundSize: '60px 60px'
+                        background: 'radial-gradient(ellipse 120% 60% at 50% 100%, rgba(250, 123, 33, 0.15) 0%, rgba(252, 169, 41, 0.08) 30%, transparent 70%)'
                     }}
                 />
             </div>
@@ -215,7 +204,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                 backgroundClip: 'text'
                                             }}
                                         >
-                                            {user?.estudiante?.nombre || 'Estudiante'}
+                                            {toTitleCase(user?.estudiante?.nombre || 'Estudiante')}
                                         </h1>
                                         <Badge className="bg-[#FA7B21]/20 text-[#FCA929] border-[#FA7B21]/30">
                                             {user?.estudiante?.categoria || 'Estudiante'}
@@ -392,7 +381,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         <div className="space-y-4">
                                             <div>
                                                 <p className="text-white/40 text-sm">Nombre completo</p>
-                                                <p className="text-white text-lg">{user?.estudiante?.nombre || '-'}</p>
+                                                <p className="text-white text-lg">{toTitleCase(user?.estudiante?.nombre || '-')}</p>
                                             </div>
                                             <div>
                                                 <p className="text-white/40 text-sm">DNI</p>
@@ -548,10 +537,6 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                 <span className="text-white/70">Asistencia</span>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-4 h-4 rounded bg-red-500/50 border border-red-500"></div>
-                                                <span className="text-white/70">Falta</span>
-                                            </div>
-                                            <div className="flex items-center gap-3">
                                                 <div className="w-4 h-4 rounded bg-amber-500/50 border border-amber-500"></div>
                                                 <span className="text-white/70">Tardanza</span>
                                             </div>
@@ -571,12 +556,6 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                 <span className="text-emerald-400 font-semibold text-lg">{totalAsistencias}</span>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-white/60">Faltas</span>
-                                                <span className="text-red-400 font-semibold text-lg">
-                                                    {user?.asistencias?.filter((a: any) => a.estado === 'falta').length || 0}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
                                                 <span className="text-white/60">Tardanzas</span>
                                                 <span className="text-amber-400 font-semibold text-lg">
                                                     {user?.asistencias?.filter((a: any) => a.estado === 'tardanza').length || 0}
@@ -584,49 +563,6 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Freeze Card */}
-                                    {maxDiasCongelar > 0 && (
-                                        <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-sm border border-cyan-500/20 rounded-3xl p-6">
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <Snowflake className="w-6 h-6 text-cyan-400" />
-                                                <h4 className="text-lg font-semibold text-white">Congelar Programa</h4>
-                                            </div>
-                                            <p className="text-white/60 text-sm mb-4">
-                                                Tienes hasta {maxDiasCongelar} días disponibles para congelar
-                                            </p>
-                                            <Dialog open={isFreezeDialogOpen} onOpenChange={setIsFreezeDialogOpen}>
-                                                <DialogTrigger asChild>
-                                                    <Button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30">
-                                                        <Snowflake className="w-4 h-4 mr-2" />
-                                                        Solicitar Congelamiento
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="bg-zinc-900 border-white/10">
-                                                    <DialogHeader>
-                                                        <DialogTitle className="text-white">Congelar Programa</DialogTitle>
-                                                        <DialogDescription className="text-white/60">
-                                                            Selecciona cuántos días deseas congelar
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className="py-4">
-                                                        <p className="text-white/60 text-sm text-center">
-                                                            Máximo {maxDiasCongelar} días disponibles
-                                                        </p>
-                                                    </div>
-                                                    <DialogFooter>
-                                                        <Button
-                                                            onClick={handleFreezeConfirm}
-                                                            disabled={isFreezing}
-                                                            className="bg-cyan-500 hover:bg-cyan-600 text-white"
-                                                        >
-                                                            {isFreezing ? 'Procesando...' : 'Confirmar'}
-                                                        </Button>
-                                                    </DialogFooter>
-                                                </DialogContent>
-                                            </Dialog>
-                                        </div>
-                                    )}
                                 </div>
                             </motion.div>
                         )}
@@ -684,6 +620,15 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             <span className="text-white font-medium">{formatDate(user?.matricula?.fechaFin)}</span>
                                         </div>
                                         <div className="flex justify-between items-center py-3 border-b border-white/5">
+                                            <span className="text-white/60">Días restantes</span>
+                                            <span className={cn(
+                                                "font-medium",
+                                                estaVencido ? "text-red-400" : estaPorVencer ? "text-amber-400" : "text-emerald-400"
+                                            )}>
+                                                {estaVencido ? `Vencido hace ${diasVencido} días` : `${diasRestantes} días`}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-3 border-b border-white/5">
                                             <span className="text-white/60">Estado</span>
                                             <span className={cn(
                                                 "font-medium",
@@ -701,40 +646,73 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     </div>
                                 </div>
 
-                                {/* Renewal CTA */}
-                                <div className="bg-gradient-to-br from-[#FA7B21]/20 via-[#431C28]/30 to-[#FCA929]/10 backdrop-blur-sm border border-[#FA7B21]/30 rounded-3xl p-8 flex flex-col">
-                                    <div className="flex-1">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mb-6 shadow-2xl shadow-[#FA7B21]/30">
-                                            <Sparkles className="w-8 h-8 text-white" />
+                                {/* Right column: Freeze + conditional Renewal */}
+                                <div className="space-y-6">
+                                    {/* Freeze Card */}
+                                    {maxDiasCongelar > 0 && (
+                                        <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-sm border border-cyan-500/20 rounded-3xl p-6">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <Snowflake className="w-6 h-6 text-cyan-400" />
+                                                <h4 className="text-lg font-semibold text-white">Congelar Programa</h4>
+                                            </div>
+                                            <p className="text-white/60 text-sm mb-4">
+                                                Tienes hasta {maxDiasCongelar} días disponibles para congelar tu programa
+                                            </p>
+                                            <Dialog open={isFreezeDialogOpen} onOpenChange={setIsFreezeDialogOpen}>
+                                                <DialogTrigger asChild>
+                                                    <Button className="w-full bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border border-cyan-500/30">
+                                                        <Snowflake className="w-4 h-4 mr-2" />
+                                                        Solicitar Congelamiento
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent className="bg-zinc-900 border-white/10">
+                                                    <DialogHeader>
+                                                        <DialogTitle className="text-white">Congelar Programa</DialogTitle>
+                                                        <DialogDescription className="text-white/60">
+                                                            Selecciona cuántos días deseas congelar
+                                                        </DialogDescription>
+                                                    </DialogHeader>
+                                                    <div className="py-4">
+                                                        <p className="text-white/60 text-sm text-center">
+                                                            Máximo {maxDiasCongelar} días disponibles
+                                                        </p>
+                                                    </div>
+                                                    <DialogFooter>
+                                                        <Button
+                                                            onClick={handleFreezeConfirm}
+                                                            disabled={isFreezing}
+                                                            className="bg-cyan-500 hover:bg-cyan-600 text-white"
+                                                        >
+                                                            {isFreezing ? 'Procesando...' : 'Confirmar'}
+                                                        </Button>
+                                                    </DialogFooter>
+                                                </DialogContent>
+                                            </Dialog>
                                         </div>
-                                        <h3 className="text-2xl font-bold text-white mb-3">
-                                            ¿Listo para renovar?
-                                        </h3>
-                                        <p className="text-white/60 mb-6">
-                                            Renueva tu programa y continúa el entrenamiento sin interrupciones.
-                                            Aprovecha nuestras ofertas especiales.
-                                        </p>
-                                        <ul className="space-y-3 mb-8">
-                                            <li className="flex items-center gap-3 text-white/70">
-                                                <CheckCircle2 className="w-5 h-5 text-[#FCA929]" />
-                                                Mantén tu progreso
-                                            </li>
-                                            <li className="flex items-center gap-3 text-white/70">
-                                                <CheckCircle2 className="w-5 h-5 text-[#FCA929]" />
-                                                Días adicionales de regalo
-                                            </li>
-                                            <li className="flex items-center gap-3 text-white/70">
-                                                <CheckCircle2 className="w-5 h-5 text-[#FCA929]" />
-                                                Precio preferencial
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    <Button
-                                        onClick={() => onNavigate('renovacion')}
-                                        className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-lg shadow-2xl shadow-[#FA7B21]/30"
-                                    >
-                                        Renovar Programa
-                                    </Button>
+                                    )}
+
+                                    {/* Renewal CTA - Only when 15 days or less remaining */}
+                                    {(estaPorVencer || estaVencido) && (
+                                        <div className="bg-gradient-to-br from-[#FA7B21]/20 via-[#431C28]/30 to-[#FCA929]/10 backdrop-blur-sm border border-[#FA7B21]/30 rounded-3xl p-6">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="w-12 h-12 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-xl flex items-center justify-center shadow-lg shadow-[#FA7B21]/30">
+                                                    <Sparkles className="w-6 h-6 text-white" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-white">¡Hora de renovar!</h4>
+                                                    <p className="text-white/60 text-sm">
+                                                        {estaVencido ? 'Tu programa ha vencido' : `Solo quedan ${diasRestantes} días`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button
+                                                onClick={() => onNavigate('renovacion')}
+                                                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 shadow-lg shadow-[#FA7B21]/30"
+                                            >
+                                                Renovar Programa
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         )}
