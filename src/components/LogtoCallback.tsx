@@ -63,6 +63,7 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
         };
 
         handleCallback();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAuthenticated, isLoading]);
 
     if (error) {
