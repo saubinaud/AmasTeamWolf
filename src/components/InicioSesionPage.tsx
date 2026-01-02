@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLogto } from '@logto/react';
 import { Loader2, Lock, ArrowLeft } from 'lucide-react';
 import { Button } from './ui/button';
@@ -9,15 +9,17 @@ interface InicioSesionPageProps {
 
 export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
   const { signIn, isAuthenticated, isLoading } = useLogto();
+  const hasRedirected = useRef(false);
 
   // Determine callback URL based on environment
   const callbackUrl = typeof window !== 'undefined' && window.location.hostname === 'localhost'
     ? 'http://localhost:5173/callback'
     : 'https://amasteamwolf.com/callback';
 
-  // Auto-redirect to profile if already authenticated
+  // Auto-redirect to profile if already authenticated (only once)
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated && !isLoading && !hasRedirected.current) {
+      hasRedirected.current = true;
       onNavigate('perfil');
     }
   }, [isAuthenticated, isLoading, onNavigate]);
