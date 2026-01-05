@@ -351,13 +351,13 @@ export function RegistroShowroomPage({
 
     if (edadEnMeses >= 12 && edadEnMeses <= 29) {
       // De 1 año a 2 años y 5 meses (12-29 meses)
-      setHorario('11:00 AM');
+      setHorario('11:30 AM');
     } else if (edadEnMeses >= 30 && edadEnMeses <= 47) {
       // De 2 años y 6 meses a 3 años y 11 meses (30-47 meses)
-      setHorario('11:30 AM');
+      setHorario('12:00 PM');
     } else if (edadEnMeses >= 48) {
       // De 4 años a más (48+ meses)
-      setHorario('12:00 PM');
+      setHorario('12:30 PM');
     } else {
       setHorario(null);
     }
