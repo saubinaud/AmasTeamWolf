@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 import { useUmami } from '../hooks/useUmami';
+import { trackEvent as trackPixelEvent } from '../utils/pixel';
 
 // --- INTERFAZ DE PROPS ---
 interface RegistroShowroomProps {
@@ -69,14 +70,14 @@ const testimonials = [
 
 // --- IMÁGENES DE GALERÍA ---
 const galleryImages = [
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg'},
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg'},
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125421/Publicidad_Image_6998_1_pjw0qi.jpg' },
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg' },
   { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847478/Valencia_2_t8q3hl.jpg', alt: 'Alumnos practicando' },
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg'},
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg'},
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg'},
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg'},
-  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125698/Requested_Photos_and_Videos_8660_vy633p.jpg'}
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763124491/AMAS_-_graduacio%CC%81n_profesores_pr3xtc.jpg' },
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847692/WhatsApp_Image_2025-10-25_at_18.31.36_nfl4y6.jpg' },
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125422/Requested_Photos_and_Videos_8549_zpzgdf.jpg' },
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763847922/AMAS_-_graduacio%CC%81n_profesores_3_au3zh0.jpg' },
+  { src: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_600/v1763125698/Requested_Photos_and_Videos_8660_vy633p.jpg' }
 ];
 
 // --- CARRUSEL INFINITO DE GALERÍA ---
@@ -244,11 +245,10 @@ const TestimonialsSection = () => {
                     setCurrentIndex(i);
                     setIsAutoPlaying(false);
                   }}
-                  className={`transition-all duration-300 rounded-full ${
-                    i === currentIndex
+                  className={`transition-all duration-300 rounded-full ${i === currentIndex
                       ? 'w-10 h-3 bg-gradient-to-r from-[#FF6700] to-[#ff8800]'
                       : 'w-3 h-3 bg-white/30 hover:bg-white/50'
-                  }`}
+                    }`}
                   aria-label={`Ir al testimonio ${i + 1}`}
                 />
               ))}
@@ -306,6 +306,10 @@ export function RegistroShowroomPage({
   useEffect(() => {
     window.scrollTo(0, 0);
     trackEvent('Página Vista', { pagina: 'Registro Showroom' });
+    trackPixelEvent('ViewContent', {
+      content_name: 'ShowroomPage',
+      content_category: 'Showroom'
+    });
   }, []);
 
   const validateEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -423,19 +427,25 @@ export function RegistroShowroomPage({
       });
 
       const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/regsitro-showroom', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-           ...formData,
-           horario: horario,
-           timestamp: new Date().toISOString(),
-           source: 'landing_showroom'
-         }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          horario: horario,
+          timestamp: new Date().toISOString(),
+          source: 'landing_showroom'
+        }),
       });
 
       if (response.ok) {
         setIsSubmitted(true);
         trackFormSubmit('Registro Showroom');
+        trackPixelEvent('CompleteRegistration', {
+          content_name: 'ShowroomRegistry',
+          status: 'success',
+          currency: 'PEN',
+          value: 0.00
+        });
         toast.success('¡Registro enviado con éxito! 🎉', { position: 'top-center' });
 
         if (topRef.current) {
@@ -820,7 +830,7 @@ export function RegistroShowroomPage({
                       <span className="relative flex items-center justify-center gap-3 px-8 py-5 md:py-6 text-white text-lg md:text-2xl font-black uppercase tracking-wider">
                         {isSubmitting ? (
                           <>
-                            <Loader2 className="w-7 h-7 md:w-8 md:h-8 animate-spin"/>
+                            <Loader2 className="w-7 h-7 md:w-8 md:h-8 animate-spin" />
                             Enviando...
                           </>
                         ) : (

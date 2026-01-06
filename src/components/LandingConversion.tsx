@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 import { ImageLightbox } from './ImageLightbox';
+import { trackEvent } from '../utils/pixel';
 
 interface LandingConversionProps {
   onNavigate: (page: string, sectionId?: string) => void;
@@ -146,6 +147,15 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         const message = encodeURIComponent(
           `Hola, soy ${formData.nombrePadre}. Acabo de registrarme para la clase de prueba de mi hijo/a ${formData.nombreAlumno}.`
         );
+
+        // Track Lead Event
+        trackEvent('Lead', {
+          content_name: 'LandingForm',
+          content_category: 'TrialClass',
+          value: 0.00,
+          currency: 'PEN'
+        });
+
         window.open(`https://wa.me/51989717412?text=${message}`, '_blank');
 
         setIsModalOpen(false);
@@ -170,6 +180,10 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    trackEvent('ViewContent', {
+      content_name: 'LandingPage',
+      content_category: 'Landing'
+    });
   }, []);
 
   return (
