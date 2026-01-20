@@ -805,7 +805,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
 
   // Effect para calcular fecha de fin automáticamente
   useEffect(() => {
-    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 2) {
+    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 1) {
       setFechaFinCalculada('');
       setDetallesFechaFin(null);
       return;
@@ -837,8 +837,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     }
 
     // Validar días tentativos (mínimo 2) solo si la fecha no es "no-especificado"
-    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 2) {
-      toast.error('Debes seleccionar al menos 2 días de asistencia por semana');
+    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 1) {
+      toast.error('Debes seleccionar al menos 1 día de asistencia por semana');
       return;
     }
 
@@ -1532,7 +1532,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     2. Días Tentativos de Clases *
                   </Label>
                   <p className="text-white/60 text-sm mb-4">
-                    (Solo para cálculo de fecha fin - Selecciona al menos 2 días)
+                    (Solo para cálculo de fecha fin - Selecciona al menos 1 día)
                   </p>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1586,7 +1586,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               )}
 
               {/* Fecha de Fin (Calculada Automáticamente) */}
-              {diasTentativos.length >= 2 && fechaFinCalculada && (
+              {diasTentativos.length >= 1 && fechaFinCalculada && (
                 <div className="mb-6 p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
                   <div className="flex items-start gap-3 mb-4">
                     <div className="text-3xl">📅</div>
