@@ -1,4 +1,4 @@
-import { useState, useCallback, memo, useEffect, useRef } from 'react';
+import { useState, useCallback, memo, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
 import { Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Calendar, Gift, Heart, Trophy, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -42,7 +42,8 @@ const PROGRAMA_CLASES: Record<string, number> = {
   "1mes": 8,
   "full": 24,
   "6meses": 48,
-  "12meses": 96
+  "12meses_sin": 96,
+  "12meses_con": 96
 };
 
 // Precios base por programa
@@ -50,21 +51,24 @@ const PRECIOS_BASE: Record<string, number> = {
   "1mes": 330,
   "full": 869,
   "6meses": 1699,
-  "12meses": 3299
+  "12meses_sin": 2999,
+  "12meses_con": 3499
 };
 
 // Nombres de programas
 const NOMBRES_PROGRAMA: Record<string, string> = {
   "1mes": "1 Mes",
-  "full": "3 Meses Full",
-  "6meses": "6 Meses Full",
-  "12meses": "12 Meses Full"
+  "full": "3 Meses Full (2 veces x semana)",
+  "6meses": "6 Meses Full (2 veces x semana)",
+  "12meses_sin": "12 Meses Full (Sin Implementos)",
+  "12meses_con": "12 Meses Full (Con Implementos)"
 };
 
 // Información de planes
 const PLANES_INFO = {
   full: {
     duracion: "3 MESES",
+    subtitulo: "2 VECES X SEMANA",
     precio: 869,
     beneficios: [
       "3 meses de clase 2 veces x semana",
@@ -80,6 +84,7 @@ const PLANES_INFO = {
   },
   "6meses": {
     duracion: "6 MESES",
+    subtitulo: "2 VECES X SEMANA",
     precio: 1699,
     beneficios: [
       "6 meses de clase 2 veces x semana",
@@ -89,15 +94,17 @@ const PLANES_INFO = {
       "2 Graduaciones",
       "2 Nuevos cinturones con ceremonia",
       "2 Certificados del nuevo rango",
-      "Implemento de regalo para el próximo torneo 🥊 🥇"
+      "+ 15 días de membresía adicionales",
+      "Implemento incluido: Bo Staff ⚔️ (Valor S/180)"
     ],
     icon: "⚡",
     color: "from-orange-500 to-red-500",
     popular: true
   },
-  "12meses": {
+  "12meses_sin": {
     duracion: "12 MESES",
-    precio: 3299,
+    subtitulo: "SIN IMPLEMENTOS",
+    precio: 2999,
     beneficios: [
       "12 meses de clase 2 veces x semana",
       "Clases recuperables",
@@ -106,8 +113,28 @@ const PLANES_INFO = {
       "4 Graduaciones",
       "4 Nuevos cinturones con ceremonia",
       "4 Certificados del nuevo rango",
-      "1 mes de clase gratis añadidos al periodo 🥋 (14 meses)",
-      "Implemento de regalo para el próximo torneo 🥊 🥇"
+      "+ 15 días de membresía adicionales"
+    ],
+    icon: "💎",
+    color: "from-emerald-500 to-teal-500"
+  },
+  "12meses_con": {
+    duracion: "12 MESES",
+    subtitulo: "CON IMPLEMENTOS",
+    precio: 3499,
+    beneficios: [
+      "12 meses de clase 2 veces x semana",
+      "Clases recuperables",
+      "1 Congelamiento del programa por inasistencia o viaje",
+      "Cartilla de deberes programa completo (Seguimiento del progreso)",
+      "4 Graduaciones",
+      "4 Nuevos cinturones con ceremonia",
+      "4 Certificados del nuevo rango",
+      "Vigencia indeterminada del programa Leadership Wolf 🐺",
+      "Bo Staff ⚔️ (Valor S/180)",
+      "Guantes AMAS 🥊 (Valor S/250)",
+      "Zapato AMAS 🥊 (Valor S/250)",
+      "Parche distintivo Leadership Wolf"
     ],
     icon: "👑",
     color: "from-purple-500 to-pink-500",
@@ -139,21 +166,21 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
     tipo: "descuento_dinero",
     valor: 50,
     descripcion: "Descuento de S/ 50",
-    programasAplicables: ["1mes", "full", "6meses", "12meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
     activo: true
   },
   "AMAS-DESC100": {
     tipo: "descuento_dinero",
     valor: 100,
     descripcion: "Descuento de S/ 100",
-    programasAplicables: ["1mes", "full", "6meses", "12meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
     activo: true
   },
   "RENUEVA100": {
     tipo: "descuento_dinero",
     valor: 100,
     descripcion: "S/ 100 descuento por renovación anticipada",
-    programasAplicables: ["full", "6meses", "12meses"],
+    programasAplicables: ["full", "6meses", "12meses_sin", "12meses_con"],
     activo: true
   },
 
@@ -162,14 +189,14 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
     tipo: "descuento_porcentaje",
     valor: 10,
     descripcion: "10% de descuento",
-    programasAplicables: ["1mes", "full", "6meses", "12meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
     activo: true
   },
   "AMAS15OFF": {
     tipo: "descuento_porcentaje",
     valor: 15,
     descripcion: "15% de descuento",
-    programasAplicables: ["full", "6meses", "12meses"],
+    programasAplicables: ["full", "6meses", "12meses_sin", "12meses_con"],
     activo: true
   },
 
@@ -178,7 +205,7 @@ const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
     tipo: "polo_gratis",
     valor: 1,
     descripcion: "+1 polo oficial gratis (S/ 60)",
-    programasAplicables: ["1mes", "full", "6meses", "12meses"],
+    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
     activo: true
   }
 };
@@ -401,7 +428,7 @@ const INITIAL_FORM_STATE = {
 
 export const FormularioRenovacion = memo(function FormularioRenovacion({ onSuccess }: FormularioRenovacionProps) {
   // Estados
-  const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses' | '1mes' | null>(null);
+  const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses_sin' | '12meses_con' | '1mes' | null>(null);
   const [mostrar1Mes, setMostrar1Mes] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
@@ -512,7 +539,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -608,7 +635,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
     toast.info('Código promocional removido');
   }, []);
 
-  const handleSelectPlan = useCallback((plan: 'full' | '6meses' | '12meses' | '1mes') => {
+  const handleSelectPlan = useCallback((plan: 'full' | '6meses' | '12meses_sin' | '12meses_con' | '1mes') => {
     setPlanSeleccionado(plan);
     // Scroll al inicio del formulario
     setTimeout(() => {
@@ -622,10 +649,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
       const diasValidos = turnoSeleccionado === 'manana'
         ? ['Martes', 'Jueves', 'Sábado']
         : categoriaAlumno === 'Juniors'
-        ? ['Lunes', 'Miércoles', 'Viernes']
-        : categoriaAlumno === 'Adolescentes'
-        ? ['Martes', 'Jueves']
-        : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+          ? ['Lunes', 'Miércoles', 'Viernes']
+          : categoriaAlumno === 'Adolescentes'
+            ? ['Martes', 'Jueves']
+            : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
       const diasFiltrados = diasTentativos.filter(dia => diasValidos.includes(dia));
       if (diasFiltrados.length !== diasTentativos.length) {
@@ -636,7 +663,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
   // Effect para calcular fecha de fin
   useEffect(() => {
-    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 2 || !planSeleccionado) {
+    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 1 || !planSeleccionado) {
       setFechaFinCalculada('');
       setDetallesFechaFin(null);
       return;
@@ -652,7 +679,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
     });
   }, [formData.fechaInicio, diasTentativos, codigoAplicado, planSeleccionado]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     if (!planSeleccionado) {
@@ -671,8 +698,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
       return;
     }
 
-    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 2) {
-      toast.error('Debes seleccionar al menos 2 días de asistencia por semana');
+    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 1) {
+      toast.error('Debes seleccionar al menos 1 día de asistencia por semana');
       return;
     }
 
@@ -879,7 +906,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
 
-              <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+              <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
                 {/* Plan 3 meses */}
                 <div
                   onClick={() => handleSelectPlan('full')}
@@ -887,7 +914,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 >
                   <div className="text-center mb-6">
                     <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{PLANES_INFO.full.duracion}</h3>
+                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO.full.duracion}</h3>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO.full.subtitulo}</p>
                     <div className="flex items-baseline justify-center gap-2 mb-4">
                       <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                         S/ {PLANES_INFO.full.precio}
@@ -904,8 +932,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     ))}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-6 text-lg font-bold shadow-lg">
-                    Renovar con este Plan
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
+                    Renovar
                   </Button>
                 </div>
 
@@ -921,7 +949,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
                   <div className="text-center mb-6 mt-4">
                     <div className="text-5xl mb-4">{PLANES_INFO["6meses"].icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{PLANES_INFO["6meses"].duracion}</h3>
+                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["6meses"].duracion}</h3>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO["6meses"].subtitulo}</p>
                     <div className="flex items-baseline justify-center gap-2 mb-4">
                       <span className="text-4xl font-bold bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">
                         S/ {PLANES_INFO["6meses"].precio}
@@ -938,33 +967,29 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     ))}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-lg font-bold shadow-lg">
-                    Renovar con este Plan
+                  <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 text-base font-bold shadow-lg mt-auto">
+                    Renovar
                   </Button>
                 </div>
 
-                {/* Plan 12 meses - Mejor valor */}
+                {/* Plan 12 meses - Sin Implementos */}
                 <div
-                  onClick={() => handleSelectPlan('12meses')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-purple-500/50 rounded-2xl p-6 sm:p-8 hover:border-purple-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/30"
+                  onClick={() => handleSelectPlan('12meses_sin')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-emerald-500/50 rounded-2xl p-6 sm:p-8 hover:border-emerald-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/30"
                 >
-                  {/* Badge Mejor Valor */}
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
-                    MEJOR VALOR
-                  </div>
-
-                  <div className="text-center mb-6 mt-4">
-                    <div className="text-5xl mb-4">{PLANES_INFO["12meses"].icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-2">{PLANES_INFO["12meses"].duracion}</h3>
+                  <div className="text-center mb-6">
+                    <div className="text-5xl mb-4">{PLANES_INFO["12meses_sin"].icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["12meses_sin"].duracion}</h3>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO["12meses_sin"].subtitulo}</p>
                     <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                        S/ {PLANES_INFO["12meses"].precio}
+                      <span className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
+                        S/ {PLANES_INFO["12meses_sin"].precio}
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-3 mb-6">
-                    {PLANES_INFO["12meses"].beneficios.map((beneficio, index) => (
+                    {PLANES_INFO["12meses_sin"].beneficios.map((beneficio, index) => (
                       <div key={index} className="flex items-start gap-2">
                         <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
                         <span className="text-white/80 text-sm">{beneficio}</span>
@@ -972,8 +997,43 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     ))}
                   </div>
 
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-6 text-lg font-bold shadow-lg">
-                    Renovar con este Plan
+                  <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
+                    Renovar
+                  </Button>
+                </div>
+
+                {/* Plan 12 meses - Con Implementos */}
+                <div
+                  onClick={() => handleSelectPlan('12meses_con')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-purple-500/50 rounded-2xl p-6 sm:p-8 hover:border-purple-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/30"
+                >
+                  {/* Badge Mejor Valor */}
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg whitespace-nowrap">
+                    MEJOR VALOR
+                  </div>
+
+                  <div className="text-center mb-6 mt-4">
+                    <div className="text-5xl mb-4">{PLANES_INFO["12meses_con"].icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["12meses_con"].duracion}</h3>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO["12meses_con"].subtitulo}</p>
+                    <div className="flex items-baseline justify-center gap-2 mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                        S/ {PLANES_INFO["12meses_con"].precio}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {PLANES_INFO["12meses_con"].beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
+                    Renovar
                   </Button>
                 </div>
               </div>
@@ -1158,11 +1218,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                         <button
                           type="button"
                           onClick={() => setTurnoSeleccionado('manana')}
-                          className={`p-3 rounded-lg border-2 transition-all ${
-                            turnoSeleccionado === 'manana'
-                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                              : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                          }`}
+                          className={`p-3 rounded-lg border-2 transition-all ${turnoSeleccionado === 'manana'
+                            ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                            : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
+                            }`}
                         >
                           <div className="text-center">
                             <div className="text-2xl mb-1">🌄</div>
@@ -1177,11 +1236,10 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                         <button
                           type="button"
                           onClick={() => setTurnoSeleccionado('tarde')}
-                          className={`p-3 rounded-lg border-2 transition-all ${
-                            turnoSeleccionado === 'tarde'
-                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                              : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                          }`}
+                          className={`p-3 rounded-lg border-2 transition-all ${turnoSeleccionado === 'tarde'
+                            ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                            : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
+                            }`}
                         >
                           <div className="text-center">
                             <div className="text-2xl mb-1">🌆</div>
@@ -1299,9 +1357,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   ].map((option) => (
                     <label
                       key={option.value}
-                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                        polosOption === option.value ? 'border-[#FA7B21] bg-[#FA7B21]/10' : 'border-white/20 hover:border-white/30'
-                      }`}
+                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${polosOption === option.value ? 'border-[#FA7B21] bg-[#FA7B21]/10' : 'border-white/20 hover:border-white/30'
+                        }`}
                     >
                       <input
                         type="radio"
@@ -1373,16 +1430,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                         setOpcionFechaSeleccionada('fechas');
                         setMostrarOtraFecha(false);
                       }}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
-                        estaSeleccionada
-                          ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                          : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                      }`}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${estaSeleccionada
+                        ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                        : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
+                        }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                          estaSeleccionada ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                        }`}>
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${estaSeleccionada ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
+                          }`}>
                           {diaNumero}
                         </div>
                         <div className="flex-1">
@@ -1407,16 +1462,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     setOpcionFechaSeleccionada('no-especificado');
                     setMostrarOtraFecha(false);
                   }}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    opcionFechaSeleccionada === 'no-especificado'
-                      ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                      : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${opcionFechaSeleccionada === 'no-especificado'
+                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                    : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                      opcionFechaSeleccionada === 'no-especificado' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${opcionFechaSeleccionada === 'no-especificado' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
+                      }`}>
                       ⏰
                     </div>
                     <div className="flex-1">
@@ -1438,16 +1491,14 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     setOpcionFechaSeleccionada('otra');
                     setMostrarOtraFecha(true);
                   }}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${
-                    opcionFechaSeleccionada === 'otra'
-                      ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                      : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                  }`}
+                  className={`p-4 rounded-lg border-2 transition-all text-left ${opcionFechaSeleccionada === 'otra'
+                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
+                    : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${
-                      opcionFechaSeleccionada === 'otra' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                    }`}>
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${opcionFechaSeleccionada === 'otra' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
+                      }`}>
                       📅
                     </div>
                     <div className="flex-1">
@@ -1485,7 +1536,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   2. Días Tentativos de Clases *
                 </Label>
                 <p className="text-white/60 text-sm mb-4">
-                  (Solo para cálculo de fecha fin - Selecciona al menos 2 días)
+                  (Solo para cálculo de fecha fin - Selecciona al menos 1 día)
                 </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -1505,13 +1556,12 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     return (
                       <label
                         key={dia}
-                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${
-                          isDisabled
-                            ? 'border-white/10 opacity-40 cursor-not-allowed bg-zinc-800/30'
-                            : diasTentativos.includes(dia)
+                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${isDisabled
+                          ? 'border-white/10 opacity-40 cursor-not-allowed bg-zinc-800/30'
+                          : diasTentativos.includes(dia)
                             ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                             : 'border-white/20 hover:border-[#FA7B21]/50 cursor-pointer bg-zinc-800/50'
-                        }`}
+                          }`}
                       >
                         <input
                           type="checkbox"
@@ -1536,7 +1586,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
             )}
 
             {/* Fecha de Fin (Calculada) */}
-            {diasTentativos.length >= 2 && fechaFinCalculada && (
+            {diasTentativos.length >= 1 && fechaFinCalculada && (
               <div className="p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
                 <div className="flex items-start gap-3 mb-4">
                   <div className="text-3xl">📅</div>

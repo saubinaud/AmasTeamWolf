@@ -33,7 +33,7 @@ export function RenovacionPage({
 
     setTimeout(() => {
       setShowSuccessMessage(false);
-      window.location.href = 'https://amasteamwolf.com';
+      onNavigateHome();
     }, 1500);
   };
 
