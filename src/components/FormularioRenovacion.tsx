@@ -988,8 +988,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                       <p className="text-white/40 text-xs mt-4 italic">* Válido para alumnos con mínimo 3 meses de entrenamiento</p>
                     </div>
 
-                    <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-xl font-bold shadow-xl shadow-orange-500/20 rounded-xl group-hover:scale-[1.02] transition-transform">
-                      🐺 Quiero ser parte del programa Elite
+                    <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 sm:py-6 text-base sm:text-lg md:text-xl font-bold shadow-xl shadow-orange-500/20 rounded-xl group-hover:scale-[1.02] transition-transform h-auto whitespace-normal px-4 leading-tight">
+                      <span className="mr-2 text-2xl">🐺</span>
+                      <span>Quiero ser parte del programa Elite</span>
                     </Button>
                   </div>
                 </div>
