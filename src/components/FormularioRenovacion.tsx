@@ -103,7 +103,7 @@ const PLANES_INFO = {
   },
   "12meses_sin": {
     duracion: "12 MESES",
-    subtitulo: "SIN IMPLEMENTOS",
+    subtitulo: "",
     precio: 2999,
     beneficios: [
       "12 meses de clase 2 veces x semana",
@@ -119,26 +119,13 @@ const PLANES_INFO = {
     color: "from-emerald-500 to-teal-500"
   },
   "12meses_con": {
-    duracion: "12 MESES",
-    subtitulo: "CON IMPLEMENTOS",
-    precio: 3499,
-    beneficios: [
-      "12 meses de clase 2 veces x semana",
-      "Clases recuperables",
-      "1 Congelamiento del programa por inasistencia o viaje",
-      "Cartilla de deberes programa completo (Seguimiento del progreso)",
-      "4 Graduaciones",
-      "4 Nuevos cinturones con ceremonia",
-      "4 Certificados del nuevo rango",
-      "Vigencia indeterminada del programa Leadership Wolf 🐺",
-      "Bo Staff ⚔️ (Valor S/180)",
-      "Guantes AMAS 🥊 (Valor S/250)",
-      "Zapato AMAS 🥊 (Valor S/250)",
-      "Parche distintivo Leadership Wolf"
-    ],
+    duracion: "WOLF ELITE 365",
+    subtitulo: "PROGRAMA ELITE",
+    precio: 3699,
+    beneficios: [], // Se manejará visualmente en columnas separadas
     icon: "👑",
-    color: "from-purple-500 to-pink-500",
-    destacado: "MEJOR VALOR"
+    color: "from-[#FA7B21] via-[#FCA929] to-[#FA7B21]",
+    destacado: "PROGRAMA ELITE"
   }
 };
 
@@ -906,7 +893,110 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
 
-              <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
+              {/* WOLF ELITE 365 - Destacado Arriba */}
+              <div className="max-w-4xl mx-auto mb-16 relative">
+                {/* Badge Superior */}
+                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-10">
+                </div>
+
+                <div
+                  onClick={() => handleSelectPlan('12meses_con')}
+                  className="relative overflow-hidden bg-gradient-to-b from-zinc-900 to-black backdrop-blur-xl border-2 border-[#FA7B21] rounded-3xl p-8 sm:p-12 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#FA7B21]/40"
+                >
+                  {/* Background effects */}
+                  <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay"></div>
+                  <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#FA7B21]/20 rounded-full blur-3xl group-hover:bg-[#FA7B21]/30 transition-all duration-500"></div>
+                  <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl"></div>
+
+                  <div className="relative z-10">
+                    <div className="text-center mb-10">
+                      <h3 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight font-bold">
+                        WOLF ELITE
+                        <span className="text-[#FA7B21]"> 365</span>
+                      </h3>
+                      <p className="text-lg text-white/80 max-w-2xl mx-auto font-light mb-6">
+                        Un año completo de formación + todos los implementos + acceso de por vida al programa Leadership
+                      </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mb-12">
+                      {/* Columna 1 */}
+                      <div className="bg-white/5 rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-colors flex flex-col h-full">
+                        <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
+                          <div className="bg-[#FA7B21]/20 p-2 rounded-lg">
+                            <Trophy className="w-6 h-6 text-[#FA7B21]" />
+                          </div>
+                          <h4 className="text-xl font-bold text-white">Formación y Grados</h4>
+                        </div>
+                        <ul className="space-y-4">
+                          {[
+                            "96 clases al año (2x semana)",
+                            "Clases recuperables",
+                            "1 Congelamiento incluido",
+                            "4 Graduaciones",
+                            "4 Cinturones con ceremonia",
+                            "4 Certificados oficiales",
+                            "Cartilla de seguimiento"
+                          ].map((item, i) => (
+                            <li key={i} className="flex items-center gap-3">
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#FA7B21]"></div>
+                              <span className="text-white/90">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Columna 2 */}
+                      <div className="bg-white/5 rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-colors flex flex-col h-full">
+                        <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
+                          <div className="bg-[#FCA929]/20 p-2 rounded-lg">
+                            <Gift className="w-6 h-6 text-[#FCA929]" />
+                          </div>
+                          <h4 className="text-xl font-bold text-white">Kit Leadership Wolf</h4>
+                        </div>
+                        <ul className="space-y-4">
+                          {[
+                            { name: "Guantes AMAS", price: "S/ 250" },
+                            { name: "Zapatos AMAS", price: "S/ 250" },
+                            { name: "Bo Staff", price: "S/ 180" },
+                            { name: "Combat Weapon", price: "S/ 220" },
+                            { name: "Nunchaku", price: "S/ 350" },
+                            { name: "Parche Leadership", price: "" },
+                            { name: "Acceso indefinido Leadership", price: "" }
+                          ].map((item, i) => (
+                            <li key={i} className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-3">
+                                <Check className="w-5 h-5 text-green-400" />
+                                <span className="text-white/90">{item.name}</span>
+                              </div>
+                              {item.price && <span className="text-[#FCA929] text-sm font-semibold">{item.price}</span>}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Pricing Box */}
+                    <div className="max-w-2xl mx-auto bg-gradient-to-r from-zinc-800 to-zinc-900 rounded-3xl p-8 border border-white/10 text-center mb-6 relative overflow-hidden group-hover:border-[#FA7B21]/50 transition-colors shadow-2xl">
+                      <div className="text-white/50 text-xl mb-2 line-through decoration-red-500/50">Valor real: S/ 4,298</div>
+                      <div className="flex items-center justify-center gap-3 mb-4">
+                        <span className="text-4xl sm:text-5xl font-black text-[#FCA929] font-bold tracking-tight">S/ 3,699</span>
+                      </div>
+                      <div className="inline-block bg-[#FA7B21]/20 text-[#FCA929] px-4 py-1 rounded-full text-sm font-bold animate-pulse">
+                        Ahorra S/ 599 — Precio de lanzamiento
+                      </div>
+                      <p className="text-white/40 text-xs mt-4 italic">* Válido para alumnos con mínimo 3 meses de entrenamiento</p>
+                    </div>
+
+                    <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-xl font-bold shadow-xl shadow-orange-500/20 rounded-xl group-hover:scale-[1.02] transition-transform">
+                      🐺 Quiero ser parte del programa Elite
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid Inferior - 3 Columnas */}
+              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
                 {/* Plan 3 meses */}
                 <div
                   onClick={() => handleSelectPlan('full')}
@@ -980,7 +1070,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   <div className="text-center mb-6">
                     <div className="text-5xl mb-4">{PLANES_INFO["12meses_sin"].icon}</div>
                     <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["12meses_sin"].duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO["12meses_sin"].subtitulo}</p>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2 min-h-[1rem]">{PLANES_INFO["12meses_sin"].subtitulo}</p>
                     <div className="flex items-baseline justify-center gap-2 mb-4">
                       <span className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
                         S/ {PLANES_INFO["12meses_sin"].precio}
@@ -998,41 +1088,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </div>
 
                   <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
-                    Renovar
-                  </Button>
-                </div>
-
-                {/* Plan 12 meses - Con Implementos */}
-                <div
-                  onClick={() => handleSelectPlan('12meses_con')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-purple-500/50 rounded-2xl p-6 sm:p-8 hover:border-purple-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/30"
-                >
-                  {/* Badge Mejor Valor */}
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg whitespace-nowrap">
-                    MEJOR VALOR
-                  </div>
-
-                  <div className="text-center mb-6 mt-4">
-                    <div className="text-5xl mb-4">{PLANES_INFO["12meses_con"].icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["12meses_con"].duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO["12meses_con"].subtitulo}</p>
-                    <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                        S/ {PLANES_INFO["12meses_con"].precio}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {PLANES_INFO["12meses_con"].beneficios.map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{beneficio}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
                     Renovar
                   </Button>
                 </div>
