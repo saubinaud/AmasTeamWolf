@@ -792,7 +792,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   // Si no hay plan seleccionado, mostrar hero y cards de planes
   if (!planSeleccionado) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950">
+      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950 pt-24 sm:pt-28">
         {/* Hero Section Impactante */}
         <div className="relative overflow-hidden pt-28 sm:pt-32 lg:pt-20">
           {/* Background decorative elements */}
