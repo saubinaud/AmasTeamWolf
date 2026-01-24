@@ -52,7 +52,7 @@ const PRECIOS_BASE: Record<string, number> = {
   "full": 869,
   "6meses": 1699,
   "12meses_sin": 2999,
-  "12meses_con": 3499
+  "12meses_con": 3699
 };
 
 // Nombres de programas
@@ -61,7 +61,7 @@ const NOMBRES_PROGRAMA: Record<string, string> = {
   "full": "3 Meses Full (2 veces x semana)",
   "6meses": "6 Meses Full (2 veces x semana)",
   "12meses_sin": "12 Meses Full (Sin Implementos)",
-  "12meses_con": "12 Meses Full (Con Implementos)"
+  "12meses_con": "WOLF ELITE 365"
 };
 
 // Información de planes
@@ -413,7 +413,7 @@ const INITIAL_FORM_STATE = {
   fechaFin: ''
 };
 
-export const FormularioRenovacion = memo(function FormularioRenovacion({ onSuccess }: FormularioRenovacionProps) {
+export const FormularioRenovacion = memo(function FormularioRenovacion({ onSuccess, onClose }: FormularioRenovacionProps) {
   // Estados
   const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses_sin' | '12meses_con' | '1mes' | null>(null);
   const [mostrar1Mes, setMostrar1Mes] = useState(false);
@@ -997,38 +997,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
               </div>
 
               {/* Grid Inferior - 3 Columnas */}
+              {/* Grid Inferior - 3 Columnas Ordenadas */}
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-                {/* Plan 3 meses */}
-                <div
-                  onClick={() => handleSelectPlan('full')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
-                >
-                  <div className="text-center mb-6">
-                    <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO.full.duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO.full.subtitulo}</p>
-                    <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                        S/ {PLANES_INFO.full.precio}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {PLANES_INFO.full.beneficios.map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{beneficio}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
-                    Renovar
-                  </Button>
-                </div>
-
-                {/* Plan 6 meses - Popular */}
+                {/* 1. Plan 6 meses - Popular (Ahora Primero) */}
                 <div
                   onClick={() => handleSelectPlan('6meses')}
                   className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/30"
@@ -1063,7 +1034,37 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </Button>
                 </div>
 
-                {/* Plan 12 meses - Sin Implementos */}
+                {/* 2. Plan 3 meses (Ahora Segundo) */}
+                <div
+                  onClick={() => handleSelectPlan('full')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
+                >
+                  <div className="text-center mb-6">
+                    <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO.full.duracion}</h3>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO.full.subtitulo}</p>
+                    <div className="flex items-baseline justify-center gap-2 mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        S/ {PLANES_INFO.full.precio}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {PLANES_INFO.full.beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
+                    Renovar
+                  </Button>
+                </div>
+
+                {/* 3. Plan 12 meses - Sin Implementos (Ahora Tercero) */}
                 <div
                   onClick={() => handleSelectPlan('12meses_sin')}
                   className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-emerald-500/50 rounded-2xl p-6 sm:p-8 hover:border-emerald-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/30"
@@ -1202,16 +1203,27 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 {NOMBRES_PROGRAMA[planSeleccionado]} - S/ {PRECIOS_BASE[planSeleccionado]}
               </h2>
             </div>
-            <Button
-              onClick={() => {
-                setPlanSeleccionado(null);
-                setFormData(INITIAL_FORM_STATE);
-              }}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              Cambiar Plan
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  setPlanSeleccionado(null);
+                  setFormData(INITIAL_FORM_STATE);
+                }}
+                variant="ghost"
+                className="text-white hover:text-[#FA7B21] hover:bg-white/5 transition-colors"
+              >
+                ← Volver a Planes
+              </Button>
+              {onClose && (
+                <Button
+                  onClick={onClose}
+                  variant="ghost"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                >
+                  Salir
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

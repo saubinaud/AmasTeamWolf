@@ -66,6 +66,7 @@ export function RenovacionPage({
 
         <FormularioRenovacion
           onSuccess={handleFormSuccess}
+          onClose={onNavigateHome}
         />
       </div>
 
