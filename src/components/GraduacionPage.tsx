@@ -674,7 +674,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                 </div>
                 <div className="ml-8 sm:ml-12 space-y-3 sm:space-y-4 text-sm sm:text-base text-white/80 leading-relaxed">
                   <p>
-                    La participación en cada ceremonia de graduación se determina según la <span className="text-[#FCA929]">contabilidad de clases tomadas dentro de su periodo activo</span>, que normalmente va entre <span className="text-[#FCA929]">12 a 14 clases efectivas</span>, o por la <span className="text-[#FCA929]">fecha próxima de vencimiento de su programa</span>.
+                    La participación en cada ceremonia de graduación se determina según la <span className="text-[#FCA929]">contabilidad de clases tomadas dentro de su periodo activo</span>, que normalmente va entre <span className="text-[#FCA929]">20 a 25 clases efectivas</span>.
                   </p>
                   <p>
                     En caso no haya sido convocado en esta oportunidad, no se preocupe 💛
@@ -695,7 +695,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                 </div>
                 <div className="ml-8 sm:ml-12 space-y-3 sm:space-y-4 text-sm sm:text-base text-white/80 leading-relaxed">
                   <p>
-                    Se recomienda llegar entre <span className="text-[#FCA929]">30 y 15 minutos antes</span> del horario indicado.
+                    Se recomienda llegar entre <span className="text-[#FCA929]">5 y 10 minutos antes</span> del horario indicado.
                   </p>
                   <p>
                     Esto permite realizar el registro, preparar a los alumnos y asegurar el orden antes de iniciar la ceremonia.
