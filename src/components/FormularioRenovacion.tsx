@@ -895,7 +895,37 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
               {/* Grid Inferior - 3 Columnas Ordenadas (Ahora Arriba) */}
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto mb-16">
-                {/* 1. Plan 6 meses - Popular (Ahora Primero) */}
+                {/* 1. Plan 3 meses (Ahora Primero) */}
+                <div
+                  onClick={() => handleSelectPlan('full')}
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
+                >
+                  <div className="text-center mb-6">
+                    <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
+                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO.full.duracion}</h3>
+                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO.full.subtitulo}</p>
+                    <div className="flex items-baseline justify-center gap-2 mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                        S/ {PLANES_INFO.full.precio}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-6">
+                    {PLANES_INFO.full.beneficios.map((beneficio, index) => (
+                      <div key={index} className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                        <span className="text-white/80 text-sm">{beneficio}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
+                    Renovar
+                  </Button>
+                </div>
+
+                {/* 2. Plan 6 meses - Popular (Ahora Segundo) */}
                 <div
                   onClick={() => handleSelectPlan('6meses')}
                   className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/30"
@@ -926,36 +956,6 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </div>
 
                   <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 text-base font-bold shadow-lg mt-auto">
-                    Renovar
-                  </Button>
-                </div>
-
-                {/* 2. Plan 3 meses (Ahora Segundo) */}
-                <div
-                  onClick={() => handleSelectPlan('full')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
-                >
-                  <div className="text-center mb-6">
-                    <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO.full.duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO.full.subtitulo}</p>
-                    <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                        S/ {PLANES_INFO.full.precio}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {PLANES_INFO.full.beneficios.map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{beneficio}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
                     Renovar
                   </Button>
                 </div>
