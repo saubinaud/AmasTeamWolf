@@ -893,7 +893,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
               </p>
 
-              {/* Grid Inferior - 3 Columnas Ordenadas (Ahora Arriba) */}
+              {/* Grid Inferior - 3 Columnas Ordenadas (Ahora Arriba) - Config 3m, 6m, 12m */}
               <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto mb-16">
                 {/* 1. Plan 3 meses (Ahora Primero) */}
                 <div
