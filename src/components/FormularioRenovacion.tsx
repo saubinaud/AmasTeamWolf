@@ -95,7 +95,7 @@ const PLANES_INFO = {
       "2 Nuevos cinturones con ceremonia",
       "2 Certificados del nuevo rango",
       "+ 15 días de membresía adicionales",
-      "+ 1 Implemento incluido: Bo Staff ⚔️ (Valor S/180)"
+      "+ 1 Implemento de regalo"
     ],
     icon: "⚡",
     color: "from-orange-500 to-red-500",
@@ -112,8 +112,7 @@ const PLANES_INFO = {
       "Cartilla de deberes programa completo (Seguimiento del progreso)",
       "4 Graduaciones",
       "4 Nuevos cinturones con ceremonia",
-      "4 Certificados del nuevo rango",
-      "+ 15 días de membresía adicionales"
+      "4 Certificados del nuevo rango"
     ],
     icon: "💎",
     color: "from-emerald-500 to-teal-500"
