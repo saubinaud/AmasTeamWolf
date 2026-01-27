@@ -95,7 +95,7 @@ const PLANES_INFO = {
       "2 Nuevos cinturones con ceremonia",
       "2 Certificados del nuevo rango",
       "+ 15 días de membresía adicionales",
-      "Implemento incluido: Bo Staff ⚔️ (Valor S/180)"
+      "+ 1 Implemento incluido: Bo Staff ⚔️ (Valor S/180)"
     ],
     icon: "⚡",
     color: "from-orange-500 to-red-500",
