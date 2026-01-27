@@ -947,12 +947,17 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   </div>
 
                   <div className="space-y-3 mb-6">
-                    {PLANES_INFO["6meses"].beneficios.map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{beneficio}</span>
-                      </div>
-                    ))}
+                    {PLANES_INFO["6meses"].beneficios.map((beneficio, index) => {
+                      const isHighlight = beneficio.startsWith('+');
+                      return (
+                        <div key={index} className="flex items-start gap-2">
+                          <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isHighlight ? 'text-[#FCA929]' : 'text-green-400'}`} />
+                          <span className={`${isHighlight ? 'text-[#FCA929] font-bold' : 'text-white/80'} text-sm`}>
+                            {beneficio}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 text-base font-bold shadow-lg mt-auto">
