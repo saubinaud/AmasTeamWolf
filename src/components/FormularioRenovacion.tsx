@@ -1038,7 +1038,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                             "4 Graduaciones",
                             "4 Cinturones con ceremonia",
                             "4 Certificados oficiales",
-                            "Cartilla de seguimiento"
+                            "Cartilla de seguimiento",
+                            "+ 15 días de regalo"
                           ].map((item, i) => (
                             <li key={i} className="flex items-center gap-3">
                               <div className="w-1.5 h-1.5 rounded-full bg-[#FA7B21]"></div>
