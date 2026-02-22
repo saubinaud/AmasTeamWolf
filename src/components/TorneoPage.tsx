@@ -44,8 +44,8 @@ const N8N_BASE = window.location.hostname === 'localhost' || window.location.hos
 // ============================================================
 const TORNEO_CONFIG = {
     // Datos del torneo
-    fecha: '15 de Marzo, 2026',
-    hora: '9:00 AM',
+    fecha: '28 de Febrero y 1 de Marzo, 2026',
+    hora: '10:00 AM',
     lugar: 'Coliseo Eduardo Dibós, San Borja, Lima',
 
     // Datos de pago — Transferencias bancarias
