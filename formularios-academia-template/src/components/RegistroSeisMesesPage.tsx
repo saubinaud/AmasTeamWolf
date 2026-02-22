@@ -1,0 +1,149 @@
+import { useState, useEffect } from 'react';
+import { ArrowLeft } from 'lucide-react';
+import { FormularioMatricula } from './FormularioMatricula';
+
+interface RegistroSeisMesesPageProps {
+  onNavigateHome: () => void;
+  onSuccess: (total: number) => void;
+}
+
+export function RegistroSeisMesesPage({ onNavigateHome, onSuccess }: RegistroSeisMesesPageProps) {
+  const [isFormOpen, setIsFormOpen] = useState(true);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, []);
+
+  const handleFormClose = () => {
+    setIsFormOpen(false);
+    onNavigateHome();
+  };
+
+  const handleFormSuccess = (total: number) => {
+    onSuccess(total);
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header
+        className="border-b border-white/10 bg-black/95 backdrop-blur-sm sticky top-0"
+        style={{ zIndex: 9999 }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <button
+            onClick={onNavigateHome}
+            className="flex items-center gap-2 text-white/80 hover:text-[#FA7B21] transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Volver al inicio</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Content */}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+            Programa 6 Meses
+          </h1>
+          <p className="text-lg text-white/60">
+            El programa semestral con uniforme incluido y todos los beneficios
+          </p>
+        </div>
+
+        {/* Información del Programa */}
+        <div className="bg-zinc-900 border border-[#FA7B21]/30 rounded-lg p-6 sm:p-8 mb-8">
+          <h2 className="text-xl font-semibold text-[#FA7B21] mb-4">
+            ¿Qué incluye el programa de 6 meses?
+          </h2>
+
+          <ul className="space-y-3 text-white/80">
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>48 clases</strong> - 6 meses de clase 2 veces por semana</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>Uniforme completo incluido</strong> (dobok + cinturón)</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>Clases recuperables</strong></span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>1 Congelamiento del programa</strong> por inasistencia o viaje</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>Cartilla de deberes programa completo</strong> (Seguimiento del progreso del alumno)</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>2 Graduaciones</strong></span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>2 Nuevos cinturones</strong> con ceremonia</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>2 Certificados del nuevo rango</strong></span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span><strong>Implemento de regalo</strong></span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span>Horarios personalizados según edad del alumno</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span>Selección de días tentativos de asistencia</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span>Polos adicionales disponibles</span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-[#FA7B21] mt-1">✓</span>
+              <span>Sistema de códigos promocionales</span>
+            </li>
+          </ul>
+
+          <div className="mt-6 pt-6 border-t border-white/10">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-[#FA7B21]">S/ 1699</span>
+              <span className="text-white/60">incluye uniforme</span>
+            </div>
+            <p className="text-sm text-white/50 mt-2">
+              Inversión completa para 6 meses de formación integral
+            </p>
+          </div>
+        </div>
+
+        {/* Botón para abrir formulario (si está cerrado) */}
+        {!isFormOpen && (
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="w-full bg-[#FA7B21] hover:bg-[#FA7B21]/90 text-white font-semibold py-4 px-6 rounded-lg transition-colors"
+          >
+            Inscribirme Ahora
+          </button>
+        )}
+      </div>
+
+      {/* Formulario de Matrícula Mejorado */}
+      <FormularioMatricula
+        isOpen={isFormOpen}
+        onClose={handleFormClose}
+        programa="6meses"
+        onSuccess={handleFormSuccess}
+      />
+    </div>
+  );
+}
