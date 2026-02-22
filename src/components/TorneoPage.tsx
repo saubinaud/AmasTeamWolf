@@ -184,14 +184,26 @@ export function TorneoPage({
                 return;
             }
 
-            const data = JSON.parse(text);
-            if (data.encontrado) {
+            const parsed = JSON.parse(text);
+            let result = null;
+
+            // Handle both array response (current N8N format) and object response (previous format)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                result = parsed[0];
+            } else if (!Array.isArray(parsed) && (parsed.encontrado || parsed.nombre_alumno)) {
+                result = parsed;
+            }
+
+            if (result) {
                 setDniStatus('found');
-                setAlumnoData(data);
-                setAlumno(data.nombre_alumno || '');
-                setApoderado(data.nombre_apoderado || '');
-                if (data.correo) {
-                    setEmail(data.correo);
+                setAlumnoData(result);
+                // Handle different possible casing/naming conventions just in case
+                setAlumno(result.nombre_alumno || result.alumno || '');
+                setApoderado(result.nombre_apoderado || result.apoderado || '');
+                const emailResult = result.correo || result.email || '';
+
+                if (emailResult) {
+                    setEmail(emailResult);
                     setEmailFromApi(true);
                 } else {
                     setEmail('');
