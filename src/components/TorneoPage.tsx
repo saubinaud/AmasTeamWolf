@@ -311,6 +311,7 @@ export function TorneoPage({
                 total,
                 comprobante: comprobanteBase64,
                 fecha_registro: new Date().toISOString(),
+                fecha_torneo: TORNEO_CONFIG.fecha,
             };
 
             const res = await fetch(TORNEO_CONFIG.webhookUrl, {
