@@ -185,22 +185,26 @@ export function TorneoPage({
             }
 
             const parsed = JSON.parse(text);
-            let result = null;
 
-            // Handle both array response (current N8N format) and object response (previous format)
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                result = parsed[0];
-            } else if (!Array.isArray(parsed) && (parsed.encontrado || parsed.nombre_alumno)) {
-                result = parsed;
+            // The logic:
+            // 1) If the webhook couldn't find it, it returns: { "encontrado": false }
+            // 2) If it did find it, it returns an array: [ { "id": 172, "nombre_alumno": "...", ... } ]
+
+            // Check if it's explicitly "not found" object
+            if (!Array.isArray(parsed) && parsed.encontrado === false) {
+                setDniStatus('not_found');
+                setDniError('Este DNI no está registrado en AMAS Team Wolf. Verifica los datos.');
+                return;
             }
 
-            if (result) {
+            // Otherwise, it should be an array with the student data
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                const result = parsed[0];
                 setDniStatus('found');
                 setAlumnoData(result);
-                // Handle different possible casing/naming conventions just in case
-                setAlumno(result.nombre_alumno || result.alumno || '');
-                setApoderado(result.nombre_apoderado || result.apoderado || '');
-                const emailResult = result.correo || result.email || '';
+                setAlumno(result.nombre_alumno || '');
+                setApoderado(result.nombre_apoderado || '');
+                const emailResult = result.correo || '';
 
                 if (emailResult) {
                     setEmail(emailResult);
