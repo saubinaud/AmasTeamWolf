@@ -48,15 +48,16 @@ const TORNEO_CONFIG = {
     hora: '9:00 AM',
     lugar: 'Coliseo Eduardo Dibós, San Borja, Lima',
 
-    // Datos de pago — Transferencia bancaria
-    banco: 'BCP',
-    titular: 'AMAS Team Wolf S.A.C.',
-    cuenta: '191-12345678-0-12',
-    cci: '002-191-12345678012-34',
+    // Datos de pago — Transferencias bancarias
+    bancos: [
+        { nombre: 'INTERBANK', moneda: 'Soles', cuenta: '8983331662706' },
+        { nombre: 'BCP', moneda: 'Soles', cuenta: '19204159709025' },
+        { nombre: 'BBVA', moneda: 'Soles', cuenta: '0011-0814-0220041447' }
+    ],
 
     // Datos de pago — Yape
-    yapeNumero: '989 717 412',
-    yapeNombre: 'AMAS Team Wolf',
+    yapeNumero: '982 287 822',
+    yapeNombre: 'Profesora Jimena Won',
 
     // Costo de entrada
     costoEntrada: 25,
@@ -297,13 +298,9 @@ export function TorneoPage({
         });
 
     const handleConfirm = async () => {
-        if (!comprobanteFile) {
-            toast.error('Debes subir tu comprobante de pago.');
-            return;
-        }
         setIsSubmitting(true);
         try {
-            const comprobanteBase64 = await fileToBase64(comprobanteFile);
+            const comprobanteBase64 = comprobanteFile ? await fileToBase64(comprobanteFile) : null;
 
             const payload = {
                 apoderado: apoderado.trim(),
@@ -933,16 +930,18 @@ export function TorneoPage({
                                                     </div>
                                                     <h4 className="font-bold text-white text-sm md:text-base">Transferencia bancaria</h4>
                                                 </div>
-                                                <div className="space-y-3 text-sm">
-                                                    {[
-                                                        { label: 'Banco', value: TORNEO_CONFIG.banco },
-                                                        { label: 'Titular', value: TORNEO_CONFIG.titular },
-                                                        { label: 'Cuenta', value: TORNEO_CONFIG.cuenta },
-                                                        { label: 'CCI', value: TORNEO_CONFIG.cci },
-                                                    ].map(row => (
-                                                        <div key={row.label} className="flex justify-between items-center">
-                                                            <span className="text-white/50">{row.label}:</span>
-                                                            <span className="text-white font-medium text-xs font-mono text-right max-w-[55%] break-all">{row.value}</span>
+                                                <div className="flex flex-col gap-4 text-sm mt-4">
+                                                    {TORNEO_CONFIG.bancos.map((banco, i) => (
+                                                        <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3">
+                                                            <div className="flex items-center gap-2 mb-2">
+                                                                <div className={`w-2 h-2 rounded-full ${banco.nombre === 'INTERBANK' ? 'bg-green-500' : banco.nombre === 'BCP' ? 'bg-blue-500' : 'bg-white'}`} />
+                                                                <span className="font-bold text-white text-xs md:text-sm">{banco.nombre}</span>
+                                                                <span className="text-white/50 text-xs ml-auto">{banco.moneda}</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-xs">
+                                                                <span className="text-white/50">Cuenta:</span>
+                                                                <span className="text-white font-medium font-mono tracking-wider">{banco.cuenta}</span>
+                                                            </div>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -972,9 +971,9 @@ export function TorneoPage({
 
                                         {/* Upload comprobante */}
                                         <div className="space-y-3 mb-8">
-                                            <Label>Comprobante de Pago *</Label>
+                                            <Label>Comprobante de Pago <span className="text-white/40 text-xs font-normal ml-1">(Opcional)</span></Label>
                                             <p className="text-white/50 text-xs md:text-sm">
-                                                Una vez que hayas pagado, sube aquí la foto o captura del comprobante.
+                                                Si ya realizaste el pago, sube aquí tu comprobante. Si no lo has hecho, puedes enviarlo después por WhatsApp a la profesora.
                                             </p>
 
                                             {!comprobanteFile ? (
@@ -1021,12 +1020,12 @@ export function TorneoPage({
                                         {/* Botón final */}
                                         <button
                                             type="button"
-                                            disabled={!comprobanteFile || isSubmitting}
+                                            disabled={isSubmitting}
                                             onClick={handleConfirm}
                                             className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
                                         >
-                                            <div className={`absolute inset-0 ${comprobanteFile && !isSubmitting ? 'bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
-                                            {comprobanteFile && !isSubmitting && (
+                                            <div className={`absolute inset-0 ${!isSubmitting ? 'bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
+                                            {!isSubmitting && (
                                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                                             )}
                                             <span className="relative flex items-center justify-center gap-3 px-8 py-5 md:py-6 text-white text-lg md:text-2xl font-black uppercase tracking-wider">
