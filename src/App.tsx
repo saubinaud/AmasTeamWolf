@@ -16,6 +16,7 @@ import { RenovacionPage } from './pages/RenovacionPage';
 import { LogtoCallback } from './components/LogtoCallback';
 import { TerminosCondicionesPage } from './components/TerminosCondicionesPage';
 import { VincularCuentaPage } from './components/VincularCuentaPage';
+import { TorneoPage } from './components/TorneoPage';
 import { AuthGuard } from './components/AuthGuard';
 
 import { HeaderMain } from './components/HeaderMain';
@@ -47,7 +48,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo'>('home');
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -150,6 +151,8 @@ function App() {
         setCurrentPage('terminos');
       } else if (path === '/vincular-cuenta' || path === '/vincular') {
         setCurrentPage('vincular-cuenta');
+      } else if (path === '/torneo') {
+        setCurrentPage('torneo');
       } else {
         setCurrentPage('home');
         // Si estamos en home y hay sección, activar scroll robusto
@@ -457,6 +460,26 @@ function App() {
           url="https://amasteamwolf.com/vincular-cuenta"
         />
         <VincularCuentaPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  if (currentPage === 'torneo') {
+    return (
+      <>
+        <SEO
+          title="Torneo de Taekwondo - Inscripción | AMAS Team Wolf"
+          description="Inscribe a tu hijo en el próximo torneo de taekwondo AMAS Team Wolf. Registro rápido, múltiples modalidades y una experiencia que recordarán siempre."
+          keywords="torneo taekwondo Lima, inscripción torneo artes marciales, competencia taekwondo niños, torneo AMAS Team Wolf"
+          url="https://amasteamwolf.com/torneo"
+        />
+        <TorneoPage
+          onNavigate={handleNavigate}
+          onOpenMatricula={handleEnrollProgram}
+          onCartClick={() => setIsCartOpen(true)}
+          cartItemsCount={cartItemsCount}
+        />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );
