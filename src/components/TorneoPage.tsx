@@ -62,6 +62,19 @@ const TORNEO_CONFIG = {
     // Costo de entrada
     costoEntrada: 25,
 
+    // Descuento — Alumnos Leadership & Fighter Wolf (10%)
+    descuentoPorcentaje: 10,
+    dniConDescuento: [
+        '93796147',
+        '93772219',
+        '93497133',
+        '93539149',
+        '94709144',
+        '93758535',
+        '93013125',
+        '93747517',
+    ],
+
     // Webhook
     webhookUrl: `${N8N_BASE}/webhook/torneo`,
     consultarAlumnoUrl: `${N8N_BASE}/webhook/consultar-formulario`,
@@ -149,10 +162,15 @@ export function TorneoPage({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
 
+    // Discount
+    const [hasDiscount, setHasDiscount] = useState(false);
+
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
     // ---- Derived state ----
-    const total = calcularPrecio(modalidades.length);
+    const subtotal = calcularPrecio(modalidades.length);
+    const descuento = hasDiscount ? Math.round(subtotal * TORNEO_CONFIG.descuentoPorcentaje / 100) : 0;
+    const total = subtotal - descuento;
     const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
     const isFormValid =
         dniStatus === 'found' &&
@@ -203,6 +221,9 @@ export function TorneoPage({
                 const result = parsed[0];
                 setDniStatus('found');
                 setAlumnoData(result);
+                // Check discount eligibility
+                const cleanedDni = dniValue.replace(/\D/g, '').slice(0, 8);
+                setHasDiscount(TORNEO_CONFIG.dniConDescuento.includes(cleanedDni));
                 setAlumno(result.nombre_alumno || '');
                 setApoderado(result.nombre_apoderado || '');
                 const emailResult = result.correo || '';
@@ -242,6 +263,7 @@ export function TorneoPage({
             setEmailFromApi(false);
             setModalidades([]);
             setShowPago(false);
+            setHasDiscount(false);
         }
         // Auto-lookup when 8 digits
         if (cleaned.length === 8) {
@@ -826,12 +848,24 @@ export function TorneoPage({
                                                                 <div className="border-t border-white/10 pt-4 flex items-center justify-between">
                                                                     <div>
                                                                         <span className="text-white/50 text-sm">{modalidades.length} modalidad{modalidades.length > 1 ? 'es' : ''}</span>
+                                                                        {hasDiscount && (
+                                                                            <span className="block text-green-400 text-xs mt-1">🏷️ Descuento {TORNEO_CONFIG.descuentoPorcentaje}% aplicado</span>
+                                                                        )}
                                                                     </div>
                                                                     <div className="text-right">
                                                                         <p className="text-white/50 text-xs uppercase tracking-wider">Total</p>
-                                                                        <p className="text-2xl md:text-3xl font-black text-[#FF6700]">
-                                                                            S/ {total}
-                                                                        </p>
+                                                                        {hasDiscount && subtotal !== total ? (
+                                                                            <>
+                                                                                <p className="text-white/40 text-sm line-through">S/ {subtotal}</p>
+                                                                                <p className="text-2xl md:text-3xl font-black text-green-400">
+                                                                                    S/ {total}
+                                                                                </p>
+                                                                            </>
+                                                                        ) : (
+                                                                            <p className="text-2xl md:text-3xl font-black text-[#FF6700]">
+                                                                                S/ {total}
+                                                                            </p>
+                                                                        )}
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -916,9 +950,19 @@ export function TorneoPage({
                                             <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6700] to-[#ff8800] rounded-2xl blur opacity-20" />
                                             <div className="relative bg-gradient-to-r from-[#FF6700]/15 to-[#ff8800]/15 border-2 border-[#FF6700]/40 rounded-2xl p-5 text-center backdrop-blur-sm">
                                                 <p className="text-white/60 text-xs uppercase tracking-wider mb-1">Monto a pagar</p>
-                                                <p className="text-4xl font-black text-[#FF6700]">
-                                                    S/ {total}
-                                                </p>
+                                                {hasDiscount && subtotal !== total ? (
+                                                    <>
+                                                        <p className="text-white/40 text-lg line-through">S/ {subtotal}</p>
+                                                        <p className="text-4xl font-black text-green-400">
+                                                            S/ {total}
+                                                        </p>
+                                                        <p className="text-green-400 text-xs mt-1">🏷️ Descuento {TORNEO_CONFIG.descuentoPorcentaje}% Leadership & Fighter Wolf</p>
+                                                    </>
+                                                ) : (
+                                                    <p className="text-4xl font-black text-[#FF6700]">
+                                                        S/ {total}
+                                                    </p>
+                                                )}
                                             </div>
                                         </div>
 
