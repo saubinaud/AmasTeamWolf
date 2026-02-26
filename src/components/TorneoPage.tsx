@@ -46,7 +46,7 @@ const TORNEO_CONFIG = {
     // Datos del torneo
     fecha: '1 de Marzo, 2026',
     hora: '10:00 AM',
-    lugar: 'Coliseo Eduardo Dibós, San Borja, Lima',
+    lugar: 'Liceo Naval Contralmirante Montero',
 
     // Datos de pago — Transferencias bancarias
     bancos: [
