@@ -6074,7 +6074,7 @@ body {
 }
 
 @supports (-webkit-overflow-scrolling: touch) {
-  * {
+  .fixed {
     -webkit-backface-visibility: hidden;
     -webkit-transform: translate3d(0, 0, 0);
   }
