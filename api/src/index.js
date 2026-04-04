@@ -12,6 +12,7 @@ const torneoRoutes = require('./routes/torneo');
 const renovacionRoutes = require('./routes/renovacion');
 const leadsRoutes = require('./routes/leads');
 const qrRoutes = require('./routes/qr');
+const contratosRoutes = require('./routes/contratos');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -47,6 +48,7 @@ app.use('/api/torneo', torneoRoutes);
 app.use('/api/renovacion', renovacionRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/qr', qrRoutes);
+app.use('/api/contratos', contratosRoutes);
 
 // 404
 app.use((_req, res) => {
