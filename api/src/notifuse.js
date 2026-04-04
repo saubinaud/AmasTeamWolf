@@ -2,9 +2,8 @@
 const NOTIFUSE_URL = 'https://emailmarketing-notifuse.s6hx3x.easypanel.host/api/transactional.send';
 const NOTIFUSE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmEyNmQ4MWYtMWI0Ny00NDY4LWIwM2YtZDYzMmQwMTE1MjMwIiwidHlwZSI6ImFwaV9rZXkiLCJlbWFpbCI6Im1haWxAZW1haWxtYXJrZXRpbmctbm90aWZ1c2UuczZoeDN4LmVhc3lwYW5lbC5ob3N0IiwiZXhwIjoyMDc4NTIwNDIwLCJuYmYiOjE3NjMxNjA0MjAsImlhdCI6MTc2MzE2MDQyMH0.Yad0WvVrjgEz7IsvE5aqkCws6KkjFZzxHsXCUsWa1xs';
 const WORKSPACE_ID = 'amaswolf';
-const { generarPDFContrato } = require('./pdfContrato');
 
-async function enviarNotificacion(templateId, email, firstName, data, attachments) {
+async function enviarNotificacion(templateId, email, firstName, data) {
   try {
     const body = {
       workspace_id: WORKSPACE_ID,
@@ -15,11 +14,6 @@ async function enviarNotificacion(templateId, email, firstName, data, attachment
         data,
       },
     };
-
-    // Agregar adjuntos si los hay
-    if (attachments && attachments.length > 0) {
-      body.notification.attachments = attachments;
-    }
 
     const response = await fetch(NOTIFUSE_URL, {
       method: 'POST',
@@ -36,7 +30,7 @@ async function enviarNotificacion(templateId, email, firstName, data, attachment
       return false;
     }
 
-    console.log(`Email enviado: ${templateId} → ${email}${attachments ? ' (con adjunto)' : ''}`);
+    console.log(`Email enviado: ${templateId} → ${email}`);
     return true;
   } catch (err) {
     console.error(`Error enviando email (${templateId}):`, err.message);
@@ -44,26 +38,8 @@ async function enviarNotificacion(templateId, email, firstName, data, attachment
   }
 }
 
-// Genera PDF del contrato y lo devuelve como attachment para Notifuse
-async function generarAdjuntoContrato(datos) {
-  try {
-    const pdfBuffer = await generarPDFContrato(datos, null);
-    const pdfBase64 = pdfBuffer.toString('base64');
-    const nombre = datos.nombreAlumno || 'alumno';
-    return [{
-      filename: `Contrato_${nombre.replace(/\s+/g, '_')}.pdf`,
-      content: pdfBase64,
-      contentType: 'application/pdf',
-    }];
-  } catch (err) {
-    console.error('Error generando PDF para adjunto:', err.message);
-    return null;
-  }
-}
-
 // ── Matrícula 3 y 6 meses ──
-async function emailMatricula3y6Meses(d) {
-  const adjuntos = await generarAdjuntoContrato(d);
+async function emailMatricula3y6Meses(d, contratoUrl) {
   return enviarNotificacion('bienvenida_3_meses_sc', d.email, d.nombrePadre, {
     nombrePadre: d.nombrePadre,
     nombreAlumno: d.nombreAlumno,
@@ -75,15 +51,15 @@ async function emailMatricula3y6Meses(d) {
     fechaFinal: d.fechaFin,
     direccion: d.direccion,
     correo: d.email,
+    contratoUrl: contratoUrl || '',
     tallaUniforme: d.tallaUniforme || '',
     tallaPolo: Array.isArray(d.tallasPolos) ? d.tallasPolos.join(', ') : (d.tallasPolos || ''),
     precioPrograma: String(d.precioPrograma || d.total || ''),
-  }, adjuntos);
+  });
 }
 
 // ── Matrícula 1 mes ──
-async function emailMatricula1Mes(d) {
-  const adjuntos = await generarAdjuntoContrato(d);
+async function emailMatricula1Mes(d, contratoUrl) {
   return enviarNotificacion('bienvenida_1_mes_sc', d.email, d.nombrePadre, {
     nombrePadre: d.nombrePadre,
     nombreAlumno: d.nombreAlumno,
@@ -95,16 +71,15 @@ async function emailMatricula1Mes(d) {
     fechaFinal: d.fechaFin,
     direccion: d.direccion,
     correo: d.email,
-    contratoUrl: '',
+    contratoUrl: contratoUrl || '',
     tallaUniforme: d.tallaUniforme || '',
     tallaPolo: Array.isArray(d.tallasPolos) ? d.tallasPolos.join(', ') : (d.tallasPolos || ''),
     precioPrograma: String(d.precioPrograma || d.total || ''),
-  }, adjuntos);
+  });
 }
 
 // ── Renovación ──
-async function emailRenovacion(d) {
-  const adjuntos = await generarAdjuntoContrato(d);
+async function emailRenovacion(d, contratoUrl) {
   return enviarNotificacion('renovaciones_automaticas', d.email, d.nombrePadre, {
     nombrePadre: d.nombrePadre,
     nombreAlumno: d.nombreAlumno,
@@ -116,10 +91,11 @@ async function emailRenovacion(d) {
     turno: d.turnoSeleccionado || '',
     diasTentativos: d.diasTentativos || '',
     categoria: d.categoriaAlumno || '',
+    contratoUrl: contratoUrl || '',
     tallaUniforme: d.tallaUniforme || '',
     tallaPolo: Array.isArray(d.tallasPolos) ? d.tallasPolos.join(', ') : (d.tallasPolos || ''),
     precioPrograma: String(d.precioPrograma || d.total || ''),
-  }, adjuntos);
+  });
 }
 
 // ── Torneo ──
