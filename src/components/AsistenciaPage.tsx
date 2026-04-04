@@ -35,6 +35,9 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
     programa?: string;
     hora?: string;
     error?: string;
+    clases_totales?: number;
+    clases_usadas?: number;
+    clases_restantes?: number;
   } | null>(null);
   const [tokenQr, setTokenQr] = useState<string | null>(null);
   const turno = detectarTurno();
@@ -126,7 +129,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
             <CheckCircle className="w-14 h-14 text-green-400" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">Asistencia Registrada</h2>
-          <div className="space-y-2 mb-8">
+          <div className="space-y-3 mb-8">
             <p className="text-white text-lg">{resultado.alumno}</p>
             {resultado.programa && (
               <p className="text-white/60 text-sm">{resultado.programa}</p>
@@ -135,6 +138,31 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
               <Clock className="w-4 h-4" />
               <span className="text-sm">{resultado.hora} — Turno {turno}</span>
             </div>
+
+            {/* Conteo de clases */}
+            {resultado.clases_totales != null && resultado.clases_totales > 0 && (
+              <div className={`mt-4 rounded-xl p-4 text-center ${
+                resultado.clases_restantes != null && resultado.clases_restantes <= 3
+                  ? 'bg-amber-500/10 border border-amber-500/30'
+                  : 'bg-zinc-800/60 border border-white/10'
+              }`}>
+                <div className="text-3xl font-bold text-white mb-1">
+                  {resultado.clases_restantes}
+                  <span className="text-base font-normal text-white/50"> / {resultado.clases_totales}</span>
+                </div>
+                <p className={`text-xs ${
+                  resultado.clases_restantes != null && resultado.clases_restantes <= 3
+                    ? 'text-amber-400'
+                    : 'text-white/50'
+                }`}>
+                  {resultado.clases_restantes === 0
+                    ? 'Completaste todas tus clases'
+                    : resultado.clases_restantes === 1
+                      ? 'Te queda 1 clase'
+                      : `Te quedan ${resultado.clases_restantes} clases`}
+                </p>
+              </div>
+            )}
           </div>
 
           <Button
@@ -197,9 +225,21 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
 
             {/* Error */}
             {resultado && !resultado.success && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
-                <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-red-300 text-sm">{resultado.error}</p>
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-300 text-sm">{resultado.error}</p>
+                </div>
+                {resultado.clases_totales != null && resultado.clases_totales > 0 && (
+                  <div className="mt-3 pt-3 border-t border-red-500/20 text-center">
+                    <span className="text-white/60 text-xs">
+                      Clases: {resultado.clases_usadas}/{resultado.clases_totales} usadas
+                      {resultado.clases_restantes != null && resultado.clases_restantes > 0
+                        ? ` — quedan ${resultado.clases_restantes}`
+                        : ' — programa completado'}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
