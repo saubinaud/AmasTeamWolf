@@ -1,7 +1,7 @@
 // Servicio de emails transaccionales via Notifuse
-const NOTIFUSE_URL = 'https://emailmarketing-notifuse.s6hx3x.easypanel.host/api/transactional.send';
-const NOTIFUSE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmEyNmQ4MWYtMWI0Ny00NDY4LWIwM2YtZDYzMmQwMTE1MjMwIiwidHlwZSI6ImFwaV9rZXkiLCJlbWFpbCI6Im1haWxAZW1haWxtYXJrZXRpbmctbm90aWZ1c2UuczZoeDN4LmVhc3lwYW5lbC5ob3N0IiwiZXhwIjoyMDc4NTIwNDIwLCJuYmYiOjE3NjMxNjA0MjAsImlhdCI6MTc2MzE2MDQyMH0.Yad0WvVrjgEz7IsvE5aqkCws6KkjFZzxHsXCUsWa1xs';
-const WORKSPACE_ID = 'amaswolf';
+const NOTIFUSE_URL = process.env.NOTIFUSE_URL || 'https://emailmarketing-notifuse.s6hx3x.easypanel.host/api/transactional.send';
+const NOTIFUSE_TOKEN = process.env.NOTIFUSE_TOKEN;
+const WORKSPACE_ID = process.env.NOTIFUSE_WORKSPACE || 'amaswolf';
 
 async function enviarNotificacion(templateId, email, firstName, data) {
   try {

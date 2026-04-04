@@ -1,9 +1,9 @@
 // Upload de archivos a Cloudinary (sin SDK, solo fetch)
 const crypto = require('crypto');
 
-const CLOUD_NAME = 'dkoocok3j';
-const API_KEY = '919137842784844';
-const API_SECRET = 'GOR3AQZpcloRJM_A22FYIu5zWX8';
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dkoocok3j';
+const API_KEY = process.env.CLOUDINARY_API_KEY;
+const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 async function subirPDF(pdfBuffer, nombreArchivo) {
   try {
