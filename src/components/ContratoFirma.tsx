@@ -468,8 +468,8 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <div className="flex-1 relative overflow-hidden">
             <canvas
               ref={fullscreenCanvasRef}
-              className="w-full cursor-crosshair"
-              style={{ height: '70vh', touchAction: 'none' }}
+              className="w-full h-full cursor-crosshair absolute inset-0"
+              style={{ touchAction: 'none' }}
               {...canvasPointerProps}
             />
             {!hasStrokes && (
@@ -481,7 +481,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           </div>
 
           {/* Fullscreen footer */}
-          <div className="flex-shrink-0 px-4 py-4 bg-zinc-900 safe-area-inset-bottom">
+          <div className="flex-shrink-0 px-4 py-4 bg-zinc-900" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
             <div className="flex gap-3">
               <Button
                 type="button"
