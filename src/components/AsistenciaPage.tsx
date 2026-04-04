@@ -161,6 +161,14 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
                       ? 'Te queda 1 clase'
                       : `Te quedan ${resultado.clases_restantes} clases`}
                 </p>
+                {resultado.clases_restantes != null && resultado.clases_restantes <= 3 && (
+                  <button
+                    onClick={() => onNavigate('renovacion')}
+                    className="mt-3 text-[#FCA929] hover:text-[#FA7B21] text-xs underline underline-offset-2 transition-colors"
+                  >
+                    {resultado.clases_restantes === 0 ? 'Renueva tu programa aquí' : 'Renueva antes de que se acaben'}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -231,13 +239,22 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
                   <p className="text-red-300 text-sm">{resultado.error}</p>
                 </div>
                 {resultado.clases_totales != null && resultado.clases_totales > 0 && (
-                  <div className="mt-3 pt-3 border-t border-red-500/20 text-center">
+                  <div className="mt-3 pt-3 border-t border-red-500/20 text-center space-y-2">
                     <span className="text-white/60 text-xs">
                       Clases: {resultado.clases_usadas}/{resultado.clases_totales} usadas
                       {resultado.clases_restantes != null && resultado.clases_restantes > 0
                         ? ` — quedan ${resultado.clases_restantes}`
                         : ' — programa completado'}
                     </span>
+                    {resultado.clases_restantes === 0 && (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('renovacion')}
+                        className="block w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-sm font-semibold hover:from-[#F36A15] hover:to-[#FA7B21] transition-all"
+                      >
+                        Renovar programa
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
