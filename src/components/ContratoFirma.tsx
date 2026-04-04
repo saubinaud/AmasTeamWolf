@@ -139,14 +139,17 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
   };
 
   const clausulas = [
-    'Respetar los horarios establecidos y comunicar inasistencias con anticipación.',
-    'La matrícula incluye uso de instalaciones durante clases programadas.',
-    'No se realizan devoluciones por retiro voluntario. Las clases no son transferibles.',
-    'La academia puede modificar horarios con 48 horas de anticipación.',
-    'Se autoriza el uso de fotografías y videos para fines institucionales.',
-    'La academia no se responsabiliza por objetos olvidados en las instalaciones.',
-    'El apoderado declara que el alumno está en condiciones de salud aptas para artes marciales.',
-    'El contrato tiene vigencia desde la fecha de inicio hasta el fin del programa.',
+    'OBJETO DEL CONTRATO. AMAS Team Wolf se compromete a brindar al alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado.',
+    'VIGENCIA. El contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado.',
+    'PAGO. El monto total deberá abonarse antes del inicio de clases. No se iniciará ningún programa sin confirmación del pago.',
+    'POLÍTICA DE NO CANCELACIONES Y NO REEMBOLSOS. Una vez realizado el pago, no se aceptarán cancelaciones ni se realizarán devoluciones. La inasistencia no genera derecho a clases de recuperación.',
+    'EXCEPCIONES. AMAS Team Wolf podrá ofrecer congelamiento temporal por razones de salud con certificado médico, sujeto a aprobación de la dirección.',
+    'HORARIOS. La academia puede modificar horarios con al menos 48 horas de anticipación.',
+    'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra apto para la práctica de artes marciales.',
+    'AUTORIZACIÓN DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales y promocionales.',
+    'RESPONSABILIDAD. La academia no se responsabiliza por objetos olvidados en las instalaciones.',
+    'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología ni información interna de AMAS Team Wolf.',
+    'LEY APLICABLE. Las partes se someten a la legislación civil peruana y tribunales de Lima.',
   ];
 
   return (
@@ -179,7 +182,9 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <div className="mt-3 pt-3 border-t border-white/10 text-white/70 text-xs">
             <p>
               Yo, <strong className="text-white">{datos.nombrePadre || '___'}</strong>, con DNI{' '}
-              <strong className="text-white">{datos.dniPadre || '___'}</strong>, acepto inscribir a{' '}
+              <strong className="text-white">{datos.dniPadre || '___'}</strong>, declaro haber leído y aceptado
+              todas las condiciones, incluyendo la Cláusula 4 (no cancelaciones y no reembolsos),
+              para la inscripción de{' '}
               <strong className="text-white">{datos.nombreAlumno || '___'}</strong> en el programa{' '}
               <strong className="text-white">{datos.programa || '___'}</strong> de AMAS Team Wolf.
             </p>
