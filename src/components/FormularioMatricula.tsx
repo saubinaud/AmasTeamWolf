@@ -925,7 +925,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         total: total,
 
         // Contrato
-        contratoFirmado: firmaBase64 ? true : null,
+        contratoFirmado: firmaBase64 || null,
 
         fechaRegistro: new Date().toISOString()
       };

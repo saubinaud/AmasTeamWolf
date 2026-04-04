@@ -753,7 +753,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
         subtotal: subtotal,
         total: total,
 
-        contratoFirmado: firmaBase64 ? true : null,
+        contratoFirmado: firmaBase64 || null,
 
         fechaRegistro: new Date().toISOString()
       };
