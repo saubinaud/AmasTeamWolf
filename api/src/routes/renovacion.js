@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { pool } = require('../db');
 const { emailRenovacion } = require('../notifuse');
+const { generarPDFContrato } = require('../pdfContrato');
 
 const router = Router();
 
@@ -30,16 +31,19 @@ router.post('/', async (req, res) => {
     );
 
     // 3. Crear nueva inscripción
-    await client.query(
+    const inscResult = await client.query(
       `INSERT INTO inscripciones (alumno_id, programa, fecha_inscripcion, fecha_inicio, fecha_fin,
        clases_totales, turno, dias_tentativos, precio_programa, precio_pagado,
        descuento, codigo_promocional, tipo_cliente, estado, estado_pago)
-       VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,'Renovación','Activo','Pendiente')`,
+       VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,'Renovación','Activo','Pendiente')
+       RETURNING id`,
       [alumno.id, d.programa, d.fechaInicio || null, d.fechaFin || null,
        d.clasesTotales || 0, d.turnoSeleccionado, d.diasTentativos,
        d.precioPrograma || 0, d.total || 0, d.descuentoDinero || 0,
        d.codigoPromocional || null]
     );
+
+    const inscripcionId = inscResult.rows[0].id;
 
     // 4. Actualizar tallas si vienen
     if (d.tallasPolos) {
@@ -51,9 +55,25 @@ router.post('/', async (req, res) => {
       );
     }
 
+    // 5. Guardar contrato firmado
+    if (d.contratoFirmado) {
+      try {
+        const pdfBuffer = await generarPDFContrato(d, d.contratoFirmado);
+        const pdfBase64 = pdfBuffer.toString('base64');
+        await client.query(
+          `INSERT INTO contratos (inscripcion_id, archivo_url, firmado, fecha_firma)
+           VALUES ($1, $2, TRUE, CURRENT_DATE)`,
+          [inscripcionId, pdfBase64]
+        );
+        console.log(`Contrato renovación guardado: inscripcion_id=${inscripcionId}`);
+      } catch (pdfErr) {
+        console.error('Error guardando contrato renovación:', pdfErr.message);
+      }
+    }
+
     await client.query('COMMIT');
 
-    // 5. Enviar email de renovación (no bloquea la respuesta)
+    // 6. Enviar email de renovación (no bloquea la respuesta)
     if (d.email) {
       emailRenovacion(d).catch(err => console.error('Error enviando email renovación:', err));
     }
