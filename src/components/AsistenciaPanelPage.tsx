@@ -9,7 +9,7 @@ interface AsistenciaPanelPageProps {
   onNavigate: (page: string) => void;
 }
 
-const PIN_PROFESORA = '2835';
+const PIN_PROFESORA = '2026';
 
 interface Asistencia {
   nombre_alumno: string;
