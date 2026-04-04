@@ -6,11 +6,9 @@ export default defineConfig({
   base: '/',
   server: {
     proxy: {
-      '/api/n8n': {
-        target: 'https://pallium-n8n.s6hx3x.easypanel.host',
+      '/api': {
+        target: 'http://localhost:4000',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/n8n/, ''),
-        secure: false,
       },
     },
   },

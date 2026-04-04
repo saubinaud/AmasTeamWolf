@@ -17,6 +17,8 @@ import { LogtoCallback } from './components/LogtoCallback';
 import { TerminosCondicionesPage } from './components/TerminosCondicionesPage';
 import { VincularCuentaPage } from './components/VincularCuentaPage';
 import { TorneoPage } from './components/TorneoPage';
+import { AsistenciaPage } from './components/AsistenciaPage';
+import { AsistenciaPanelPage } from './components/AsistenciaPanelPage';
 import { AuthGuard } from './components/AuthGuard';
 
 import { HeaderMain } from './components/HeaderMain';
@@ -48,7 +50,7 @@ function LoadingSection() {
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo' | 'asistencia' | 'asistencia-panel'>('home');
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -153,6 +155,10 @@ function App() {
         setCurrentPage('vincular-cuenta');
       } else if (path === '/torneo') {
         setCurrentPage('torneo');
+      } else if (path === '/asistencia/panel' || path === '/asistencia/profesora') {
+        setCurrentPage('asistencia-panel');
+      } else if (path === '/asistencia') {
+        setCurrentPage('asistencia');
       } else {
         setCurrentPage('home');
         // Si estamos en home y hay sección, activar scroll robusto
@@ -480,6 +486,36 @@ function App() {
           onCartClick={() => setIsCartOpen(true)}
           cartItemsCount={cartItemsCount}
         />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  if (currentPage === 'asistencia-panel') {
+    return (
+      <>
+        <SEO
+          title="Panel de Asistencia - AMAS Team Wolf"
+          description="Panel de control de asistencias para profesoras."
+          keywords="panel asistencia amas"
+          url="https://amasteamwolf.com/asistencia/panel"
+        />
+        <AsistenciaPanelPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </>
+    );
+  }
+
+  if (currentPage === 'asistencia') {
+    return (
+      <>
+        <SEO
+          title="Registro de Asistencia - AMAS Team Wolf"
+          description="Registra tu asistencia escaneando el código QR en la sede."
+          keywords="asistencia amas, registro asistencia taekwondo, QR asistencia"
+          url="https://amasteamwolf.com/asistencia"
+        />
+        <AsistenciaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </>
     );

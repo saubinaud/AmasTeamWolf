@@ -199,7 +199,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
     useEffect(() => {
         if (activeSection === 'graduacion') {
             setGraduationError(null);
-            fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/graduaci%C3%B3n')
+            fetch((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api/graduacion' : 'https://amas-api.s6hx3x.easypanel.host/api/graduacion')
                 .then(res => {
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     return res.json();
