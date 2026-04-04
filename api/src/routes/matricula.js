@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { pool, queryOne } = require('../db');
 const { emailMatricula3y6Meses, emailMatricula1Mes } = require('../notifuse');
+const { generarPDFContrato } = require('../pdfContrato');
 
 const router = Router();
 
@@ -28,7 +29,6 @@ router.post('/', async (req, res) => {
       );
       alumno = result.rows[0];
     } else {
-      // Actualizar datos del apoderado
       await client.query(
         `UPDATE alumnos SET nombre_apoderado=$1, dni_apoderado=$2, correo=$3,
          telefono=$4, direccion=$5, categoria=$6, estado='Activo'
@@ -51,6 +51,8 @@ router.post('/', async (req, res) => {
        d.codigoPromocional || null]
     );
 
+    const inscripcionId = inscResult.rows[0].id;
+
     // 3. Registrar tallas
     if (d.tallaUniforme || d.tallasPolos) {
       const poloPrimario = Array.isArray(d.tallasPolos) ? d.tallasPolos[0] : d.tallasPolos;
@@ -61,9 +63,25 @@ router.post('/', async (req, res) => {
       );
     }
 
+    // 4. Guardar contrato firmado
+    if (d.contratoFirmado) {
+      try {
+        const pdfBuffer = await generarPDFContrato(d, d.contratoFirmado);
+        const pdfBase64 = pdfBuffer.toString('base64');
+        await client.query(
+          `INSERT INTO contratos (inscripcion_id, archivo_url, firmado, fecha_firma)
+           VALUES ($1, $2, TRUE, CURRENT_DATE)`,
+          [inscripcionId, pdfBase64]
+        );
+        console.log(`Contrato guardado: inscripcion_id=${inscripcionId}`);
+      } catch (pdfErr) {
+        console.error('Error guardando contrato (no bloquea inscripción):', pdfErr.message);
+      }
+    }
+
     await client.query('COMMIT');
 
-    // 4. Enviar email de bienvenida (no bloquea la respuesta)
+    // 5. Enviar email de bienvenida con PDF adjunto (no bloquea la respuesta)
     const esMensual = (d.programa || '').toLowerCase().includes('1 mes') ||
                       (d.programa || '').toLowerCase().includes('mensual');
 
@@ -75,7 +93,7 @@ router.post('/', async (req, res) => {
     res.json({
       success: true,
       alumno_id: alumno.id,
-      inscripcion_id: inscResult.rows[0].id,
+      inscripcion_id: inscripcionId,
     });
   } catch (err) {
     await client.query('ROLLBACK');
