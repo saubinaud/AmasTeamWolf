@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
+import { ContratoFirma } from './ContratoFirma';
 
 // ========== CONSTANTES ==========
 
@@ -417,6 +418,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses_sin' | '12meses_con' | '1mes' | null>(null);
   const [mostrar1Mes, setMostrar1Mes] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [firmaBase64, setFirmaBase64] = useState<string | null>(null);
   const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -699,9 +701,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
       return;
     }
 
-    if (!uploadedFile) {
-      const confirm = window.confirm('No ha subido el contrato firmado. ¿Desea continuar de todas formas?');
-      if (!confirm) return;
+    if (!firmaBase64) {
+      toast.error('Por favor firma el contrato antes de enviar');
+      return;
     }
 
     setIsSubmitting(true);
@@ -751,12 +753,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
         subtotal: subtotal,
         total: total,
 
-        contratoFirmado: uploadedFile ? {
-          nombre: uploadedFile.name,
-          tipo: uploadedFile.type,
-          tamaño: uploadedFile.size,
-          base64: fileBase64
-        } : null,
+        contratoFirmado: firmaBase64 ? true : null,
 
         fechaRegistro: new Date().toISOString()
       };
@@ -1846,10 +1843,36 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
             </div>
           </div>
 
+          {/* Contrato y Firma */}
+          <div className="bg-zinc-800/40 rounded-2xl p-4 sm:p-5 border border-white/10">
+            <ContratoFirma
+              datos={{
+                nombrePadre: formData.nombrePadre,
+                dniPadre: formData.dniPadre,
+                email: formData.email,
+                direccion: formData.direccion,
+                nombreAlumno: formData.nombreAlumno,
+                dniAlumno: formData.dniAlumno,
+                fechaNacimiento: formData.fechaNacimiento,
+                categoriaAlumno: categoriaAlumno,
+                programa: planSeleccionado ? NOMBRES_PROGRAMA[planSeleccionado] : '',
+                fechaInicio: formData.fechaInicio,
+                fechaFin: fechaFinCalculada || '',
+                clasesTotales: detallesFechaFin?.clasesTotales,
+                turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
+                diasTentativos: diasTentativos.join(', '),
+                precioPrograma: precioBase,
+                descuentoDinero: descuentoDinero,
+                total: total,
+              }}
+              onFirmaCompleta={(firma) => setFirmaBase64(firma)}
+            />
+          </div>
+
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !firmaBase64}
             className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-lg shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
