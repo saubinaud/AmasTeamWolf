@@ -135,7 +135,8 @@ export function RegistroActividadNavidadPage({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/asistencia-evento-navidad', {
+      const { API_BASE } = await import('../config/api');
+      const response = await fetch(`${API_BASE}/leads/evento-navidad`, {
          method: 'POST',
          headers: { 'Content-Type': 'application/json' },
          body: JSON.stringify({ 

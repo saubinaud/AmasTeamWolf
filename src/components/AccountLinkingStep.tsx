@@ -13,7 +13,8 @@ interface AccountLinkingStepProps {
     onLogout: () => void;
 }
 
-const VINCULAR_API_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/vincular-cuenta';
+import { API_BASE } from '../config/api';
+const VINCULAR_API_URL = `${API_BASE}/vincular`;
 
 export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepProps) {
     const { getIdTokenClaims } = useLogto();

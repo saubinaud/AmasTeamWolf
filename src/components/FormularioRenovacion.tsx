@@ -761,9 +761,9 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
         fechaRegistro: new Date().toISOString()
       };
 
-      const webhookUrl = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/renovaciones';
+      const { API_BASE } = await import('../config/api');
 
-      const response = await fetch(webhookUrl, {
+      const response = await fetch(`${API_BASE}/renovacion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

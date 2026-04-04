@@ -100,8 +100,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// API URL for profile fetching (n8n webhook)
-const PROFILE_API_URL = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/perfil-usuario';
+// API URL for profile fetching
+import { API_BASE } from '../config/api';
+const PROFILE_API_URL = `${API_BASE}/perfil`;
 
 // Session timeout in milliseconds (12 hours)
 const SESSION_TIMEOUT_MS = 12 * 60 * 60 * 1000;
@@ -241,7 +242,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const result = await response.json();
 
-      // Handle array response (from n8n/SQL)
+      // Handle array response (API puede devolver array)
       const data = Array.isArray(result) && result.length > 0 ? result[0] : result;
 
       if (data && (data.apoderado_nombre || data.alumno_nombre || data.nombre_padre)) {

@@ -56,7 +56,8 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
           estado: 'Pendiente de pago'
         };
 
-        const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/implementos', {
+        const { API_BASE } = await import('../config/api');
+        const response = await fetch(`${API_BASE}/implementos`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -222,7 +222,8 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
     };
 
     try {
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/lidership', {
+      const { API_BASE } = await import('../config/api');
+      const response = await fetch(`${API_BASE}/leadership`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -125,7 +125,8 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
 
     try {
       // 1. Enviar a Webhook
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/regsitro-showroom', {
+      const { API_BASE } = await import('../config/api');
+      const response = await fetch(`${API_BASE}/leads/showroom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

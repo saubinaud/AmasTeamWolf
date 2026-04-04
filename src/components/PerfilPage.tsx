@@ -167,7 +167,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   useEffect(() => {
     if (activeSection === 'graduacion') {
       setGraduationError(null);
-      fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/graduaci%C3%B3n')
+      fetch((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api/graduacion' : 'https://amas-api.s6hx3x.easypanel.host/api/graduacion')
         .then(res => res.json())
         .then(data => {
           console.log('Mobile Graduation Data:', data);
