@@ -84,9 +84,9 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-7xl mx-auto">
           {/* Programa Full - Destacado */}
-          <div className="md:col-span-2 lg:col-span-1">
+          <div>
             <Card className="relative bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-black border-2 border-[#FA7B21] overflow-hidden hover:shadow-2xl hover:shadow-[#FA7B21]/30 transition-shadow duration-500 group">
               {/* Glow effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21]/0 via-[#FA7B21]/10 to-[#FA7B21]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -100,7 +100,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
               {/* Corner accent */}
               <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-[#FA7B21]/20 to-transparent rounded-br-full pointer-events-none" />
 
-              <CardContent className="p-6 sm:p-8 md:p-10 relative">
+              <CardContent className="p-5 sm:p-6 lg:p-8 relative">
                 <div className="mb-6">
                   <Badge className="bg-gradient-to-r from-[#FA7B21]/30 to-[#FCA929]/30 text-[#FCA929] border border-[#FA7B21]/50 mb-4 text-xs px-3 py-1 shadow-lg pointer-events-none select-none">
                     ⭐ PROGRAMA DESTACADO
@@ -194,7 +194,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
           </div>
 
           {/* Programa 6 Meses */}
-          <div className="md:col-span-2 lg:col-span-1">
+          <div>
             <Card className="relative bg-gradient-to-br from-zinc-900 via-zinc-900/95 to-zinc-900/90 border-2 border-[#FCA929]/50 overflow-hidden hover:shadow-2xl hover:shadow-[#FCA929]/30 transition-shadow duration-500 group h-full">
               {/* Glow effect on hover */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#FCA929]/0 via-[#FCA929]/10 to-[#FCA929]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
@@ -208,7 +208,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
               {/* Corner accent */}
               <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-[#FCA929]/20 to-transparent rounded-br-full pointer-events-none" />
 
-              <CardContent className="p-6 sm:p-8 md:p-10 relative">
+              <CardContent className="p-5 sm:p-6 lg:p-8 relative">
                 <div className="mb-6">
                   <Badge className="bg-gradient-to-r from-[#FCA929]/30 to-[#FA7B21]/30 text-[#FCA929] border border-[#FCA929]/50 mb-4 text-xs px-3 py-1 shadow-lg pointer-events-none select-none">
                     ⭐ MEJOR VALOR
@@ -274,7 +274,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
           </div>
 
           {/* Programa 1 Mes */}
-          <div className="md:col-span-2 lg:col-span-1">
+          <div>
             <Card className="bg-gradient-to-br from-zinc-900/70 via-zinc-900/60 to-zinc-900/70 border border-white/20 hover:border-[#FA7B21]/50 transition-all duration-500 h-full backdrop-blur-sm group hover:shadow-xl hover:shadow-[#FA7B21]/10">
               {/* Subtle glow */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#FCA929]/0 via-[#FCA929]/5 to-[#FCA929]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg pointer-events-none" />
@@ -282,7 +282,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
               {/* Corner accent */}
               <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-[#FCA929]/10 to-transparent rounded-tr-lg pointer-events-none" />
               
-              <CardContent className="p-6 sm:p-8 md:p-10 relative">
+              <CardContent className="p-5 sm:p-6 lg:p-8 relative">
                 <div className="mb-6">
                   <Badge className="bg-gradient-to-r from-white/15 to-white/10 text-white/90 border border-white/30 mb-4 text-xs px-3 py-1 pointer-events-none select-none">
                     PROGRAMA TRADICIONAL
