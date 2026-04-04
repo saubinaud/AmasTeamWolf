@@ -26,7 +26,7 @@ function generarPDFContrato(datos, firmaBase64) {
     doc.moveDown(0.5);
 
     doc.fontSize(14).font('Helvetica-Bold')
-       .text('CONTRATO DE INSCRIPCIÓN', { align: 'center' });
+       .text('CONTRATO DE INSCRIPCIÓN Y PRESTACIÓN DE SERVICIOS', { align: 'center' });
     doc.moveDown(1);
 
     // ── DATOS DEL CONTRATO ──
@@ -69,24 +69,37 @@ function generarPDFContrato(datos, firmaBase64) {
     doc.moveDown(1);
 
     // ── CLÁUSULAS ──
-    doc.font('Helvetica-Bold').text('TÉRMINOS Y CONDICIONES');
+    doc.font('Helvetica-Bold').fontSize(10).text('TÉRMINOS Y CONDICIONES');
     doc.moveDown(0.3);
     doc.font('Helvetica').fontSize(9);
 
     const clausulas = [
-      'El apoderado se compromete a respetar los horarios establecidos y comunicar cualquier inasistencia con anticipación.',
-      'La matrícula incluye el uso de las instalaciones de la academia durante las clases programadas. El uniforme y equipamiento corren por cuenta del apoderado según el programa contratado.',
-      'En caso de retiro voluntario, no se realizarán devoluciones del monto pagado. Las clases no utilizadas no son transferibles ni acumulables para otro período.',
-      'La academia se reserva el derecho de modificar horarios previa comunicación con al menos 48 horas de anticipación.',
-      'El apoderado autoriza el uso de fotografías y videos tomados durante las clases para fines institucionales y promocionales de la academia.',
-      'La academia no se responsabiliza por objetos de valor olvidados en las instalaciones.',
-      'El apoderado declara que el alumno se encuentra en condiciones de salud aptas para la práctica de artes marciales y asume la responsabilidad de informar cualquier condición médica relevante.',
-      'El presente contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado.',
+      'OBJETO DEL CONTRATO. AMAS Team Wolf se compromete a brindar al menor alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado, según el calendario y horario acordados al momento de la inscripción.',
+
+      'VIGENCIA. El presente contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado, según los datos indicados en la sección "Programa Contratado" del presente documento.',
+
+      'PAGO. El monto total del programa deberá abonarse de forma completa antes del inicio de clases mediante los medios de pago habilitados por AMAS Team Wolf (transferencia bancaria, Yape, Plin u otro medio autorizado). No se iniciará ningún programa sin confirmación del pago.',
+
+      'POLÍTICA DE NO CANCELACIONES Y NO REEMBOLSOS. El apoderado declara conocer y aceptar expresamente que: (a) una vez realizado el pago e iniciado el período de clases, no se aceptarán cancelaciones del contrato por ningún motivo; (b) AMAS Team Wolf no realizará devoluciones totales ni parciales del monto abonado; (c) el abandono voluntario del programa no dará lugar a compensación económica ni crédito para períodos futuros; (d) la inasistencia del alumno por motivos personales no genera derecho a clases de recuperación ni a descuento en el precio del programa.',
+
+      'EXCEPCIONES Y CONGELAMIENTOS. AMAS Team Wolf podrá, a su exclusivo criterio y previa solicitud documentada del apoderado, ofrecer congelamiento temporal del programa por razones de salud debidamente acreditadas con certificado médico, o traslado de crédito a un período futuro en casos de fuerza mayor debidamente justificado. Estas excepciones no son automáticas y quedan sujetas a aprobación de la dirección de AMAS Team Wolf.',
+
+      'HORARIOS Y COMUNICACIONES. La academia se reserva el derecho de modificar horarios previa comunicación con al menos 48 horas de anticipación. El apoderado se compromete a respetar los turnos establecidos y comunicar cualquier inasistencia con anticipación.',
+
+      'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra en condiciones de salud aptas para la práctica de artes marciales y asume la responsabilidad de informar a la academia cualquier condición médica, lesión o limitación física relevante antes del inicio de las clases o en el momento en que se presente.',
+
+      'AUTORIZACIÓN DE IMAGEN. El apoderado autoriza a AMAS Team Wolf a utilizar fotografías y videos del menor tomados durante actividades académicas, competencias o eventos, con fines de comunicación institucional y material promocional, sin que ello genere derecho a compensación económica alguna.',
+
+      'RESPONSABILIDAD. La academia no se responsabiliza por objetos de valor olvidados en las instalaciones. El apoderado asume plena responsabilidad sobre los efectos personales del alumno durante y fuera de las clases.',
+
+      'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología, materiales didácticos ni información interna de AMAS Team Wolf obtenida en el marco de la relación contractual.',
+
+      'LEY APLICABLE. Para todo lo no previsto en el presente contrato, las partes se someten a la legislación civil peruana y a la competencia de los tribunales de la ciudad de Lima.',
     ];
 
     clausulas.forEach((c, i) => {
-      doc.text(`${i + 1}. ${c}`, { indent: 10 });
-      doc.moveDown(0.3);
+      doc.text(`${i + 1}. ${c}`, { indent: 10, align: 'justify' });
+      doc.moveDown(0.4);
     });
 
     doc.moveDown(1);
@@ -95,9 +108,11 @@ function generarPDFContrato(datos, firmaBase64) {
     doc.fontSize(10).font('Helvetica');
     doc.text(
       `Yo, ${d.nombrePadre || '_______________'}, identificado(a) con DNI ${d.dniPadre || '________'}, ` +
-      `declaro haber leído y aceptado todas las condiciones establecidas en el presente contrato ` +
+      `declaro haber leído, comprendido y aceptado todas las condiciones establecidas en el presente contrato, ` +
+      `incluyendo expresamente la Cláusula 4 sobre la política de no cancelaciones y no reembolsos, ` +
       `para la inscripción de ${d.nombreAlumno || '_______________'} en el programa ${d.programa || '_______________'} ` +
-      `de AMAS Team Wolf.`
+      `de AMAS Team Wolf.`,
+      { align: 'justify' }
     );
     doc.moveDown(1.5);
 
