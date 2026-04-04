@@ -2,27 +2,32 @@
 const NOTIFUSE_URL = 'https://emailmarketing-notifuse.s6hx3x.easypanel.host/api/transactional.send';
 const NOTIFUSE_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmEyNmQ4MWYtMWI0Ny00NDY4LWIwM2YtZDYzMmQwMTE1MjMwIiwidHlwZSI6ImFwaV9rZXkiLCJlbWFpbCI6Im1haWxAZW1haWxtYXJrZXRpbmctbm90aWZ1c2UuczZoeDN4LmVhc3lwYW5lbC5ob3N0IiwiZXhwIjoyMDc4NTIwNDIwLCJuYmYiOjE3NjMxNjA0MjAsImlhdCI6MTc2MzE2MDQyMH0.Yad0WvVrjgEz7IsvE5aqkCws6KkjFZzxHsXCUsWa1xs';
 const WORKSPACE_ID = 'amaswolf';
+const { generarPDFContrato } = require('./pdfContrato');
 
-async function enviarNotificacion(templateId, email, firstName, data) {
+async function enviarNotificacion(templateId, email, firstName, data, attachments) {
   try {
+    const body = {
+      workspace_id: WORKSPACE_ID,
+      notification: {
+        id: templateId,
+        channels: ['email'],
+        contact: { email, first_name: firstName },
+        data,
+      },
+    };
+
+    // Agregar adjuntos si los hay
+    if (attachments && attachments.length > 0) {
+      body.notification.attachments = attachments;
+    }
+
     const response = await fetch(NOTIFUSE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${NOTIFUSE_TOKEN}`,
       },
-      body: JSON.stringify({
-        workspace_id: WORKSPACE_ID,
-        notification: {
-          id: templateId,
-          channels: ['email'],
-          contact: {
-            email,
-            first_name: firstName,
-          },
-          data,
-        },
-      }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -31,7 +36,7 @@ async function enviarNotificacion(templateId, email, firstName, data) {
       return false;
     }
 
-    console.log(`Email enviado: ${templateId} → ${email}`);
+    console.log(`Email enviado: ${templateId} → ${email}${attachments ? ' (con adjunto)' : ''}`);
     return true;
   } catch (err) {
     console.error(`Error enviando email (${templateId}):`, err.message);
@@ -39,8 +44,26 @@ async function enviarNotificacion(templateId, email, firstName, data) {
   }
 }
 
+// Genera PDF del contrato y lo devuelve como attachment para Notifuse
+async function generarAdjuntoContrato(datos) {
+  try {
+    const pdfBuffer = await generarPDFContrato(datos, null);
+    const pdfBase64 = pdfBuffer.toString('base64');
+    const nombre = datos.nombreAlumno || 'alumno';
+    return [{
+      filename: `Contrato_${nombre.replace(/\s+/g, '_')}.pdf`,
+      content: pdfBase64,
+      contentType: 'application/pdf',
+    }];
+  } catch (err) {
+    console.error('Error generando PDF para adjunto:', err.message);
+    return null;
+  }
+}
+
 // ── Matrícula 3 y 6 meses ──
-function emailMatricula3y6Meses(d) {
+async function emailMatricula3y6Meses(d) {
+  const adjuntos = await generarAdjuntoContrato(d);
   return enviarNotificacion('bienvenida_3_meses_sc', d.email, d.nombrePadre, {
     nombrePadre: d.nombrePadre,
     nombreAlumno: d.nombreAlumno,
@@ -55,11 +78,12 @@ function emailMatricula3y6Meses(d) {
     tallaUniforme: d.tallaUniforme || '',
     tallaPolo: Array.isArray(d.tallasPolos) ? d.tallasPolos.join(', ') : (d.tallasPolos || ''),
     precioPrograma: String(d.precioPrograma || d.total || ''),
-  });
+  }, adjuntos);
 }
 
 // ── Matrícula 1 mes ──
-function emailMatricula1Mes(d) {
+async function emailMatricula1Mes(d) {
+  const adjuntos = await generarAdjuntoContrato(d);
   return enviarNotificacion('bienvenida_1_mes_sc', d.email, d.nombrePadre, {
     nombrePadre: d.nombrePadre,
     nombreAlumno: d.nombreAlumno,
@@ -75,11 +99,12 @@ function emailMatricula1Mes(d) {
     tallaUniforme: d.tallaUniforme || '',
     tallaPolo: Array.isArray(d.tallasPolos) ? d.tallasPolos.join(', ') : (d.tallasPolos || ''),
     precioPrograma: String(d.precioPrograma || d.total || ''),
-  });
+  }, adjuntos);
 }
 
 // ── Renovación ──
-function emailRenovacion(d) {
+async function emailRenovacion(d) {
+  const adjuntos = await generarAdjuntoContrato(d);
   return enviarNotificacion('renovaciones_automaticas', d.email, d.nombrePadre, {
     nombrePadre: d.nombrePadre,
     nombreAlumno: d.nombreAlumno,
@@ -94,7 +119,7 @@ function emailRenovacion(d) {
     tallaUniforme: d.tallaUniforme || '',
     tallaPolo: Array.isArray(d.tallasPolos) ? d.tallasPolos.join(', ') : (d.tallasPolos || ''),
     precioPrograma: String(d.precioPrograma || d.total || ''),
-  });
+  }, adjuntos);
 }
 
 // ── Torneo ──
