@@ -925,13 +925,9 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         fechaRegistro: new Date().toISOString()
       };
 
-      const webhookUrl = programa === 'full'
-        ? 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/programa3meses'
-        : programa === '6meses'
-          ? 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/programa6meses'
-          : 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/mensual';
+      const { API_BASE } = await import('../config/api');
 
-      const response = await fetch(webhookUrl, {
+      const response = await fetch(`${API_BASE}/matricula`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

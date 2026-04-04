@@ -34,10 +34,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 
-// Base URL — in dev Vite proxies /api/n8n → N8N host (avoids CORS).
-const N8N_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? '/api/n8n'
-    : 'https://pallium-n8n.s6hx3x.easypanel.host';
+// Base URL — en dev usa proxy local, en prod el API propio
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? '/api'
+    : 'https://amas-api.s6hx3x.easypanel.host/api';
 
 // ============================================================
 // CONSTANTES EDITABLES — Actualizar aquí para cada torneo
@@ -76,8 +76,8 @@ const TORNEO_CONFIG = {
     ],
 
     // Webhook
-    webhookUrl: `${N8N_BASE}/webhook/torneo`,
-    consultarAlumnoUrl: `${N8N_BASE}/webhook/consultar-formulario`,
+    webhookUrl: `${API_URL}/torneo`,
+    consultarAlumnoUrl: `${API_URL}/torneo/consultar`,
 };
 
 // ============================================================

@@ -150,7 +150,8 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
   const fetchGraduados = async () => {
     setIsLoading(true);
     try {
-      const url = 'https://pallium-n8n.s6hx3x.easypanel.host/webhook/graduaci%C3%B3n';
+      const { API_BASE } = await import('../config/api');
+      const url = `${API_BASE}/graduacion`;
       
       const response = await fetch(url, {
         method: 'GET',
@@ -227,7 +228,8 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/correcion-graduacion', {
+      const { API_BASE } = await import('../config/api');
+      const response = await fetch(`${API_BASE}/graduacion/correccion`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

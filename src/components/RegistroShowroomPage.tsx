@@ -426,7 +426,8 @@ export function RegistroShowroomPage({
         nombre_alumno: formData.nombre_alumno
       });
 
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/regsitro-showroom', {
+      const { API_BASE } = await import('../config/api');
+      const response = await fetch(`${API_BASE}/leads/showroom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

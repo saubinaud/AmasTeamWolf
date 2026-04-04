@@ -96,7 +96,8 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
         source: 'landing_renovacion_navidad'
       };
 
-      const response = await fetch('https://pallium-n8n.s6hx3x.easypanel.host/webhook/renovaciones-navidad', {
+      const { API_BASE } = await import('../config/api');
+      const response = await fetch(`${API_BASE}/renovacion/navidad`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
