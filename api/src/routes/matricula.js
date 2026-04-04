@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { pool, queryOne } = require('../db');
 const { emailMatricula3y6Meses, emailMatricula1Mes } = require('../notifuse');
 const { generarPDFContrato } = require('../pdfContrato');
+const { subirPDF } = require('../cloudinary');
 
 const router = Router();
 
@@ -63,17 +64,19 @@ router.post('/', async (req, res) => {
       );
     }
 
-    // 4. Guardar contrato firmado
+    // 4. Guardar contrato firmado → Cloudinary + BD
     if (d.contratoFirmado) {
       try {
         const pdfBuffer = await generarPDFContrato(d, d.contratoFirmado);
-        const pdfBase64 = pdfBuffer.toString('base64');
+        const nombreArchivo = `${(d.nombreAlumno || 'alumno').replace(/\s+/g, '_')}_${inscripcionId}_${Date.now()}`;
+        const url = await subirPDF(pdfBuffer, nombreArchivo);
+
         await client.query(
           `INSERT INTO contratos (inscripcion_id, archivo_url, firmado, fecha_firma)
            VALUES ($1, $2, TRUE, CURRENT_DATE)`,
-          [inscripcionId, pdfBase64]
+          [inscripcionId, url || 'pdf_generado_sin_url']
         );
-        console.log(`Contrato guardado: inscripcion_id=${inscripcionId}`);
+        console.log(`Contrato guardado: inscripcion_id=${inscripcionId}, url=${url || 'sin_url'}`);
       } catch (pdfErr) {
         console.error('Error guardando contrato (no bloquea inscripción):', pdfErr.message);
       }

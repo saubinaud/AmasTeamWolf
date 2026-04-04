@@ -2,6 +2,7 @@ const { Router } = require('express');
 const { pool } = require('../db');
 const { emailRenovacion } = require('../notifuse');
 const { generarPDFContrato } = require('../pdfContrato');
+const { subirPDF } = require('../cloudinary');
 
 const router = Router();
 
@@ -55,17 +56,19 @@ router.post('/', async (req, res) => {
       );
     }
 
-    // 5. Guardar contrato firmado
+    // 5. Guardar contrato firmado → Cloudinary + BD
     if (d.contratoFirmado) {
       try {
         const pdfBuffer = await generarPDFContrato(d, d.contratoFirmado);
-        const pdfBase64 = pdfBuffer.toString('base64');
+        const nombreArchivo = `renovacion_${(d.nombreAlumno || 'alumno').replace(/\s+/g, '_')}_${inscripcionId}_${Date.now()}`;
+        const url = await subirPDF(pdfBuffer, nombreArchivo);
+
         await client.query(
           `INSERT INTO contratos (inscripcion_id, archivo_url, firmado, fecha_firma)
            VALUES ($1, $2, TRUE, CURRENT_DATE)`,
-          [inscripcionId, pdfBase64]
+          [inscripcionId, url || 'pdf_generado_sin_url']
         );
-        console.log(`Contrato renovación guardado: inscripcion_id=${inscripcionId}`);
+        console.log(`Contrato renovación guardado: inscripcion_id=${inscripcionId}, url=${url || 'sin_url'}`);
       } catch (pdfErr) {
         console.error('Error guardando contrato renovación:', pdfErr.message);
       }
