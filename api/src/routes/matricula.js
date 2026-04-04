@@ -65,11 +65,13 @@ router.post('/', async (req, res) => {
     }
 
     // 4. Guardar contrato firmado → Cloudinary + BD
+    let contratoUrl = '';
     if (d.contratoFirmado) {
       try {
         const pdfBuffer = await generarPDFContrato(d, d.contratoFirmado);
         const nombreArchivo = `${(d.nombreAlumno || 'alumno').replace(/\s+/g, '_')}_${inscripcionId}_${Date.now()}`;
         const url = await subirPDF(pdfBuffer, nombreArchivo);
+        contratoUrl = url || '';
 
         await client.query(
           `INSERT INTO contratos (inscripcion_id, archivo_url, firmado, fecha_firma)
@@ -84,13 +86,13 @@ router.post('/', async (req, res) => {
 
     await client.query('COMMIT');
 
-    // 5. Enviar email de bienvenida con PDF adjunto (no bloquea la respuesta)
+    // 5. Enviar email de bienvenida con URL del contrato (no bloquea la respuesta)
     const esMensual = (d.programa || '').toLowerCase().includes('1 mes') ||
                       (d.programa || '').toLowerCase().includes('mensual');
 
     if (d.email) {
       const emailFn = esMensual ? emailMatricula1Mes : emailMatricula3y6Meses;
-      emailFn(d).catch(err => console.error('Error enviando email matrícula:', err));
+      emailFn(d, contratoUrl).catch(err => console.error('Error enviando email matrícula:', err));
     }
 
     res.json({

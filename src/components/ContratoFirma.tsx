@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { FileText, Eraser, CheckCircle, ChevronDown, ChevronUp, User, GraduationCap, Calendar, DollarSign, Pen } from 'lucide-react';
+import { FileText, Eraser, CheckCircle, ChevronDown, ChevronUp, User, GraduationCap, Calendar, DollarSign, Pen, Maximize2, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { API_BASE } from '../config/api';
 
@@ -30,6 +30,7 @@ interface ContratoFirmaProps {
 
 export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: ContratoFirmaProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fullscreenCanvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [firmado, setFirmado] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -37,18 +38,27 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
   const [aceptado, setAceptado] = useState(false);
   const [clausulasAbiertas, setClausulasAbiertas] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
+  const [fullscreenMode, setFullscreenMode] = useState(false);
+
+  // Track which canvas is active (inline vs fullscreen)
+  const activeCanvasRef = useCallback(() => {
+    return fullscreenMode ? fullscreenCanvasRef.current : canvasRef.current;
+  }, [fullscreenMode]);
 
   // ── CANVAS SETUP (High-DPI) ──
-  const initCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
+  const initCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
+
+    // Set the internal resolution to match the CSS size * DPR
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
+
+    // Scale the context so drawing operations use CSS pixel coordinates
     ctx.scale(dpr, dpr);
 
     ctx.strokeStyle = '#111';
@@ -57,15 +67,33 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     ctx.lineJoin = 'round';
   }, []);
 
-  useEffect(() => {
-    initCanvas();
-    // Re-init on resize (orientation change on mobile)
-    window.addEventListener('resize', initCanvas);
-    return () => window.removeEventListener('resize', initCanvas);
+  const initInlineCanvas = useCallback(() => {
+    initCanvas(canvasRef.current);
   }, [initCanvas]);
 
+  const initFullscreenCanvas = useCallback(() => {
+    initCanvas(fullscreenCanvasRef.current);
+  }, [initCanvas]);
+
+  // Init inline canvas on mount and resize
+  useEffect(() => {
+    initInlineCanvas();
+    window.addEventListener('resize', initInlineCanvas);
+    return () => window.removeEventListener('resize', initInlineCanvas);
+  }, [initInlineCanvas]);
+
+  // Init fullscreen canvas when fullscreen mode opens
+  useEffect(() => {
+    if (fullscreenMode) {
+      // Use a rAF to ensure the DOM has laid out the fullscreen overlay
+      const frameId = requestAnimationFrame(() => {
+        initFullscreenCanvas();
+      });
+      return () => cancelAnimationFrame(frameId);
+    }
+  }, [fullscreenMode, initFullscreenCanvas]);
+
   // ── BLOCK PAGE SCROLL WHILE SIGNING ──
-  // This is critical on mobile: when user draws on canvas, page must not scroll
   useEffect(() => {
     const container = canvasContainerRef.current;
     if (!container) return;
@@ -76,14 +104,13 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
       }
     };
 
-    // Must be non-passive to be able to preventDefault
     container.addEventListener('touchmove', preventScroll, { passive: false });
     return () => container.removeEventListener('touchmove', preventScroll);
   }, [isDrawing]);
 
-  // Also lock body scroll while drawing
+  // Lock body scroll while drawing or in fullscreen mode
   useEffect(() => {
-    if (isDrawing) {
+    if (isDrawing || fullscreenMode) {
       document.body.style.overflow = 'hidden';
       document.body.style.touchAction = 'none';
     } else {
@@ -94,29 +121,26 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     };
-  }, [isDrawing]);
+  }, [isDrawing, fullscreenMode]);
 
-  // ── DRAWING HANDLERS ──
-  const getPos = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
+  // ── POINTER EVENT DRAWING HANDLERS ──
+  // Using Pointer Events instead of Touch/Mouse events fixes Apple Pencil offset
+  const getPos = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = e.currentTarget;
     const rect = canvas.getBoundingClientRect();
-    if ('touches' in e && e.touches.length > 0) {
-      return {
-        x: e.touches[0].clientX - rect.left,
-        y: e.touches[0].clientY - rect.top,
-      };
-    }
     return {
-      x: (e as React.MouseEvent).clientX - rect.left,
-      y: (e as React.MouseEvent).clientY - rect.top,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
     };
   }, []);
 
-  const startDrawing = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+  const startDrawing = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    const ctx = canvasRef.current?.getContext('2d');
+    const canvas = e.currentTarget;
+    // Capture pointer so moves outside the canvas still register
+    canvas.setPointerCapture(e.pointerId);
+    const ctx = canvas.getContext('2d');
     if (!ctx || firmado) return;
     const pos = getPos(e);
     ctx.beginPath();
@@ -124,11 +148,12 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     setIsDrawing(true);
   }, [getPos, firmado]);
 
-  const draw = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+  const draw = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isDrawing) return;
-    const ctx = canvasRef.current?.getContext('2d');
+    const canvas = e.currentTarget;
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
     const pos = getPos(e);
     ctx.lineTo(pos.x, pos.y);
@@ -136,24 +161,82 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     setHasStrokes(true);
   }, [isDrawing, getPos]);
 
-  const stopDrawing = useCallback((e?: React.TouchEvent | React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+  const stopDrawing = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const canvas = e.currentTarget;
+    canvas.releasePointerCapture(e.pointerId);
     setIsDrawing(false);
   }, []);
 
-  const limpiarFirma = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const dpr = window.devicePixelRatio || 1;
-    ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+  const limpiarFirma = useCallback(() => {
+    // Clear both canvases
+    [canvasRef.current, fullscreenCanvasRef.current].forEach((canvas) => {
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const dpr = window.devicePixelRatio || 1;
+      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
+    });
     setHasStrokes(false);
     setFirmado(false);
-  };
+  }, []);
+
+  // ── FULLSCREEN MODE ──
+  const openFullscreen = useCallback(() => {
+    setFullscreenMode(true);
+  }, []);
+
+  const closeFullscreen = useCallback(() => {
+    // Copy fullscreen canvas content to inline canvas
+    const fsCanvas = fullscreenCanvasRef.current;
+    const inlineCanvas = canvasRef.current;
+    if (fsCanvas && inlineCanvas) {
+      const inlineCtx = inlineCanvas.getContext('2d');
+      if (inlineCtx) {
+        const dpr = window.devicePixelRatio || 1;
+        // Re-init the inline canvas to reset its state
+        initCanvas(inlineCanvas);
+        // Draw the fullscreen canvas content scaled into the inline canvas
+        const inlineW = inlineCanvas.width / dpr;
+        const inlineH = inlineCanvas.height / dpr;
+        inlineCtx.drawImage(fsCanvas, 0, 0, fsCanvas.width, fsCanvas.height, 0, 0, inlineW, inlineH);
+      }
+    }
+    setFullscreenMode(false);
+  }, [initCanvas]);
+
+  const confirmarFirmaFromFullscreen = useCallback(() => {
+    // Copy to inline canvas then close fullscreen, then confirm
+    closeFullscreen();
+    // Defer confirmation so the inline canvas is updated
+    requestAnimationFrame(() => {
+      const canvas = canvasRef.current;
+      if (!canvas || !hasStrokes) return;
+      const firmaBase64 = canvas.toDataURL('image/png');
+      setFirmado(true);
+      onFirmaCompleta(firmaBase64);
+
+      setGenerandoPDF(true);
+      fetch(`${API_BASE}/contratos/generar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ datos, firma_base64: firmaBase64 }),
+      })
+        .then((resp) => resp.json())
+        .then((result) => {
+          if (result.success && onContratoGenerado) {
+            onContratoGenerado(result.pdf_base64);
+          }
+        })
+        .catch((err) => {
+          console.error('Error generando PDF:', err);
+        })
+        .finally(() => {
+          setGenerandoPDF(false);
+        });
+    });
+  }, [closeFullscreen, hasStrokes, datos, onFirmaCompleta, onContratoGenerado]);
 
   const confirmarFirma = async () => {
     const canvas = canvasRef.current;
@@ -188,15 +271,23 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     'OBJETO DEL CONTRATO. AMAS Team Wolf se compromete a brindar al alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado.',
     'VIGENCIA. El contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado.',
     'PAGO. El monto total deberá abonarse antes del inicio de clases. No se iniciará ningún programa sin confirmación del pago.',
-    'POLÍTICA DE NO CANCELACIONES Y NO REEMBOLSOS. Una vez realizado el pago, no se aceptarán cancelaciones ni se realizarán devoluciones. La inasistencia no genera derecho a clases de recuperación.',
+    'POLITICA DE NO CANCELACIONES Y NO REEMBOLSOS. Una vez realizado el pago, no se aceptarán cancelaciones ni se realizarán devoluciones. La inasistencia no genera derecho a clases de recuperación.',
     'EXCEPCIONES. AMAS Team Wolf podrá ofrecer congelamiento temporal por razones de salud con certificado médico, sujeto a aprobación de la dirección.',
     'HORARIOS. La academia puede modificar horarios con al menos 48 horas de anticipación.',
     'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra apto para la práctica de artes marciales.',
-    'AUTORIZACIÓN DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales y promocionales.',
+    'AUTORIZACION DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales y promocionales.',
     'RESPONSABILIDAD. La academia no se responsabiliza por objetos olvidados en las instalaciones.',
     'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología ni información interna de AMAS Team Wolf.',
     'LEY APLICABLE. Las partes se someten a la legislación civil peruana y tribunales de Lima.',
   ];
+
+  // Shared canvas props for pointer events
+  const canvasPointerProps = {
+    onPointerDown: startDrawing,
+    onPointerMove: draw,
+    onPointerUp: stopDrawing,
+    onPointerCancel: stopDrawing,
+  };
 
   return (
     <div className="space-y-3">
@@ -206,7 +297,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <FileText className="w-4 h-4 text-white" />
         </div>
         <div>
-          <h3 className="text-white text-sm font-semibold">Contrato de Inscripción</h3>
+          <h3 className="text-white text-sm font-semibold">Contrato de Inscripcion</h3>
           <p className="text-white/40 text-[10px]">Lima, {hoy}</p>
         </div>
       </div>
@@ -218,9 +309,9 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <User className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Apoderado</p>
-            <p className="text-white text-sm font-medium truncate">{d.nombrePadre || '—'}</p>
+            <p className="text-white text-sm font-medium truncate">{d.nombrePadre || '\u2014'}</p>
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-white/50 text-[11px]">
-              <span>DNI: {d.dniPadre || '—'}</span>
+              <span>DNI: {d.dniPadre || '\u2014'}</span>
               {d.telefono && <span>Tel: {d.telefono}</span>}
             </div>
           </div>
@@ -231,9 +322,9 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <GraduationCap className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Alumno</p>
-            <p className="text-white text-sm font-medium truncate">{d.nombreAlumno || '—'}</p>
+            <p className="text-white text-sm font-medium truncate">{d.nombreAlumno || '\u2014'}</p>
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-white/50 text-[11px]">
-              <span>DNI: {d.dniAlumno || '—'}</span>
+              <span>DNI: {d.dniAlumno || '\u2014'}</span>
               {d.categoriaAlumno && <span>{d.categoriaAlumno}</span>}
             </div>
           </div>
@@ -244,7 +335,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <Calendar className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
           <div className="min-w-0 flex-1">
             <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Programa</p>
-            <p className="text-white text-sm font-medium">{d.programa || '—'}</p>
+            <p className="text-white text-sm font-medium">{d.programa || '\u2014'}</p>
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-white/50 text-[11px]">
               {d.fechaInicio && <span>Inicio: {d.fechaInicio}</span>}
               {d.fechaFin && <span>Fin: {d.fechaFin}</span>}
@@ -258,7 +349,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         <div className="p-3 flex items-start gap-3">
           <DollarSign className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Inversión</p>
+            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Inversion</p>
             <div className="flex items-baseline gap-2">
               <span className="text-white text-lg font-bold">S/ {d.total || d.precioPrograma || '0'}</span>
               {d.descuentoDinero != null && d.descuentoDinero > 0 && (
@@ -269,14 +360,14 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         </div>
       </div>
 
-      {/* ── CLÁUSULAS (colapsable) ── */}
+      {/* ── CLAUSULAS (colapsable) ── */}
       <button
         type="button"
         onClick={() => setClausulasAbiertas(!clausulasAbiertas)}
         className="w-full flex items-center justify-between bg-zinc-800/30 border border-white/5 rounded-lg px-3 py-2.5 text-left group"
       >
         <span className="text-white/50 text-xs group-hover:text-white/70 transition-colors">
-          Ver términos y condiciones ({clausulas.length} cláusulas)
+          Ver terminos y condiciones ({clausulas.length} clausulas)
         </span>
         {clausulasAbiertas
           ? <ChevronUp className="w-3.5 h-3.5 text-white/30" />
@@ -298,13 +389,13 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         </div>
       )}
 
-      {/* ── DECLARACIÓN ── */}
+      {/* ── DECLARACION ── */}
       <div className="bg-zinc-800/30 border border-white/10 rounded-xl p-3">
         <p className="text-white/60 text-xs leading-relaxed">
           Yo, <strong className="text-white">{d.nombrePadre || '___'}</strong>, con DNI{' '}
-          <strong className="text-white">{d.dniPadre || '___'}</strong>, declaro haber leído y aceptado
-          todas las condiciones del presente contrato, incluyendo la <strong className="text-amber-400">Cláusula 4
-          (no cancelaciones y no reembolsos)</strong>, para la inscripción de{' '}
+          <strong className="text-white">{d.dniPadre || '___'}</strong>, declaro haber leido y aceptado
+          todas las condiciones del presente contrato, incluyendo la <strong className="text-amber-400">Clausula 4
+          (no cancelaciones y no reembolsos)</strong>, para la inscripcion de{' '}
           <strong className="text-white">{d.nombreAlumno || '___'}</strong> en el programa{' '}
           <strong className="text-white">{d.programa || '___'}</strong> de AMAS Team Wolf.
         </p>
@@ -324,11 +415,11 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           </div>
         </div>
         <span className="text-white/70 text-xs leading-snug">
-          He leído y acepto los términos y condiciones del contrato.
+          He leido y acepto los terminos y condiciones del contrato.
         </span>
       </label>
 
-      {/* ── PAD DE FIRMA ── */}
+      {/* ── PAD DE FIRMA (INLINE) ── */}
       {aceptado && !firmado && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -336,15 +427,24 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
               <Pen className="w-3.5 h-3.5 text-[#FCA929]" />
               <span className="text-white text-xs font-semibold">Firma del apoderado</span>
             </div>
-            {hasStrokes && (
+            <div className="flex items-center gap-2">
+              {hasStrokes && (
+                <button
+                  type="button"
+                  onClick={limpiarFirma}
+                  className="flex items-center gap-1 text-white/40 hover:text-red-400 text-[11px] transition-colors"
+                >
+                  <Eraser className="w-3 h-3" /> Limpiar
+                </button>
+              )}
               <button
                 type="button"
-                onClick={limpiarFirma}
-                className="flex items-center gap-1 text-white/40 hover:text-red-400 text-[11px] transition-colors"
+                onClick={openFullscreen}
+                className="flex items-center gap-1 text-white/40 hover:text-[#FCA929] text-[11px] transition-colors"
               >
-                <Eraser className="w-3 h-3" /> Limpiar
+                <Maximize2 className="w-3 h-3" /> Ampliar
               </button>
-            )}
+            </div>
           </div>
 
           <div
@@ -356,18 +456,12 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
               ref={canvasRef}
               className="w-full cursor-crosshair"
               style={{ height: '200px', touchAction: 'none' }}
-              onMouseDown={startDrawing}
-              onMouseMove={draw}
-              onMouseUp={stopDrawing}
-              onMouseLeave={stopDrawing}
-              onTouchStart={startDrawing}
-              onTouchMove={draw}
-              onTouchEnd={stopDrawing}
+              {...canvasPointerProps}
             />
             {!hasStrokes && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <Pen className="w-6 h-6 text-zinc-300 mb-2" />
-                <span className="text-zinc-400 text-sm">Firma aquí con tu dedo</span>
+                <span className="text-zinc-400 text-sm">Firma aqui con tu dedo o lapiz</span>
               </div>
             )}
           </div>
@@ -383,6 +477,78 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         </div>
       )}
 
+      {/* ── FULLSCREEN SIGNATURE OVERLAY ── */}
+      {fullscreenMode && (
+        <div
+          className="fixed inset-0 z-[9999] bg-white flex flex-col"
+          style={{ touchAction: 'none' }}
+        >
+          {/* Fullscreen header */}
+          <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <Pen className="w-4 h-4 text-[#FCA929]" />
+              <span className="text-white text-sm font-semibold">Firma del apoderado</span>
+            </div>
+            <div className="flex items-center gap-3">
+              {hasStrokes && (
+                <button
+                  type="button"
+                  onClick={limpiarFirma}
+                  className="flex items-center gap-1 text-white/60 hover:text-red-400 text-xs transition-colors"
+                >
+                  <Eraser className="w-3.5 h-3.5" /> Limpiar
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={closeFullscreen}
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          </div>
+
+          {/* Fullscreen canvas area */}
+          <div className="flex-1 relative overflow-hidden">
+            <canvas
+              ref={fullscreenCanvasRef}
+              className="w-full cursor-crosshair"
+              style={{ height: '70vh', touchAction: 'none' }}
+              {...canvasPointerProps}
+            />
+            {!hasStrokes && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <Pen className="w-10 h-10 text-zinc-300 mb-3" />
+                <span className="text-zinc-400 text-base">Firma aqui</span>
+              </div>
+            )}
+          </div>
+
+          {/* Fullscreen footer */}
+          <div className="flex-shrink-0 px-4 py-4 bg-zinc-900 safe-area-inset-bottom">
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={closeFullscreen}
+                className="flex-1 h-12 bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold"
+              >
+                Volver
+              </Button>
+              <Button
+                type="button"
+                onClick={confirmarFirmaFromFullscreen}
+                disabled={!hasStrokes}
+                className="flex-1 h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white text-sm font-semibold disabled:opacity-30"
+              >
+                Confirmar firma
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── ESTADO FIRMADO ── */}
       {firmado && (
         <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center">
@@ -390,7 +556,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           <p className="text-green-400 text-sm font-semibold">
             {generandoPDF ? 'Generando contrato PDF...' : 'Contrato firmado correctamente'}
           </p>
-          <p className="text-white/40 text-[11px] mt-1">El PDF se enviará a tu correo con la confirmación</p>
+          <p className="text-white/40 text-[11px] mt-1">El PDF se enviara a tu correo con la confirmacion</p>
         </div>
       )}
     </div>

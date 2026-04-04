@@ -3,7 +3,7 @@ const PDFDocument = require('pdfkit');
 // Generar PDF del contrato
 function generarPDFContrato(datos, firmaBase64) {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const doc = new PDFDocument({ size: 'A4', margin: 50, compress: true });
     const chunks = [];
 
     doc.on('data', chunk => chunks.push(chunk));
