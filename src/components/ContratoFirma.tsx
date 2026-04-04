@@ -207,36 +207,33 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
   }, [initCanvas]);
 
   const confirmarFirmaFromFullscreen = useCallback(() => {
-    // Copy to inline canvas then close fullscreen, then confirm
-    closeFullscreen();
-    // Defer confirmation so the inline canvas is updated
-    requestAnimationFrame(() => {
-      const canvas = canvasRef.current;
-      if (!canvas || !hasStrokes) return;
-      const firmaBase64 = canvas.toDataURL('image/png');
-      setFirmado(true);
-      onFirmaCompleta(firmaBase64);
+    const canvas = fullscreenCanvasRef.current;
+    if (!canvas || !hasStrokes) return;
 
-      setGenerandoPDF(true);
-      fetch(`${API_BASE}/contratos/generar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ datos, firma_base64: firmaBase64 }),
+    const firmaBase64 = canvas.toDataURL('image/png');
+    setFullscreenMode(false);
+    setFirmado(true);
+    onFirmaCompleta(firmaBase64);
+
+    setGenerandoPDF(true);
+    fetch(`${API_BASE}/contratos/generar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ datos, firma_base64: firmaBase64 }),
+    })
+      .then((resp) => resp.json())
+      .then((result) => {
+        if (result.success && onContratoGenerado) {
+          onContratoGenerado(result.pdf_base64);
+        }
       })
-        .then((resp) => resp.json())
-        .then((result) => {
-          if (result.success && onContratoGenerado) {
-            onContratoGenerado(result.pdf_base64);
-          }
-        })
-        .catch((err) => {
-          console.error('Error generando PDF:', err);
-        })
-        .finally(() => {
-          setGenerandoPDF(false);
-        });
-    });
-  }, [closeFullscreen, hasStrokes, datos, onFirmaCompleta, onContratoGenerado]);
+      .catch((err) => {
+        console.error('Error generando PDF:', err);
+      })
+      .finally(() => {
+        setGenerandoPDF(false);
+      });
+  }, [hasStrokes, datos, onFirmaCompleta, onContratoGenerado]);
 
   const confirmarFirma = async () => {
     const canvas = canvasRef.current;
@@ -419,63 +416,20 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         </span>
       </label>
 
-      {/* ── PAD DE FIRMA (INLINE) ── */}
+      {/* ── BOTÓN FIRMAR (abre fullscreen) ── */}
       {aceptado && !firmado && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Pen className="w-3.5 h-3.5 text-[#FCA929]" />
-              <span className="text-white text-xs font-semibold">Firma del apoderado</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {hasStrokes && (
-                <button
-                  type="button"
-                  onClick={limpiarFirma}
-                  className="flex items-center gap-1 text-white/40 hover:text-red-400 text-[11px] transition-colors"
-                >
-                  <Eraser className="w-3 h-3" /> Limpiar
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={openFullscreen}
-                className="flex items-center gap-1 text-white/40 hover:text-[#FCA929] text-[11px] transition-colors"
-              >
-                <Maximize2 className="w-3 h-3" /> Ampliar
-              </button>
-            </div>
-          </div>
-
-          <div
-            ref={canvasContainerRef}
-            className="relative rounded-xl overflow-hidden border-2 border-dashed border-[#FA7B21]/40 bg-white"
-            style={{ touchAction: 'none' }}
-          >
-            <canvas
-              ref={canvasRef}
-              className="w-full cursor-crosshair"
-              style={{ height: '200px', touchAction: 'none' }}
-              {...canvasPointerProps}
-            />
-            {!hasStrokes && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <Pen className="w-6 h-6 text-zinc-300 mb-2" />
-                <span className="text-zinc-400 text-sm">Firma aqui con tu dedo o lapiz</span>
-              </div>
-            )}
-          </div>
-
-          <Button
-            type="button"
-            onClick={confirmarFirma}
-            disabled={!hasStrokes}
-            className="w-full h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white text-sm font-semibold disabled:opacity-30"
-          >
-            Confirmar firma y generar contrato
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={openFullscreen}
+          className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white text-base font-semibold"
+        >
+          <Pen className="w-5 h-5 mr-2" />
+          Firmar contrato
+        </Button>
       )}
+
+      {/* Canvas oculto para almacenar la firma (necesario para toDataURL) */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
 
       {/* ── FULLSCREEN SIGNATURE OVERLAY ── */}
       {fullscreenMode && (
