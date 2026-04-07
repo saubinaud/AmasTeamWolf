@@ -1,48 +1,48 @@
-// Upload de archivos a Cloudinary (sin SDK, solo fetch)
-const crypto = require('crypto');
+// Almacenamiento de contratos PDF: BD (para servir) + disco (backup local)
+const { pool } = require('./db');
+const fs = require('fs');
+const path = require('path');
 
-const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dkoocok3j';
-const API_KEY = process.env.CLOUDINARY_API_KEY;
-const API_SECRET = process.env.CLOUDINARY_API_SECRET;
+// Directorio local para backup de PDFs
+const CONTRATOS_DIR = process.env.CONTRATOS_DIR || '/opt/amas-contratos';
 
-async function subirPDF(pdfBuffer, nombreArchivo) {
+// Asegurar que el directorio existe
+try { fs.mkdirSync(CONTRATOS_DIR, { recursive: true }); } catch (_) {}
+
+/**
+ * Guarda el PDF en BD + disco y retorna la URL del endpoint.
+ * @param {Buffer} pdfBuffer - PDF generado por pdfContrato.js
+ * @param {string} nombreArchivo - nombre descriptivo (sin extension)
+ * @param {number} inscripcionId - ID de la inscripcion asociada
+ * @returns {string|null} URL para ver/descargar el PDF
+ */
+async function guardarContratoPDF(pdfBuffer, nombreArchivo, inscripcionId) {
   try {
-    const base64Data = `data:application/pdf;base64,${pdfBuffer.toString('base64')}`;
-    const timestamp = Math.floor(Date.now() / 1000);
-    const folder = 'contratos';
-    const publicId = `${folder}/${nombreArchivo}`;
-
-    // Generar firma (Cloudinary requiere firma para uploads autenticados)
-    const signString = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
-    const signature = crypto.createHash('sha1').update(signString).digest('hex');
-
-    const formData = new URLSearchParams();
-    formData.append('file', base64Data);
-    formData.append('api_key', API_KEY);
-    formData.append('timestamp', String(timestamp));
-    formData.append('signature', signature);
-    formData.append('folder', folder);
-    formData.append('public_id', publicId);
-    formData.append('resource_type', 'raw');
-
-    const resp = await fetch(
-      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/raw/upload`,
-      { method: 'POST', body: formData }
+    // 1. Guardar en BD (fuente principal para servir)
+    const result = await pool.query(
+      `INSERT INTO contratos (inscripcion_id, archivo_url, firmado, fecha_firma, pdf_data)
+       VALUES ($1, $2, TRUE, CURRENT_DATE, $3)
+       ON CONFLICT (inscripcion_id)
+       DO UPDATE SET archivo_url = $2, firmado = TRUE, fecha_firma = CURRENT_DATE, pdf_data = $3
+       RETURNING id`,
+      [inscripcionId, nombreArchivo, pdfBuffer]
     );
 
-    const data = await resp.json();
+    const contratoId = result.rows[0].id;
 
-    if (data.secure_url) {
-      console.log(`Cloudinary upload OK: ${data.secure_url}`);
-      return data.secure_url;
-    } else {
-      console.error('Cloudinary error:', JSON.stringify(data));
-      return null;
-    }
+    // 2. Guardar en disco (backup local)
+    const filename = `${nombreArchivo}.pdf`;
+    const filepath = path.join(CONTRATOS_DIR, filename);
+    fs.writeFileSync(filepath, pdfBuffer);
+    console.log(`Contrato guardado: BD id=${contratoId} + disco ${filepath}`);
+
+    // 3. Retornar URL publica del API
+    const baseUrl = process.env.API_PUBLIC_URL || 'https://amas-api.s6hx3x.easypanel.host';
+    return `${baseUrl}/api/contratos/${contratoId}/pdf`;
   } catch (err) {
-    console.error('Error subiendo a Cloudinary:', err.message);
+    console.error('Error guardando contrato PDF:', err.message);
     return null;
   }
 }
 
-module.exports = { subirPDF };
+module.exports = { guardarContratoPDF };
