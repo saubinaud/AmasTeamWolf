@@ -681,14 +681,19 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                   <span className="text-green-400 text-xs">En vivo</span>
                 </div>
               </div>
-              {(sesionActiva ? asistenciasClase : asistencias).length === 0 ? (
+              {!sesionActiva ? (
                 <div className="p-8 text-center">
                   <UserCheck className="w-10 h-10 text-white/20 mx-auto mb-2" />
-                  <p className="text-white/40 text-sm">{sesionActiva ? 'Nadie ha marcado asistencia' : 'Genera el QR primero'}</p>
+                  <p className="text-white/40 text-sm">Genera el QR para ver los presentes de esta clase</p>
+                </div>
+              ) : asistenciasClase.length === 0 ? (
+                <div className="p-8 text-center">
+                  <UserCheck className="w-10 h-10 text-white/20 mx-auto mb-2" />
+                  <p className="text-white/40 text-sm">Nadie ha marcado asistencia en esta clase</p>
                 </div>
               ) : (
                 <div className="divide-y divide-white/5 max-h-[40vh] overflow-y-auto">
-                  {(sesionActiva ? asistenciasClase : asistencias).map((a, i) => (
+                  {asistenciasClase.map((a, i) => (
                     <div key={i} className="flex items-center justify-between px-4 py-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
