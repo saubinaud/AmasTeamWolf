@@ -29,7 +29,7 @@ router.get('/', async (_req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('Error obteniendo graduaciones:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
@@ -48,7 +48,7 @@ router.post('/correccion', async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error en corrección:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 

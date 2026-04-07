@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
       const { dni_alumno, dni_padre } = req.body;
 
       if (!dni_alumno && !dni_padre) {
-        return res.json({ error: 'Ingresa al menos un DNI' });
+        return res.status(400).json({ success: false, error: 'Ingresa al menos un DNI' });
       }
 
       let result;
@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
       const { auth_id, email, apoderado_id } = req.body;
 
       if (!auth_id || !apoderado_id) {
-        return res.status(400).json({ error: 'auth_id y apoderado_id requeridos' });
+        return res.status(400).json({ success: false, error: 'auth_id y apoderado_id requeridos' });
       }
 
       await pool.query(
@@ -59,10 +59,10 @@ router.post('/', async (req, res) => {
       return res.json({ success: true });
     }
 
-    res.status(400).json({ error: 'Action inválida' });
+    res.status(400).json({ success: false, error: 'Action inválida' });
   } catch (err) {
     console.error('Error en vincular:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 

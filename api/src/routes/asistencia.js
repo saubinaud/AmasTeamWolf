@@ -10,7 +10,7 @@ router.post('/', async (req, res) => {
     const { dni_alumno, token_qr, turno } = req.body;
 
     if (!dni_alumno || !token_qr) {
-      return res.json({ success: false, error: 'DNI y token QR son requeridos' });
+      return res.status(400).json({ success: false, error: 'DNI y token QR son requeridos' });
     }
 
     const turnoFinal = turno || detectarTurno();
@@ -77,7 +77,7 @@ router.get('/hoy', async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('Error obteniendo asistencias de hoy:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
@@ -106,7 +106,7 @@ router.get('/mensual/:alumnoId', async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('Error obteniendo asistencia mensual:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
@@ -128,7 +128,7 @@ router.get('/resumen-dia', async (_req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('Error resumen día:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
@@ -178,7 +178,7 @@ router.get('/exportar', async (req, res) => {
     res.send('\uFEFF' + csvRows.join('\n'));
   } catch (err) {
     console.error('Error exportando asistencia:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
@@ -242,7 +242,7 @@ router.get('/dashboard', async (req, res) => {
     });
   } catch (err) {
     console.error('Error dashboard:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
