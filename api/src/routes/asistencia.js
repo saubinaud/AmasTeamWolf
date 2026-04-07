@@ -32,14 +32,14 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/asistencia/hoy — Asistencias del día con datos del alumno
-router.get('/hoy', async (_req, res) => {
+// Query opcional: ?token=UUID — filtra por sesión QR específica
+router.get('/hoy', async (req, res) => {
   try {
-    // Intentar usar la vista, si falla usar query directa
+    const { token } = req.query;
     let rows;
-    try {
-      rows = await query('SELECT * FROM v_asistencia_hoy ORDER BY hora DESC');
-    } catch (_viewErr) {
-      // Fallback: query directa si la vista no existe o tiene diferente schema
+
+    if (token) {
+      // Filtrar por sesión QR específica
       rows = await query(`
         SELECT
           a.nombre_alumno,
@@ -50,9 +50,29 @@ router.get('/hoy', async (_req, res) => {
         FROM asistencias ast
         JOIN alumnos a ON a.id = ast.alumno_id
         LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
-        WHERE ast.fecha = CURRENT_DATE
+        JOIN qr_sesiones qs ON qs.id = ast.qr_sesion_id
+        WHERE ast.fecha = CURRENT_DATE AND qs.token = $1
         ORDER BY ast.hora DESC
-      `);
+      `, [token]);
+    } else {
+      // Todas las del día
+      try {
+        rows = await query('SELECT * FROM v_asistencia_hoy ORDER BY hora DESC');
+      } catch (_viewErr) {
+        rows = await query(`
+          SELECT
+            a.nombre_alumno,
+            ast.hora::text AS hora,
+            ast.turno,
+            ast.asistio,
+            i.programa
+          FROM asistencias ast
+          JOIN alumnos a ON a.id = ast.alumno_id
+          LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
+          WHERE ast.fecha = CURRENT_DATE
+          ORDER BY ast.hora DESC
+        `);
+      }
     }
     res.json(rows);
   } catch (err) {
