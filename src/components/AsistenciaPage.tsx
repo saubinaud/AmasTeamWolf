@@ -99,7 +99,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
   if (!tokenQr) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
-        <div className="text-center max-w-sm">
+        <div className="text-center max-w-sm md:max-w-md">
           <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">QR no detectado</h2>
           <p className="text-white/60 text-sm mb-6">
@@ -120,7 +120,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
   if (resultado?.success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
-        <div className="text-center max-w-sm">
+        <div className="text-center max-w-sm md:max-w-md">
           <div className="w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-14 h-14 text-green-400" />
           </div>
@@ -189,8 +189,8 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
         <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-[#FCA929]/10 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative w-full max-w-sm">
-        <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
+      <div className="relative w-full max-w-sm md:max-w-md">
+        <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30">

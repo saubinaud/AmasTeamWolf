@@ -95,7 +95,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent 
         showCloseButton={false}
-        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-[calc(100%-1rem)] sm:w-full max-w-[95vw] sm:max-w-2xl p-4 sm:p-6"
+        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-[calc(100%-1rem)] sm:w-full max-w-[95vw] sm:max-w-2xl md:max-w-3xl p-4 sm:p-6 md:p-8"
         style={{
           maxHeight: '90vh',
           overflowY: 'auto',
@@ -131,7 +131,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
           </DialogClose>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
           {/* Yape */}
           <button
             onClick={() => setSelectedMethod(selectedMethod === 'yape' ? null : 'yape')}

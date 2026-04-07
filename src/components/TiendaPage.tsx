@@ -201,7 +201,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
         {/* Hero Section */}
         <section className="pt-24 sm:pt-28 pb-12 sm:pb-16 relative overflow-hidden">
 
-        <div className="container mx-auto px-4 relative z-10">
+        <div className="container mx-auto px-4 md:px-6 relative z-10">
           {/* Back Button */}
           <motion.button
             onClick={() => onNavigate('home')}
@@ -220,7 +220,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
             className="text-center mb-12"
           >
             <motion.h1 
-              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-4 px-4"
+              className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl mb-4 px-4"
               style={{
                 background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 50%, #FA7B21 100%)',
                 WebkitBackgroundClip: 'text',
@@ -259,7 +259,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
           </motion.div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {filteredProducts.map((product, index) => (
               <motion.div
                 key={product.id}
