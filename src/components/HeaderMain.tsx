@@ -11,9 +11,10 @@ interface HeaderMainProps {
   onOpenMatricula: () => void;
   onCartClick: () => void;
   cartItemsCount: number;
+  currentPage?: string;
 }
 
-export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: HeaderMainProps) {
+export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount, currentPage }: HeaderMainProps) {
   const { isAuthenticated, user } = useAuth();
   const { signIn } = useLogto();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -66,7 +67,10 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
   };
 
   // Estilos comunes para links (para asegurar consistencia visual)
-  const linkStyles = "text-white/80 hover:text-[#FCA929] transition-colors text-sm lg:text-base";
+  const linkStyles = (active?: boolean) =>
+    active
+      ? "text-[#FA7B21] font-semibold transition-colors text-sm lg:text-base"
+      : "text-white/80 hover:text-[#FA7B21] transition-colors text-sm lg:text-base";
 
   return (
     <header
@@ -118,7 +122,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               onMouseEnter={handleMouseEnterProgramas}
               onMouseLeave={handleMouseLeaveProgramas}
             >
-              <button className={`flex items-center gap-1 ${linkStyles}`}>
+              <button className={`flex items-center gap-1 ${linkStyles(currentPage === 'leadership' || currentPage === 'home')}`}>
                 Programas
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasDesktopOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -147,17 +151,17 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             </div>
 
             {/* 2. Tienda */}
-            <button onClick={() => handleNavigateToSection('tienda')} className={linkStyles}>
+            <button onClick={() => handleNavigateToSection('tienda')} className={linkStyles(currentPage === 'tienda')}>
               Tienda
             </button>
 
             {/* 3. Nosotros */}
-            <button onClick={() => handleNavigateToSection('nosotros')} className={linkStyles}>
+            <button onClick={() => handleNavigateToSection('nosotros')} className={linkStyles()}>
               Nosotros
             </button>
 
             {/* 4. Graduaciones */}
-            <button onClick={() => onNavigate('graduacion')} className={linkStyles}>
+            <button onClick={() => onNavigate('graduacion')} className={linkStyles(currentPage === 'graduacion')}>
               Graduaciones
             </button>
           </nav>
@@ -193,7 +197,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 }
               }}
               variant="ghost"
-              className={`${linkStyles} flex items-center`}
+              className={`${linkStyles(currentPage === 'perfil')} flex items-center`}
             >
               <User className="h-5 w-5 mr-2" />
               {isAuthenticated ? 'Mi Perfil' : 'Acceso'}
@@ -259,7 +263,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             <div>
               <button
                 onClick={() => setIsProgramasOpen(!isProgramasOpen)}
-                className="flex items-center justify-between w-full text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
+                className={`flex items-center justify-between w-full transition-colors text-left py-2 text-base ${currentPage === 'leadership' || currentPage === 'home' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
                 style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 Programas
@@ -294,7 +298,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             {/* 2. Tienda */}
             <button
               onClick={() => handleNavigateToSection('tienda')}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
+              className={`transition-colors text-left py-2 text-base ${currentPage === 'tienda' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               Tienda
@@ -303,7 +307,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             {/* 3. Nosotros */}
             <button
               onClick={() => handleNavigateToSection('nosotros')}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
+              className="text-white/80 hover:text-[#FA7B21] transition-colors text-left py-2 text-base"
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               Nosotros
@@ -315,7 +319,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 onNavigate('graduacion');
                 setIsMobileMenuOpen(false);
               }}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base"
+              className={`transition-colors text-left py-2 text-base ${currentPage === 'graduacion' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               Graduaciones
@@ -334,7 +338,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                 }
                 setIsMobileMenuOpen(false);
               }}
-              className="text-white/80 hover:text-[#FCA929] transition-colors text-left py-2 text-base flex items-center gap-2"
+              className={`transition-colors text-left py-2 text-base flex items-center gap-2 ${currentPage === 'perfil' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
               <User className="h-5 w-5" />

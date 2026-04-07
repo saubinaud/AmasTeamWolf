@@ -311,7 +311,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
   );
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div className="min-h-screen relative overflow-x-hidden animate-fadeIn">
       {/* Advanced Gradient Background - Optimizado para móviles */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
@@ -334,11 +334,12 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
       </div>
 
       <div className="relative z-10">
-        <HeaderMain 
+        <HeaderMain
           onNavigate={onNavigate}
           onOpenMatricula={() => {}}
           onCartClick={() => {}}
           cartItemsCount={0}
+          currentPage="graduacion"
         />
 
         {/* Hero Section */}

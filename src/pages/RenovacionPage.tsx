@@ -45,6 +45,7 @@ export function RenovacionPage({
         onOpenMatricula={onOpenMatricula}
         onCartClick={onCartClick}
         cartItemsCount={cartItemsCount}
+        currentPage="renovacion"
       />
 
       {/* Contenido principal */}

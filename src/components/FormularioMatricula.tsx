@@ -1025,7 +1025,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     id="nombreAlumno"
                     value={formData.nombreAlumno}
                     onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     required
                     autoComplete="name"
                   />
@@ -1038,7 +1038,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     id="dniAlumno"
                     value={formData.dniAlumno}
                     onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     maxLength={8}
                     required
                   />
@@ -1052,7 +1052,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     type="date"
                     value={formData.fechaNacimiento}
                     onChange={(e) => handleFechaNacimientoChange(e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     required
                   />
 
@@ -1068,7 +1068,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                           <button
                             type="button"
                             onClick={() => setTurnoSeleccionado('manana')}
-                            className={`p-4 rounded-lg border-2 transition-all ${turnoSeleccionado === 'manana'
+                            className={`p-4 rounded-lg border-2 transition-all active:scale-95 ${turnoSeleccionado === 'manana'
                               ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                               : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
                               }`}
@@ -1086,7 +1086,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                           <button
                             type="button"
                             onClick={() => setTurnoSeleccionado('tarde')}
-                            className={`p-4 rounded-lg border-2 transition-all ${turnoSeleccionado === 'tarde'
+                            className={`p-4 rounded-lg border-2 transition-all active:scale-95 ${turnoSeleccionado === 'tarde'
                               ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                               : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
                               }`}
@@ -1144,7 +1144,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     id="nombrePadre"
                     value={formData.nombrePadre}
                     onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     required
                     autoComplete="name"
                   />
@@ -1157,7 +1157,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     id="dniPadre"
                     value={formData.dniPadre}
                     onChange={(e) => handleInputChange('dniPadre', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     maxLength={8}
                     required
                   />
@@ -1172,7 +1172,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     value={formData.telefono}
                     onChange={(e) => handleInputChange('telefono', e.target.value)}
                     placeholder="999 999 999"
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     required
                   />
                 </div>
@@ -1185,7 +1185,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     required
                     autoComplete="email"
                   />
@@ -1198,7 +1198,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     id="direccion"
                     value={formData.direccion}
                     onChange={(e) => handleInputChange('direccion', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     autoComplete="street-address"
                   />
                 </div>
@@ -1370,7 +1370,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                           setOpcionFechaSeleccionada('fechas');
                           setMostrarOtraFecha(false);
                         }}
-                        className={`p-4 rounded-lg border-2 transition-all text-left ${estaSeleccionada
+                        className={`p-4 rounded-lg border-2 transition-all text-left active:scale-95 ${estaSeleccionada
                           ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                           : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
                           }`}
@@ -1402,7 +1402,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                       setOpcionFechaSeleccionada('no-especificado');
                       setMostrarOtraFecha(false);
                     }}
-                    className={`p-4 rounded-lg border-2 transition-all text-left ${opcionFechaSeleccionada === 'no-especificado'
+                    className={`p-4 rounded-lg border-2 transition-all text-left active:scale-95 ${opcionFechaSeleccionada === 'no-especificado'
                       ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                       : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
                       }`}
@@ -1431,7 +1431,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                       setOpcionFechaSeleccionada('otra');
                       setMostrarOtraFecha(true);
                     }}
-                    className={`p-4 rounded-lg border-2 transition-all text-left ${opcionFechaSeleccionada === 'otra'
+                    className={`p-4 rounded-lg border-2 transition-all text-left active:scale-95 ${opcionFechaSeleccionada === 'otra'
                       ? 'border-[#FA7B21] bg-[#FA7B21]/20'
                       : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
                       }`}
@@ -1463,7 +1463,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                       value={formData.fechaInicio !== 'no-especificado' ? formData.fechaInicio : ''}
                       onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
                       min={new Date().toISOString().split('T')[0]}
-                      className="bg-zinc-800 border-white/20 text-white"
+                      className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                     />
                     <p className="text-white/50 text-xs mt-2">
                       💡 Asegúrate de elegir una fecha válida según tu edad y disponibilidad
@@ -1647,12 +1647,12 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                   placeholder="Ingresa tu código"
                   value={codigoPromocional}
                   onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                  className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
+                  className="flex-1 bg-zinc-800 border-white/20 text-white uppercase focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                 />
                 <Button
                   type="button"
                   onClick={handleAplicarCodigo}
-                  className="bg-[#FA7B21] hover:bg-[#F36A15] text-white px-6"
+                  className="bg-[#FA7B21] hover:bg-[#F36A15] text-white px-6 active:scale-95"
                 >
                   Aplicar
                 </Button>
