@@ -35,7 +35,7 @@ const Label = ({ children, className = "" }: any) => (
 
 const Input = ({ className = "", ...props }: any) => (
   <input
-    className={`w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FF6700] focus:ring-4 focus:ring-[#FF6700]/30 focus:bg-white/20 transition-all text-base font-medium ${className}`}
+    className={`w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
     {...props}
   />
 );
@@ -113,7 +113,7 @@ const InfiniteGalleryCarousel = () => {
                 {img.alt}
               </p>
             </div>
-            <div className="absolute inset-0 border-2 border-[#FF6700] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
+            <div className="absolute inset-0 border-2 border-[#FA7B21] opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
           </div>
         ))}
       </div>
@@ -180,11 +180,11 @@ const TestimonialsSection = () => {
     <div className="max-w-4xl mx-auto">
       <div className="relative">
         {/* Glow effect */}
-        <div className="absolute -inset-4 bg-gradient-to-r from-[#FF6700]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
+        <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
 
-        <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FF6700]/50 rounded-3xl p-6 md:p-10 overflow-hidden">
+        <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-10 overflow-hidden">
           {/* Decorative elements */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF6700]/10 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#FA7B21]/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-[#ff8800]/10 rounded-full blur-3xl" />
 
           <AnimatePresence mode="wait">
@@ -211,11 +211,11 @@ const TestimonialsSection = () => {
               {/* Author info */}
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#FF6700] to-[#ff8800] rounded-full blur-lg opacity-50" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-full blur-lg opacity-50" />
                   <img
                     src={currentTestimonial.img}
                     alt={currentTestimonial.author}
-                    className="relative w-20 h-20 md:w-24 md:h-24 rounded-full object-cover ring-4 ring-[#FF6700]/50"
+                    className="relative w-20 h-20 md:w-24 md:h-24 rounded-full object-cover ring-4 ring-[#FA7B21]/50"
                   />
                 </div>
                 <div className="text-center">
@@ -230,7 +230,7 @@ const TestimonialsSection = () => {
           <div className="relative z-10 flex items-center justify-center gap-6 mt-8">
             <button
               onClick={goToPrevious}
-              className="p-3 rounded-full bg-white/10 hover:bg-[#FF6700] transition-all duration-300 hover:scale-110"
+              className="p-3 rounded-full bg-white/10 hover:bg-[#FA7B21] transition-all duration-300 hover:scale-110"
               aria-label="Anterior"
             >
               <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
@@ -246,7 +246,7 @@ const TestimonialsSection = () => {
                     setIsAutoPlaying(false);
                   }}
                   className={`transition-all duration-300 rounded-full ${i === currentIndex
-                      ? 'w-10 h-3 bg-gradient-to-r from-[#FF6700] to-[#ff8800]'
+                      ? 'w-10 h-3 bg-gradient-to-r from-[#FA7B21] to-[#ff8800]'
                       : 'w-3 h-3 bg-white/30 hover:bg-white/50'
                     }`}
                   aria-label={`Ir al testimonio ${i + 1}`}
@@ -256,7 +256,7 @@ const TestimonialsSection = () => {
 
             <button
               onClick={goToNext}
-              className="p-3 rounded-full bg-white/10 hover:bg-[#FF6700] transition-all duration-300 hover:scale-110"
+              className="p-3 rounded-full bg-white/10 hover:bg-[#FA7B21] transition-all duration-300 hover:scale-110"
               aria-label="Siguiente"
             >
               <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
@@ -267,7 +267,7 @@ const TestimonialsSection = () => {
           <div className="text-center mt-4">
             <button
               onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-              className="text-white/40 text-xs md:text-sm hover:text-white/70 transition-colors flex items-center gap-2 mx-auto"
+              className="text-white/40 text-xs md:text-sm hover:text-white/70 transition-colors duration-200 flex items-center gap-2 mx-auto"
             >
               {isAutoPlaying ? '⏸ Pausar' : '▶ Reproducir'} automático
             </button>
@@ -466,7 +466,7 @@ export function RegistroShowroomPage({
   };
 
   return (
-    <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FF6700] selection:text-white bg-black text-white overflow-x-hidden">
+    <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FA7B21] selection:text-white bg-black text-white overflow-x-hidden">
       <Toaster position="top-center" richColors />
 
       {/* HEADER */}
@@ -476,6 +476,7 @@ export function RegistroShowroomPage({
           onOpenMatricula={onOpenMatricula}
           onCartClick={onCartClick}
           cartItemsCount={cartItemsCount}
+          currentPage="registro-showroom"
         />
       </div>
 
@@ -493,7 +494,7 @@ export function RegistroShowroomPage({
 
         {/* Floating particles effect */}
         <div className="absolute inset-0 z-0 opacity-30">
-          <div className="absolute top-20 left-10 w-2 h-2 bg-[#FF6700] rounded-full animate-ping" style={{ animationDelay: '0s' }} />
+          <div className="absolute top-20 left-10 w-2 h-2 bg-[#FA7B21] rounded-full animate-ping" style={{ animationDelay: '0s' }} />
           <div className="absolute top-40 right-20 w-2 h-2 bg-[#ff8800] rounded-full animate-ping" style={{ animationDelay: '1s' }} />
           <div className="absolute bottom-40 left-1/4 w-2 h-2 bg-[#FCA929] rounded-full animate-ping" style={{ animationDelay: '2s' }} />
         </div>
@@ -507,7 +508,7 @@ export function RegistroShowroomPage({
             transition={{ duration: 0.6 }}
             className="mb-6"
           >
-            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#FF6700] to-[#ff8800] px-6 py-3 rounded-full shadow-2xl border-2 border-white/20">
+            <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] px-6 py-3 rounded-full shadow-2xl border-2 border-white/20">
               <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white animate-pulse" />
               <span className="text-white font-black text-sm md:text-lg uppercase tracking-wider">
                 Inscripciones Abiertas
@@ -524,7 +525,7 @@ export function RegistroShowroomPage({
           >
             Clase de Prueba
             <br />
-            <span className="bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] bg-clip-text text-transparent-50 drop-shadow-2xl">
+            <span className="bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] bg-clip-text text-transparent-50 drop-shadow-2xl">
               Especial Showroom
             </span>
           </motion.h1>
@@ -536,8 +537,8 @@ export function RegistroShowroomPage({
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-8"
           >
-            <div className="inline-flex items-center gap-3 bg-black/60 backdrop-blur-md px-8 py-4 rounded-2xl border-2 border-[#FF6700]/50 shadow-xl">
-              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-[#FF6700]" />
+            <div className="inline-flex items-center gap-3 bg-black/60 backdrop-blur-md px-8 py-4 rounded-2xl border-2 border-[#FA7B21]/50 shadow-xl">
+              <Calendar className="w-6 h-6 md:w-8 md:h-8 text-[#FA7B21]" />
               <span className="text-white font-bold text-xl md:text-3xl">
                 11 de Enero
               </span>
@@ -551,7 +552,7 @@ export function RegistroShowroomPage({
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed px-4"
           >
-            Desarrolla la <span className="font-bold text-[#FF6700]">seguridad física y emocional</span> que tu hijo necesita.
+            Desarrolla la <span className="font-bold text-[#FA7B21]">seguridad física y emocional</span> que tu hijo necesita.
             <br className="hidden sm:block" />
             <span className="text-base md:text-lg text-white/70 block mt-3">
               Desde 1 año · Cupos limitados · Descuento exclusivo para asistentes
@@ -573,7 +574,7 @@ export function RegistroShowroomPage({
                 key={i}
                 className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20"
               >
-                <item.icon className="w-4 h-4 md:w-5 md:h-5 text-[#FF6700]" />
+                <item.icon className="w-4 h-4 md:w-5 md:h-5 text-[#FA7B21]" />
                 <span className="text-white text-xs md:text-sm font-semibold">
                   {item.text}
                 </span>
@@ -610,18 +611,18 @@ export function RegistroShowroomPage({
               className="relative"
             >
               {/* Glow effect */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#FF6700]/30 to-[#ff8800]/30 rounded-3xl blur-3xl" />
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#ff8800]/30 rounded-3xl blur-3xl" />
 
-              <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-4 border-[#FF6700] rounded-3xl p-8 md:p-12 text-center shadow-2xl overflow-hidden">
+              <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-4 border-[#FA7B21] rounded-3xl p-8 md:p-12 text-center shadow-2xl overflow-hidden">
                 {/* Decorative elements */}
-                <div className="absolute top-0 right-0 w-40 h-40 bg-[#FF6700]/20 rounded-full blur-3xl" />
+                <div className="absolute top-0 right-0 w-40 h-40 bg-[#FA7B21]/20 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#ff8800]/20 rounded-full blur-3xl" />
 
                 <div className="relative z-10">
                   <div className="mb-8 flex justify-center">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#FF6700] to-[#ff8800] rounded-full blur-2xl opacity-50 animate-pulse" />
-                      <div className="relative w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-[#FF6700] to-[#ff8800] rounded-full flex items-center justify-center shadow-2xl">
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-full blur-2xl opacity-50 animate-pulse" />
+                      <div className="relative w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-full flex items-center justify-center shadow-2xl">
                         <svg className="w-14 h-14 md:w-20 md:h-20 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
@@ -629,13 +630,13 @@ export function RegistroShowroomPage({
                     </div>
                   </div>
 
-                  <h3 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-[#FF6700] to-[#ff8800] bg-clip-text text-transparent mb-4">
+                  <h3 className="text-4xl md:text-6xl font-black bg-gradient-to-r from-[#FA7B21] to-[#ff8800] bg-clip-text text-transparent mb-4">
                     ¡Perfecto!
                   </h3>
                   <p className="text-white/90 mb-3 text-lg md:text-xl leading-relaxed">
                     Tu cupo está reservado para el
                   </p>
-                  <p className="text-[#FF6700] text-2xl md:text-3xl font-black mb-8">
+                  <p className="text-[#FA7B21] text-2xl md:text-3xl font-black mb-8">
                     4 de Enero
                   </p>
                   <p className="text-white/70 text-base md:text-lg mb-8">
@@ -646,7 +647,7 @@ export function RegistroShowroomPage({
 
                   <button
                     onClick={handleReset}
-                    className="group relative px-8 py-4 bg-gradient-to-r from-[#FF6700] to-[#ff8800] text-white text-base md:text-lg font-bold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-xl"
+                    className="group relative px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] text-white text-base md:text-lg font-bold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-xl"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-[#ff8800] to-[#FCA929] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <span className="relative z-10">Registrar otra persona</span>
@@ -663,17 +664,17 @@ export function RegistroShowroomPage({
               className="relative"
             >
               {/* Glow effect */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-[#FF6700]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
 
               <form
                 onSubmit={handleSubmit}
-                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FF6700]/50 rounded-3xl p-6 md:p-10 shadow-2xl overflow-hidden"
+                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-10 shadow-2xl overflow-hidden"
               >
                 {/* Decorative top bar */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929]" />
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929]" />
 
                 {/* Decorative elements */}
-                <div className="absolute top-10 right-10 w-32 h-32 bg-[#FF6700]/10 rounded-full blur-3xl" />
+                <div className="absolute top-10 right-10 w-32 h-32 bg-[#FA7B21]/10 rounded-full blur-3xl" />
                 <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#ff8800]/10 rounded-full blur-3xl" />
 
                 <div className="relative z-10">
@@ -772,11 +773,11 @@ export function RegistroShowroomPage({
                             transition={{ duration: 0.3 }}
                             className="relative"
                           >
-                            <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6700] to-[#ff8800] rounded-2xl blur opacity-30" />
-                            <div className="relative bg-gradient-to-r from-[#FF6700]/20 to-[#ff8800]/20 border-2 border-[#FF6700]/50 rounded-2xl p-4 backdrop-blur-sm">
+                            <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-30" />
+                            <div className="relative bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 border-2 border-[#FA7B21]/50 rounded-2xl p-4 backdrop-blur-sm">
                               <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0">
-                                  <Calendar className="w-6 h-6 text-[#FF6700]" />
+                                  <Calendar className="w-6 h-6 text-[#FA7B21]" />
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-white/80 text-xs md:text-sm font-medium">
@@ -820,10 +821,10 @@ export function RegistroShowroomPage({
                       disabled={isSubmitting}
                       data-umami-event="Click Boton Showroom"
                       data-umami-event-tipo="registro"
-                      className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mb-2 gap-3"
+                      className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mb-2 gap-3 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
                     >
                       {/* Animated gradient background */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#FF6700] via-[#ff8800] to-[#FCA929] animate-gradient-xy" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy" />
 
                       {/* Shine effect */}
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />

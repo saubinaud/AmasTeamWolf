@@ -1127,6 +1127,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         onOpenMatricula={() => onNavigate('planes')}
         onCartClick={() => { }}
         cartItemsCount={0}
+        currentPage="perfil"
       />
 
       {/* Background */}

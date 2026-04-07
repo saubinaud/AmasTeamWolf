@@ -126,7 +126,7 @@ export function VincularCuentaPage({ onNavigate }: VincularCuentaPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8 animate-fadeIn">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -left-40 w-[400px] h-[400px] bg-[#FA7B21]/10 rounded-full blur-3xl"></div>

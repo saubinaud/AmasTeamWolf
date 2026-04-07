@@ -188,11 +188,12 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
       </div>
 
       <div className="relative z-10">
-        <HeaderMain 
+        <HeaderMain
           onNavigate={onNavigate}
           onOpenMatricula={() => {}}
           onCartClick={() => setIsCartOpen(true)}
           cartItemsCount={cartItemsCount}
+          currentPage="tienda"
         />
       
         <NetworkStatusIndicator />
@@ -246,7 +247,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
                 key={category}
                 onClick={() => setActiveCategory(category)}
                 variant={activeCategory === category ? 'default' : 'outline'}
-                className={`text-sm ${
+                className={`text-sm active:scale-95 ${
                   activeCategory === category
                     ? 'bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white border-transparent'
                     : 'border-white/20 text-white/70 hover:text-white hover:border-[#FA7B21]/30 bg-transparent'
