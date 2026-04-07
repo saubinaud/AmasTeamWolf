@@ -168,6 +168,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCartClick(); }}
               variant="ghost"
               size="icon"
+              aria-label="Carrito de compras"
               className="relative text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -215,6 +216,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCartClick(); }}
               variant="ghost"
               size="icon"
+              aria-label="Carrito de compras"
               className="relative text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >
@@ -230,6 +232,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMobileMenuOpen(!isMobileMenuOpen); }}
               variant="ghost"
               size="icon"
+              aria-label={isMobileMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
               className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
               style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
             >

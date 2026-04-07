@@ -6,9 +6,10 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'amas_database',
   user: process.env.DB_USER || 'amas_user',
   password: process.env.DB_PASS || '',
-  max: 10,
+  max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
+  statement_timeout: 30000,
 });
 
 pool.on('error', (err) => {

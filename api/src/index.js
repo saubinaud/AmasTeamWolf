@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
 const asistenciaRoutes = require('./routes/asistencia');
 const matriculaRoutes = require('./routes/matricula');
@@ -37,6 +38,30 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '15mb' }));
+
+// Rate limiting
+const generalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Demasiadas solicitudes, intenta en un minuto' },
+});
+app.use(generalLimiter);
+
+const writeLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'Demasiadas solicitudes, intenta en un minuto' },
+});
+app.use('/api/matricula', writeLimiter);
+app.use('/api/asistencia', writeLimiter);
+app.use('/api/qr', writeLimiter);
+app.use('/api/leads', writeLimiter);
+app.use('/api/renovacion', writeLimiter);
+app.use('/api/contratos', writeLimiter);
 
 // Health check
 app.get('/health', (_req, res) => {
