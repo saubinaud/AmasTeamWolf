@@ -743,6 +743,7 @@ function App() {
           onOpenMatricula={handleEnrollProgram}
           onCartClick={() => setIsCartOpen(true)}
           cartItemsCount={cartItemsCount}
+          currentPage={currentPage}
         />
 
         <NetworkStatusIndicator />

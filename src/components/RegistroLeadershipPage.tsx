@@ -257,7 +257,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black text-white animate-fadeIn">
       {/* Header */}
       <header 
         className="border-b border-white/10 bg-black/95 backdrop-blur-sm sticky top-0"
@@ -266,7 +266,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={onNavigateHome}
-            className="flex items-center gap-2 text-white/80 hover:text-[#FA7B21] transition-colors"
+            className="flex items-center gap-2 text-white/80 hover:text-[#FA7B21] transition-colors duration-200"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Volver al inicio</span>
@@ -299,7 +299,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                 value={formData.nombrePadre}
                 onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
                 placeholder="Nombre completo del padre/tutor"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                 required
                 autoComplete="name"
               />
@@ -314,7 +314,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                 value={formData.nombreAlumno}
                 onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
                 placeholder="Nombre completo del alumno"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                 required
                 autoComplete="name"
               />
@@ -330,7 +330,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                 value={formData.correo}
                 onChange={(e) => handleInputChange('correo', e.target.value)}
                 placeholder="tu@email.com"
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                 required
                 autoComplete="email"
               />
@@ -386,7 +386,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                   placeholder="Ingresa tu código"
                   value={codigoPromocional}
                   onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                  className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
+                  className="flex-1 bg-zinc-800 border-white/20 text-white uppercase focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   disabled={codigoAplicado?.valido}
                 />
                 <Button
@@ -414,7 +414,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                     <button
                       type="button"
                       onClick={handleQuitarCodigo}
-                      className="text-green-300 hover:text-green-100 transition-colors ml-4"
+                      className="text-green-300 hover:text-green-100 transition-colors duration-200 ml-4"
                     >
                       <X className="w-5 h-5" />
                     </button>

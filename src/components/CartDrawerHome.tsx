@@ -49,7 +49,7 @@ export function CartDrawerHome({
               Carrito de Compras
             </SheetTitle>
             <SheetClose asChild>
-              <button className="text-white/60 hover:text-white transition-colors">
+              <button className="text-white/60 hover:text-white transition-colors duration-200">
                 <X className="w-6 h-6" />
               </button>
             </SheetClose>
@@ -65,12 +65,12 @@ export function CartDrawerHome({
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             <ShoppingBag className="w-16 h-16 text-white/20 mb-4" />
             <h3 className="text-white text-lg mb-2">Tu carrito está vacío</h3>
-            <p className="text-white/60 text-sm mb-6">
+            <p className="text-white/70 text-sm mb-6">
               Añade productos de nuestra tienda para comenzar
             </p>
             <Button
               onClick={onClose}
-              className="bg-transparent border border-[#FA7B21]/30 text-white hover:bg-[#FA7B21]/10"
+              className="bg-transparent border border-[#FA7B21]/30 text-white hover:bg-[#FA7B21]/10 active:scale-95"
             >
               Continuar comprando
             </Button>
@@ -82,7 +82,7 @@ export function CartDrawerHome({
                 {items.map((item) => (
                   <div
                     key={`${item.id}-${item.variant}`}
-                    className="bg-zinc-800/50 rounded-lg p-4 border border-white/10 hover:border-[#FA7B21]/30 transition-all"
+                    className="bg-zinc-800/50 rounded-lg p-4 border border-white/10 hover:border-[#FA7B21]/30 transition-all duration-200"
                   >
                     <div className="flex gap-4">
                       <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0">
@@ -101,13 +101,13 @@ export function CartDrawerHome({
                             <h4 className="text-white text-sm sm:text-base line-clamp-1">
                               {item.name}
                             </h4>
-                            <p className="text-white/60 text-xs">
+                            <p className="text-white/70 text-xs">
                               Variante: {item.variant}
                             </p>
                           </div>
                           <button
                             onClick={() => onRemoveItem(item.id, item.variant)}
-                            className="text-white/60 hover:text-red-400 transition-colors flex-shrink-0"
+                            className="text-white/60 hover:text-red-400 transition-colors duration-200 flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -118,7 +118,7 @@ export function CartDrawerHome({
                             <Button
                               size="icon"
                               onClick={() => onUpdateQuantity(item.id, item.variant, Math.max(1, item.quantity - 1))}
-                              className="h-7 w-7 bg-transparent border border-white/20 text-white hover:bg-white/10"
+                              className="h-9 w-9 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
@@ -128,7 +128,7 @@ export function CartDrawerHome({
                             <Button
                               size="icon"
                               onClick={() => onUpdateQuantity(item.id, item.variant, item.quantity + 1)}
-                              className="h-7 w-7 bg-transparent border border-white/20 text-white hover:bg-white/10"
+                              className="h-9 w-9 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
                             >
                               <Plus className="w-3 h-3" />
                             </Button>
@@ -159,7 +159,7 @@ export function CartDrawerHome({
               
               <Button
                 onClick={handleCheckout}
-                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-base shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300"
+                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-base shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 active:scale-95"
               >
                 Proceder al pago
               </Button>

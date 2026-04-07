@@ -1244,7 +1244,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   id="nombreAlumno"
                   value={formData.nombreAlumno}
                   onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   required
                   autoComplete="name"
                 />
@@ -1257,7 +1257,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   id="dniAlumno"
                   value={formData.dniAlumno}
                   onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   maxLength={8}
                   required
                 />
@@ -1271,7 +1271,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   type="date"
                   value={formData.fechaNacimiento}
                   onChange={(e) => handleFechaNacimientoChange(e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   required
                 />
 
@@ -1360,7 +1360,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   id="nombrePadre"
                   value={formData.nombrePadre}
                   onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   required
                   autoComplete="name"
                 />
@@ -1373,7 +1373,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   id="dniPadre"
                   value={formData.dniPadre}
                   onChange={(e) => handleInputChange('dniPadre', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   maxLength={8}
                   required
                 />
@@ -1387,7 +1387,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   required
                   autoComplete="email"
                 />
@@ -1400,7 +1400,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   id="direccion"
                   value={formData.direccion}
                   onChange={(e) => handleInputChange('direccion', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white"
+                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   autoComplete="street-address"
                 />
               </div>
@@ -1592,7 +1592,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                     value={formData.fechaInicio !== 'no-especificado' ? formData.fechaInicio : ''}
                     onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
                     min={new Date().toISOString().split('T')[0]}
-                    className="bg-zinc-800 border-white/20 text-white"
+                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
                   />
                 </div>
               )}
@@ -1713,7 +1713,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 placeholder="Ingresa tu código"
                 value={codigoPromocional}
                 onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                className="flex-1 bg-zinc-800 border-white/20 text-white uppercase"
+                className="flex-1 bg-zinc-800 border-white/20 text-white uppercase focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
               />
               <Button
                 type="button"

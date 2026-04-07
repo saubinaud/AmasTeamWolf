@@ -362,6 +362,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                 onOpenMatricula={() => onNavigate('planes')}
                 onCartClick={() => { }}
                 cartItemsCount={0}
+                currentPage="perfil"
             />
 
             {/* Background - Simple orange glow at bottom */}
