@@ -457,13 +457,13 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
 
   // ── PANEL PRINCIPAL ──
   return (
-    <div className="min-h-screen bg-zinc-950 pb-20">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-sm border-b border-white/10 px-4 py-3">
+    <div className="h-[100dvh] flex flex-col bg-zinc-950 overflow-hidden">
+      {/* Header — fixed at top */}
+      <header className="flex-shrink-0 z-50 bg-zinc-950/95 backdrop-blur-sm border-b border-white/10 px-4 py-3 safe-top">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-3">
             {(vista === 'detalle' || vista === 'resumen' || vista === 'dashboard') && (
-              <button onClick={volverAClases} className="p-1.5 -ml-1 text-white/60 hover:text-white transition-colors">
+              <button onClick={volverAClases} className="p-1.5 -ml-1 text-white/60 hover:text-white active:scale-95 transition-all">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
@@ -481,17 +481,19 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={fetchAsistencias} className="p-2 text-white/50 hover:text-white transition-colors">
+            <button onClick={fetchAsistencias} className="p-2 text-white/50 hover:text-white active:scale-95 transition-all">
               <RefreshCw className="w-4 h-4" />
             </button>
-            <button onClick={handleLogout} className="p-2 text-white/50 hover:text-red-400 transition-colors">
+            <button onClick={handleLogout} className="p-2 text-white/50 hover:text-red-400 active:scale-95 transition-all">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
+      {/* Scrollable content area */}
+      <main className="flex-1 overflow-y-auto overscroll-contain scroll-smooth -webkit-overflow-scrolling-touch">
+        <div className="max-w-lg mx-auto px-4 pt-4 pb-4 space-y-4">
 
         {/* Alertas de pocas clases */}
         {alertas.length > 0 && vista !== 'dashboard' && vista !== 'resumen' && (
@@ -534,7 +536,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                     return (
                       <button key={i} onClick={() => seleccionarClase(clase)}
                         className={`w-full flex items-center justify-between px-3 py-3 rounded-xl border transition-all text-left ${
-                          isPasada && !tieneSesion ? 'bg-zinc-800/30 border-white/5 opacity-40' : `${colorClass} hover:brightness-125`
+                          isPasada && !tieneSesion ? 'bg-zinc-800/30 border-white/5 opacity-40' : `${colorClass} hover:brightness-125 active:scale-[0.98]`
                         }`}>
                         <div className="flex items-center gap-3">
                           <span className={`text-xs font-mono font-semibold ${isPasada && !tieneSesion ? 'text-white/40' : 'text-white/80'}`}>
@@ -567,24 +569,6 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
               </div>
             </div>
 
-            {/* Botones de acción */}
-            <div className="grid grid-cols-3 gap-2">
-              <button onClick={() => { setVista('resumen'); fetchResumen(); }}
-                className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center hover:bg-zinc-800/80 transition-colors">
-                <Users className="w-5 h-5 text-[#FCA929] mx-auto mb-1" />
-                <span className="text-white/60 text-[10px]">Resumen</span>
-              </button>
-              <button onClick={exportarCSV}
-                className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center hover:bg-zinc-800/80 transition-colors">
-                <Download className="w-5 h-5 text-[#FCA929] mx-auto mb-1" />
-                <span className="text-white/60 text-[10px]">Exportar CSV</span>
-              </button>
-              <button onClick={() => { setVista('dashboard'); fetchDashboard(mesDashboard); }}
-                className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center hover:bg-zinc-800/80 transition-colors">
-                <BarChart3 className="w-5 h-5 text-[#FCA929] mx-auto mb-1" />
-                <span className="text-white/60 text-[10px]">Dashboard</span>
-              </button>
-            </div>
           </>
         )}
 
@@ -624,13 +608,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                       alt="QR de asistencia" className="w-48 h-48" />
                   </div>
 
-                  <p className="text-white/40 text-[10px] break-all mb-3">{sesionActiva.url}</p>
-
-                  {/* Botón modo proyector */}
-                  <button onClick={() => setVista('proyector')}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 border border-white/10 rounded-lg text-white/60 text-xs hover:text-white hover:bg-zinc-700 transition-colors">
-                    <Maximize2 className="w-3 h-3" /> Modo pantalla completa
-                  </button>
+                  <p className="text-white/40 text-[10px] break-all">{sesionActiva.url}</p>
                 </div>
               )}
             </div>
@@ -692,7 +670,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                   <p className="text-white/40 text-sm">Nadie ha marcado asistencia en esta clase</p>
                 </div>
               ) : (
-                <div className="divide-y divide-white/5 max-h-[40vh] overflow-y-auto">
+                <div className="divide-y divide-white/5 overflow-y-auto max-h-[50vh]">
                   {asistenciasClase.map((a, i) => (
                     <div key={i} className="flex items-center justify-between px-4 py-3">
                       <div className="flex items-center gap-3 min-w-0">
@@ -855,7 +833,57 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
             )}
           </>
         )}
-      </div>
+        </div>
+      </main>
+
+      {/* Footer — fixed at bottom */}
+      {vista === 'clases' && (
+        <footer className="flex-shrink-0 z-50 bg-zinc-950/95 backdrop-blur-sm border-t border-white/10 px-4 py-2.5 safe-bottom">
+          <div className="max-w-lg mx-auto grid grid-cols-4 gap-1">
+            <button onClick={() => { setVista('resumen'); fetchResumen(); }}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-white/50 hover:text-white active:scale-95 transition-all">
+              <Users className="w-5 h-5" />
+              <span className="text-[10px]">Resumen</span>
+            </button>
+            <button onClick={exportarCSV}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-white/50 hover:text-white active:scale-95 transition-all">
+              <Download className="w-5 h-5" />
+              <span className="text-[10px]">CSV</span>
+            </button>
+            <button onClick={() => { setVista('dashboard'); fetchDashboard(mesDashboard); }}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-white/50 hover:text-white active:scale-95 transition-all">
+              <BarChart3 className="w-5 h-5" />
+              <span className="text-[10px]">Dashboard</span>
+            </button>
+            <button onClick={fetchAsistencias}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-white/50 hover:text-white active:scale-95 transition-all">
+              <RefreshCw className="w-5 h-5" />
+              <span className="text-[10px]">Actualizar</span>
+            </button>
+          </div>
+        </footer>
+      )}
+      {vista === 'detalle' && sesionActiva && (
+        <footer className="flex-shrink-0 z-50 bg-zinc-950/95 backdrop-blur-sm border-t border-white/10 px-4 py-2.5 safe-bottom">
+          <div className="max-w-lg mx-auto grid grid-cols-3 gap-1">
+            <button onClick={volverAClases}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-white/50 hover:text-white active:scale-95 transition-all">
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-[10px]">Clases</span>
+            </button>
+            <button onClick={() => setVista('proyector')}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-[#FCA929] hover:text-white active:scale-95 transition-all">
+              <Maximize2 className="w-5 h-5" />
+              <span className="text-[10px]">Proyector</span>
+            </button>
+            <button onClick={fetchAsistencias}
+              className="flex flex-col items-center gap-0.5 py-1.5 rounded-lg text-white/50 hover:text-white active:scale-95 transition-all">
+              <RefreshCw className="w-5 h-5" />
+              <span className="text-[10px]">Actualizar</span>
+            </button>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
