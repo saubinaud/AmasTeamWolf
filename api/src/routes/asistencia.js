@@ -110,6 +110,145 @@ router.get('/mensual/:alumnoId', async (req, res) => {
   }
 });
 
+// GET /api/asistencia/resumen-dia — Resumen de asistencias agrupadas por sesión QR
+router.get('/resumen-dia', async (_req, res) => {
+  try {
+    const rows = await query(`
+      SELECT
+        qs.hora_clase,
+        qs.programa,
+        qs.token,
+        COUNT(ast.id) AS presentes
+      FROM qr_sesiones qs
+      LEFT JOIN asistencias ast ON ast.qr_sesion_id = qs.id AND ast.fecha = CURRENT_DATE
+      WHERE qs.fecha = CURRENT_DATE AND qs.activa = true
+      GROUP BY qs.id, qs.hora_clase, qs.programa, qs.token
+      ORDER BY qs.hora_apertura ASC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error resumen día:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// GET /api/asistencia/exportar — Exportar asistencias del día en CSV
+// Query: ?fecha=YYYY-MM-DD (default: hoy)
+router.get('/exportar', async (req, res) => {
+  try {
+    const fecha = req.query.fecha || new Date().toISOString().split('T')[0];
+    const rows = await query(`
+      SELECT
+        a.nombre_alumno,
+        a.dni_alumno,
+        i.programa,
+        ast.hora::text AS hora,
+        ast.turno,
+        ast.asistio,
+        s.nombre AS sede,
+        qs.hora_clase,
+        qs.programa AS clase_qr
+      FROM asistencias ast
+      JOIN alumnos a ON a.id = ast.alumno_id
+      LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
+      LEFT JOIN sedes s ON s.id = ast.sede_id
+      LEFT JOIN qr_sesiones qs ON qs.id = ast.qr_sesion_id
+      WHERE ast.fecha = $1
+      ORDER BY ast.hora ASC
+    `, [fecha]);
+
+    // Generar CSV
+    const headers = ['Alumno', 'DNI', 'Programa', 'Hora', 'Turno', 'Asistió', 'Sede', 'Clase'];
+    const csvRows = [headers.join(',')];
+    for (const r of rows) {
+      csvRows.push([
+        `"${(r.nombre_alumno || '').replace(/"/g, '""')}"`,
+        r.dni_alumno || '',
+        `"${(r.programa || r.clase_qr || '').replace(/"/g, '""')}"`,
+        r.hora || '',
+        `"${(r.turno || '').replace(/"/g, '""')}"`,
+        r.asistio || '',
+        `"${(r.sede || '').replace(/"/g, '""')}"`,
+        r.hora_clase || '',
+      ].join(','));
+    }
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=asistencia_${fecha}.csv`);
+    res.send('\uFEFF' + csvRows.join('\n'));
+  } catch (err) {
+    console.error('Error exportando asistencia:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// GET /api/asistencia/dashboard — Estadísticas mensuales para dashboard
+// Query: ?mes=YYYY-MM (default: mes actual)
+router.get('/dashboard', async (req, res) => {
+  try {
+    const mes = req.query.mes || new Date().toISOString().slice(0, 7);
+    const inicio = `${mes}-01`;
+    const fin = `${mes}-31`;
+
+    // Total por día del mes
+    const porDia = await query(`
+      SELECT fecha, COUNT(*) AS total
+      FROM asistencias
+      WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
+      GROUP BY fecha ORDER BY fecha
+    `, [inicio, fin]);
+
+    // Total por programa
+    const porPrograma = await query(`
+      SELECT i.programa, COUNT(*) AS total
+      FROM asistencias ast
+      LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
+      WHERE ast.fecha BETWEEN $1 AND $2 AND ast.asistio = 'Sí'
+      GROUP BY i.programa ORDER BY total DESC
+    `, [inicio, fin]);
+
+    // Total por día de la semana
+    const porDiaSemana = await query(`
+      SELECT EXTRACT(DOW FROM fecha)::int AS dia, COUNT(*) AS total
+      FROM asistencias
+      WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
+      GROUP BY dia ORDER BY dia
+    `, [inicio, fin]);
+
+    // Alumnos con más asistencias
+    const topAlumnos = await query(`
+      SELECT a.nombre_alumno, COUNT(*) AS total
+      FROM asistencias ast
+      JOIN alumnos a ON a.id = ast.alumno_id
+      WHERE ast.fecha BETWEEN $1 AND $2 AND ast.asistio = 'Sí'
+      GROUP BY a.id, a.nombre_alumno
+      ORDER BY total DESC LIMIT 10
+    `, [inicio, fin]);
+
+    // Totales generales
+    const totales = await query(`
+      SELECT
+        COUNT(*) AS total_asistencias,
+        COUNT(DISTINCT alumno_id) AS alumnos_unicos,
+        COUNT(DISTINCT fecha) AS dias_con_clase
+      FROM asistencias
+      WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
+    `, [inicio, fin]);
+
+    res.json({
+      mes,
+      totales: totales[0] || { total_asistencias: 0, alumnos_unicos: 0, dias_con_clase: 0 },
+      porDia,
+      porPrograma,
+      porDiaSemana,
+      topAlumnos,
+    });
+  } catch (err) {
+    console.error('Error dashboard:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 function detectarTurno() {
   const hora = new Date().getHours();
   if (hora >= 6 && hora < 13) return 'Mañana';
