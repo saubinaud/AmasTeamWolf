@@ -9,8 +9,8 @@ router.get('/consultar', async (req, res) => {
   try {
     const { dni } = req.query;
 
-    if (!dni) {
-      return res.json({ encontrado: false });
+    if (!dni || typeof dni !== 'string') {
+      return res.status(400).json({ success: false, error: 'dni es requerido' });
     }
 
     // Query completa: datos del alumno + inscripción activa + categoría
@@ -40,7 +40,7 @@ router.get('/consultar', async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error('Error consultando alumno torneo:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 

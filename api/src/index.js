@@ -14,6 +14,13 @@ const leadsRoutes = require('./routes/leads');
 const qrRoutes = require('./routes/qr');
 const contratosRoutes = require('./routes/contratos');
 
+// Validate required environment variables
+const REQUIRED_ENV = ['DB_HOST', 'DB_PASS', 'DB_NAME', 'DB_USER'];
+const missing = REQUIRED_ENV.filter(k => !process.env[k]);
+if (missing.length > 0) {
+  console.warn(`[WARN] Missing env vars: ${missing.join(', ')} — using defaults where available`);
+}
+
 const app = express();
 const PORT = process.env.PORT || 4000;
 

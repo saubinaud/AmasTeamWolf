@@ -8,6 +8,16 @@ router.post('/', async (req, res) => {
   const client = await pool.connect();
   try {
     const d = req.body;
+
+    if (!d.nombre_alumno || typeof d.nombre_alumno !== 'string') {
+      client.release();
+      return res.status(400).json({ success: false, error: 'nombre_alumno es requerido' });
+    }
+    if (!d.nombre_padre || typeof d.nombre_padre !== 'string') {
+      client.release();
+      return res.status(400).json({ success: false, error: 'nombre_padre es requerido' });
+    }
+
     await client.query('BEGIN');
 
     // 1. Buscar o crear alumno
