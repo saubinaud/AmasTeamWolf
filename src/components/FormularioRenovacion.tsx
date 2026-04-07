@@ -1194,7 +1194,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   // Formulario completo cuando ya hay un plan seleccionado
   return (
     <div ref={formularioRef} className="min-h-screen bg-zinc-950 pt-24 sm:pt-28">
-      <div className="container mx-auto px-4 md:px-6 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 md:px-6 py-8 pb-28 max-w-4xl">
         {/* Header con plan seleccionado */}
         <div className="bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-2xl p-6 mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1258,6 +1258,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   value={formData.dniAlumno}
                   onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
                   className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={8}
                   required
                 />
@@ -1374,6 +1376,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                   value={formData.dniPadre}
                   onChange={(e) => handleInputChange('dniPadre', e.target.value)}
                   className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   maxLength={8}
                   required
                 />
@@ -1637,7 +1641,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                           checked={diasTentativos.includes(dia)}
                           onChange={(e) => handleDiaTentativoChange(dia, e.target.checked)}
                           disabled={isDisabled}
-                          className="w-5 h-5 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
+                          className="w-6 h-6 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
                         />
                         <span className={`text-sm font-medium ${diasTentativos.includes(dia) ? 'text-[#FA7B21]' : 'text-white'}`}>{dia}</span>
                       </label>
@@ -1769,7 +1773,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 </p>
 
                 {!uploadedFile ? (
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FA7B21]/50 transition-colors bg-zinc-800/30">
+                  <label className="flex flex-col items-center justify-center w-full h-24 sm:h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FA7B21]/50 transition-colors bg-zinc-800/30">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-10 h-10 mb-3 text-white/40" />
                       <p className="mb-2 text-sm text-white/60">

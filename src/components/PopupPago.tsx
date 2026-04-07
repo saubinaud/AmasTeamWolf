@@ -229,8 +229,8 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
         <div className="mt-4 sm:mt-6 bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-lg p-3 sm:p-4">
           <p className="text-white/80 text-xs sm:text-sm">
             📸 Después de realizar el pago, por favor envíe su comprobante al WhatsApp: 
-            <a href="https://wa.me/‪51989717412‬" className="text-[#FCA929] hover:underline ml-1">
-              ‪+51 989 717 412‬
+            <a href="https://wa.me/51989717412" className="text-[#FCA929] hover:underline ml-1">
+              +51 989 717 412
             </a>
           </p>
         </div>

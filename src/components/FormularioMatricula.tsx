@@ -1003,13 +1003,13 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                 WebkitTapHighlightColor: 'transparent'
               }}
             >
-              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              <X className="w-6 h-6" />
             </button>
           </DialogClose>
         </div>
 
         {/* Form Content */}
-        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-7 pb-6 sm:pb-8">
+        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-7 pb-28">
           <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 md:space-y-7">
             {/* Datos del Alumno */}
             <div>
@@ -1039,6 +1039,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     value={formData.dniAlumno}
                     onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
                     className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={8}
                     required
                   />
@@ -1158,6 +1160,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                     value={formData.dniPadre}
                     onChange={(e) => handleInputChange('dniPadre', e.target.value)}
                     className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={8}
                     required
                   />
@@ -1169,6 +1173,8 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                   <Input
                     id="telefono"
                     type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={formData.telefono}
                     onChange={(e) => handleInputChange('telefono', e.target.value)}
                     placeholder="999 999 999"
@@ -1217,7 +1223,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                       type="checkbox"
                       checked={includeUniform}
                       onChange={(e) => setIncludeUniform(e.target.checked)}
-                      className="mt-1 w-5 h-5 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0"
+                      className="mt-1 w-6 h-6 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0"
                     />
                     <div className="flex-1">
                       <div className="text-white text-base mb-1">
@@ -1555,7 +1561,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
                             checked={diasTentativos.includes(dia)}
                             onChange={(e) => handleDiaTentativoChange(dia, e.target.checked)}
                             disabled={isDisabled}
-                            className="w-5 h-5 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
+                            className="w-6 h-6 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
                           />
                           <span className={`text-sm font-medium ${diasTentativos.includes(dia) ? 'text-[#FA7B21]' : 'text-white'}`}>{dia}</span>
                         </label>
