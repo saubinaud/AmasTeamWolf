@@ -275,7 +275,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
       </header>
 
       {/* Content */}
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-3xl md:max-w-2xl lg:max-w-3xl mx-auto px-4 sm:px-6 md:px-8 lg:px-8 py-8 sm:py-12">
         <div className="mb-8">
           <h1 className="text-white mb-2">
             Inscripción - Programa Leadership Wolf 🐺
@@ -285,39 +285,41 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 bg-zinc-900 border border-[#FA7B21]/30 rounded-lg p-6 sm:p-8">
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-7 bg-zinc-900 border border-[#FA7B21]/30 rounded-lg p-6 sm:p-8 md:p-8">
           {/* Datos básicos */}
           <div className="space-y-4">
             <h3 className="text-[#FA7B21]">Datos de Inscripción</h3>
-            
-            <div>
-              <Label htmlFor="nombrePadre" className="text-white">
-                Nombre del Padre/Tutor *
-              </Label>
-              <Input
-                id="nombrePadre"
-                value={formData.nombrePadre}
-                onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
-                placeholder="Nombre completo del padre/tutor"
-                className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                required
-                autoComplete="name"
-              />
-            </div>
 
-            <div>
-              <Label htmlFor="nombreAlumno" className="text-white">
-                Nombre del Alumno *
-              </Label>
-              <Input
-                id="nombreAlumno"
-                value={formData.nombreAlumno}
-                onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
-                placeholder="Nombre completo del alumno"
-                className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                required
-                autoComplete="name"
-              />
+            <div className="grid md:grid-cols-2 gap-4 md:gap-5">
+              <div>
+                <Label htmlFor="nombrePadre" className="text-white">
+                  Nombre del Padre/Tutor *
+                </Label>
+                <Input
+                  id="nombrePadre"
+                  value={formData.nombrePadre}
+                  onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
+                  placeholder="Nombre completo del padre/tutor"
+                  className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                  required
+                  autoComplete="name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="nombreAlumno" className="text-white">
+                  Nombre del Alumno *
+                </Label>
+                <Input
+                  id="nombreAlumno"
+                  value={formData.nombreAlumno}
+                  onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
+                  placeholder="Nombre completo del alumno"
+                  className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                  required
+                  autoComplete="name"
+                />
+              </div>
             </div>
 
             <div>

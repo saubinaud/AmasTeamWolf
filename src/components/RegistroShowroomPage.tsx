@@ -100,7 +100,7 @@ const InfiniteGalleryCarousel = () => {
         {duplicatedImages.map((img, i) => (
           <div
             key={i}
-            className="relative flex-shrink-0 w-64 h-80 sm:w-72 sm:h-96 rounded-2xl overflow-hidden group cursor-pointer shadow-xl"
+            className="relative flex-shrink-0 w-64 h-80 sm:w-72 sm:h-96 md:w-80 md:h-[26rem] rounded-2xl overflow-hidden group cursor-pointer shadow-xl"
           >
             <img
               src={img.src}
@@ -137,8 +137,23 @@ const InfiniteGalleryCarousel = () => {
           }
         }
 
+        @keyframes scroll-infinite-md {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(calc(-336px * ${galleryImages.length}));
+          }
+        }
+
         .animate-scroll-infinite {
           animation: scroll-infinite 40s linear infinite;
+        }
+
+        @media (min-width: 768px) {
+          .animate-scroll-infinite {
+            animation: scroll-infinite-md 40s linear infinite;
+          }
         }
 
         .animate-scroll-infinite:hover {
@@ -600,8 +615,8 @@ export function RegistroShowroomPage({
       </section>
 
       {/* FORMULARIO */}
-      <main className="relative z-10 px-4 py-16 md:py-24 max-w-7xl mx-auto w-full">
-        <div className="max-w-2xl mx-auto">
+      <main className="relative z-10 px-4 md:px-6 py-16 md:py-24 max-w-7xl mx-auto w-full">
+        <div className="max-w-2xl md:max-w-2xl mx-auto">
 
           {isSubmitted ? (
             // --- ESTADO DE ÉXITO ---
@@ -668,7 +683,7 @@ export function RegistroShowroomPage({
 
               <form
                 onSubmit={handleSubmit}
-                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-10 shadow-2xl overflow-hidden"
+                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden"
               >
                 {/* Decorative top bar */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929]" />
@@ -690,41 +705,42 @@ export function RegistroShowroomPage({
 
                   <div className="space-y-6 md:space-y-8">
 
-                    {/* Nombre del Padre */}
-                    <div className="space-y-2">
-                      <Label>
-                        Nombre del Padre/Madre *
-                      </Label>
-                      <Input
-                        placeholder="Ej: Juan Pérez"
-                        value={formData.nombre_padre}
-                        onChange={(e: any) => handleInputChange('nombre_padre', e.target.value)}
-                        className={formErrors.nombre_padre ? 'border-red-500 ring-4 ring-red-500/30' : ''}
-                      />
-                      {formErrors.nombre_padre && (
-                        <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
-                          <span>⚠</span> {formErrors.nombre_padre}
-                        </p>
-                      )}
-                    </div>
+                    {/* Nombre del Padre + Teléfono — 2 cols on tablet */}
+                    <div className="grid md:grid-cols-2 gap-6 md:gap-5">
+                      <div className="space-y-2">
+                        <Label>
+                          Nombre del Padre/Madre *
+                        </Label>
+                        <Input
+                          placeholder="Ej: Juan Pérez"
+                          value={formData.nombre_padre}
+                          onChange={(e: any) => handleInputChange('nombre_padre', e.target.value)}
+                          className={formErrors.nombre_padre ? 'border-red-500 ring-4 ring-red-500/30' : ''}
+                        />
+                        {formErrors.nombre_padre && (
+                          <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
+                            <span>⚠</span> {formErrors.nombre_padre}
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Número de Teléfono */}
-                    <div className="space-y-2">
-                      <Label>
-                        Número de WhatsApp *
-                      </Label>
-                      <Input
-                        type="tel"
-                        placeholder="Ej: 987654321"
-                        value={formData.telefono}
-                        onChange={(e: any) => handleInputChange('telefono', e.target.value)}
-                        className={formErrors.telefono ? 'border-red-500 ring-4 ring-red-500/30' : ''}
-                      />
-                      {formErrors.telefono && (
-                        <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
-                          <span>⚠</span> {formErrors.telefono}
-                        </p>
-                      )}
+                      <div className="space-y-2">
+                        <Label>
+                          Número de WhatsApp *
+                        </Label>
+                        <Input
+                          type="tel"
+                          placeholder="Ej: 987654321"
+                          value={formData.telefono}
+                          onChange={(e: any) => handleInputChange('telefono', e.target.value)}
+                          className={formErrors.telefono ? 'border-red-500 ring-4 ring-red-500/30' : ''}
+                        />
+                        {formErrors.telefono && (
+                          <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
+                            <span>⚠</span> {formErrors.telefono}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     {/* Nombre del Alumno */}

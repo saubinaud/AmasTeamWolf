@@ -126,16 +126,16 @@ export function VincularCuentaPage({ onNavigate }: VincularCuentaPageProps) {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+        <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 md:px-8 lg:px-8 animate-fadeIn">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -left-40 w-[400px] h-[400px] bg-[#FA7B21]/10 rounded-full blur-3xl"></div>
                 <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-[#FCA929]/10 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="relative max-w-lg mx-auto">
+            <div className="relative max-w-lg md:max-w-xl mx-auto">
                 {/* Card */}
-                <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
+                <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <div className="w-20 h-20 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30">

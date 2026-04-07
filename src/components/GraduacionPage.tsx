@@ -414,7 +414,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
         )}
 
         {/* Graduados Section */}
-        <section id="graduados-section" className="py-8 sm:py-16 px-4">
+        <section id="graduados-section" className="py-8 sm:py-12 md:py-16 px-4 md:px-6">
           <div className="container mx-auto max-w-7xl">
             {isLoading ? (
               <div className="space-y-8">
@@ -423,7 +423,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                   <p className="text-white/60 text-sm sm:text-base">Cargando graduados...</p>
                 </div>
                 {/* Skeleton cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
                   {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
                 </div>
               </div>
@@ -440,7 +440,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                     <span className="break-words">{turno}</span>
                   </h2>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
                     {graduadosPorTurno[turno].map((graduado, index) => {
                       const cardIndex = `${turno}-${index}`;
                       const isExpanded = expandedCard === parseInt(cardIndex.replace(/\D/g, '') + index);
