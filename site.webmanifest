@@ -1,6 +1,9 @@
 {
-  "name": "Amas Team Wolf",
+  "name": "AMAS Team Wolf",
   "short_name": "AMAS",
+  "description": "Academia de Artes Marciales - AMAS Team Wolf",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +18,8 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "display": "standalone",
+  "orientation": "portrait"
 }
