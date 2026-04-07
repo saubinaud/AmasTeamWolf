@@ -10,14 +10,14 @@ router.post('/', async (req, res) => {
     const { action, auth_id, email } = req.body;
 
     if (!auth_id) {
-      return res.status(400).json({ error: 'auth_id requerido' });
+      return res.status(400).json({ success: false, error: 'auth_id requerido' });
     }
 
     // Acción: vincular auth_id a un apoderado existente
     if (action === 'link_auth_id') {
       const { apoderado_id } = req.body;
       if (!apoderado_id) {
-        return res.status(400).json({ error: 'apoderado_id requerido' });
+        return res.status(400).json({ success: false, error: 'apoderado_id requerido' });
       }
 
       await pool.query(
@@ -101,7 +101,7 @@ router.post('/', async (req, res) => {
       `, [email]);
 
       if (!perfilByEmail) {
-        return res.json({ error: 'Perfil no encontrado' });
+        return res.status(404).json({ success: false, error: 'Perfil no encontrado' });
       }
 
       return res.json(perfilByEmail);
@@ -126,7 +126,7 @@ router.post('/', async (req, res) => {
     });
   } catch (err) {
     console.error('Error obteniendo perfil:', err);
-    res.status(500).json({ error: 'Error del servidor' });
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 

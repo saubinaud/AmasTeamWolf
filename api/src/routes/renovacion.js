@@ -11,6 +11,12 @@ router.post('/', async (req, res) => {
   const client = await pool.connect();
   try {
     const d = req.body;
+
+    if (!d.dniAlumno || typeof d.dniAlumno !== 'string') {
+      client.release();
+      return res.status(400).json({ success: false, error: 'dniAlumno es requerido' });
+    }
+
     await client.query('BEGIN');
 
     // 1. Buscar alumno por DNI
