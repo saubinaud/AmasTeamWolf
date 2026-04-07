@@ -185,25 +185,53 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     }
   }, [autenticada, clasesHoy, autoSeleccionada]);
 
-  // Polling de asistencias cada 5 segundos
+  // Asistencias globales (todas del día) y por clase (filtradas por token)
+  const [asistenciasClase, setAsistenciasClase] = useState<Asistencia[]>([]);
+
+  // Fetch asistencias — si hay sesión activa en la vista detalle, filtra por token
   const fetchAsistencias = useCallback(async () => {
     try {
+      // Siempre traer todas las del día (para stats)
       const resp = await fetch(`${API_BASE}/asistencia/hoy`);
       const data = await resp.json();
       if (Array.isArray(data)) {
         setAsistencias(data);
       }
     } catch (_err) {
-      // silently fail, retry on next poll
+      // silently fail
+    }
+  }, []);
+
+  const fetchAsistenciasClase = useCallback(async (token: string) => {
+    try {
+      const resp = await fetch(`${API_BASE}/asistencia/hoy?token=${token}`);
+      const data = await resp.json();
+      if (Array.isArray(data)) {
+        setAsistenciasClase(data);
+      }
+    } catch (_err) {
+      // silently fail
     }
   }, []);
 
   useEffect(() => {
     if (!autenticada) return;
     fetchAsistencias();
-    const interval = setInterval(fetchAsistencias, 5000);
+    const interval = setInterval(() => {
+      fetchAsistencias();
+      if (sesionActiva) fetchAsistenciasClase(sesionActiva.token);
+    }, 5000);
     return () => clearInterval(interval);
-  }, [autenticada, fetchAsistencias]);
+  }, [autenticada, fetchAsistencias, fetchAsistenciasClase, sesionActiva]);
+
+  // Fetch asistencias de la clase al entrar al detalle o al generar QR
+  useEffect(() => {
+    if (sesionActiva && vista === 'detalle') {
+      fetchAsistenciasClase(sesionActiva.token);
+    } else {
+      setAsistenciasClase([]);
+    }
+  }, [sesionActiva, vista, fetchAsistenciasClase]);
 
   // Check session storage for auth
   useEffect(() => {
@@ -310,6 +338,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
         toast.success(`Asistencia registrada — ${result.alumno}`);
         setDniManual('');
         fetchAsistencias();
+        if (sesionActiva) fetchAsistenciasClase(sesionActiva.token);
       } else {
         toast.error(result.error || 'No se pudo registrar');
       }
@@ -582,28 +611,37 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
               </div>
             )}
 
-            {/* Lista de asistencias de hoy */}
+            {/* Lista de asistencias de esta clase */}
             <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#FCA929]" />
-                  <span className="text-white font-semibold text-sm">Asistencias de hoy</span>
+                  <span className="text-white font-semibold text-sm">
+                    {sesionActiva ? `Presentes — ${claseActiva.programa}` : 'Asistencias de hoy'}
+                  </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-green-400 text-xs">En vivo</span>
+                <div className="flex items-center gap-2">
+                  {sesionActiva && asistenciasClase.length > 0 && (
+                    <span className="text-[#FCA929] text-xs font-bold">{asistenciasClase.length}</span>
+                  )}
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-green-400 text-xs">En vivo</span>
+                  </div>
                 </div>
               </div>
 
-              {asistencias.length === 0 ? (
+              {(sesionActiva ? asistenciasClase : asistencias).length === 0 ? (
                 <div className="p-8 text-center">
                   <UserCheck className="w-10 h-10 text-white/20 mx-auto mb-2" />
-                  <p className="text-white/40 text-sm">Aún no hay asistencias registradas</p>
+                  <p className="text-white/40 text-sm">
+                    {sesionActiva ? 'Nadie ha marcado asistencia en esta clase' : 'Aún no hay asistencias'}
+                  </p>
                   <p className="text-white/30 text-xs mt-1">Aparecerán aquí cuando los padres escaneen el QR</p>
                 </div>
               ) : (
                 <div className="divide-y divide-white/5 max-h-[40vh] overflow-y-auto">
-                  {asistencias.map((a, i) => (
+                  {(sesionActiva ? asistenciasClase : asistencias).map((a, i) => (
                     <div key={i} className="flex items-center justify-between px-4 py-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -616,7 +654,6 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
                         <p className="text-white/60 text-xs">{a.hora}</p>
-                        <p className="text-white/30 text-[10px]">{a.turno}</p>
                       </div>
                     </div>
                   ))}

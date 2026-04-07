@@ -38,3 +38,8 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# Credenciales y accesos (NUNCA subir)
+*Accesos*
+*accesos*
+*.credentials*
