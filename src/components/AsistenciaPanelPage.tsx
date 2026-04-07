@@ -508,7 +508,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-3">
             {showBackBtn && (
-              <button onClick={volverAClases}
+              <button onClick={volverAClases} aria-label="Volver a clases"
                 className="p-1.5 -ml-1 text-white/60 hover:text-white active:scale-95 transition-all">
                 <ArrowLeft className="w-5 h-5" />
               </button>
@@ -522,11 +522,11 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={fetchAsistencias}
+            <button onClick={fetchAsistencias} aria-label="Actualizar"
               className="p-2 text-white/50 hover:text-white active:scale-95 transition-all">
               <RefreshCw className="w-4 h-4" />
             </button>
-            <button onClick={handleLogout}
+            <button onClick={handleLogout} aria-label="Cerrar sesion"
               className="p-2 text-white/50 hover:text-red-400 active:scale-95 transition-all">
               <LogOut className="w-4 h-4" />
             </button>
@@ -551,7 +551,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                         : `Solo ${a.clases_restantes} clase${a.clases_restantes > 1 ? 's' : ''} restante${a.clases_restantes > 1 ? 's' : ''}`}
                     </span>
                   </div>
-                  <button onClick={() => setAlertas(prev => prev.filter((_, j) => j !== i))}
+                  <button onClick={() => setAlertas(prev => prev.filter((_, j) => j !== i))} aria-label="Cerrar alerta"
                     className="text-amber-400/60 hover:text-amber-400">
                     <X className="w-3 h-3" />
                   </button>
@@ -698,7 +698,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                           ? `${resultadoManual.alumno}${resultadoManual.clases_restantes != null ? ` — ${resultadoManual.clases_restantes} clases restantes` : ''}`
                           : resultadoManual.error}
                       </span>
-                      <button onClick={() => setResultadoManual(null)} className="ml-2 opacity-60 hover:opacity-100">
+                      <button onClick={() => setResultadoManual(null)} aria-label="Cerrar resultado" className="ml-2 opacity-60 hover:opacity-100">
                         <X className="w-3 h-3" />
                       </button>
                     </div>
@@ -805,13 +805,13 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
           {vista === 'dashboard' && (
             <>
               <div className="flex items-center justify-center gap-3">
-                <button onClick={() => cambiarMes(-1)} className="p-2 text-white/50 hover:text-white active:scale-95 transition-all">
+                <button onClick={() => cambiarMes(-1)} aria-label="Mes anterior" className="p-2 text-white/50 hover:text-white active:scale-95 transition-all">
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <span className="text-white font-semibold text-sm min-w-[140px] text-center capitalize">
                   {new Date(mesDashboard + '-15').toLocaleDateString('es-PE', { month: 'long', year: 'numeric' })}
                 </span>
-                <button onClick={() => cambiarMes(1)} className="p-2 text-white/50 hover:text-white active:scale-95 transition-all rotate-180">
+                <button onClick={() => cambiarMes(1)} aria-label="Mes siguiente" className="p-2 text-white/50 hover:text-white active:scale-95 transition-all rotate-180">
                   <ArrowLeft className="w-4 h-4" />
                 </button>
               </div>

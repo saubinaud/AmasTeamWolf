@@ -1,24 +1,8 @@
 import { useState, lazy, Suspense, useEffect } from 'react';
 import { HomePage } from './components/HomePage';
-import { TiendaPage } from './components/TiendaPage';
-import { RegistroTresMesesPage } from './components/RegistroTresMesesPage';
-import { RegistroSeisMesesPage } from './components/RegistroSeisMesesPage';
-import { RegistroMensualPage } from './components/RegistroMensualPage';
-import { RegistroLeadershipPage } from './components/RegistroLeadershipPage';
-import { GraduacionPage } from './components/GraduacionPage';
 import { LandingConversion } from './components/LandingConversion';
 import { InicioSesionPage } from './components/InicioSesionPage';
-import { PerfilPage } from './components/PerfilPage';
-import { RenovacionNavidadPage } from './components/RenovacionNavidadPage';
-import { RegistroActividadNavidadPage } from './components/RegistroActividadNavidadPage';
-import { RegistroShowroomPage } from './components/RegistroShowroomPage';
-import { RenovacionPage } from './pages/RenovacionPage';
 import { LogtoCallback } from './components/LogtoCallback';
-import { TerminosCondicionesPage } from './components/TerminosCondicionesPage';
-import { VincularCuentaPage } from './components/VincularCuentaPage';
-import { TorneoPage } from './components/TorneoPage';
-import { AsistenciaPage } from './components/AsistenciaPage';
-import { AsistenciaPanelPage } from './components/AsistenciaPanelPage';
 import { AuthGuard } from './components/AuthGuard';
 
 import { HeaderMain } from './components/HeaderMain';
@@ -33,17 +17,47 @@ import { FooterMain } from './components/FooterMain';
 import { SEO, seoConfigs } from './components/SEO';
 import { BreadcrumbSEO, breadcrumbConfigs } from './components/BreadcrumbSEO';
 
-// Lazy load de componentes pesados
+// Lazy load de componentes pesados (secciones de la landing de leadership)
 const LeadershipTimeline = lazy(() => import('./components/LeadershipTimeline'));
 const ImplementsSection = lazy(() => import('./components/ImplementsSection'));
 
-// Componente de carga
+// Lazy load de paginas - se cargan bajo demanda para reducir el bundle inicial
+const TiendaPage = lazy(() => import('./components/TiendaPage').then(m => ({ default: m.TiendaPage })));
+const RegistroTresMesesPage = lazy(() => import('./components/RegistroTresMesesPage').then(m => ({ default: m.RegistroTresMesesPage })));
+const RegistroSeisMesesPage = lazy(() => import('./components/RegistroSeisMesesPage').then(m => ({ default: m.RegistroSeisMesesPage })));
+const RegistroMensualPage = lazy(() => import('./components/RegistroMensualPage').then(m => ({ default: m.RegistroMensualPage })));
+const RegistroLeadershipPage = lazy(() => import('./components/RegistroLeadershipPage').then(m => ({ default: m.RegistroLeadershipPage })));
+const GraduacionPage = lazy(() => import('./components/GraduacionPage').then(m => ({ default: m.GraduacionPage })));
+const PerfilPage = lazy(() => import('./components/PerfilPage').then(m => ({ default: m.PerfilPage })));
+const RenovacionNavidadPage = lazy(() => import('./components/RenovacionNavidadPage').then(m => ({ default: m.RenovacionNavidadPage })));
+const RegistroActividadNavidadPage = lazy(() => import('./components/RegistroActividadNavidadPage').then(m => ({ default: m.RegistroActividadNavidadPage })));
+const RegistroShowroomPage = lazy(() => import('./components/RegistroShowroomPage').then(m => ({ default: m.RegistroShowroomPage })));
+const RenovacionPage = lazy(() => import('./pages/RenovacionPage').then(m => ({ default: m.RenovacionPage })));
+const TerminosCondicionesPage = lazy(() => import('./components/TerminosCondicionesPage').then(m => ({ default: m.TerminosCondicionesPage })));
+const VincularCuentaPage = lazy(() => import('./components/VincularCuentaPage').then(m => ({ default: m.VincularCuentaPage })));
+const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ default: m.TorneoPage })));
+const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
+const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
+
+// Componente de carga para secciones inline
 function LoadingSection() {
   return (
     <div className="py-20 flex items-center justify-center">
       <div className="animate-pulse flex flex-col items-center gap-4">
         <div className="w-12 h-12 border-4 border-[#FA7B21] border-t-transparent rounded-full animate-spin"></div>
         <p className="text-white/50 text-sm">Cargando...</p>
+      </div>
+    </div>
+  );
+}
+
+// Componente de carga para paginas completas
+function LoadingPage() {
+  return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-14 h-14 border-4 border-[#FA7B21] border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-white/60 text-sm font-medium">Cargando...</p>
       </div>
     </div>
   );
@@ -287,17 +301,17 @@ function App() {
 
   if (currentPage === 'tienda') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO {...seoConfigs.tienda} />
         <TiendaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'registro-3-meses') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Programa 3 Meses - AMAS Team Wolf"
           description="Matricúlate en el Programa Full de 3 meses de AMAS Team Wolf. Incluye uniforme, graduación y certificado oficial. ¡Inscripción abierta!"
@@ -318,13 +332,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'registro-6-meses') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Programa 6 Meses - AMAS Team Wolf"
           description="Matricúlate en el Programa de 6 meses de AMAS Team Wolf. Incluye uniforme, 2 graduaciones, seguimiento personalizado y más. ¡Inscripción abierta!"
@@ -345,13 +359,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'registro-mensual') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Programa Mensual - AMAS Team Wolf"
           description="Matricúlate en el Programa Mensual de AMAS Team Wolf. Ideal para comenzar con flexibilidad. ¡Inscripción abierta!"
@@ -372,13 +386,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'registro-leadership') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Leadership Wolf - AMAS Team Wolf"
           description="Inscríbete en el programa Leadership Wolf. Formación integral en liderazgo y artes marciales. Incluye 12 hitos de desarrollo personal."
@@ -399,17 +413,17 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'graduacion') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO {...seoConfigs.graduacion} />
         <GraduacionPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
@@ -443,7 +457,7 @@ function App() {
 
   if (currentPage === 'terminos') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Términos y Condiciones - AMAS Team Wolf"
           description="Términos y condiciones de uso del sitio web de la Academia de Artes Marciales AMAS."
@@ -452,13 +466,13 @@ function App() {
         />
         <TerminosCondicionesPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'vincular-cuenta') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Vincular Cuenta - AMAS Team Wolf"
           description="Vincula tu cuenta con tu perfil de alumno en AMAS Team Wolf."
@@ -467,13 +481,13 @@ function App() {
         />
         <VincularCuentaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'torneo') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Torneo de Taekwondo - Inscripción | AMAS Team Wolf"
           description="Inscribe a tu hijo en el próximo torneo de taekwondo AMAS Team Wolf. Registro rápido, múltiples modalidades y una experiencia que recordarán siempre."
@@ -487,13 +501,13 @@ function App() {
           cartItemsCount={cartItemsCount}
         />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'asistencia-panel') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Panel de Asistencia - AMAS Team Wolf"
           description="Panel de control de asistencias para profesoras."
@@ -502,13 +516,13 @@ function App() {
         />
         <AsistenciaPanelPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'asistencia') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Registro de Asistencia - AMAS Team Wolf"
           description="Registra tu asistencia escaneando el código QR en la sede."
@@ -517,7 +531,7 @@ function App() {
         />
         <AsistenciaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
@@ -541,7 +555,7 @@ function App() {
   if (currentPage === 'perfil') {
     return (
       <AuthGuard onNavigate={handleNavigate} requireAuth={true}>
-        <>
+        <Suspense fallback={<LoadingPage />}>
           <SEO
             title="Mi Perfil - AMAS Team Wolf"
             description="Panel de familia AMAS Team Wolf. Consulta tus clases, pagos, matrícula y notificaciones."
@@ -550,14 +564,14 @@ function App() {
           />
           <PerfilPage onNavigate={handleNavigate} />
           <Toaster theme="dark" position="bottom-right" />
-        </>
+        </Suspense>
       </AuthGuard>
     );
   }
 
   if (currentPage === 'renovacion-navidad') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Renovación Navidad - AMAS Team Wolf"
           description="Renueva tu membresía anticipadamente y recibe beneficios exclusivos de temporada navideña. Días extras y promociones especiales para familias AMAS."
@@ -571,13 +585,13 @@ function App() {
           cartItemsCount={cartItemsCount}
         />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'renovacion') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Renovación de Membresía - AMAS Team Wolf"
           description="Renueva tu membresía de AMAS Team Wolf. Elige entre programas de 1, 3 o 6 meses. Continúa tu entrenamiento sin interrupciones."
@@ -596,13 +610,13 @@ function App() {
           }}
         />
         <Toaster theme="dark" position="bottom-right" />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'registro-actividad-navidad') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Gran Clausura Navideña - AMAS Team Wolf"
           description="Celebra con nosotros el cierre del año. Confirma tu asistencia y participa en el intercambio de regalos."
@@ -643,13 +657,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={checkoutItems}
         />
-      </>
+      </Suspense>
     );
   }
 
   if (currentPage === 'registro-showroom') {
     return (
-      <>
+      <Suspense fallback={<LoadingPage />}>
         <SEO
           title="Showroom AMAS Team Wolf - Conoce Nuestras Instalaciones"
           description="Regístrate para asistir al Showroom de AMAS Team Wolf. Conoce nuestras instalaciones, profesoras y programa de formación integral."
@@ -688,7 +702,7 @@ function App() {
           totalAmount={totalAmount}
           cartItems={checkoutItems}
         />
-      </>
+      </Suspense>
     );
   }
 
