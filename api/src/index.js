@@ -22,7 +22,7 @@ app.use(cors({
   origin: [
     'https://amasteamwolf.com',
     'https://www.amasteamwolf.com',
-    /\.easypanel\.host$/,
+    'https://amas-api.s6hx3x.easypanel.host',
     'http://localhost:5173',
     'http://localhost:3000',
   ],

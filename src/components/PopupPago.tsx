@@ -200,7 +200,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
                   <p className="text-green-400 mb-2">🟢 INTERBANK</p>
                   <div className="space-y-1">
                     <p className="text-white/80">Nombre: <span className="text-white">Jimena</span></p>
-                    <p className="text-white/80">Soles: <span className="text-white font-mono">8983331662706</span></p>
+                    <p className="text-white/80">Soles: <span className="text-white font-mono">*********2706</span></p>
                   </div>
                 </div>
 
@@ -209,7 +209,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
                   <p className="text-blue-400 mb-2">🔵 BCP</p>
                   <div className="space-y-1">
                     <p className="text-white/80">Nombre: <span className="text-white">David</span></p>
-                    <p className="text-white/80">Soles: <span className="text-white font-mono">19300358353071</span></p>
+                    <p className="text-white/80">Soles: <span className="text-white font-mono">*********3071</span></p>
                   </div>
                 </div>
 
@@ -218,7 +218,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
                   <p className="text-gray-300 mb-2">⚪️ BBVA</p>
                   <div className="space-y-1">
                     <p className="text-white/80">Nombre: <span className="text-white">Jimena</span></p>
-                    <p className="text-white/80">Soles: <span className="text-white font-mono">0011-0814-0220041447</span></p>
+                    <p className="text-white/80">Soles: <span className="text-white font-mono">****-****-*****1447</span></p>
                   </div>
                 </div>
               </div>

@@ -192,7 +192,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (sessionTimestamp) {
       const sessionAge = Date.now() - parseInt(sessionTimestamp, 10);
       if (sessionAge > SESSION_TIMEOUT_MS) {
-        console.log('Session expired, clearing stored data');
+        // Session expired, clearing stored data
         localStorage.removeItem('amasUserProfile');
         localStorage.removeItem('amasAuthId');
         localStorage.removeItem('amasSessionTimestamp');
@@ -271,7 +271,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }).catch(err => console.error('Error linking auth_id:', err));
         }
       } else {
-        console.warn('No profile found for user');
+        // No profile found for user
         // Create minimal user data
         setUser({
           familia: {

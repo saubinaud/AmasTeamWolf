@@ -13,7 +13,7 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
     const hasProcessed = useRef(false);
 
     const { isLoading, error } = useHandleSignInCallback(async () => {
-        console.log('Logto sign-in callback completed');
+        // Sign-in callback completed
     });
 
     const { getIdTokenClaims, isAuthenticated } = useLogto();
@@ -39,19 +39,19 @@ export function LogtoCallback({ onNavigate, onLoadProfile }: LogtoCallbackProps)
                 const authId = claims.sub;
                 const email = claims.email as string | undefined;
 
-                console.log('Authenticated user:', { authId, email });
+                // Authenticated user identified
 
                 // Try to load the profile - this will work if account is linked
                 // If not linked, PerfilPage will handle the linking flow
                 try {
                     await onLoadProfile(authId, email);
                 } catch (profileError) {
-                    console.log('Profile load error (expected for new accounts):', profileError);
+                    // Profile load error (expected for new accounts)
                 }
 
                 // Always redirect to perfil - the page will handle unlinked accounts
                 setStatus('success');
-                console.log('Redirecting to perfil');
+                // Redirect to perfil
                 onNavigate('perfil');
 
             } catch (err) {

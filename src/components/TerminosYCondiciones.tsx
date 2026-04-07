@@ -83,7 +83,7 @@ export default function TerminosPage({ onNavigate }: TerminosPageProps) {
     if (onNavigate) {
       onNavigate('login'); // O 'home' dependiendo de tu flujo
     } else {
-      console.log("Navegar atrás");
+      // No navigation handler available
     }
   };
 
