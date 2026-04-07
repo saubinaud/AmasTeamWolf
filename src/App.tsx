@@ -435,7 +435,7 @@ function App() {
         onNavigate={handleNavigate}
         onLoadProfile={async (authId, email) => {
           // Profile loading is handled in AuthContext
-          console.log('Callback: Loading profile for', authId, email);
+          // Profile loading is handled in AuthContext
         }}
       />
     );

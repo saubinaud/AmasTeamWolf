@@ -194,8 +194,6 @@ export function TorneoPage({
         try {
             const res = await fetch(`${TORNEO_CONFIG.consultarAlumnoUrl}?dni=${dniValue}`);
             const text = await res.text();
-            console.log('[DNI lookup] raw response:', text);
-
             if (!text || text.trim().length === 0) {
                 // Empty response → treat as not found
                 setDniStatus('not_found');
