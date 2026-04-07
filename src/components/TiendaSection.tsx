@@ -64,7 +64,7 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-12">
           {featuredStoreProducts.map((product, index) => (
             <div
               key={index}

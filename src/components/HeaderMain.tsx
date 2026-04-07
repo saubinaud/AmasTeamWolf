@@ -69,8 +69,8 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
   // Estilos comunes para links (para asegurar consistencia visual)
   const linkStyles = (active?: boolean) =>
     active
-      ? "text-[#FA7B21] font-semibold transition-colors text-sm lg:text-base"
-      : "text-white/80 hover:text-[#FA7B21] transition-colors text-sm lg:text-base";
+      ? "text-[#FA7B21] font-semibold transition-colors text-sm md:text-sm lg:text-base"
+      : "text-white/80 hover:text-[#FA7B21] transition-colors text-sm md:text-sm lg:text-base";
 
   return (
     <header
@@ -88,7 +88,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           : '1px solid rgba(250, 123, 33, 0.15)'
       }}
     >
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <button
@@ -98,7 +98,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           >
             <div className="flex flex-col">
               <span
-                className="text-base sm:text-lg transition-all duration-300"
+                className="text-base sm:text-lg md:text-lg transition-all duration-300"
                 style={{
                   background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 100%)',
                   WebkitBackgroundClip: 'text',
@@ -114,7 +114,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
           {/* ========================================== */}
           {/* DESKTOP NAVIGATION               */}
           {/* ========================================== */}
-          <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+          <nav className="hidden md:flex items-center gap-4 md:gap-5 lg:gap-6">
 
             {/* 1. Programas (Dropdown) */}
             <div

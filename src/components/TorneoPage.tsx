@@ -664,8 +664,8 @@ export function TorneoPage({
             </section>
 
             {/* ========== FORMULARIO ========== */}
-            <main ref={formRef} id="formulario-torneo" className="relative z-10 px-4 py-16 md:py-24 max-w-7xl mx-auto w-full">
-                <div className="max-w-2xl mx-auto">
+            <main ref={formRef} id="formulario-torneo" className="relative z-10 px-4 md:px-6 py-16 md:py-24 max-w-7xl mx-auto w-full">
+                <div className="max-w-2xl md:max-w-2xl mx-auto">
                     <motion.div
                         initial={{ y: 20, opacity: 0 }}
                         whileInView={{ y: 0, opacity: 1 }}
@@ -676,7 +676,7 @@ export function TorneoPage({
                         {/* Glow effect */}
                         <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
 
-                        <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-10 shadow-2xl overflow-hidden">
+                        <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden">
                             {/* Decorative top bar */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929]" />
                             {/* Decorative elements */}
@@ -928,7 +928,7 @@ export function TorneoPage({
                             <div className="relative">
                                 <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 rounded-3xl blur-3xl" />
 
-                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FCA929]/50 rounded-3xl p-6 md:p-10 shadow-2xl overflow-hidden">
+                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FCA929]/50 rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden">
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FCA929] via-[#FA7B21] to-[#FCA929]" />
                                     <div className="absolute top-10 right-10 w-32 h-32 bg-[#FCA929]/10 rounded-full blur-3xl" />
                                     <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#FA7B21]/10 rounded-full blur-3xl" />

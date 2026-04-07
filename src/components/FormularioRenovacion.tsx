@@ -1194,7 +1194,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   // Formulario completo cuando ya hay un plan seleccionado
   return (
     <div ref={formularioRef} className="min-h-screen bg-zinc-950 pt-24 sm:pt-28">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 md:px-6 py-8 max-w-4xl">
         {/* Header con plan seleccionado */}
         <div className="bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-2xl p-6 mb-8">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1229,13 +1229,13 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
         </div>
 
         {/* Formulario */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-7">
           {/* Datos del Alumno */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 md:p-7">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Datos del Alumno
             </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
               <div>
                 <Label htmlFor="nombreAlumno" className="text-white mb-2">
                   Nombre completo *
@@ -1347,11 +1347,11 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Datos del Padre */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 md:p-7">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Datos del Padre de Familia
             </h3>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
               <div>
                 <Label htmlFor="nombrePadre" className="text-white mb-2">
                   Nombre completo *
@@ -1408,7 +1408,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Polos Adicionales */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 md:p-7">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Adicionales (Opcional)
             </h3>

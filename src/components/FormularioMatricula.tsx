@@ -972,7 +972,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent
         showCloseButton={false}
-        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-full max-w-[calc(100%-2rem)] sm:max-w-[95vw] md:max-w-4xl p-0 m-4 sm:m-6"
+        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-full max-w-[calc(100%-2rem)] sm:max-w-[95vw] md:max-w-3xl lg:max-w-4xl p-0 m-4 sm:m-6"
         style={{
           maxHeight: 'calc(100vh - 4rem)',
           overflowY: 'auto',
@@ -1009,14 +1009,14 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
         </div>
 
         {/* Form Content */}
-        <div className="px-4 sm:px-6 py-4 sm:py-6 pb-6 sm:pb-8">
-          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-7 pb-6 sm:pb-8">
+          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 md:space-y-7">
             {/* Datos del Alumno */}
             <div>
               <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
                 Datos del Alumno
               </h3>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
                 <div>
                   <Label htmlFor="nombreAlumno" className="text-white mb-2">
                     Nombre completo *
@@ -1135,7 +1135,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
               <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
                 Datos del Padre de Familia
               </h3>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
                 <div>
                   <Label htmlFor="nombrePadre" className="text-white mb-2">
                     Nombre completo *

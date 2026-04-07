@@ -378,7 +378,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
             {/* Main Content */}
             <div className="relative z-10 pt-24 pb-12">
-                <div className="max-w-7xl mx-auto px-8">
+                <div className="max-w-7xl mx-auto px-5 md:px-8">
 
                     {/* Welcome Section */}
                     <motion.div
@@ -509,7 +509,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20 }}
-                                className="grid grid-cols-3 gap-6"
+                                className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
                             >
                                 {/* Stats Cards */}
                                 <motion.div
@@ -582,7 +582,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                 {/* Info Section */}
                                 <motion.div
-                                    className="col-span-2 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8 transition-colors hover:border-[#FA7B21]/20"
+                                    className="col-span-2 lg:col-span-2 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
                                     whileHover={{}}
                                 >
                                     <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
@@ -891,7 +891,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 </div>
 
                                 {/* Stats Row - Horizontal - Now clearly inside the calendar motion div */}
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {/* Total Asistencias */}
                                     <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5 flex items-center gap-4">
                                         <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
@@ -945,7 +945,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
-                                    className="grid grid-cols-2 gap-6"
+                                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
                                 >
                                     {/* Plan Details */}
                                     <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8">

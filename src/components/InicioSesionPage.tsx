@@ -26,7 +26,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
   // This component only shows the login form
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950 py-12 px-4 sm:px-6 md:px-8 lg:px-8">
       {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[400px] h-[400px] bg-[#FA7B21]/10 rounded-full blur-3xl"></div>
@@ -35,7 +35,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
 
       <div className="relative max-w-md w-full">
         {/* Card */}
-        <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
           {/* Logo / Header */}
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30">

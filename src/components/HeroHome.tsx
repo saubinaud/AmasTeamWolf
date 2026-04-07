@@ -47,7 +47,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20">
-        <div className="max-w-6xl mx-auto text-center">
+        <div className="max-w-4xl md:max-w-5xl lg:max-w-6xl mx-auto text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 backdrop-blur-sm">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FCA929]" />
@@ -58,7 +58,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
           <div className="mb-6 sm:mb-8 md:mb-10">
             <div className="relative inline-block mb-4">
               <h1
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl relative z-10 px-4"
+                className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl relative z-10 px-4"
                 style={{
                   background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 25%, #FDCB6E 50%, #FCA929 75%, #FA7B21 100%)',
                   WebkitBackgroundClip: 'text',
@@ -70,7 +70,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
               </h1>
             </div>
             <h1 
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 px-4"
+              className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl mb-4 px-4"
               style={{
                 background: 'linear-gradient(to right, #fef2f2, #ffffff, #fef2f2)',
                 WebkitBackgroundClip: 'text',
@@ -87,7 +87,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
+          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center px-4">
             <Button
               type="button"
               onClick={scrollToProgramas}

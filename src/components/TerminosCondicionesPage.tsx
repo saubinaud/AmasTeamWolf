@@ -6,7 +6,7 @@ interface TerminosCondicionesPageProps {
 
 export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageProps) {
     return (
-        <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+        <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 md:px-8 lg:px-8 animate-fadeIn">
             {/* Background decorative elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute -top-40 -left-40 w-[400px] h-[400px] bg-[#FA7B21]/5 rounded-full blur-3xl"></div>
@@ -24,7 +24,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                 </button>
 
                 {/* Content Card */}
-                <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 sm:p-12 shadow-2xl">
+                <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 sm:p-10 md:p-12 shadow-2xl">
                     {/* Header */}
                     <div className="text-center mb-10 pb-8 border-b border-white/10">
                         <div className="w-16 h-16 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30">
