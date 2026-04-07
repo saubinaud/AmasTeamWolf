@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense, useEffect } from 'react';
+import React, { useState, lazy, Suspense, useEffect } from 'react';
 import { HomePage } from './components/HomePage';
 import { LandingConversion } from './components/LandingConversion';
 import { InicioSesionPage } from './components/InicioSesionPage';
@@ -61,6 +61,39 @@ function LoadingPage() {
       </div>
     </div>
   );
+}
+
+// Error boundary para lazy loading — si falla la carga del chunk, permite reintentar
+class LazyErrorBoundary extends React.Component<
+  { children: React.ReactNode; onNavigate?: (page: string) => void },
+  { hasError: boolean }
+> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-black flex items-center justify-center px-4">
+          <div className="text-center">
+            <p className="text-white text-lg mb-2">Error al cargar la página</p>
+            <p className="text-white/50 text-sm mb-6">Revisa tu conexión a internet</p>
+            <button
+              onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+              className="px-6 py-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl active:scale-95 transition-all"
+            >
+              Reintentar
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function App() {
@@ -301,17 +334,17 @@ function App() {
 
   if (currentPage === 'tienda') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO {...seoConfigs.tienda} />
         <TiendaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'registro-3-meses') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Programa 3 Meses - AMAS Team Wolf"
           description="Matricúlate en el Programa Full de 3 meses de AMAS Team Wolf. Incluye uniforme, graduación y certificado oficial. ¡Inscripción abierta!"
@@ -332,13 +365,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'registro-6-meses') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Programa 6 Meses - AMAS Team Wolf"
           description="Matricúlate en el Programa de 6 meses de AMAS Team Wolf. Incluye uniforme, 2 graduaciones, seguimiento personalizado y más. ¡Inscripción abierta!"
@@ -359,13 +392,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'registro-mensual') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Programa Mensual - AMAS Team Wolf"
           description="Matricúlate en el Programa Mensual de AMAS Team Wolf. Ideal para comenzar con flexibilidad. ¡Inscripción abierta!"
@@ -386,13 +419,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'registro-leadership') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Matrícula Leadership Wolf - AMAS Team Wolf"
           description="Inscríbete en el programa Leadership Wolf. Formación integral en liderazgo y artes marciales. Incluye 12 hitos de desarrollo personal."
@@ -413,17 +446,17 @@ function App() {
           totalAmount={totalAmount}
           cartItems={[]}
         />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'graduacion') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO {...seoConfigs.graduacion} />
         <GraduacionPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
@@ -457,7 +490,7 @@ function App() {
 
   if (currentPage === 'terminos') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Términos y Condiciones - AMAS Team Wolf"
           description="Términos y condiciones de uso del sitio web de la Academia de Artes Marciales AMAS."
@@ -466,13 +499,13 @@ function App() {
         />
         <TerminosCondicionesPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'vincular-cuenta') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Vincular Cuenta - AMAS Team Wolf"
           description="Vincula tu cuenta con tu perfil de alumno en AMAS Team Wolf."
@@ -481,13 +514,13 @@ function App() {
         />
         <VincularCuentaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'torneo') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Torneo de Taekwondo - Inscripción | AMAS Team Wolf"
           description="Inscribe a tu hijo en el próximo torneo de taekwondo AMAS Team Wolf. Registro rápido, múltiples modalidades y una experiencia que recordarán siempre."
@@ -501,13 +534,13 @@ function App() {
           cartItemsCount={cartItemsCount}
         />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'asistencia-panel') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Panel de Asistencia - AMAS Team Wolf"
           description="Panel de control de asistencias para profesoras."
@@ -516,13 +549,13 @@ function App() {
         />
         <AsistenciaPanelPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'asistencia') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Registro de Asistencia - AMAS Team Wolf"
           description="Registra tu asistencia escaneando el código QR en la sede."
@@ -531,7 +564,7 @@ function App() {
         />
         <AsistenciaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
@@ -555,7 +588,7 @@ function App() {
   if (currentPage === 'perfil') {
     return (
       <AuthGuard onNavigate={handleNavigate} requireAuth={true}>
-        <Suspense fallback={<LoadingPage />}>
+        <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
           <SEO
             title="Mi Perfil - AMAS Team Wolf"
             description="Panel de familia AMAS Team Wolf. Consulta tus clases, pagos, matrícula y notificaciones."
@@ -564,14 +597,14 @@ function App() {
           />
           <PerfilPage onNavigate={handleNavigate} />
           <Toaster theme="dark" position="bottom-right" />
-        </Suspense>
+        </Suspense></LazyErrorBoundary>
       </AuthGuard>
     );
   }
 
   if (currentPage === 'renovacion-navidad') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Renovación Navidad - AMAS Team Wolf"
           description="Renueva tu membresía anticipadamente y recibe beneficios exclusivos de temporada navideña. Días extras y promociones especiales para familias AMAS."
@@ -585,13 +618,13 @@ function App() {
           cartItemsCount={cartItemsCount}
         />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'renovacion') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Renovación de Membresía - AMAS Team Wolf"
           description="Renueva tu membresía de AMAS Team Wolf. Elige entre programas de 1, 3 o 6 meses. Continúa tu entrenamiento sin interrupciones."
@@ -610,13 +643,13 @@ function App() {
           }}
         />
         <Toaster theme="dark" position="bottom-right" />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'registro-actividad-navidad') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Gran Clausura Navideña - AMAS Team Wolf"
           description="Celebra con nosotros el cierre del año. Confirma tu asistencia y participa en el intercambio de regalos."
@@ -657,13 +690,13 @@ function App() {
           totalAmount={totalAmount}
           cartItems={checkoutItems}
         />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
   if (currentPage === 'registro-showroom') {
     return (
-      <Suspense fallback={<LoadingPage />}>
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
         <SEO
           title="Showroom AMAS Team Wolf - Conoce Nuestras Instalaciones"
           description="Regístrate para asistir al Showroom de AMAS Team Wolf. Conoce nuestras instalaciones, profesoras y programa de formación integral."
@@ -702,7 +735,7 @@ function App() {
           totalAmount={totalAmount}
           cartItems={checkoutItems}
         />
-      </Suspense>
+      </Suspense></LazyErrorBoundary>
     );
   }
 
