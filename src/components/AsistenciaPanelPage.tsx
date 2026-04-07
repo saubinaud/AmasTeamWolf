@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Loader2, QrCode, Users, Clock, Shield, LogOut, RefreshCw, CheckCircle, UserCheck, KeyRound, ArrowLeft, X } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Loader2, QrCode, Users, Clock, Shield, LogOut, RefreshCw, CheckCircle, UserCheck, KeyRound, ArrowLeft, X, Download, Maximize2, Minimize2, AlertTriangle, BarChart3, Timer } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
@@ -31,10 +31,30 @@ interface ClaseHorario {
   programa: string;
 }
 
+interface AlertaPocasClases {
+  alumno: string;
+  clases_restantes: number;
+  programa?: string;
+}
+
+interface ResumenClase {
+  hora_clase: string;
+  programa: string;
+  token: string;
+  presentes: number;
+}
+
+interface DashboardData {
+  mes: string;
+  totales: { total_asistencias: number; alumnos_unicos: number; dias_con_clase: number };
+  porPrograma: { programa: string; total: number }[];
+  porDiaSemana: { dia: number; total: number }[];
+  topAlumnos: { nombre_alumno: string; total: number }[];
+}
+
 // ── HORARIOS POR DÍA ──
-// Índice: 0=domingo, 1=lunes, 2=martes, 3=miércoles, 4=jueves, 5=viernes, 6=sábado
 const HORARIOS: Record<number, ClaseHorario[]> = {
-  1: [ // LUNES
+  1: [
     { hora: '15:30', programa: 'Súper Baby Wolf' },
     { hora: '16:00', programa: 'Baby Wolf' },
     { hora: '16:30', programa: 'Baby Wolf' },
@@ -43,7 +63,7 @@ const HORARIOS: Record<number, ClaseHorario[]> = {
     { hora: '18:00', programa: 'Little Wolf' },
     { hora: '18:30', programa: 'Junior Wolf' },
   ],
-  2: [ // MARTES
+  2: [
     { hora: '15:00', programa: 'Súper Baby Wolf' },
     { hora: '15:30', programa: 'Súper Baby Wolf' },
     { hora: '16:00', programa: 'Baby Wolf' },
@@ -53,7 +73,7 @@ const HORARIOS: Record<number, ClaseHorario[]> = {
     { hora: '18:00', programa: 'Little Wolf' },
     { hora: '18:30', programa: 'Adolescentes Wolf' },
   ],
-  3: [ // MIÉRCOLES
+  3: [
     { hora: '15:30', programa: 'Súper Baby Wolf' },
     { hora: '16:00', programa: 'Baby Wolf' },
     { hora: '16:30', programa: 'Baby Wolf' },
@@ -62,7 +82,7 @@ const HORARIOS: Record<number, ClaseHorario[]> = {
     { hora: '18:00', programa: 'Little Wolf' },
     { hora: '18:30', programa: 'Junior Wolf' },
   ],
-  4: [ // JUEVES
+  4: [
     { hora: '15:00', programa: 'Súper Baby Wolf' },
     { hora: '15:30', programa: 'Súper Baby Wolf' },
     { hora: '16:00', programa: 'Baby Wolf' },
@@ -72,7 +92,7 @@ const HORARIOS: Record<number, ClaseHorario[]> = {
     { hora: '18:00', programa: 'Little Wolf' },
     { hora: '18:30', programa: 'Adolescentes Wolf' },
   ],
-  5: [ // VIERNES
+  5: [
     { hora: '15:30', programa: 'Súper Baby Wolf' },
     { hora: '16:00', programa: 'Baby Wolf' },
     { hora: '16:30', programa: 'Baby Wolf' },
@@ -81,7 +101,7 @@ const HORARIOS: Record<number, ClaseHorario[]> = {
     { hora: '18:00', programa: 'Little Wolf' },
     { hora: '18:30', programa: 'Junior Wolf' },
   ],
-  6: [ // SÁBADO
+  6: [
     { hora: '09:30', programa: 'Súper Baby Wolf' },
     { hora: '10:00', programa: 'Baby Wolf' },
     { hora: '11:00', programa: 'Baby Wolf' },
@@ -96,6 +116,9 @@ const NOMBRES_DIA: Record<number, string> = {
   0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
   4: 'Jueves', 5: 'Viernes', 6: 'Sábado',
 };
+const NOMBRES_DIA_CORTO: Record<number, string> = {
+  0: 'Dom', 1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb',
+};
 
 const COLORES_PROGRAMA: Record<string, string> = {
   'Súper Baby Wolf': 'bg-pink-500/20 text-pink-300 border-pink-500/30',
@@ -103,6 +126,13 @@ const COLORES_PROGRAMA: Record<string, string> = {
   'Little Wolf': 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
   'Junior Wolf': 'bg-amber-500/20 text-amber-300 border-amber-500/30',
   'Adolescentes Wolf': 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+};
+const COLORES_PROGRAMA_BAR: Record<string, string> = {
+  'Súper Baby Wolf': 'bg-pink-400',
+  'Baby Wolf': 'bg-sky-400',
+  'Little Wolf': 'bg-emerald-400',
+  'Junior Wolf': 'bg-amber-400',
+  'Adolescentes Wolf': 'bg-violet-400',
 };
 
 function horaActual(): string {
@@ -133,8 +163,7 @@ function detectarClaseActual(clases: ClaseHorario[]): number {
     if (ahora >= inicio && ahora < inicio + 25) return i;
   }
   for (let i = 0; i < clases.length; i++) {
-    const inicio = horaAMinutos(clases[i].hora);
-    if (ahora < inicio) return i;
+    if (ahora < horaAMinutos(clases[i].hora)) return i;
   }
   return clases.length - 1;
 }
@@ -147,9 +176,21 @@ function estadoClase(hora24: string): 'pasada' | 'actual' | 'proxima' {
   return 'proxima';
 }
 
-// Clave única para una clase (hora-programa)
 function claseKey(clase: ClaseHorario): string {
   return `${clase.hora}|${clase.programa}`;
+}
+
+// Countdown helper
+function tiempoRestante(validoHasta: string): string {
+  const cierre = new Date(validoHasta).getTime();
+  const ahora = Date.now();
+  const diff = cierre - ahora;
+  if (diff <= 0) return 'Expirado';
+  const mins = Math.floor(diff / 60000);
+  const hrs = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (hrs > 0) return `${hrs}h ${m}m`;
+  return `${m}min`;
 }
 
 export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
@@ -162,21 +203,41 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
   const [claseActiva, setClaseActiva] = useState<ClaseHorario | null>(null);
   const [generandoQR, setGenerandoQR] = useState(false);
   const [asistencias, setAsistencias] = useState<Asistencia[]>([]);
+  const [asistenciasClase, setAsistenciasClase] = useState<Asistencia[]>([]);
   const [autoSeleccionada, setAutoSeleccionada] = useState(false);
 
   // Registro manual DNI
   const [dniManual, setDniManual] = useState('');
   const [registrandoDni, setRegistrandoDni] = useState(false);
-  const [resultadoManual, setResultadoManual] = useState<{ success: boolean; alumno?: string; error?: string } | null>(null);
+  const [resultadoManual, setResultadoManual] = useState<{ success: boolean; alumno?: string; error?: string; clases_restantes?: number; clases_totales?: number } | null>(null);
 
-  // Vista: 'clases' = lista de clases, 'detalle' = QR + asistencia de una clase
-  const [vista, setVista] = useState<'clases' | 'detalle'>('clases');
+  // Alertas pocas clases
+  const [alertas, setAlertas] = useState<AlertaPocasClases[]>([]);
+
+  // Vista: 'clases' | 'detalle' | 'resumen' | 'dashboard' | 'proyector'
+  const [vista, setVista] = useState<'clases' | 'detalle' | 'resumen' | 'dashboard' | 'proyector'>('clases');
+
+  // Resumen del día
+  const [resumenDia, setResumenDia] = useState<ResumenClase[]>([]);
+
+  // Dashboard
+  const [dashboard, setDashboard] = useState<DashboardData | null>(null);
+  const [mesDashboard, setMesDashboard] = useState(new Date().toISOString().slice(0, 7));
+
+  // Countdown timer
+  const [, setTick] = useState(0);
 
   const diaHoy = new Date().getDay();
   const clasesHoy = HORARIOS[diaHoy] || [];
   const sesionActiva = claseActiva ? sesiones[claseKey(claseActiva)] : null;
 
-  // Auto-seleccionar la clase actual/próxima al cargar
+  // Timer para countdown del QR (actualiza cada 30s)
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-seleccionar la clase actual/próxima
   useEffect(() => {
     if (autenticada && clasesHoy.length > 0 && !autoSeleccionada) {
       const idx = detectarClaseActual(clasesHoy);
@@ -185,33 +246,20 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     }
   }, [autenticada, clasesHoy, autoSeleccionada]);
 
-  // Asistencias globales (todas del día) y por clase (filtradas por token)
-  const [asistenciasClase, setAsistenciasClase] = useState<Asistencia[]>([]);
-
-  // Fetch asistencias — si hay sesión activa en la vista detalle, filtra por token
   const fetchAsistencias = useCallback(async () => {
     try {
-      // Siempre traer todas las del día (para stats)
       const resp = await fetch(`${API_BASE}/asistencia/hoy`);
       const data = await resp.json();
-      if (Array.isArray(data)) {
-        setAsistencias(data);
-      }
-    } catch (_err) {
-      // silently fail
-    }
+      if (Array.isArray(data)) setAsistencias(data);
+    } catch (_err) { /* retry next poll */ }
   }, []);
 
   const fetchAsistenciasClase = useCallback(async (token: string) => {
     try {
       const resp = await fetch(`${API_BASE}/asistencia/hoy?token=${token}`);
       const data = await resp.json();
-      if (Array.isArray(data)) {
-        setAsistenciasClase(data);
-      }
-    } catch (_err) {
-      // silently fail
-    }
+      if (Array.isArray(data)) setAsistenciasClase(data);
+    } catch (_err) { /* retry */ }
   }, []);
 
   useEffect(() => {
@@ -224,7 +272,6 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     return () => clearInterval(interval);
   }, [autenticada, fetchAsistencias, fetchAsistenciasClase, sesionActiva]);
 
-  // Fetch asistencias de la clase al entrar al detalle o al generar QR
   useEffect(() => {
     if (sesionActiva && vista === 'detalle') {
       fetchAsistenciasClase(sesionActiva.token);
@@ -233,11 +280,8 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     }
   }, [sesionActiva, vista, fetchAsistenciasClase]);
 
-  // Check session storage for auth
   useEffect(() => {
-    if (sessionStorage.getItem('amas_panel_auth') === 'true') {
-      setAutenticada(true);
-    }
+    if (sessionStorage.getItem('amas_panel_auth') === 'true') setAutenticada(true);
   }, []);
 
   const handlePin = (e: React.FormEvent) => {
@@ -261,7 +305,6 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     setVista('clases');
   };
 
-  // Generar QR para la clase activa
   const generarQR = async () => {
     if (!claseActiva) return;
     setGenerandoQR(true);
@@ -269,35 +312,18 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
       const resp = await fetch(`${API_BASE}/qr/generar`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sede_id: 1,
-          duracion_horas: 2,
-          hora_clase: claseActiva.hora,
-          programa: claseActiva.programa,
-        }),
+        body: JSON.stringify({ sede_id: 1, duracion_horas: 2, hora_clase: claseActiva.hora, programa: claseActiva.programa }),
       });
       const data = await resp.json();
       if (data.success) {
-        const sesion: SesionQR = {
-          token: data.token,
-          url: data.url,
-          valido_hasta: data.valido_hasta,
-          hora_clase: claseActiva.hora,
-          programa: claseActiva.programa,
-        };
+        const sesion: SesionQR = { token: data.token, url: data.url, valido_hasta: data.valido_hasta, hora_clase: claseActiva.hora, programa: claseActiva.programa };
         setSesiones(prev => ({ ...prev, [claseKey(claseActiva)]: sesion }));
         toast.success(`QR generado — ${claseActiva.programa} ${formatHora12(claseActiva.hora)}`);
-      } else {
-        toast.error('Error generando QR');
-      }
-    } catch (_err) {
-      toast.error('Error de conexión');
-    } finally {
-      setGenerandoQR(false);
-    }
+      } else toast.error('Error generando QR');
+    } catch (_err) { toast.error('Error de conexión'); }
+    finally { setGenerandoQR(false); }
   };
 
-  // Seleccionar clase y ir a detalle
   const seleccionarClase = (clase: ClaseHorario) => {
     setClaseActiva(clase);
     setVista('detalle');
@@ -305,31 +331,23 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     setResultadoManual(null);
   };
 
-  // Volver a la lista de clases
   const volverAClases = () => {
     setVista('clases');
     setDniManual('');
     setResultadoManual(null);
   };
 
-  // Registro manual de asistencia por DNI
+  // Registro manual con alerta de pocas clases
   const registrarManual = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sesionActiva || !dniManual || dniManual.length < 7) {
-      toast.error('Ingresa un DNI válido');
-      return;
-    }
+    if (!sesionActiva || !dniManual || dniManual.length < 7) { toast.error('Ingresa un DNI válido'); return; }
     setRegistrandoDni(true);
     setResultadoManual(null);
     try {
       const resp = await fetch(`${API_BASE}/asistencia`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          dni_alumno: dniManual,
-          token_qr: sesionActiva.token,
-          turno: claseActiva?.programa || 'General',
-        }),
+        body: JSON.stringify({ dni_alumno: dniManual, token_qr: sesionActiva.token, turno: claseActiva?.programa || 'General' }),
       });
       const data = await resp.json();
       const result = Array.isArray(data) && data.length > 0 ? data[0] : data;
@@ -339,15 +357,38 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
         setDniManual('');
         fetchAsistencias();
         if (sesionActiva) fetchAsistenciasClase(sesionActiva.token);
-      } else {
-        toast.error(result.error || 'No se pudo registrar');
-      }
-    } catch (_err) {
-      setResultadoManual({ success: false, error: 'Error de conexión' });
-      toast.error('Error de conexión');
-    } finally {
-      setRegistrandoDni(false);
-    }
+        // Alerta pocas clases
+        if (result.clases_restantes != null && result.clases_restantes <= 3) {
+          setAlertas(prev => [...prev.filter(a => a.alumno !== result.alumno), { alumno: result.alumno, clases_restantes: result.clases_restantes, programa: result.programa }]);
+          toast.warning(`${result.alumno} — ¡Solo le quedan ${result.clases_restantes} clases!`, { duration: 8000 });
+        }
+      } else toast.error(result.error || 'No se pudo registrar');
+    } catch (_err) { setResultadoManual({ success: false, error: 'Error de conexión' }); toast.error('Error de conexión'); }
+    finally { setRegistrandoDni(false); }
+  };
+
+  // Fetch resumen del día
+  const fetchResumen = async () => {
+    try {
+      const resp = await fetch(`${API_BASE}/asistencia/resumen-dia`);
+      const data = await resp.json();
+      if (Array.isArray(data)) setResumenDia(data);
+    } catch (_err) { toast.error('Error cargando resumen'); }
+  };
+
+  // Fetch dashboard
+  const fetchDashboard = async (mes: string) => {
+    try {
+      const resp = await fetch(`${API_BASE}/asistencia/dashboard?mes=${mes}`);
+      const data = await resp.json();
+      if (data.totales) setDashboard(data);
+    } catch (_err) { toast.error('Error cargando dashboard'); }
+  };
+
+  // Exportar CSV
+  const exportarCSV = () => {
+    const fecha = new Date().toISOString().split('T')[0];
+    window.open(`${API_BASE}/asistencia/exportar?fecha=${fecha}`, '_blank');
   };
 
   // ── PIN SCREEN ──
@@ -357,7 +398,6 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-[400px] h-[400px] bg-[#FA7B21]/8 rounded-full blur-3xl" />
         </div>
-
         <div className="relative w-full max-w-xs">
           <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
             <div className="text-center mb-6">
@@ -367,37 +407,50 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
               <h1 className="text-xl font-bold text-white">Panel Profesora</h1>
               <p className="text-white/50 text-xs mt-1">Ingresa tu PIN de acceso</p>
             </div>
-
             <form onSubmit={handlePin} className="space-y-4">
-              <Input
-                type="password"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={4}
-                value={pin}
+              <Input type="password" inputMode="numeric" pattern="[0-9]*" maxLength={4} value={pin}
                 onChange={(e) => { setPin(e.target.value.replace(/\D/g, '')); setPinError(false); }}
-                placeholder="••••"
-                autoFocus
-                autoComplete="off"
+                placeholder="••••" autoFocus autoComplete="off"
                 className={`bg-zinc-800 border-white/20 text-white text-center text-2xl tracking-[0.5em] h-14 ${pinError ? 'border-red-500 animate-shake' : ''}`}
               />
-              <Button
-                type="submit"
-                disabled={pin.length < 4}
-                className="w-full h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold disabled:opacity-40"
-              >
+              <Button type="submit" disabled={pin.length < 4}
+                className="w-full h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold disabled:opacity-40">
                 Ingresar
               </Button>
             </form>
-
-            <button
-              onClick={() => onNavigate('home')}
-              className="block mx-auto mt-4 text-white/40 hover:text-white/60 text-xs transition-colors"
-            >
+            <button onClick={() => onNavigate('home')} className="block mx-auto mt-4 text-white/40 hover:text-white/60 text-xs transition-colors">
               Volver al inicio
             </button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // ═══ MODO PROYECTOR / TABLET ═══
+  if (vista === 'proyector' && sesionActiva) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-8" onClick={() => setVista('detalle')}>
+        <div className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full text-lg font-bold mb-6 border ${COLORES_PROGRAMA[sesionActiva.programa] || 'bg-zinc-700/30 text-white/70 border-white/10'}`}>
+          <Clock className="w-5 h-5" />
+          {formatHora12(sesionActiva.hora_clase)} — {sesionActiva.programa}
+        </div>
+        <div className="bg-white rounded-3xl p-6 mb-6">
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(sesionActiva.url)}`}
+            alt="QR de asistencia" className="w-80 h-80"
+          />
+        </div>
+        <p className="text-white/60 text-lg mb-2">Escanea para marcar asistencia</p>
+        <div className="flex items-center gap-3 text-white/40 text-sm">
+          <Timer className="w-4 h-4" />
+          <span>Expira en {tiempoRestante(sesionActiva.valido_hasta)}</span>
+        </div>
+        <div className="mt-8 flex items-center gap-3">
+          <div className="text-5xl font-bold text-[#FCA929]">{asistenciasClase.length}</div>
+          <div className="text-white/50 text-sm">presentes</div>
+        </div>
+        <p className="text-white/30 text-xs mt-8">Toca la pantalla para volver al panel</p>
       </div>
     );
   }
@@ -409,15 +462,16 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
       <div className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-sm border-b border-white/10 px-4 py-3">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div className="flex items-center gap-3">
-            {vista === 'detalle' && (
+            {(vista === 'detalle' || vista === 'resumen' || vista === 'dashboard') && (
               <button onClick={volverAClases} className="p-1.5 -ml-1 text-white/60 hover:text-white transition-colors">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
             <div>
               <h1 className="text-white font-bold text-sm">
-                {vista === 'detalle' && claseActiva
-                  ? `${formatHora12(claseActiva.hora)} — ${claseActiva.programa}`
+                {vista === 'detalle' && claseActiva ? `${formatHora12(claseActiva.hora)} — ${claseActiva.programa}`
+                  : vista === 'resumen' ? 'Resumen del día'
+                  : vista === 'dashboard' ? 'Dashboard mensual'
                   : 'Panel de Asistencia'}
               </h1>
               <div className="flex items-center gap-2 text-white/50 text-xs">
@@ -439,6 +493,25 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-4">
 
+        {/* Alertas de pocas clases */}
+        {alertas.length > 0 && vista !== 'dashboard' && vista !== 'resumen' && (
+          <div className="space-y-2">
+            {alertas.map((a, i) => (
+              <div key={i} className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <span className="text-amber-300 text-xs">
+                    <strong>{a.alumno}</strong> — {a.clases_restantes === 0 ? 'Completó todas sus clases' : `Solo ${a.clases_restantes} clase${a.clases_restantes > 1 ? 's' : ''} restante${a.clases_restantes > 1 ? 's' : ''}`}
+                  </span>
+                </div>
+                <button onClick={() => setAlertas(prev => prev.filter((_, j) => j !== i))} className="text-amber-400/60 hover:text-amber-400">
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* ═══ VISTA: LISTA DE CLASES ═══ */}
         {vista === 'clases' && (
           <>
@@ -447,11 +520,8 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                 <p className="text-white font-semibold text-sm">{NOMBRES_DIA[diaHoy]}</p>
                 <p className="text-white/50 text-xs">Selecciona una clase</p>
               </div>
-
               {clasesHoy.length === 0 ? (
-                <div className="text-center py-6">
-                  <p className="text-white/40 text-sm">No hay clases programadas hoy</p>
-                </div>
+                <div className="text-center py-6"><p className="text-white/40 text-sm">No hay clases programadas hoy</p></div>
               ) : (
                 <div className="space-y-2">
                   {clasesHoy.map((clase, i) => {
@@ -461,38 +531,23 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                     const colorClass = COLORES_PROGRAMA[clase.programa] || 'bg-zinc-700/30 text-white/70 border-white/10';
                     const isPasada = estado === 'pasada';
                     const isAhora = estado === 'actual';
-                    const isActiva = claseActiva && claseKey(claseActiva) === key;
-
                     return (
-                      <button
-                        key={i}
-                        onClick={() => seleccionarClase(clase)}
+                      <button key={i} onClick={() => seleccionarClase(clase)}
                         className={`w-full flex items-center justify-between px-3 py-3 rounded-xl border transition-all text-left ${
-                          isPasada && !tieneSesion
-                            ? 'bg-zinc-800/30 border-white/5 opacity-40'
-                            : `${colorClass} hover:brightness-125`
-                        }`}
-                      >
+                          isPasada && !tieneSesion ? 'bg-zinc-800/30 border-white/5 opacity-40' : `${colorClass} hover:brightness-125`
+                        }`}>
                         <div className="flex items-center gap-3">
                           <span className={`text-xs font-mono font-semibold ${isPasada && !tieneSesion ? 'text-white/40' : 'text-white/80'}`}>
                             {formatHora12(clase.hora)}
                           </span>
-                          <span className={`text-sm ${isPasada && !tieneSesion ? 'text-white/40' : ''}`}>
-                            {clase.programa}
-                          </span>
+                          <span className={`text-sm ${isPasada && !tieneSesion ? 'text-white/40' : ''}`}>{clase.programa}</span>
                           {isAhora && (
-                            <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[10px] font-bold rounded-full border border-green-500/30 animate-pulse">
-                              AHORA
-                            </span>
+                            <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[10px] font-bold rounded-full border border-green-500/30 animate-pulse">AHORA</span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          {tieneSesion && (
-                            <span className="px-2 py-0.5 bg-[#FA7B21]/20 text-[#FCA929] text-[10px] font-bold rounded-full border border-[#FA7B21]/30">
-                              QR ACTIVO
-                            </span>
-                          )}
-                        </div>
+                        {tieneSesion && (
+                          <span className="px-2 py-0.5 bg-[#FA7B21]/20 text-[#FCA929] text-[10px] font-bold rounded-full border border-[#FA7B21]/30">QR ACTIVO</span>
+                        )}
                       </button>
                     );
                   })}
@@ -500,7 +555,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
               )}
             </div>
 
-            {/* Stats generales */}
+            {/* Stats + acciones */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold text-white">{asistencias.length}</div>
@@ -511,57 +566,76 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                 <div className="text-white/50 text-xs">QR activos</div>
               </div>
             </div>
+
+            {/* Botones de acción */}
+            <div className="grid grid-cols-3 gap-2">
+              <button onClick={() => { setVista('resumen'); fetchResumen(); }}
+                className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center hover:bg-zinc-800/80 transition-colors">
+                <Users className="w-5 h-5 text-[#FCA929] mx-auto mb-1" />
+                <span className="text-white/60 text-[10px]">Resumen</span>
+              </button>
+              <button onClick={exportarCSV}
+                className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center hover:bg-zinc-800/80 transition-colors">
+                <Download className="w-5 h-5 text-[#FCA929] mx-auto mb-1" />
+                <span className="text-white/60 text-[10px]">Exportar CSV</span>
+              </button>
+              <button onClick={() => { setVista('dashboard'); fetchDashboard(mesDashboard); }}
+                className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center hover:bg-zinc-800/80 transition-colors">
+                <BarChart3 className="w-5 h-5 text-[#FCA929] mx-auto mb-1" />
+                <span className="text-white/60 text-[10px]">Dashboard</span>
+              </button>
+            </div>
           </>
         )}
 
         {/* ═══ VISTA: DETALLE DE CLASE ═══ */}
         {vista === 'detalle' && claseActiva && (
           <>
-            {/* QR Section */}
             <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-5">
               {!sesionActiva ? (
                 <div className="text-center">
                   <QrCode className="w-12 h-12 text-white/30 mx-auto mb-3" />
-                  <p className="text-white/60 text-sm mb-1">
-                    {claseActiva.programa} — {formatHora12(claseActiva.hora)}
-                  </p>
+                  <p className="text-white/60 text-sm mb-1">{claseActiva.programa} — {formatHora12(claseActiva.hora)}</p>
                   <p className="text-white/40 text-xs mb-4">Genera el QR para esta clase</p>
-                  <Button
-                    onClick={generarQR}
-                    disabled={generandoQR}
-                    className="w-full h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold"
-                  >
-                    {generandoQR ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generando...</>
-                    ) : (
-                      <><QrCode className="w-4 h-4 mr-2" /> Generar QR</>
-                    )}
+                  <Button onClick={generarQR} disabled={generandoQR}
+                    className="w-full h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold">
+                    {generandoQR ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generando...</> : <><QrCode className="w-4 h-4 mr-2" /> Generar QR</>}
                   </Button>
                 </div>
               ) : (
                 <div className="text-center">
-                  {/* Badge de la clase */}
                   <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-3 border ${COLORES_PROGRAMA[sesionActiva.programa] || 'bg-zinc-700/30 text-white/70 border-white/10'}`}>
                     <Clock className="w-3 h-3" />
                     {formatHora12(sesionActiva.hora_clase)} — {sesionActiva.programa}
                   </div>
 
+                  {/* Countdown */}
+                  <div className="flex items-center justify-center gap-1.5 mb-3">
+                    <Timer className="w-3 h-3 text-white/40" />
+                    <span className={`text-xs font-mono ${
+                      tiempoRestante(sesionActiva.valido_hasta) === 'Expirado' ? 'text-red-400' : 'text-white/40'
+                    }`}>{tiempoRestante(sesionActiva.valido_hasta)}</span>
+                  </div>
+
                   <p className="text-white/50 text-xs mb-3">Los padres escanean este código:</p>
 
                   <div className="bg-white rounded-xl p-3 inline-block mx-auto mb-3">
-                    <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sesionActiva.url)}`}
-                      alt="QR de asistencia"
-                      className="w-48 h-48"
-                    />
+                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sesionActiva.url)}`}
+                      alt="QR de asistencia" className="w-48 h-48" />
                   </div>
 
                   <p className="text-white/40 text-[10px] break-all mb-3">{sesionActiva.url}</p>
+
+                  {/* Botón modo proyector */}
+                  <button onClick={() => setVista('proyector')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 border border-white/10 rounded-lg text-white/60 text-xs hover:text-white hover:bg-zinc-700 transition-colors">
+                    <Maximize2 className="w-3 h-3" /> Modo pantalla completa
+                  </button>
                 </div>
               )}
             </div>
 
-            {/* Registro manual por DNI */}
+            {/* Registro manual */}
             {sesionActiva && (
               <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-4">
                 <div className="flex items-center gap-2 mb-3">
@@ -569,75 +643,48 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                   <span className="text-white font-semibold text-sm">Registro manual</span>
                   <span className="text-white/40 text-xs">— para padres sin QR</span>
                 </div>
-
                 <form onSubmit={registrarManual} className="flex gap-2">
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={dniManual}
+                  <Input type="text" inputMode="numeric" pattern="[0-9]*" value={dniManual}
                     onChange={(e) => { setDniManual(e.target.value.replace(/\D/g, '')); setResultadoManual(null); }}
-                    placeholder="DNI del alumno"
-                    maxLength={8}
-                    autoComplete="off"
-                    className="bg-zinc-800 border-white/20 text-white text-center tracking-wider flex-1"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={registrandoDni || dniManual.length < 7}
-                    className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold px-4 disabled:opacity-40"
-                  >
+                    placeholder="DNI del alumno" maxLength={8} autoComplete="off"
+                    className="bg-zinc-800 border-white/20 text-white text-center tracking-wider flex-1" />
+                  <Button type="submit" disabled={registrandoDni || dniManual.length < 7}
+                    className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold px-4 disabled:opacity-40">
                     {registrandoDni ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                   </Button>
                 </form>
-
-                {/* Resultado del registro manual */}
                 {resultadoManual && (
                   <div className={`mt-3 flex items-center justify-between p-2.5 rounded-lg text-xs ${
-                    resultadoManual.success
-                      ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                      : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                    resultadoManual.success ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400'
                   }`}>
                     <span>
                       {resultadoManual.success
-                        ? `Registrado: ${resultadoManual.alumno}`
+                        ? `${resultadoManual.alumno}${resultadoManual.clases_restantes != null ? ` — ${resultadoManual.clases_restantes} clases restantes` : ''}`
                         : resultadoManual.error}
                     </span>
-                    <button onClick={() => setResultadoManual(null)} className="ml-2 opacity-60 hover:opacity-100">
-                      <X className="w-3 h-3" />
-                    </button>
+                    <button onClick={() => setResultadoManual(null)} className="ml-2 opacity-60 hover:opacity-100"><X className="w-3 h-3" /></button>
                   </div>
                 )}
               </div>
             )}
 
-            {/* Lista de asistencias de esta clase */}
+            {/* Asistencias de esta clase */}
             <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-[#FCA929]" />
-                  <span className="text-white font-semibold text-sm">
-                    {sesionActiva ? `Presentes — ${claseActiva.programa}` : 'Asistencias de hoy'}
-                  </span>
+                  <span className="text-white font-semibold text-sm">{sesionActiva ? `Presentes — ${claseActiva.programa}` : 'Asistencias'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {sesionActiva && asistenciasClase.length > 0 && (
-                    <span className="text-[#FCA929] text-xs font-bold">{asistenciasClase.length}</span>
-                  )}
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-green-400 text-xs">En vivo</span>
-                  </div>
+                  {sesionActiva && asistenciasClase.length > 0 && <span className="text-[#FCA929] text-xs font-bold">{asistenciasClase.length}</span>}
+                  <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  <span className="text-green-400 text-xs">En vivo</span>
                 </div>
               </div>
-
               {(sesionActiva ? asistenciasClase : asistencias).length === 0 ? (
                 <div className="p-8 text-center">
                   <UserCheck className="w-10 h-10 text-white/20 mx-auto mb-2" />
-                  <p className="text-white/40 text-sm">
-                    {sesionActiva ? 'Nadie ha marcado asistencia en esta clase' : 'Aún no hay asistencias'}
-                  </p>
-                  <p className="text-white/30 text-xs mt-1">Aparecerán aquí cuando los padres escaneen el QR</p>
+                  <p className="text-white/40 text-sm">{sesionActiva ? 'Nadie ha marcado asistencia' : 'Genera el QR primero'}</p>
                 </div>
               ) : (
                 <div className="divide-y divide-white/5 max-h-[40vh] overflow-y-auto">
@@ -652,14 +699,155 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                           {a.programa && <p className="text-white/40 text-xs truncate">{a.programa}</p>}
                         </div>
                       </div>
-                      <div className="text-right flex-shrink-0 ml-2">
-                        <p className="text-white/60 text-xs">{a.hora}</p>
-                      </div>
+                      <p className="text-white/60 text-xs flex-shrink-0 ml-2">{a.hora}</p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
+          </>
+        )}
+
+        {/* ═══ VISTA: RESUMEN DEL DÍA ═══ */}
+        {vista === 'resumen' && (
+          <>
+            <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-5">
+              <div className="text-center mb-4">
+                <p className="text-white font-semibold">Resumen — {NOMBRES_DIA[diaHoy]}</p>
+                <p className="text-white/50 text-xs">Asistencias por clase</p>
+              </div>
+              {resumenDia.length === 0 ? (
+                <p className="text-white/40 text-sm text-center py-4">No hay sesiones QR registradas hoy</p>
+              ) : (
+                <div className="space-y-3">
+                  {resumenDia.map((r, i) => {
+                    const colorBar = COLORES_PROGRAMA_BAR[r.programa] || 'bg-zinc-500';
+                    return (
+                      <div key={i} className="flex items-center gap-3">
+                        <span className="text-white/60 text-xs font-mono w-16 flex-shrink-0">{r.hora_clase ? formatHora12(r.hora_clase) : '--'}</span>
+                        <div className="flex-1">
+                          <div className="flex justify-between mb-1">
+                            <span className="text-white text-xs">{r.programa || 'Sin programa'}</span>
+                            <span className="text-white font-bold text-xs">{r.presentes}</span>
+                          </div>
+                          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className={`h-full ${colorBar} rounded-full transition-all`} style={{ width: `${Math.min(100, (Number(r.presentes) / 15) * 100)}%` }} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
+                <span className="text-white/50 text-sm">Total del día</span>
+                <span className="text-white font-bold text-lg">{asistencias.length} presentes</span>
+              </div>
+            </div>
+            <button onClick={exportarCSV}
+              className="w-full flex items-center justify-center gap-2 bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-white/60 hover:text-white hover:bg-zinc-800/80 transition-colors">
+              <Download className="w-4 h-4" /> Descargar CSV del día
+            </button>
+          </>
+        )}
+
+        {/* ═══ VISTA: DASHBOARD MENSUAL ═══ */}
+        {vista === 'dashboard' && (
+          <>
+            {/* Selector de mes */}
+            <div className="flex items-center justify-center gap-3">
+              <button onClick={() => { const d = new Date(mesDashboard + '-15'); d.setMonth(d.getMonth() - 1); const m = d.toISOString().slice(0, 7); setMesDashboard(m); fetchDashboard(m); }}
+                className="p-2 text-white/50 hover:text-white"><ArrowLeft className="w-4 h-4" /></button>
+              <span className="text-white font-semibold text-sm min-w-[120px] text-center">
+                {new Date(mesDashboard + '-15').toLocaleDateString('es-PE', { month: 'long', year: 'numeric' })}
+              </span>
+              <button onClick={() => { const d = new Date(mesDashboard + '-15'); d.setMonth(d.getMonth() + 1); const m = d.toISOString().slice(0, 7); setMesDashboard(m); fetchDashboard(m); }}
+                className="p-2 text-white/50 hover:text-white" style={{ transform: 'rotate(180deg)' }}><ArrowLeft className="w-4 h-4" /></button>
+            </div>
+
+            {!dashboard ? (
+              <div className="text-center py-8"><Loader2 className="w-6 h-6 text-white/30 mx-auto animate-spin" /></div>
+            ) : (
+              <>
+                {/* Totales */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center">
+                    <div className="text-xl font-bold text-white">{dashboard.totales.total_asistencias}</div>
+                    <div className="text-white/50 text-[10px]">Asistencias</div>
+                  </div>
+                  <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center">
+                    <div className="text-xl font-bold text-[#FCA929]">{dashboard.totales.alumnos_unicos}</div>
+                    <div className="text-white/50 text-[10px]">Alumnos</div>
+                  </div>
+                  <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 text-center">
+                    <div className="text-xl font-bold text-emerald-400">{dashboard.totales.dias_con_clase}</div>
+                    <div className="text-white/50 text-[10px]">Días</div>
+                  </div>
+                </div>
+
+                {/* Por programa */}
+                <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-4">
+                  <p className="text-white font-semibold text-sm mb-3">Por programa</p>
+                  <div className="space-y-2.5">
+                    {dashboard.porPrograma.map((p, i) => {
+                      const max = dashboard.porPrograma[0]?.total || 1;
+                      const colorBar = COLORES_PROGRAMA_BAR[p.programa] || 'bg-zinc-500';
+                      return (
+                        <div key={i}>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-white/70 text-xs">{p.programa || 'Sin programa'}</span>
+                            <span className="text-white font-bold text-xs">{p.total}</span>
+                          </div>
+                          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                            <div className={`h-full ${colorBar} rounded-full`} style={{ width: `${(Number(p.total) / Number(max)) * 100}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Por día de semana */}
+                <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-4">
+                  <p className="text-white font-semibold text-sm mb-3">Por día de semana</p>
+                  <div className="flex items-end justify-between gap-1 h-24">
+                    {[1, 2, 3, 4, 5, 6].map(d => {
+                      const entry = dashboard.porDiaSemana.find(e => Number(e.dia) === d);
+                      const total = entry ? Number(entry.total) : 0;
+                      const max = Math.max(...dashboard.porDiaSemana.map(e => Number(e.total)), 1);
+                      const pct = (total / max) * 100;
+                      return (
+                        <div key={d} className="flex-1 flex flex-col items-center gap-1">
+                          <span className="text-white text-[10px] font-bold">{total || ''}</span>
+                          <div className="w-full bg-zinc-800 rounded-t-sm overflow-hidden" style={{ height: '60px' }}>
+                            <div className="w-full bg-[#FCA929] rounded-t-sm mt-auto" style={{ height: `${pct}%`, marginTop: `${100 - pct}%` }} />
+                          </div>
+                          <span className="text-white/40 text-[10px]">{NOMBRES_DIA_CORTO[d]}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Top alumnos */}
+                <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-4">
+                  <p className="text-white font-semibold text-sm mb-3">Top 10 alumnos</p>
+                  <div className="space-y-2">
+                    {dashboard.topAlumnos.map((a, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                            i < 3 ? 'bg-[#FCA929]/20 text-[#FCA929]' : 'bg-zinc-800 text-white/40'
+                          }`}>{i + 1}</span>
+                          <span className="text-white text-xs truncate">{a.nombre_alumno}</span>
+                        </div>
+                        <span className="text-white/60 text-xs font-mono">{a.total} clases</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
