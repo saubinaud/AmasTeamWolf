@@ -187,53 +187,50 @@ router.get('/exportar', async (req, res) => {
 router.get('/dashboard', async (req, res) => {
   try {
     const mes = req.query.mes || new Date().toISOString().slice(0, 7);
+    // Calcular último día del mes correctamente
+    const [anio, mesNum] = mes.split('-').map(Number);
     const inicio = `${mes}-01`;
-    const fin = `${mes}-31`;
+    const ultimoDia = new Date(anio, mesNum, 0).getDate();
+    const fin = `${mes}-${String(ultimoDia).padStart(2, '0')}`;
 
-    // Total por día del mes
-    const porDia = await query(`
-      SELECT fecha, COUNT(*) AS total
-      FROM asistencias
-      WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
-      GROUP BY fecha ORDER BY fecha
-    `, [inicio, fin]);
-
-    // Total por programa
-    const porPrograma = await query(`
-      SELECT i.programa, COUNT(*) AS total
-      FROM asistencias ast
-      LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
-      WHERE ast.fecha BETWEEN $1 AND $2 AND ast.asistio = 'Sí'
-      GROUP BY i.programa ORDER BY total DESC
-    `, [inicio, fin]);
-
-    // Total por día de la semana
-    const porDiaSemana = await query(`
-      SELECT EXTRACT(DOW FROM fecha)::int AS dia, COUNT(*) AS total
-      FROM asistencias
-      WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
-      GROUP BY dia ORDER BY dia
-    `, [inicio, fin]);
-
-    // Alumnos con más asistencias
-    const topAlumnos = await query(`
-      SELECT a.nombre_alumno, COUNT(*) AS total
-      FROM asistencias ast
-      JOIN alumnos a ON a.id = ast.alumno_id
-      WHERE ast.fecha BETWEEN $1 AND $2 AND ast.asistio = 'Sí'
-      GROUP BY a.id, a.nombre_alumno
-      ORDER BY total DESC LIMIT 10
-    `, [inicio, fin]);
-
-    // Totales generales
-    const totales = await query(`
-      SELECT
-        COUNT(*) AS total_asistencias,
-        COUNT(DISTINCT alumno_id) AS alumnos_unicos,
-        COUNT(DISTINCT fecha) AS dias_con_clase
-      FROM asistencias
-      WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
-    `, [inicio, fin]);
+    // Ejecutar todas las queries en paralelo
+    const [porDia, porPrograma, porDiaSemana, topAlumnos, totales] = await Promise.all([
+      query(`
+        SELECT fecha, COUNT(*) AS total
+        FROM asistencias
+        WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
+        GROUP BY fecha ORDER BY fecha
+      `, [inicio, fin]),
+      query(`
+        SELECT COALESCE(i.programa, ast.turno, 'Sin programa') AS programa, COUNT(*) AS total
+        FROM asistencias ast
+        LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
+        WHERE ast.fecha BETWEEN $1 AND $2 AND ast.asistio = 'Sí'
+        GROUP BY COALESCE(i.programa, ast.turno, 'Sin programa') ORDER BY total DESC
+      `, [inicio, fin]),
+      query(`
+        SELECT EXTRACT(DOW FROM fecha)::int AS dia, COUNT(*) AS total
+        FROM asistencias
+        WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
+        GROUP BY dia ORDER BY dia
+      `, [inicio, fin]),
+      query(`
+        SELECT a.nombre_alumno, COUNT(*) AS total
+        FROM asistencias ast
+        JOIN alumnos a ON a.id = ast.alumno_id
+        WHERE ast.fecha BETWEEN $1 AND $2 AND ast.asistio = 'Sí'
+        GROUP BY a.id, a.nombre_alumno
+        ORDER BY total DESC LIMIT 10
+      `, [inicio, fin]),
+      query(`
+        SELECT
+          COUNT(*) AS total_asistencias,
+          COUNT(DISTINCT alumno_id) AS alumnos_unicos,
+          COUNT(DISTINCT fecha) AS dias_con_clase
+        FROM asistencias
+        WHERE fecha BETWEEN $1 AND $2 AND asistio = 'Sí'
+      `, [inicio, fin]),
+    ]);
 
     res.json({
       mes,
