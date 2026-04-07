@@ -4,15 +4,11 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
+import { API_BASE } from '../config/api';
 
 interface AsistenciaPageProps {
   onNavigate: (page: string) => void;
 }
-
-// API base — en dev usa proxy local, en prod Easypanel
-const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? '/api/asistencia'
-  : 'https://amas-api.s6hx3x.easypanel.host/api/asistencia';
 
 function detectarTurno(): string {
   const hora = new Date().getHours();
@@ -63,7 +59,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
     setResultado(null);
 
     try {
-      const response = await fetch(API_BASE, {
+      const response = await fetch(`${API_BASE}/asistencia`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

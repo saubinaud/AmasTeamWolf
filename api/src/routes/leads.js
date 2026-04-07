@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
         d.estado || 'Nuevo',
         d.plataforma || d.source || 'Web',
         d.campana || d.tipo || '',
-        d.campana_id || d.metadata ? JSON.stringify(d.metadata) : null,
+        d.campana_id || (d.metadata ? JSON.stringify(d.metadata) : null),
       ]
     );
 

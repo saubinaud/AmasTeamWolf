@@ -171,7 +171,6 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
       
       // Verificar si el webhook está en modo "workflow started"
       if (data && data.message === "Workflow was started") {
-        console.log('El webhook está configurado para iniciar un workflow.');
         setGraduados([]);
         toast.error('El webhook no está configurado para devolver datos.');
         return;
@@ -202,7 +201,6 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
       setGraduados(normalizedGraduados);
       
       if (normalizedGraduados.length > 0) {
-        console.log('✅ Graduados normalizados:', normalizedGraduados.length);
         toast.success(`${normalizedGraduados.length} graduados cargados correctamente`);
       } else {
         toast.error('No se encontraron datos válidos de graduados.');

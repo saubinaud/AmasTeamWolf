@@ -170,7 +170,6 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
       fetch((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api/graduacion' : 'https://amas-api.s6hx3x.easypanel.host/api/graduacion')
         .then(res => res.json())
         .then(data => {
-          console.log('Mobile Graduation Data:', data);
           let dates: Date[] = [];
           const items = Array.isArray(data) ? data : (data.records || [data]);
 

@@ -205,8 +205,6 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                     return res.json();
                 })
                 .then(data => {
-                    console.log('Graduation Webhook Data:', data); // Debug log
-
                     let dates: Date[] = [];
                     const items = Array.isArray(data) ? data : (data.records || [data]);
 
@@ -253,7 +251,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                         if (nextDate) {
                             setGraduacionDate(nextDate.toISOString());
                         } else {
-                            console.warn('No date found in graduation response:', data);
+                            // No date found in graduation response
                         }
                     }
                 })

@@ -484,15 +484,8 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
 } {
   let clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
 
-  console.log('=== CÁLCULO DE FECHA FIN ===');
-  console.log('Fecha inicio:', fechaInicio.toISOString().split('T')[0], '(', obtenerNombreDia(fechaInicio), ')');
-  console.log('Programa:', programa, '- Clases totales:', clasesTotales);
-  console.log('Días tentativos:', diasTentativos);
-
   const fechaActual = new Date(fechaInicio);
   let clasesContadas = 1; // La primera clase cuenta
-
-  console.log('Clase #1:', fechaInicio.toISOString().split('T')[0], '(', obtenerNombreDia(fechaInicio), ') - INICIO');
 
   while (clasesContadas < clasesTotales) {
     fechaActual.setDate(fechaActual.getDate() + 1);
@@ -500,7 +493,6 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
     if (fechaActual.getDay() === 0) continue;  // Domingo
 
     if (esCierreVacacionalAMAS(fechaActual)) {
-      console.log('🏖️ Cierre vacacional:', fechaActual.toISOString().split('T')[0]);
       continue;
     }
 
@@ -508,11 +500,9 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
     if (diasTentativos.includes(nombreDia)) {
       // Solo omitir feriados que caen en días de clase
       if (esFeriado(fechaActual)) {
-        console.log('⛔ Feriado en día de clase:', fechaActual.toISOString().split('T')[0]);
         continue;
       }
       clasesContadas++;
-      console.log(`Clase #${clasesContadas}:`, fechaActual.toISOString().split('T')[0], '(', nombreDia, ')');
     }
   }
 
@@ -521,10 +511,6 @@ function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: s
     clasesTotales,
     semanasAproximadas: Math.ceil((fechaActual.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000))
   };
-
-  console.log('📅 FECHA FIN:', resultado.fechaFin.toISOString().split('T')[0], '(', obtenerNombreDia(resultado.fechaFin), ')');
-  console.log('⏱️ Semanas:', resultado.semanasAproximadas);
-  console.log('===========================');
 
   return resultado;
 }
