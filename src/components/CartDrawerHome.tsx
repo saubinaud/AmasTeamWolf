@@ -107,7 +107,7 @@ export function CartDrawerHome({
                           </div>
                           <button
                             onClick={() => onRemoveItem(item.id, item.variant)}
-                            className="text-white/60 hover:text-red-400 transition-colors duration-200 flex-shrink-0"
+                            className="p-2 text-white/60 hover:text-red-400 transition-colors duration-200 flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -118,7 +118,7 @@ export function CartDrawerHome({
                             <Button
                               size="icon"
                               onClick={() => onUpdateQuantity(item.id, item.variant, Math.max(1, item.quantity - 1))}
-                              className="h-9 w-9 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
+                              className="h-10 w-10 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
@@ -128,7 +128,7 @@ export function CartDrawerHome({
                             <Button
                               size="icon"
                               onClick={() => onUpdateQuantity(item.id, item.variant, item.quantity + 1)}
-                              className="h-9 w-9 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
+                              className="h-10 w-10 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
                             >
                               <Plus className="w-3 h-3" />
                             </Button>

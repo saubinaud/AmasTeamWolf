@@ -909,6 +909,8 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
               <Input
                 id="telefono"
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 value={formData.telefono}
                 onChange={(e) => handleInputChange('telefono', e.target.value)}
                 placeholder="999 999 999"

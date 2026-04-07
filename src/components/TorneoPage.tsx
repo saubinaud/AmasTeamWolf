@@ -703,6 +703,7 @@ export function TorneoPage({
                                             <Input
                                                 type="text"
                                                 inputMode="numeric"
+                                                pattern="[0-9]*"
                                                 placeholder="Ingresa los 8 dígitos del DNI"
                                                 maxLength={8}
                                                 value={dni}
