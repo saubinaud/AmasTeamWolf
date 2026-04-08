@@ -106,6 +106,8 @@ const InfiniteGalleryCarousel = () => {
               src={img.src}
               alt={img.alt}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              loading="lazy"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
             <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
@@ -231,6 +233,8 @@ const TestimonialsSection = () => {
                     src={currentTestimonial.img}
                     alt={currentTestimonial.author}
                     className="relative w-20 h-20 md:w-24 md:h-24 rounded-full object-cover ring-4 ring-[#FA7B21]/50"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="text-center">
@@ -503,6 +507,8 @@ export function RegistroShowroomPage({
             src={HERO_IMG}
             alt="AMAS Team Wolf"
             className="w-full h-full object-cover scale-110"
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black" />
         </div>
