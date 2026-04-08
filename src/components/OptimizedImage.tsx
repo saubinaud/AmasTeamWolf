@@ -31,12 +31,15 @@ export function OptimizedImage({
     return url;
   };
 
-  // Optimize image URL based on connection
+  // Optimize image URL based on connection and device
   const getOptimizedUrl = (url: string): string => {
     if (url.includes('cloudinary.com')) {
       if (isDataSaver) {
-        // Lower quality for slow connections
-        return url.replace(/q_\d+/, 'q_50');
+        return url.replace(/q_\d+/, 'q_40').replace(/w_\d+/, 'w_400');
+      }
+      // Smaller images for small screens
+      if (typeof window !== 'undefined' && window.innerWidth <= 640) {
+        return url.replace(/w_\d+/, 'w_400');
       }
     }
     return url;
@@ -85,7 +88,8 @@ export function OptimizedImage({
         src={optimizedSrc}
         alt={alt}
         loading={priority ? 'eager' : 'lazy'}
-        decoding={priority ? 'sync' : 'async'}
+        decoding="async"
+        fetchPriority={priority ? 'high' : 'auto'}
         className={`${className} transition-opacity duration-500 ${
           isLoaded ? 'opacity-100' : 'opacity-0'
         }`}
