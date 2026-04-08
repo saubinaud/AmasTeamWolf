@@ -38,6 +38,7 @@ const VincularCuentaPage = lazy(() => import('./components/VincularCuentaPage').
 const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ default: m.TorneoPage })));
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
+const SpaceApp = lazy(() => import('./components/space/SpaceApp').then(m => ({ default: m.SpaceApp })));
 
 // Componente de carga para secciones inline
 function LoadingSection() {
@@ -97,7 +98,7 @@ class LazyErrorBoundary extends React.Component<
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo' | 'asistencia' | 'asistencia-panel'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo' | 'asistencia' | 'asistencia-panel' | 'space'>('home');
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -166,7 +167,10 @@ function App() {
       }
 
       const path = window.location.pathname;
-      if (path === '/leadership') {
+      if (path.startsWith('/space')) {
+        setCurrentPage('space');
+        return;
+      } else if (path === '/leadership') {
         setCurrentPage('leadership');
       } else if (path === '/tienda') {
         setCurrentPage('tienda');
@@ -320,6 +324,16 @@ function App() {
   const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   // --- RENDERS ---
+
+  if (currentPage === 'space') {
+    return (
+      <LazyErrorBoundary>
+        <Suspense fallback={<LoadingPage />}>
+          <SpaceApp onNavigate={handleNavigate} />
+        </Suspense>
+      </LazyErrorBoundary>
+    );
+  }
 
   if (currentPage === 'home') {
     return (
