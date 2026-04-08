@@ -100,6 +100,8 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
           src={images[index].src}
           alt={images[index].alt}
           className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+          loading="lazy"
+          decoding="async"
         />
         
         {/* Image Counter */}
@@ -137,6 +139,8 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
                 src={img.src}
                 alt={img.alt}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             </button>
           ))}

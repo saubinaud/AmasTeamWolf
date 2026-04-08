@@ -476,6 +476,8 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
           <img
             src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(sesionActiva.url)}`}
             alt="QR de asistencia" className="w-80 h-80"
+            loading="eager"
+            decoding="async"
           />
         </div>
         <p className="text-white/60 text-lg mb-2">Escanea para marcar asistencia</p>
@@ -660,6 +662,8 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sesionActiva.url)}`}
                         alt="QR" className="w-48 h-48"
+                        loading="eager"
+                        decoding="async"
                       />
                     </div>
                     <p className="text-white/40 text-[10px] break-all">{sesionActiva.url}</p>
