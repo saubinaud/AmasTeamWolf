@@ -1045,7 +1045,7 @@ export function TorneoPage({
                                                     </button>
 
                                                     {comprobantePreview ? (
-                                                        <img src={comprobantePreview} alt="Comprobante" className="max-h-60 mx-auto rounded-lg object-contain" />
+                                                        <img src={comprobantePreview} alt="Comprobante" className="max-h-60 mx-auto rounded-lg object-contain" loading="lazy" decoding="async" />
                                                     ) : (
                                                         <div className="flex items-center gap-3 py-4 px-2">
                                                             <div className="w-12 h-12 bg-[#FA7B21]/20 rounded-xl flex items-center justify-center">

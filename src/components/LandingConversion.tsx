@@ -588,6 +588,8 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
                       src={testimonial.img}
                       alt={testimonial.author}
                       className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-xl md:rounded-2xl mb-4 md:mb-6 ring-4 ring-white/10"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="flex gap-1 mb-4 md:mb-6">
                       {[...Array(5)].map((_, j) => (
@@ -640,6 +642,8 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
                     src={img.src}
                     alt={img.alt}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
                   <div className="absolute inset-0 flex items-end p-4">

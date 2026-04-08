@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { HeaderMain } from './HeaderMain';
 import { HeroHome } from './HeroHome';
 import { ProgramasSection } from './ProgramasSection';
@@ -12,6 +12,28 @@ import { NetworkStatusIndicator } from './NetworkStatusIndicator';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
+}
+
+function LazySection({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setIsVisible(true); observer.disconnect(); } },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={className}>
+      {isVisible ? children : <div style={{ minHeight: 200 }} />}
+    </div>
+  );
 }
 
 export function HomePage({ onNavigate }: HomePageProps) {
@@ -141,22 +163,29 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
       {/* Contenido con z-index superior */}
       <div className="relative z-10">
-        <HeaderMain 
+        <HeaderMain
           onNavigate={onNavigate}
           onOpenMatricula={() => handleOpenMatricula('full')}
           onCartClick={() => setIsCartOpen(true)}
           cartItemsCount={cartItemsCount}
+          currentPage="home"
         />
         
         <NetworkStatusIndicator />
         
         <HeroHome onOpenMatricula={() => handleOpenMatricula('full')} />
         
-        <ProgramasSection onOpenMatricula={handleOpenMatricula} />
-        
-        <TiendaSection onAddToCart={handleAddToCart} onNavigate={onNavigate} />
-        
-        <NosotrosSection />
+        <LazySection>
+          <ProgramasSection onOpenMatricula={handleOpenMatricula} />
+        </LazySection>
+
+        <LazySection>
+          <TiendaSection onAddToCart={handleAddToCart} onNavigate={onNavigate} />
+        </LazySection>
+
+        <LazySection>
+          <NosotrosSection />
+        </LazySection>
         
         <FooterMain 
           onNavigate={onNavigate}
