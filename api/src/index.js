@@ -18,6 +18,8 @@ const authRoutes = require('./routes/auth');
 const spaceAuthRoutes = require('./routes/space-auth');
 const spaceDashboardRoutes = require('./routes/space-dashboard');
 const spaceGraduacionesRoutes = require('./routes/space-graduaciones');
+const spaceAlumnosRoutes = require('./routes/space-alumnos');
+const spaceInscripcionesRoutes = require('./routes/space-inscripciones');
 const { spaceAuth, spaceRequestLogger } = require('./middleware/spaceAuth');
 
 // Validate required environment variables
@@ -92,6 +94,8 @@ app.use('/api/space', spaceRequestLogger);
 app.use('/api/space/auth', spaceAuthRoutes);
 app.use('/api/space/dashboard', spaceAuth, spaceDashboardRoutes);
 app.use('/api/space/graduaciones', spaceAuth, spaceGraduacionesRoutes);
+app.use('/api/space/alumnos', spaceAuth, spaceAlumnosRoutes);
+app.use('/api/space/inscripciones', spaceAuth, spaceInscripcionesRoutes);
 
 // 404
 app.use((_req, res) => {
