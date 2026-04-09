@@ -102,11 +102,11 @@ function AlumnoDetailPanel({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative bg-zinc-900 w-full max-w-md h-full overflow-y-auto">
-        <div className="h-0.5 bg-[#FA7B21]" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#0c0c0c] border-l border-white/5 w-full max-w-md h-full overflow-y-auto animate-in slide-in-from-right duration-200">
+        <div className="h-0.5 bg-gradient-to-r from-[#FA7B21] to-[#FCA929]" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <h2 className="text-white text-lg font-bold">Detalle del alumno</h2>
           <button onClick={onClose} className={cx.btnIcon}>
             <X size={18} />
@@ -318,10 +318,10 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
   // -----------------------------------------------------------------------
 
   const estadoChipClass = useCallback((value: string) => {
-    if (filterEstado !== value) return 'bg-zinc-800 text-white/50 hover:text-white';
-    if (value === 'activo') return 'bg-emerald-500 text-white';
-    if (value === 'inactivo') return 'bg-red-500 text-white';
-    return 'bg-blue-500 text-white';
+    if (filterEstado !== value) return cx.chip(false);
+    if (value === 'activo') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20';
+    if (value === 'inactivo') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/20';
+    return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-sky-500/15 text-sky-400 border border-sky-500/20';
   }, [filterEstado]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total]);
@@ -357,7 +357,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
             <button
               key={e}
               onClick={() => handleEstadoFilter(e)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${estadoChipClass(e)}`}
+              className={`transition-all duration-200 ${estadoChipClass(e)}`}
             >
               {e.charAt(0).toUpperCase() + e.slice(1)}
             </button>
@@ -383,7 +383,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-white/5">
                   <th className={cx.th}>Nombre</th>
                   <th className={cx.th}>DNI</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Categoria</th>
@@ -395,7 +395,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
                   <tr
                     key={a.id}
                     onClick={() => handleRowClick(a.id)}
-                    className={cx.tr + ' hover:bg-zinc-800/50 cursor-pointer transition-colors'}
+                    className={cx.tr + ' cursor-pointer'}
                   >
                     <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>
                       {a.nombre} {a.apellido}

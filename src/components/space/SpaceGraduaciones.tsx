@@ -129,9 +129,9 @@ function GraduacionesTable({
 }) {
   if (loading) {
     return (
-      <div className="bg-zinc-900 rounded-xl overflow-hidden">
+      <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden">
         {SKELETON_KEYS.map(sk => (
-          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-zinc-800 last:border-0">
+          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-white/5 last:border-0">
             <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
             <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
             <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse hidden sm:block" />
@@ -143,7 +143,7 @@ function GraduacionesTable({
 
   if (graduaciones.length === 0) {
     return (
-      <div className="bg-zinc-900 rounded-xl py-16 text-center">
+      <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl py-16 text-center">
         <GraduationCap size={40} className="mx-auto text-white/10 mb-3" />
         <p className="text-white/50 mb-1">Sin graduaciones</p>
         <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
@@ -159,11 +159,11 @@ function GraduacionesTable({
   }
 
   return (
-    <div className="bg-zinc-900 rounded-xl overflow-hidden">
+    <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-white/5">
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
@@ -174,7 +174,7 @@ function GraduacionesTable({
           </thead>
           <tbody>
             {graduaciones.map(g => (
-              <tr key={g.id} className="border-b border-zinc-800 last:border-0">
+              <tr key={g.id} className="border-b border-white/5 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
                   {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
                 </td>
@@ -218,7 +218,7 @@ function CorreccionesTable({
 }) {
   if (correcciones.length === 0) {
     return (
-      <div className="bg-zinc-900 rounded-xl py-16 text-center">
+      <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl py-16 text-center">
         <Check size={40} className="mx-auto text-white/10 mb-3" />
         <p className="text-white/50 text-sm">No hay correcciones pendientes</p>
       </div>
@@ -226,11 +226,11 @@ function CorreccionesTable({
   }
 
   return (
-    <div className="bg-zinc-900 rounded-xl overflow-hidden">
+    <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-white/5">
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
@@ -239,7 +239,7 @@ function CorreccionesTable({
           </thead>
           <tbody>
             {correcciones.map(c => (
-              <tr key={c.id} className="border-b border-zinc-800 last:border-0">
+              <tr key={c.id} className="border-b border-white/5 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
                 <td className="px-5 py-3.5 text-white/60 max-w-xs truncate">{c.comentario}</td>
                 <td className="px-5 py-3.5">
@@ -303,11 +303,11 @@ function GraduacionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative bg-zinc-900 rounded-xl w-full max-w-lg max-h-[90dvh] overflow-y-auto">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
         <div className="h-0.5 bg-[#FA7B21] rounded-t-xl" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <h2 className="text-white text-lg font-bold">
             {editingId ? 'Editar graduacion' : 'Nueva graduacion'}
           </h2>
@@ -389,7 +389,7 @@ function GraduacionModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">
           <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 transition-colors">
             Cancelar
           </button>
@@ -641,14 +641,14 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   const turnoChipClass = useCallback((value: string) => {
     return filterTurno === value
-      ? 'bg-[#FA7B21] text-white'
-      : 'bg-zinc-800 text-white/50 hover:text-white';
+      ? 'px-3 py-1.5 rounded-xl text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/20'
+      : 'px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white/60 transition-all duration-200';
   }, [filterTurno]);
 
   const estadoChipClass = useCallback((value: string) => {
-    if (filterEstado !== value) return 'bg-zinc-800 text-white/50 hover:text-white';
-    if (value === 'programada') return 'bg-yellow-500 text-white';
-    return 'bg-emerald-500 text-white';
+    if (filterEstado !== value) return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white/60 transition-all duration-200';
+    if (value === 'programada') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20';
+    return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20';
   }, [filterEstado]);
 
   // -----------------------------------------------------------------------
@@ -715,20 +715,20 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                 <button
                   key={t.value}
                   onClick={() => handleTurnoFilter(t.value)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${turnoChipClass(t.value)}`}
+                  className={`transition-all duration-200 ${turnoChipClass(t.value)}`}
                 >
                   {t.label}
                 </button>
               ))}
               <button
                 onClick={() => handleEstadoFilter('programada')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${estadoChipClass('programada')}`}
+                className={`transition-all duration-200 ${estadoChipClass('programada')}`}
               >
                 Programada
               </button>
               <button
                 onClick={() => handleEstadoFilter('completada')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${estadoChipClass('completada')}`}
+                className={`transition-all duration-200 ${estadoChipClass('completada')}`}
               >
                 Completada
               </button>
