@@ -40,21 +40,21 @@ async function cargarPerfil(alumnoId) {
       a.telefono AS apoderado_telefono,
       a.direccion,
       a.estado,
+      i.id AS inscripcion_id,
       i.programa,
+      i.fecha_inscripcion,
       i.fecha_inicio,
       i.fecha_fin,
+      i.clases_totales,
       i.estado AS estado_inscripcion,
       i.estado_pago,
       i.precio_programa,
       i.precio_pagado,
       i.descuento,
       i.dias_tentativos,
-      i.turno,
-      t.talla_uniforme,
-      t.talla_polo
+      i.turno
     FROM alumnos a
     LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-    LEFT JOIN tallas t ON t.alumno_id = a.id
     WHERE a.id = $1
     ORDER BY i.fecha_inscripcion DESC
     LIMIT 1
@@ -62,17 +62,40 @@ async function cargarPerfil(alumnoId) {
 
   if (!perfil) return null;
 
-  const asistencias = await query(`
-    SELECT fecha, hora, turno, asistio
-    FROM asistencias WHERE alumno_id = $1
-    ORDER BY fecha DESC, hora DESC LIMIT 20
-  `, [alumnoId]);
+  // Tallas (última registrada)
+  const talla = await queryOne(
+    'SELECT talla_uniforme, talla_polo FROM tallas WHERE alumno_id = $1 ORDER BY id DESC LIMIT 1',
+    [alumnoId]
+  );
+
+  // TODAS las asistencias (no solo 20)
+  const asistencias = await query(
+    'SELECT fecha, hora, turno, asistio FROM asistencias WHERE alumno_id = $1 ORDER BY fecha DESC, hora DESC',
+    [alumnoId]
+  );
+
+  // Clases asistidas en el período de la inscripción activa
+  let clases_asistidas = 0;
+  if (perfil.fecha_inicio && perfil.fecha_fin) {
+    const conteo = await queryOne(
+      'SELECT COUNT(*) AS total FROM asistencias WHERE alumno_id = $1 AND fecha >= $2 AND fecha <= $3',
+      [alumnoId, perfil.fecha_inicio, perfil.fecha_fin]
+    );
+    clases_asistidas = parseInt(conteo?.total || '0');
+  }
+
+  const clases_totales = parseInt(perfil.clases_totales || '0');
 
   return {
     ...perfil,
+    talla_uniforme: talla?.talla_uniforme || null,
+    talla_polo: talla?.talla_polo || null,
     apoderado_nombre: perfil.nombre_apoderado,
     alumno_nombre: perfil.nombre_alumno,
     alumno_dni: perfil.dni_alumno,
+    clases_totales,
+    clases_asistidas,
+    clases_restantes: Math.max(0, clases_totales - clases_asistidas),
     asistencias,
     congelaciones: [],
   };

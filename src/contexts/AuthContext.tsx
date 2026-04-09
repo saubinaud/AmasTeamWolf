@@ -17,9 +17,12 @@ interface Matricula {
   programa: string;
   fechaInicio: string;
   fechaFin: string;
+  fechaInscripcion: string;
   estado: string;
   categoria: string;
-  fechaInscripcion: string;
+  clasesTotales: number;
+  clasesAsistidas: number;
+  clasesRestantes: number;
 }
 
 interface Clase {
@@ -132,9 +135,12 @@ function transformProfile(data: any): UserData {
       programa: data.programa || 'Sin programa activo',
       fechaInicio: data.fecha_inicio || '',
       fechaFin: data.fecha_fin || '',
+      fechaInscripcion: data.fecha_inscripcion || '',
       estado: data.estado || 'activa',
       categoria: data.categoria || '',
-      fechaInscripcion: data.fecha_inscripcion || '',
+      clasesTotales: Number(data.clases_totales) || 0,
+      clasesAsistidas: Number(data.clases_asistidas) || 0,
+      clasesRestantes: Number(data.clases_restantes) || 0,
     },
     clases: data.dias_tentativos ? [{ horario: data.dias_tentativos }] : [],
     pagos: {
