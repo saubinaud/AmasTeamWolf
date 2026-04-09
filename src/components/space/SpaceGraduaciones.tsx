@@ -12,10 +12,13 @@ interface Graduacion {
   alumno_id: number | null;
   nombre: string;
   apellido: string;
+  nombre_alumno?: string;
+  apellido_alumno?: string;
   rango: string;
   horario: string;
   turno: string;
   fecha: string;
+  fecha_graduacion?: string;
   estado: 'programada' | 'completada' | 'cancelada';
   observaciones?: string;
 }
@@ -173,7 +176,7 @@ function GraduacionesTable({
             {graduaciones.map(g => (
               <tr key={g.id} className="border-b border-zinc-800 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
-                  {g.nombre} {g.apellido}
+                  {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
                 </td>
                 <td className="px-5 py-3.5">
                   <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-[#FA7B21]/10 text-[#FA7B21]">
@@ -181,7 +184,7 @@ function GraduacionesTable({
                   </span>
                 </td>
                 <td className="px-5 py-3.5 text-white/60 hidden md:table-cell">{turnoLabel(g.turno)}</td>
-                <td className="px-5 py-3.5 text-white/60 hidden sm:table-cell">{formatFecha(g.fecha)}</td>
+                <td className="px-5 py-3.5 text-white/60 hidden sm:table-cell">{formatFecha(g.fecha_graduacion || g.fecha)}</td>
                 <td className="px-5 py-3.5">
                   <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-white/50'}`}>
                     {g.estado}
@@ -511,7 +514,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       try {
         const res = await fetch(`${API_BASE}/space/graduaciones/alumnos/buscar?q=${encodeURIComponent(q)}`, { headers: authHeaders(token) });
         const data = await res.json();
-        const list = Array.isArray(data.alumnos) ? data.alumnos : (Array.isArray(data) ? data : []);
+        const list = Array.isArray(data.data) ? data.data : (Array.isArray(data.alumnos) ? data.alumnos : (Array.isArray(data) ? data : []));
         setAlumnoResults(list);
         setShowAutocomplete(list.length > 0);
       } catch {
@@ -537,7 +540,13 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     try {
       const url = editingId ? `${API_BASE}/space/graduaciones/${editingId}` : `${API_BASE}/space/graduaciones`;
       const method = editingId ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: authHeaders(token), body: JSON.stringify(form) });
+      const payload = {
+        ...form,
+        nombre_alumno: form.nombre,
+        apellido_alumno: form.apellido,
+        fecha_graduacion: form.fecha,
+      };
+      const res = await fetch(url, { method, headers: authHeaders(token), body: JSON.stringify(payload) });
       const data = await res.json();
       if (res.ok && data.success !== false) {
         toast.success(editingId ? 'Graduacion actualizada' : 'Graduacion creada');
@@ -590,11 +599,14 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   const openEdit = useCallback((g: Graduacion) => {
     setEditingId(g.id);
+    const nom = g.nombre_alumno || g.nombre || '';
+    const ape = g.apellido_alumno || g.apellido || '';
+    const fec = (g.fecha_graduacion || g.fecha || '').slice(0, 10);
     setForm({
-      alumno_id: g.alumno_id, nombre: g.nombre, apellido: g.apellido, rango: g.rango,
-      horario: g.horario, turno: g.turno, fecha: g.fecha?.slice(0, 10) ?? '', observaciones: g.observaciones ?? '',
+      alumno_id: g.alumno_id, nombre: nom, apellido: ape, rango: g.rango,
+      horario: g.horario, turno: g.turno, fecha: fec, observaciones: g.observaciones ?? '',
     });
-    setAlumnoQuery(`${g.nombre} ${g.apellido}`);
+    setAlumnoQuery(`${nom} ${ape}`);
     setModalOpen(true);
   }, []);
 
