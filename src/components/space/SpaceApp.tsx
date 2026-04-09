@@ -1,71 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { API_BASE } from '../../config/api';
-
-// Import space components
 import { SpaceLogin } from './SpaceLogin';
 import { SpaceLayout } from './SpaceLayout';
 import { SpaceDashboard } from './SpaceDashboard';
 import { SpaceGraduaciones } from './SpaceGraduaciones';
 
-type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'config';
+export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'config';
 
-interface SpaceUser {
+export interface SpaceUser {
   id: number;
   nombre: string;
   email: string;
   rol: 'admin' | 'profesor';
-}
-
-export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void }) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('space_token'));
-  const [user, setUser] = useState<SpaceUser | null>(null);
-  const [currentPage, setCurrentPage] = useState<SpacePage>('dashboard');
-  const [loading, setLoading] = useState(true);
-
-  // Verify token on mount
-  useEffect(() => {
-    if (!token) { setLoading(false); return; }
-    fetch(`${API_BASE}/space/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { if (d.success) setUser(d.usuario); else handleLogout(); })
-      .catch(() => handleLogout())
-      .finally(() => setLoading(false));
-  }, [token]);
-
-  const handleLogin = (newToken: string, usuario: SpaceUser) => {
-    localStorage.setItem('space_token', newToken);
-    setToken(newToken);
-    setUser(usuario);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('space_token');
-    setToken(null);
-    setUser(null);
-  };
-
-  if (loading) return <LoadingScreen />;
-  if (!user || !token) return <SpaceLogin onLogin={handleLogin} />;
-
-  return (
-    <SpaceLayout user={user} currentPage={currentPage} onNavigate={setCurrentPage} onLogout={handleLogout} onExit={() => onNavigate('home')}>
-      {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={(page) => setCurrentPage(page as SpacePage)} />}
-      {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
-      {currentPage === 'alumnos' && <PlaceholderPage title="Alumnos" description="Proximamente - Fase S3" />}
-      {currentPage === 'inscripciones' && <PlaceholderPage title="Inscripciones" description="Proximamente - Fase S3" />}
-      {currentPage === 'asistencia' && <PlaceholderPage title="Asistencia" description="Proximamente - Fase S4" />}
-      {currentPage === 'leads' && <PlaceholderPage title="Leads" description="Proximamente - Fase S4" />}
-      {currentPage === 'config' && <PlaceholderPage title="Configuracion" description="Proximamente - Fase S5" />}
-    </SpaceLayout>
-  );
-}
-
-function LoadingScreen() {
-  return (
-    <div className="h-dvh bg-zinc-950 flex items-center justify-center">
-      <div className="w-10 h-10 border-4 border-[#FA7B21] border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
 }
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
@@ -76,5 +22,58 @@ function PlaceholderPage({ title, description }: { title: string; description: s
         <p className="text-white/50">{description}</p>
       </div>
     </div>
+  );
+}
+
+export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void }) {
+  const [token, setToken] = useState<string | null>(localStorage.getItem('space_token'));
+  const [user, setUser] = useState<SpaceUser | null>(null);
+  const [currentPage, setCurrentPage] = useState<SpacePage>('dashboard');
+  const [loading, setLoading] = useState(true);
+
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('space_token');
+    setToken(null);
+    setUser(null);
+  }, []);
+
+  useEffect(() => {
+    if (!token) { setLoading(false); return; }
+    fetch(`${API_BASE}/space/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(d => { if (d.success) setUser(d.usuario); else handleLogout(); })
+      .catch(() => handleLogout())
+      .finally(() => setLoading(false));
+  }, [token, handleLogout]);
+
+  const handleLogin = useCallback((newToken: string, usuario: SpaceUser) => {
+    localStorage.setItem('space_token', newToken);
+    setToken(newToken);
+    setUser(usuario);
+  }, []);
+
+  const handleNavigate = useCallback((page: SpacePage) => setCurrentPage(page), []);
+  const handleExit = useCallback(() => onNavigate('home'), [onNavigate]);
+
+  if (loading) {
+    return (
+      <div className="h-dvh bg-zinc-950 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#FA7B21] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || !token) return <SpaceLogin onLogin={handleLogin} />;
+
+  return (
+    <SpaceLayout user={user} currentPage={currentPage} onNavigate={handleNavigate} onLogout={handleLogout} onExit={handleExit}>
+      {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} />}
+      {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
+      {currentPage === 'alumnos' && <PlaceholderPage title="Alumnos" description="Proximamente - Fase S3" />}
+      {currentPage === 'inscripciones' && <PlaceholderPage title="Inscripciones" description="Proximamente - Fase S3" />}
+      {currentPage === 'asistencia' && <PlaceholderPage title="Asistencia" description="Proximamente - Fase S4" />}
+      {currentPage === 'leads' && <PlaceholderPage title="Leads" description="Proximamente - Fase S4" />}
+      {currentPage === 'config' && <PlaceholderPage title="Configuracion" description="Proximamente - Fase S5" />}
+    </SpaceLayout>
   );
 }
