@@ -3,6 +3,13 @@ const { query, queryOne, pool } = require('../db');
 
 const router = Router();
 
+// Allowed sort columns to prevent SQL injection
+const ALLOWED_SORT_COLUMNS = [
+  'fecha_graduacion', 'nombre_alumno', 'apellido_alumno',
+  'rango', 'turno', 'estado', 'created_at',
+];
+const BULK_REQUIRED_FIELDS = ['nombre_alumno', 'apellido_alumno', 'rango', 'horario', 'turno', 'fecha_graduacion'];
+
 // GET /api/space/graduaciones/stats — Quick counts
 router.get('/stats', async (_req, res) => {
   try {
@@ -22,7 +29,7 @@ router.get('/stats', async (_req, res) => {
     });
   } catch (err) {
     console.error('Error obteniendo stats de graduaciones:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_STATS_ERROR' });
   }
 });
 
@@ -36,14 +43,15 @@ router.get('/correcciones', async (req, res) => {
        FROM graduacion_correcciones gc
        JOIN graduaciones g ON g.id = gc.graduacion_id
        WHERE gc.estado = $1
-       ORDER BY gc.created_at DESC`,
+       ORDER BY gc.created_at DESC
+       LIMIT 100`,
       [estado]
     );
 
     return res.json({ success: true, data: rows });
   } catch (err) {
     console.error('Error obteniendo correcciones:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_CORRECCIONES_ERROR' });
   }
 });
 
@@ -67,14 +75,18 @@ router.get('/alumnos/buscar', async (req, res) => {
     return res.json({ success: true, data: rows });
   } catch (err) {
     console.error('Error buscando alumnos:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_SEARCH_ERROR' });
   }
 });
 
-// GET /api/space/graduaciones — List graduations with filters
+// GET /api/space/graduaciones — List graduations with filters, pagination, sorting
 router.get('/', async (req, res) => {
   try {
-    const { fecha, turno, estado, search } = req.query;
+    const { fecha, turno, estado, search, sort, order } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const offset = (page - 1) * limit;
+
     const conditions = ["g.estado != 'cancelada'"];
     const params = [];
     let paramIndex = 1;
@@ -99,18 +111,38 @@ router.get('/', async (req, res) => {
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
+    // Safe sorting: whitelist column names
+    const sortColumn = ALLOWED_SORT_COLUMNS.includes(sort) ? `g.${sort}` : 'g.fecha_graduacion';
+    const sortOrder = order === 'asc' ? 'ASC' : 'DESC';
+
+    // Count total for pagination
+    const countResult = await queryOne(
+      `SELECT COUNT(*) AS total FROM graduaciones g ${where}`,
+      params
+    );
+    const total = parseInt(countResult.total, 10);
+    const totalPages = Math.ceil(total / limit);
+
+    // Fetch page
     const rows = await query(
       `SELECT g.*
        FROM graduaciones g
        ${where}
-       ORDER BY g.fecha_graduacion DESC`,
-      params
+       ORDER BY ${sortColumn} ${sortOrder}
+       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
+      [...params, limit, offset]
     );
 
-    return res.json({ success: true, data: rows });
+    return res.json({
+      success: true,
+      data: rows,
+      total,
+      page,
+      totalPages,
+    });
   } catch (err) {
     console.error('Error listando graduaciones:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_LIST_ERROR' });
   }
 });
 
@@ -120,13 +152,13 @@ router.get('/:id', async (req, res) => {
     const row = await queryOne('SELECT * FROM graduaciones WHERE id = $1', [req.params.id]);
 
     if (!row) {
-      return res.status(404).json({ success: false, error: 'Graduación no encontrada' });
+      return res.status(404).json({ success: false, error: 'Graduación no encontrada', code: 'GRAD_NOT_FOUND' });
     }
 
     return res.json({ success: true, data: row });
   } catch (err) {
     console.error('Error obteniendo graduación:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_GET_ERROR' });
   }
 });
 
@@ -142,6 +174,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Campos requeridos: nombre_alumno, apellido_alumno, rango, horario, turno, fecha_graduacion',
+        code: 'GRAD_MISSING_FIELDS',
       });
     }
 
@@ -161,7 +194,7 @@ router.post('/', async (req, res) => {
     return res.json({ success: true, data: row });
   } catch (err) {
     console.error('Error creando graduación:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_CREATE_ERROR' });
   }
 });
 
@@ -172,7 +205,25 @@ router.post('/bulk', async (req, res) => {
     const { graduaciones } = req.body;
 
     if (!Array.isArray(graduaciones) || graduaciones.length === 0) {
-      return res.status(400).json({ success: false, error: 'Se requiere un array de graduaciones' });
+      return res.status(400).json({ success: false, error: 'Se requiere un array de graduaciones', code: 'GRAD_BULK_EMPTY' });
+    }
+
+    // Validate each record has required fields before inserting
+    const errors = [];
+    graduaciones.forEach((g, index) => {
+      const missing = BULK_REQUIRED_FIELDS.filter(f => !g[f]);
+      if (missing.length > 0) {
+        errors.push({ index, missing });
+      }
+    });
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Registros con campos faltantes',
+        code: 'GRAD_BULK_VALIDATION',
+        details: errors,
+      });
     }
 
     await client.query('BEGIN');
@@ -196,9 +247,42 @@ router.post('/bulk', async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error en bulk insert de graduaciones:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_BULK_ERROR' });
   } finally {
     client.release();
+  }
+});
+
+// PATCH /api/space/graduaciones/:id/estado — Quick status change
+router.patch('/:id/estado', async (req, res) => {
+  try {
+    const { estado } = req.body;
+    const validEstados = ['programada', 'completada', 'cancelada'];
+
+    if (!estado || !validEstados.includes(estado)) {
+      return res.status(400).json({
+        success: false,
+        error: `Estado debe ser uno de: ${validEstados.join(', ')}`,
+        code: 'GRAD_INVALID_STATUS',
+      });
+    }
+
+    const row = await queryOne(
+      `UPDATE graduaciones
+       SET estado = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, estado, nombre_alumno, apellido_alumno`,
+      [estado, req.params.id]
+    );
+
+    if (!row) {
+      return res.status(404).json({ success: false, error: 'Graduación no encontrada', code: 'GRAD_NOT_FOUND' });
+    }
+
+    return res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('Error cambiando estado de graduación:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_PATCH_ERROR' });
   }
 });
 
@@ -208,7 +292,7 @@ router.put('/correcciones/:id', async (req, res) => {
     const { estado } = req.body;
 
     if (!estado || !['resuelta', 'rechazada'].includes(estado)) {
-      return res.status(400).json({ success: false, error: 'Estado debe ser "resuelta" o "rechazada"' });
+      return res.status(400).json({ success: false, error: 'Estado debe ser "resuelta" o "rechazada"', code: 'GRAD_CORR_INVALID_STATUS' });
     }
 
     const row = await queryOne(
@@ -220,13 +304,13 @@ router.put('/correcciones/:id', async (req, res) => {
     );
 
     if (!row) {
-      return res.status(404).json({ success: false, error: 'Corrección no encontrada' });
+      return res.status(404).json({ success: false, error: 'Corrección no encontrada', code: 'GRAD_CORR_NOT_FOUND' });
     }
 
     return res.json({ success: true });
   } catch (err) {
     console.error('Error actualizando corrección:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_CORR_ERROR' });
   }
 });
 
@@ -251,7 +335,7 @@ router.put('/:id', async (req, res) => {
     }
 
     if (updates.length === 0) {
-      return res.status(400).json({ success: false, error: 'No hay campos para actualizar' });
+      return res.status(400).json({ success: false, error: 'No hay campos para actualizar', code: 'GRAD_NO_FIELDS' });
     }
 
     updates.push(`updated_at = NOW()`);
@@ -263,13 +347,13 @@ router.put('/:id', async (req, res) => {
     );
 
     if (!row) {
-      return res.status(404).json({ success: false, error: 'Graduación no encontrada' });
+      return res.status(404).json({ success: false, error: 'Graduación no encontrada', code: 'GRAD_NOT_FOUND' });
     }
 
     return res.json({ success: true, data: row });
   } catch (err) {
     console.error('Error actualizando graduación:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_UPDATE_ERROR' });
   }
 });
 
@@ -282,13 +366,13 @@ router.delete('/:id', async (req, res) => {
     );
 
     if (!row) {
-      return res.status(404).json({ success: false, error: 'Graduación no encontrada' });
+      return res.status(404).json({ success: false, error: 'Graduación no encontrada', code: 'GRAD_NOT_FOUND' });
     }
 
     return res.json({ success: true });
   } catch (err) {
     console.error('Error eliminando graduación:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor' });
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_DELETE_ERROR' });
   }
 });
 

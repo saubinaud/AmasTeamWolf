@@ -17,7 +17,7 @@ const contratosRoutes = require('./routes/contratos');
 const spaceAuthRoutes = require('./routes/space-auth');
 const spaceDashboardRoutes = require('./routes/space-dashboard');
 const spaceGraduacionesRoutes = require('./routes/space-graduaciones');
-const { spaceAuth } = require('./middleware/spaceAuth');
+const { spaceAuth, spaceRequestLogger } = require('./middleware/spaceAuth');
 
 // Validate required environment variables
 const REQUIRED_ENV = ['DB_HOST', 'DB_PASS', 'DB_NAME', 'DB_USER'];
@@ -85,6 +85,7 @@ app.use('/api/renovacion', renovacionRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/contratos', contratosRoutes);
+app.use('/api/space', spaceRequestLogger);
 app.use('/api/space/auth', spaceAuthRoutes);
 app.use('/api/space/dashboard', spaceAuth, spaceDashboardRoutes);
 app.use('/api/space/graduaciones', spaceAuth, spaceGraduacionesRoutes);

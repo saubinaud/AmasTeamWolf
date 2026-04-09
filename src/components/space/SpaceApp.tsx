@@ -49,7 +49,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
 
   return (
     <SpaceLayout user={user} currentPage={currentPage} onNavigate={setCurrentPage} onLogout={handleLogout} onExit={() => onNavigate('home')}>
-      {currentPage === 'dashboard' && <SpaceDashboard token={token} />}
+      {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={(page) => setCurrentPage(page as SpacePage)} />}
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
       {currentPage === 'alumnos' && <PlaceholderPage title="Alumnos" description="Proximamente - Fase S3" />}
       {currentPage === 'inscripciones' && <PlaceholderPage title="Inscripciones" description="Proximamente - Fase S3" />}
