@@ -60,6 +60,20 @@ interface EstudianteData {
   categoria: string;
   tallaUniforme: string;
   tallaPolo: string;
+  cinturonActual: string;
+}
+
+interface CinturonHistorial {
+  cinturon: string;
+  fecha: string;
+}
+
+interface ProximaGraduacion {
+  fecha: string;
+  horario: string;
+  turno: string;
+  cinturonDesde: string;
+  cinturonHasta: string;
 }
 
 interface MensajeData {
@@ -81,6 +95,8 @@ interface Congelacion {
 
 interface UserData {
   familia: FamiliaData;
+  historialCinturones: CinturonHistorial[];
+  proximaGraduacion: ProximaGraduacion | null;
   matricula: Matricula;
   clases: Clase[];
   pagos: Pagos;
@@ -160,7 +176,20 @@ function transformProfile(data: any): UserData {
       categoria: data.categoria || '',
       tallaUniforme: data.talla_uniforme || 'S',
       tallaPolo: data.talla_polo || 'S',
+      cinturonActual: data.cinturon_actual || 'Blanco',
     },
+    historialCinturones: Array.isArray(data.historial_cinturones)
+      ? data.historial_cinturones.map((c: any) => ({ cinturon: c.cinturon, fecha: c.fecha_obtencion }))
+      : [],
+    proximaGraduacion: data.proxima_graduacion
+      ? {
+          fecha: data.proxima_graduacion.fecha_graduacion,
+          horario: data.proxima_graduacion.horario || '',
+          turno: data.proxima_graduacion.turno || '',
+          cinturonDesde: data.proxima_graduacion.cinturon_desde || '',
+          cinturonHasta: data.proxima_graduacion.cinturon_hasta || '',
+        }
+      : null,
     mensaje: { fecha: '', contenido: '' },
     asistencias: Array.isArray(data.asistencias)
       ? data.asistencias.map((a: any) => ({
