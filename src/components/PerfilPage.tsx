@@ -1057,22 +1057,50 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#FCA929]" />
-                Mi Progreso
+                Mi Cinturón
               </h3>
-              <div className="flex justify-between items-end gap-4 py-8 relative">
-                {/* Connecting Line */}
-                <div className="absolute top-1/2 left-20 right-20 h-0.5 bg-gradient-to-r from-white/20 to-white/5 -z-10" />
 
-                <BeltDisplay color="#FFFFFF" name="Actual" />
-
-                <div className="flex flex-col items-center gap-2 opacity-50">
-                  <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                    <div className="w-1 h-1 rounded-full bg-white/50" />
-                  </div>
+              {/* Cinturón actual */}
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#FA7B21]/20 to-orange-600/10 flex items-center justify-center border border-[#FA7B21]/30 mb-3">
+                  <Award className="w-10 h-10 text-[#FA7B21]" />
                 </div>
-
-                <BeltDisplay color="#FFFF00" name="Siguiente" />
+                <p className="text-2xl font-bold text-white">{user.estudiante?.cinturonActual || 'Blanco'}</p>
+                <p className="text-xs text-zinc-500 mt-1">Cinturón Actual</p>
               </div>
+
+              {/* Historial */}
+              {user.historialCinturones && user.historialCinturones.length > 0 ? (
+                <div className="space-y-2 mt-4">
+                  <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Camino recorrido</p>
+                  {user.historialCinturones.map((c, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
+                      <div className="w-3 h-3 rounded-full bg-[#FA7B21]" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-white">{c.cinturon}</p>
+                      </div>
+                      <span className="text-xs text-zinc-500">{c.fecha ? formatDate(c.fecha) : ''}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-zinc-500 text-sm">Tu primer cinturón se registrará en tu próxima graduación</p>
+                </div>
+              )}
+
+              {/* Próxima graduación */}
+              {user.proximaGraduacion && (
+                <div className="mt-6 p-4 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-xl">
+                  <p className="text-xs text-[#FA7B21] uppercase tracking-wider mb-2">Próxima graduación</p>
+                  <p className="text-white font-medium">{formatDate(user.proximaGraduacion.fecha)}</p>
+                  {user.proximaGraduacion.cinturonHasta && (
+                    <p className="text-sm text-zinc-400 mt-1">
+                      {user.proximaGraduacion.cinturonDesde} → <span className="text-[#FCA929] font-medium">{user.proximaGraduacion.cinturonHasta}</span>
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </motion.div>
         );

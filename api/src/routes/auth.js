@@ -92,6 +92,26 @@ async function cargarPerfil(alumnoId) {
     [alumnoId]
   );
 
+  // Cinturón actual
+  const cinturonActual = await queryOne(
+    'SELECT cinturon_actual FROM alumnos WHERE id = $1',
+    [alumnoId]
+  );
+
+  // Historial de cinturones
+  const historial_cinturones = await query(
+    'SELECT cinturon, fecha_obtencion, observaciones FROM historial_cinturones WHERE alumno_id = $1 ORDER BY fecha_obtencion ASC',
+    [alumnoId]
+  );
+
+  // Próxima graduación programada
+  const proxima_graduacion = await queryOne(`
+    SELECT fecha_graduacion, horario, turno, rango, cinturon_desde, cinturon_hasta, estado
+    FROM graduaciones
+    WHERE alumno_id = $1 AND estado IN ('programada', 'confirmada') AND fecha_graduacion >= CURRENT_DATE
+    ORDER BY fecha_graduacion ASC LIMIT 1
+  `, [alumnoId]);
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -102,6 +122,9 @@ async function cargarPerfil(alumnoId) {
     clases_totales,
     clases_asistidas,
     clases_restantes: Math.max(0, clases_totales - clases_asistidas),
+    cinturon_actual: cinturonActual?.cinturon_actual || 'Blanco',
+    historial_cinturones,
+    proxima_graduacion,
     asistencias,
     congelaciones,
   };
