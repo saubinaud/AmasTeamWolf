@@ -155,11 +155,17 @@ function App() {
   // Handle URL routing on mount and popstate
   useEffect(() => {
     const handlePopState = () => {
-      // Check for redirect from 404.html
+      // Check for redirect from 404.html (handles both /?/path and ?redirect=path formats)
       const urlParams = new URLSearchParams(window.location.search);
-      const redirectPath = urlParams.get('redirect') || sessionStorage.getItem('redirectPath');
+      let redirectPath = urlParams.get('redirect') || sessionStorage.getItem('redirectPath');
       // Detectar sección en URL (ej: ?section=tienda)
       const sectionParam = urlParams.get('section');
+
+      // Handle /?/path format from GitHub Pages style 404.html
+      const searchPath = window.location.search;
+      if (!redirectPath && searchPath.startsWith('?/')) {
+        redirectPath = '/' + searchPath.slice(2).replace(/~and~/g, '&');
+      }
 
       if (redirectPath) {
         sessionStorage.removeItem('redirectPath');
