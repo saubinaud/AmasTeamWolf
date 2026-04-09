@@ -90,7 +90,7 @@ router.post('/login', async (req, res) => {
 
     // Buscar alumno por DNI del apoderado
     const alumno = await queryOne(
-      'SELECT id, password_hash, nombre_apoderado, correo FROM alumnos WHERE dni_apoderado = $1 LIMIT 1',
+      'SELECT id, password_hash, nombre_apoderado, correo FROM alumnos WHERE dni_apoderado = $1 OR dni_alumno = $1 LIMIT 1',
       [dni]
     );
 
@@ -127,7 +127,7 @@ router.post('/solicitar-codigo', async (req, res) => {
     if (!dni) return res.status(400).json({ error: 'DNI requerido' });
 
     const alumno = await queryOne(
-      'SELECT id, correo, nombre_apoderado FROM alumnos WHERE dni_apoderado = $1 LIMIT 1',
+      'SELECT id, correo, nombre_apoderado FROM alumnos WHERE (dni_apoderado = $1 OR dni_alumno = $1) LIMIT 1',
       [dni]
     );
 
@@ -184,7 +184,7 @@ router.post('/verificar-codigo', async (req, res) => {
     if (!dni || !code) return res.status(400).json({ error: 'DNI y código requeridos' });
 
     const alumno = await queryOne(
-      'SELECT id FROM alumnos WHERE dni_apoderado = $1 LIMIT 1',
+      'SELECT id FROM alumnos WHERE (dni_apoderado = $1 OR dni_alumno = $1) LIMIT 1',
       [dni]
     );
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
@@ -221,7 +221,7 @@ router.post('/crear-password', async (req, res) => {
     }
 
     const alumno = await queryOne(
-      'SELECT id, password_hash FROM alumnos WHERE dni_apoderado = $1 LIMIT 1',
+      'SELECT id, password_hash FROM alumnos WHERE (dni_apoderado = $1 OR dni_alumno = $1) LIMIT 1',
       [dni]
     );
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
