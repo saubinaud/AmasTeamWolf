@@ -4,6 +4,8 @@ import { SpaceLogin } from './SpaceLogin';
 import { SpaceLayout } from './SpaceLayout';
 import { SpaceDashboard } from './SpaceDashboard';
 import { SpaceGraduaciones } from './SpaceGraduaciones';
+import { SpaceAlumnos } from './SpaceAlumnos';
+import { SpaceInscripciones } from './SpaceInscripciones';
 
 export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'config';
 
@@ -69,8 +71,8 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
     <SpaceLayout user={user} currentPage={currentPage} onNavigate={handleNavigate} onLogout={handleLogout} onExit={handleExit}>
       {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} />}
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
-      {currentPage === 'alumnos' && <PlaceholderPage title="Alumnos" description="Proximamente - Fase S3" />}
-      {currentPage === 'inscripciones' && <PlaceholderPage title="Inscripciones" description="Proximamente - Fase S3" />}
+      {currentPage === 'alumnos' && <SpaceAlumnos token={token} />}
+      {currentPage === 'inscripciones' && <SpaceInscripciones token={token} />}
       {currentPage === 'asistencia' && <PlaceholderPage title="Asistencia" description="Proximamente - Fase S4" />}
       {currentPage === 'leads' && <PlaceholderPage title="Leads" description="Proximamente - Fase S4" />}
       {currentPage === 'config' && <PlaceholderPage title="Configuracion" description="Proximamente - Fase S5" />}
