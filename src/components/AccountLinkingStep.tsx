@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLogto } from '@logto/react';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader2, Search, CheckCircle, AlertCircle, User, Users, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
@@ -17,8 +16,7 @@ import { API_BASE } from '../config/api';
 const VINCULAR_API_URL = `${API_BASE}/vincular`;
 
 export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepProps) {
-    const { getIdTokenClaims } = useLogto();
-    const { loadUserProfile } = useAuth();
+    const { refreshUserData } = useAuth();
 
     const [dniAlumno, setDniAlumno] = useState('');
     const [dniPadre, setDniPadre] = useState('');
@@ -71,42 +69,12 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
         setIsLinking(true);
 
         try {
-            const claims = await getIdTokenClaims();
-            if (!claims?.sub) {
-                toast.error('Error: No se pudo obtener tu ID de usuario');
-                return;
-            }
-
-            const authId = claims.sub;
-            const email = claims.email as string | undefined;
-
-            const response = await fetch(VINCULAR_API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'vincular',
-                    auth_id: authId,
-                    email: email,
-                    apoderado_id: searchResult.apoderado_id || searchResult.id,
-                }),
-            });
-
-            const result = await response.json();
-
-            if (result.success || response.ok) {
-                setLinked(true);
-                toast.success('¡Cuenta vinculada exitosamente!');
-
-                // Load the user profile
-                await loadUserProfile(authId, email);
-
-                // Call completion callback after a short delay
-                setTimeout(() => {
-                    onComplete();
-                }, 1500);
-            } else {
-                toast.error('Error al vincular la cuenta');
-            }
+            // En el nuevo sistema de auth, el perfil ya está vinculado al login por DNI
+            // Este paso solo refresca los datos
+            await refreshUserData();
+            setLinked(true);
+            toast.success('¡Perfil actualizado!');
+            setTimeout(() => onComplete(), 1500);
         } catch (error) {
             console.error('Error linking:', error);
             toast.error('Error al vincular. Intenta de nuevo.');
