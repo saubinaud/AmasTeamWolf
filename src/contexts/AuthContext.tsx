@@ -156,7 +156,12 @@ function transformProfile(data: any): UserData {
       tallaPolo: data.talla_polo || 'S',
     },
     mensaje: { fecha: '', contenido: '' },
-    asistencias: Array.isArray(data.asistencias) ? data.asistencias : [],
+    asistencias: Array.isArray(data.asistencias)
+      ? data.asistencias.map((a: any) => ({
+          fecha: a.fecha,
+          estado: a.asistio === 'Sí' ? 'asistio' as const : 'falta' as const,
+        }))
+      : [],
     congelaciones: Array.isArray(data.congelaciones) ? data.congelaciones : [],
   };
 }
