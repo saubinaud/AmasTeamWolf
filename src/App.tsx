@@ -2,7 +2,6 @@ import React, { useState, lazy, Suspense, useEffect } from 'react';
 import { HomePage } from './components/HomePage';
 import { LandingConversion } from './components/LandingConversion';
 import { InicioSesionPage } from './components/InicioSesionPage';
-import { LogtoCallback } from './components/LogtoCallback';
 import { AuthGuard } from './components/AuthGuard';
 
 import { HeaderMain } from './components/HeaderMain';
@@ -34,7 +33,7 @@ const RegistroActividadNavidadPage = lazy(() => import('./components/RegistroAct
 const RegistroShowroomPage = lazy(() => import('./components/RegistroShowroomPage').then(m => ({ default: m.RegistroShowroomPage })));
 const RenovacionPage = lazy(() => import('./pages/RenovacionPage').then(m => ({ default: m.RenovacionPage })));
 const TerminosCondicionesPage = lazy(() => import('./components/TerminosCondicionesPage').then(m => ({ default: m.TerminosCondicionesPage })));
-const VincularCuentaPage = lazy(() => import('./components/VincularCuentaPage').then(m => ({ default: m.VincularCuentaPage })));
+// VincularCuentaPage removed — auth propio replaces Logto account linking
 const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ default: m.TorneoPage })));
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
@@ -495,17 +494,10 @@ function App() {
     );
   }
 
-  // Logto OAuth Callback page
+  // Legacy callback — redirect to home
   if (currentPage === 'callback') {
-    return (
-      <LogtoCallback
-        onNavigate={handleNavigate}
-        onLoadProfile={async (authId, email) => {
-          // Profile loading is handled in AuthContext
-          // Profile loading is handled in AuthContext
-        }}
-      />
-    );
+    handleNavigate('home');
+    return null;
   }
 
   if (currentPage === 'terminos') {
@@ -523,19 +515,10 @@ function App() {
     );
   }
 
+  // Legacy vincular-cuenta — redirect to login
   if (currentPage === 'vincular-cuenta') {
-    return (
-      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-        <SEO
-          title="Vincular Cuenta - AMAS Team Wolf"
-          description="Vincula tu cuenta con tu perfil de alumno en AMAS Team Wolf."
-          keywords="vincular cuenta, conectar perfil, amas team wolf"
-          url="https://amasteamwolf.com/vincular-cuenta"
-        />
-        <VincularCuentaPage onNavigate={handleNavigate} />
-        <Toaster theme="dark" position="bottom-right" />
-      </Suspense></LazyErrorBoundary>
-    );
+    handleNavigate('inicio-sesion');
+    return null;
   }
 
   if (currentPage === 'torneo') {
