@@ -16,6 +16,7 @@ const qrRoutes = require('./routes/qr');
 const contratosRoutes = require('./routes/contratos');
 const spaceAuthRoutes = require('./routes/space-auth');
 const spaceDashboardRoutes = require('./routes/space-dashboard');
+const spaceGraduacionesRoutes = require('./routes/space-graduaciones');
 const { spaceAuth } = require('./middleware/spaceAuth');
 
 // Validate required environment variables
@@ -37,7 +38,7 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:3000',
   ],
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json({ limit: '15mb' }));
@@ -86,6 +87,7 @@ app.use('/api/qr', qrRoutes);
 app.use('/api/contratos', contratosRoutes);
 app.use('/api/space/auth', spaceAuthRoutes);
 app.use('/api/space/dashboard', spaceAuth, spaceDashboardRoutes);
+app.use('/api/space/graduaciones', spaceAuth, spaceGraduacionesRoutes);
 
 // 404
 app.use((_req, res) => {

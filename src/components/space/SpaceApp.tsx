@@ -5,6 +5,7 @@ import { API_BASE } from '../../config/api';
 import { SpaceLogin } from './SpaceLogin';
 import { SpaceLayout } from './SpaceLayout';
 import { SpaceDashboard } from './SpaceDashboard';
+import { SpaceGraduaciones } from './SpaceGraduaciones';
 
 type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'config';
 
@@ -49,7 +50,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
   return (
     <SpaceLayout user={user} currentPage={currentPage} onNavigate={setCurrentPage} onLogout={handleLogout} onExit={() => onNavigate('home')}>
       {currentPage === 'dashboard' && <SpaceDashboard token={token} />}
-      {currentPage === 'graduaciones' && <PlaceholderPage title="Graduaciones" description="Proximamente - Fase S2" />}
+      {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
       {currentPage === 'alumnos' && <PlaceholderPage title="Alumnos" description="Proximamente - Fase S3" />}
       {currentPage === 'inscripciones' && <PlaceholderPage title="Inscripciones" description="Proximamente - Fase S3" />}
       {currentPage === 'asistencia' && <PlaceholderPage title="Asistencia" description="Proximamente - Fase S4" />}
