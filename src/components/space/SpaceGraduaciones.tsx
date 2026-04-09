@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   GraduationCap, Plus, Pencil, Trash2, Search,
   Check, X, Calendar, Clock, Award, Loader2,
@@ -112,6 +112,18 @@ interface FormData {
   fecha: string;
   observaciones: string;
 }
+
+const LOADING_SKELETON_KEYS = ['ls-1', 'ls-2', 'ls-3', 'ls-4', 'ls-5'] as const;
+const LOADING_CELL_KEYS = ['c-1', 'c-2', 'c-3', 'c-4', 'c-5', 'c-6', 'c-7'] as const;
+
+// Active filter chip styles
+const TURNO_ACTIVE_CHIP = 'bg-[#FA7B21] border-[#FA7B21] text-white';
+const TURNO_INACTIVE_CHIP = 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80';
+const ESTADO_CHIP_ACTIVE = {
+  programada: 'bg-yellow-500 border-yellow-500 text-white',
+  completada: 'bg-emerald-500 border-emerald-500 text-white',
+} as const;
+const ESTADO_CHIP_INACTIVE = 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -243,10 +255,18 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   }, []);
 
   // -----------------------------------------------------------------------
+  // Computed: total count for pagination info
+  // -----------------------------------------------------------------------
+
+  const totalGraduaciones = useMemo(() => {
+    return stats.programadas + stats.completadas + stats.canceladas;
+  }, [stats]);
+
+  // -----------------------------------------------------------------------
   // Alumno autocomplete
   // -----------------------------------------------------------------------
 
-  function handleAlumnoSearch(q: string) {
+  const handleAlumnoSearch = useCallback((q: string) => {
     setAlumnoQuery(q);
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     if (q.length < 2) { setAlumnoResults([]); setShowAutocomplete(false); return; }
@@ -261,19 +281,19 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         setAlumnoResults([]);
       }
     }, 300);
-  }
+  }, [token]);
 
-  function selectAlumno(a: AlumnoBusqueda) {
+  const selectAlumno = useCallback((a: AlumnoBusqueda) => {
     setForm(f => ({ ...f, alumno_id: a.id, nombre: a.nombre, apellido: a.apellido }));
     setAlumnoQuery(`${a.nombre} ${a.apellido}`);
     setShowAutocomplete(false);
-  }
+  }, []);
 
   // -----------------------------------------------------------------------
   // CRUD
   // -----------------------------------------------------------------------
 
-  async function handleSave() {
+  const handleSave = useCallback(async () => {
     if (!form.nombre.trim() || !form.apellido.trim()) {
       toast.error('Nombre y apellido son obligatorios');
       return;
@@ -303,9 +323,9 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     } finally {
       setSaving(false);
     }
-  }
+  }, [form, editingId, token, fetchGraduaciones, fetchStats]);
 
-  async function handleDelete(id: number) {
+  const handleDelete = useCallback(async (id: number) => {
     if (!window.confirm('Eliminar esta graduacion?')) return;
     try {
       const res = await fetch(`${API_BASE}/space/graduaciones/${id}`, {
@@ -321,9 +341,9 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     } catch {
       toast.error('Error de conexion');
     }
-  }
+  }, [token, fetchGraduaciones, fetchStats]);
 
-  async function handleCorreccion(id: number, accion: 'resuelta' | 'rechazada') {
+  const handleCorreccion = useCallback(async (id: number, accion: 'resuelta' | 'rechazada') => {
     try {
       const res = await fetch(`${API_BASE}/space/graduaciones/correcciones/${id}`, {
         method: 'PUT', headers: headers(token), body: JSON.stringify({ estado: accion }),
@@ -337,20 +357,20 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     } catch {
       toast.error('Error de conexion');
     }
-  }
+  }, [token, fetchCorrecciones]);
 
   // -----------------------------------------------------------------------
   // Modal helpers
   // -----------------------------------------------------------------------
 
-  function openCreate() {
+  const openCreate = useCallback(() => {
     setEditingId(null);
     setForm({ ...EMPTY_FORM });
     setAlumnoQuery('');
     setModalOpen(true);
-  }
+  }, []);
 
-  function openEdit(g: Graduacion) {
+  const openEdit = useCallback((g: Graduacion) => {
     setEditingId(g.id);
     setForm({
       alumno_id: g.alumno_id,
@@ -364,7 +384,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     });
     setAlumnoQuery(`${g.nombre} ${g.apellido}`);
     setModalOpen(true);
-  }
+  }, []);
 
   function closeModal() {
     setModalOpen(false);
@@ -373,6 +393,25 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     setAlumnoQuery('');
     setShowAutocomplete(false);
   }
+
+  // -----------------------------------------------------------------------
+  // Filter chip handlers
+  // -----------------------------------------------------------------------
+
+  const handleTurnoFilter = useCallback((value: string) => {
+    setFilterTurno(prev => prev === value ? '' : value);
+  }, []);
+
+  const handleEstadoFilter = useCallback((value: string) => {
+    setFilterEstado(prev => prev === value ? '' : value);
+  }, []);
+
+  const handleTabGraduaciones = useCallback(() => setTab('graduaciones'), []);
+  const handleTabCorrecciones = useCallback(() => setTab('correcciones'), []);
+
+  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
+  }, []);
 
   // -----------------------------------------------------------------------
   // Render
@@ -407,7 +446,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       {/* Tabs */}
       <div className="flex gap-1 bg-zinc-900/60 rounded-xl p-1 w-fit">
         <button
-          onClick={() => setTab('graduaciones')}
+          onClick={handleTabGraduaciones}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             tab === 'graduaciones' ? 'bg-[#FA7B21]/20 text-[#FA7B21]' : 'text-white/50 hover:text-white/80'
           }`}
@@ -415,7 +454,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
           Graduaciones
         </button>
         <button
-          onClick={() => setTab('correcciones')}
+          onClick={handleTabCorrecciones}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             tab === 'correcciones' ? 'bg-[#FA7B21]/20 text-[#FA7B21]' : 'text-white/50 hover:text-white/80'
           }`}
@@ -434,7 +473,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                 type="text"
                 placeholder="Buscar por nombre..."
                 value={searchInput}
-                onChange={e => setSearchInput(e.target.value)}
+                onChange={handleSearchInputChange}
                 className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-sm placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
               />
             </div>
@@ -442,32 +481,32 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
               {TURNOS.map(t => (
                 <button
                   key={t.value}
-                  onClick={() => setFilterTurno(filterTurno === t.value ? '' : t.value)}
+                  onClick={() => handleTurnoFilter(t.value)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
                     filterTurno === t.value
-                      ? 'bg-[#FA7B21]/20 border-[#FA7B21]/40 text-[#FA7B21]'
-                      : 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80'
+                      ? TURNO_ACTIVE_CHIP
+                      : TURNO_INACTIVE_CHIP
                   }`}
                 >
                   {t.label}
                 </button>
               ))}
               <button
-                onClick={() => setFilterEstado(filterEstado === 'programada' ? '' : 'programada')}
+                onClick={() => handleEstadoFilter('programada')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
                   filterEstado === 'programada'
-                    ? 'bg-yellow-500/20 border-yellow-500/40 text-yellow-400'
-                    : 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80'
+                    ? ESTADO_CHIP_ACTIVE.programada
+                    : ESTADO_CHIP_INACTIVE
                 }`}
               >
                 Programada
               </button>
               <button
-                onClick={() => setFilterEstado(filterEstado === 'completada' ? '' : 'completada')}
+                onClick={() => handleEstadoFilter('completada')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
                   filterEstado === 'completada'
-                    ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
-                    : 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80'
+                    ? ESTADO_CHIP_ACTIVE.completada
+                    : ESTADO_CHIP_INACTIVE
                 }`}
               >
                 Completada
@@ -475,27 +514,34 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
             </div>
           </div>
 
+          {/* Pagination info */}
+          <div className="flex items-center justify-between">
+            <p className="text-white/30 text-xs">
+              Mostrando {graduaciones.length} de {totalGraduaciones} graduaciones
+            </p>
+          </div>
+
           {/* Data table */}
           <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Alumno</th>
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Rango</th>
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Horario</th>
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Turno</th>
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Estado</th>
-                    <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-zinc-900 border-b border-white/10">
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Horario</th>
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Turno</th>
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
+                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <tr key={i} className="border-b border-white/5">
-                        {Array.from({ length: 7 }).map((_, j) => (
-                          <td key={j} className="px-5 py-4">
+                    LOADING_SKELETON_KEYS.map(sk => (
+                      <tr key={sk} className="border-b border-white/5">
+                        {LOADING_CELL_KEYS.map(ck => (
+                          <td key={ck} className="px-5 py-4">
                             <div className="h-4 bg-white/5 rounded animate-pulse" />
                           </td>
                         ))}
@@ -504,8 +550,9 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                   ) : graduaciones.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-5 py-16 text-center">
-                        <GraduationCap size={40} className="mx-auto text-white/10 mb-3" />
-                        <p className="text-white/50 text-sm mb-4">No hay graduaciones programadas</p>
+                        <GraduationCap size={48} className="mx-auto text-white/10 mb-4" />
+                        <p className="text-white/60 text-base font-medium mb-1">Sin graduaciones</p>
+                        <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
                         <button
                           onClick={openCreate}
                           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-[#FA7B21] to-[#e06510] hover:brightness-110 active:scale-95 transition-all"
@@ -516,12 +563,10 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                       </td>
                     </tr>
                   ) : (
-                    graduaciones.map((g, idx) => (
+                    graduaciones.map((g) => (
                       <tr
                         key={g.id}
-                        className={`border-b border-white/5 hover:bg-white/5 transition-colors ${
-                          idx % 2 === 1 ? 'bg-zinc-800/30' : ''
-                        }`}
+                        className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
                       >
                         <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
                           {g.nombre.toUpperCase()} {g.apellido.toUpperCase()}
@@ -588,13 +633,13 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Nombre</th>
-                  <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Comentario</th>
-                  <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                  <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider">Estado</th>
-                  <th className="px-5 py-3.5 text-white/50 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
+              <thead className="sticky top-0 z-10">
+                <tr className="bg-zinc-900 border-b border-white/10">
+                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
+                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
+                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
+                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
                 </tr>
               </thead>
               <tbody>
@@ -606,12 +651,10 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                     </td>
                   </tr>
                 ) : (
-                  correcciones.map((c, idx) => (
+                  correcciones.map((c) => (
                     <tr
                       key={c.id}
-                      className={`border-b border-white/5 hover:bg-white/5 transition-colors ${
-                        idx % 2 === 1 ? 'bg-zinc-800/30' : ''
-                      }`}
+                      className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
                     >
                       <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
                       <td className="px-5 py-3.5 text-white/70 max-w-xs truncate">{c.comentario}</td>
@@ -658,6 +701,9 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
           {/* Dialog */}
           <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
+            {/* Gradient top bar */}
+            <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
+
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
               <h2 className="text-white text-lg font-bold">
