@@ -482,31 +482,42 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveSection('calendar')}
-                className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 text-left transition-colors hover:bg-emerald-500/15"
+                className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-left transition-colors hover:bg-emerald-500/15"
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs text-emerald-400/80">Asistencias</span>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[10px] text-emerald-400/80">Asistencias</span>
                 </div>
-                <p className="text-3xl font-bold text-emerald-400">{totalAsistencias}</p>
+                <p className="text-2xl font-bold text-emerald-400">{user.matricula?.clasesAsistidas || totalAsistencias}</p>
+                <p className="text-[10px] text-zinc-500">de {user.matricula?.clasesTotales || '—'}</p>
               </motion.button>
+
+              <motion.div className="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-4 text-left">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Clock className="w-3.5 h-3.5 text-sky-400" />
+                  <span className="text-[10px] text-sky-400/80">Restantes</span>
+                </div>
+                <p className="text-2xl font-bold text-sky-400">{user.matricula?.clasesRestantes ?? '—'}</p>
+                <p className="text-[10px] text-zinc-500">clases</p>
+              </motion.div>
 
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setActiveSection('plan')}
-                className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl p-5 text-left transition-colors hover:bg-[#FA7B21]/15"
+                className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl p-4 text-left transition-colors hover:bg-[#FA7B21]/15"
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <Award className="w-4 h-4 text-[#FA7B21]" />
-                  <span className="text-xs text-[#FA7B21]/80">{user.estudiante?.categoria}</span>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Award className="w-3.5 h-3.5 text-[#FA7B21]" />
+                  <span className="text-[10px] text-[#FA7B21]/80">Plan</span>
                 </div>
-                <p className="text-sm font-semibold text-orange-300 truncate">{user.matricula?.programa}</p>
+                <p className="text-xs font-semibold text-orange-300 truncate">{user.matricula?.programa}</p>
+                <p className="text-[10px] text-zinc-500">{user.matricula?.clasesTotales} clases</p>
               </motion.button>
             </div>
 
