@@ -1,11 +1,10 @@
 import { useState, useCallback, useMemo, ReactNode } from 'react';
 import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
-  Settings, LogOut, ExternalLink, MoreHorizontal, ClipboardList, UserPlus, X,
+  Settings, LogOut, ExternalLink, ClipboardList, UserPlus,
+  Menu, ChevronLeft,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser } from './SpaceApp';
-
-// ── Props ──
 
 interface SpaceLayoutProps {
   user: SpaceUser;
@@ -15,8 +14,6 @@ interface SpaceLayoutProps {
   onExit: () => void;
   children: ReactNode;
 }
-
-// ── Constants ──
 
 const PAGE_TITLES: Record<SpacePage, string> = {
   dashboard: 'Dashboard',
@@ -28,7 +25,7 @@ const PAGE_TITLES: Record<SpacePage, string> = {
   config: 'Configuracion',
 };
 
-const SIDEBAR_NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
+const NAV_ITEMS: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
   { page: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
   { page: 'alumnos', label: 'Alumnos', icon: Users },
@@ -38,162 +35,97 @@ const SIDEBAR_NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboar
   { page: 'config', label: 'Configuracion', icon: Settings },
 ];
 
-// Mobile: 4 main tabs + "Más"
-const TABS: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
-  { page: 'dashboard', label: 'Inicio', icon: LayoutDashboard },
-  { page: 'graduaciones', label: 'Grad.', icon: GraduationCap },
-  { page: 'alumnos', label: 'Alumnos', icon: Users },
-  { page: 'asistencia', label: 'Asist.', icon: CalendarCheck },
-];
-
-const MORE_PAGES: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
-  { page: 'inscripciones', label: 'Inscripciones', icon: ClipboardList },
-  { page: 'leads', label: 'Leads', icon: UserPlus },
-  { page: 'config', label: 'Configuracion', icon: Settings },
-];
-
-// ── Helpers ──
-
 function getInitials(name: string): string {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
-// ── Component ──
-
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children }: SpaceLayoutProps) {
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const initials = useMemo(() => getInitials(user.nombre), [user.nombre]);
 
   const nav = useCallback((page: SpacePage) => {
     onNavigate(page);
-    setMoreOpen(false);
+    setOpen(false);
   }, [onNavigate]);
 
   return (
     <div className="h-dvh flex bg-zinc-950">
+      {/* Overlay — cierra sidebar al tocar fuera */}
+      {open && (
+        <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setOpen(false)} />
+      )}
 
-      {/* ═══ DESKTOP SIDEBAR (lg+) ═══ */}
-      <aside className="hidden lg:flex flex-col w-52 bg-zinc-900 border-r border-zinc-800/50 shrink-0">
-        {/* Brand */}
-        <div className="h-14 flex items-center px-5">
-          <span className="text-white/90 font-bold text-sm tracking-[0.2em]">SPACE</span>
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 h-dvh z-50 w-64 bg-zinc-900 flex flex-col transition-transform duration-200 ease-out ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        {/* Header sidebar */}
+        <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800">
+          <span className="text-white font-bold tracking-widest text-sm">SPACE</span>
+          <button onClick={() => setOpen(false)} className="p-1.5 text-white/40 hover:text-white transition-colors rounded-lg hover:bg-zinc-800">
+            <ChevronLeft size={18} />
+          </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-2 space-y-px overflow-y-auto">
-          {SIDEBAR_NAV.map(({ page, label, icon: Icon }) => {
+        {/* Nav items */}
+        <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto">
+          {NAV_ITEMS.map(({ page, label, icon: Icon }) => {
             const active = currentPage === page;
             return (
               <button
                 key={page}
                 onClick={() => nav(page)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   active
-                    ? 'bg-zinc-800 text-white'
-                    : 'text-white/40 hover:text-white/70 hover:bg-zinc-800/40'
+                    ? 'bg-zinc-800 text-white font-medium'
+                    : 'text-white/50 hover:text-white hover:bg-zinc-800/60'
                 }`}
               >
-                <Icon size={16} className={active ? 'text-[#FA7B21]' : ''} />
+                <Icon size={18} className={active ? 'text-[#FA7B21]' : 'text-white/40'} />
                 {label}
               </button>
             );
           })}
         </nav>
 
-        {/* Bottom */}
-        <div className="px-3 py-3 border-t border-zinc-800/50 space-y-px">
-          <button onClick={onExit}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-white/40 hover:text-white/70 hover:bg-zinc-800/40 transition-colors">
-            <ExternalLink size={16} /> Salir
+        {/* Bottom actions */}
+        <div className="px-3 py-3 border-t border-zinc-800 space-y-1">
+          <button onClick={() => { setOpen(false); onExit(); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-white hover:bg-zinc-800/60 transition-colors">
+            <ExternalLink size={18} /> Salir al sitio
           </button>
-          <button onClick={onLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-white/40 hover:text-white/70 hover:bg-zinc-800/40 transition-colors">
-            <LogOut size={16} /> Cerrar sesion
+          <button onClick={() => { setOpen(false); onLogout(); }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-red-400/50 hover:text-red-400 hover:bg-red-500/5 transition-colors">
+            <LogOut size={18} /> Cerrar sesion
           </button>
         </div>
       </aside>
 
-      {/* ═══ MAIN AREA ═══ */}
+      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-
         {/* Header */}
-        <header className="h-14 flex items-center justify-between px-4 lg:px-6 border-b border-zinc-800/50 shrink-0">
-          <h1 className="text-white font-semibold text-[15px]">{PAGE_TITLES[currentPage]}</h1>
-          <div className="flex items-center gap-3">
+        <header className="h-14 flex items-center px-4 border-b border-zinc-800 shrink-0 gap-3">
+          <button onClick={() => setOpen(true)}
+            className="p-2 -ml-2 text-white/50 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <Menu size={20} />
+          </button>
+          <h1 className="text-white font-semibold">{PAGE_TITLES[currentPage]}</h1>
+          <div className="ml-auto flex items-center gap-3">
             <span className="text-white/30 text-sm hidden sm:block">{user.nombre}</span>
-            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-white/60 text-xs font-medium">
-              {initials}
+            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
+              <span className="text-white/60 text-xs font-medium">{initials}</span>
             </div>
           </div>
         </header>
 
-        {/* Content — scrollable */}
+        {/* Content */}
         <main className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain">
-          <div className="p-4 lg:p-6 pb-24 lg:pb-6">
+          <div className="p-4 lg:p-6">
             {children}
           </div>
         </main>
-      </div>
-
-      {/* ═══ MOBILE BOTTOM TABS (< lg) ═══ */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-50">
-        {/* "More" overlay + sheet */}
-        {moreOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setMoreOpen(false)} />
-            <div className="relative z-50 bg-zinc-900 border-t border-zinc-800 rounded-t-xl mx-2 mb-1 shadow-2xl shadow-black/50">
-              <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                <span className="text-white/70 text-xs font-medium uppercase tracking-wider">Más opciones</span>
-                <button onClick={() => setMoreOpen(false)} className="p-1 text-white/30 hover:text-white/60">
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="px-2 pb-3 space-y-px">
-                {MORE_PAGES.map(({ page, label, icon: Icon }) => (
-                  <button key={page} onClick={() => nav(page)}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors ${
-                      currentPage === page ? 'text-[#FA7B21] bg-zinc-800' : 'text-white/50 hover:text-white hover:bg-zinc-800/50'
-                    }`}>
-                    <Icon size={16} /> {label}
-                  </button>
-                ))}
-                <div className="my-1.5 border-t border-zinc-800" />
-                <button onClick={() => { setMoreOpen(false); onExit(); }}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-white/50 hover:text-white hover:bg-zinc-800/50 transition-colors">
-                  <ExternalLink size={16} /> Salir al sitio
-                </button>
-                <button onClick={() => { setMoreOpen(false); onLogout(); }}
-                  className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm text-red-400/60 hover:text-red-400 hover:bg-red-500/5 transition-colors">
-                  <LogOut size={16} /> Cerrar sesion
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Tab bar */}
-        <nav className="bg-zinc-900 border-t border-zinc-800 flex items-stretch"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-          {TABS.map(({ page, label, icon: Icon }) => {
-            const active = currentPage === page;
-            return (
-              <button key={page} onClick={() => nav(page)}
-                className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 min-h-[52px] transition-colors ${
-                  active ? 'text-[#FA7B21]' : 'text-white/30'
-                }`}>
-                <Icon size={20} strokeWidth={active ? 2.5 : 1.5} />
-                <span className="text-[10px] font-medium leading-none">{label}</span>
-              </button>
-            );
-          })}
-          <button onClick={() => setMoreOpen(v => !v)}
-            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2.5 min-h-[52px] transition-colors ${
-              moreOpen ? 'text-[#FA7B21]' : 'text-white/30'
-            }`}>
-            <MoreHorizontal size={20} strokeWidth={moreOpen ? 2.5 : 1.5} />
-            <span className="text-[10px] font-medium leading-none">Más</span>
-          </button>
-        </nav>
       </div>
     </div>
   );
