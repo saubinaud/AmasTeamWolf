@@ -3,7 +3,6 @@ import { Menu, X, ChevronDown, ShoppingCart, User, LogOut } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '../contexts/AuthContext';
-import { useLogto } from '@logto/react';
 
 interface HeaderMainProps {
   // Usamos la nueva firma que soporta secciones
@@ -16,7 +15,6 @@ interface HeaderMainProps {
 
 export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount, currentPage }: HeaderMainProps) {
   const { isAuthenticated, user } = useAuth();
-  const { signIn } = useLogto();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProgramasOpen, setIsProgramasOpen] = useState(false);
@@ -187,14 +185,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (isAuthenticated) {
-                  onNavigate('perfil');
-                } else {
-                  const callbackUrl = window.location.hostname === 'localhost'
-                    ? 'http://localhost:5173/callback'
-                    : 'https://amasteamwolf.com/callback';
-                  signIn(callbackUrl);
-                }
+                onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion');
               }}
               variant="ghost"
               className={`${linkStyles(currentPage === 'perfil')} flex items-center`}
@@ -328,14 +319,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             {/* Botón de perfil/login móvil */}
             <button
               onClick={() => {
-                if (isAuthenticated) {
-                  onNavigate('perfil');
-                } else {
-                  const callbackUrl = window.location.hostname === 'localhost'
-                    ? 'http://localhost:5173/callback'
-                    : 'https://amasteamwolf.com/callback';
-                  signIn(callbackUrl);
-                }
+                onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion');
                 setIsMobileMenuOpen(false);
               }}
               className={`transition-colors text-left py-2 text-base flex items-center gap-2 ${currentPage === 'perfil' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}

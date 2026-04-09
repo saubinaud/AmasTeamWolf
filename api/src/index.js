@@ -14,6 +14,7 @@ const renovacionRoutes = require('./routes/renovacion');
 const leadsRoutes = require('./routes/leads');
 const qrRoutes = require('./routes/qr');
 const contratosRoutes = require('./routes/contratos');
+const authRoutes = require('./routes/auth');
 const spaceAuthRoutes = require('./routes/space-auth');
 const spaceDashboardRoutes = require('./routes/space-dashboard');
 const spaceGraduacionesRoutes = require('./routes/space-graduaciones');
@@ -66,6 +67,7 @@ app.use('/api/qr', writeLimiter);
 app.use('/api/leads', writeLimiter);
 app.use('/api/renovacion', writeLimiter);
 app.use('/api/contratos', writeLimiter);
+app.use('/api/auth', writeLimiter);
 
 // Health check
 app.get('/health', (_req, res) => {
@@ -85,6 +87,7 @@ app.use('/api/renovacion', renovacionRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/contratos', contratosRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/space', spaceRequestLogger);
 app.use('/api/space/auth', spaceAuthRoutes);
 app.use('/api/space/dashboard', spaceAuth, spaceDashboardRoutes);
