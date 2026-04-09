@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react
 import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus,
-  PanelLeftOpen, PanelLeftClose,
+  PanelLeftOpen, X,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser } from './SpaceApp';
 
@@ -17,24 +17,23 @@ interface Props {
 
 const NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
   { page: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
   { page: 'alumnos', label: 'Alumnos', icon: Users },
   { page: 'inscripciones', label: 'Inscripciones', icon: ClipboardList },
+  { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
   { page: 'asistencia', label: 'Asistencia', icon: CalendarCheck },
   { page: 'leads', label: 'Leads', icon: UserPlus },
-  { page: 'config', label: 'Configuracion', icon: Settings },
+  { page: 'config', label: 'Ajustes', icon: Settings },
 ];
 
 const TITLES: Record<SpacePage, string> = {
   dashboard: 'Dashboard', graduaciones: 'Graduaciones', alumnos: 'Alumnos',
-  inscripciones: 'Inscripciones', asistencia: 'Asistencia', leads: 'Leads', config: 'Configuracion',
+  inscripciones: 'Inscripciones', asistencia: 'Asistencia', leads: 'Leads', config: 'Ajustes',
 };
 
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children }: Props) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -42,7 +41,6 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Open sidebar by default on desktop
   useEffect(() => {
     if (!isMobile) setOpen(true);
     else setOpen(false);
@@ -60,78 +58,94 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
 
   const close = useCallback(() => setOpen(false), []);
 
-  // Sidebar content (shared between mobile overlay and desktop push)
   const sidebarContent = (
-    <div className="w-60 h-full flex flex-col bg-zinc-900">
+    <div className="w-64 h-full flex flex-col bg-[#0c0c0c] border-r border-white/5">
       {/* Brand */}
-      <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded bg-[#FA7B21] flex items-center justify-center shrink-0">
-            <span className="text-[10px] font-black text-white">S</span>
+      <div className="h-16 flex items-center justify-between px-5 shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center shrink-0 shadow-lg shadow-[#FA7B21]/20">
+            <span className="text-[11px] font-black text-white">S</span>
           </div>
-          <span className="text-white font-semibold text-sm">SPACE</span>
+          <div>
+            <span className="text-white font-bold text-sm tracking-wide">SPACE</span>
+            <span className="text-white/20 text-[10px] block -mt-0.5">Admin Panel</span>
+          </div>
         </div>
-        <button onClick={close} className="p-1.5 text-white/30 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" aria-label="Cerrar menu">
-          <PanelLeftClose size={16} />
-        </button>
+        {isMobile && (
+          <button onClick={close} className="p-2 text-white/30 hover:text-white hover:bg-white/5 rounded-xl transition-all" aria-label="Cerrar">
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto">
         {NAV.map(({ page, label, icon: Icon }) => {
           const active = currentPage === page;
           return (
-            <button key={page} onClick={() => go(page)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
-                active ? 'bg-zinc-800 text-white font-medium' : 'text-white/50 hover:text-white hover:bg-zinc-800/50'
-              }`}>
-              <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-white/30'} />
+            <button
+              key={page}
+              onClick={() => go(page)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
+                active
+                  ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/5 border border-transparent'
+              }`}
+            >
+              <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-white/25'} />
               {label}
+              {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
             </button>
           );
         })}
       </nav>
 
       {/* User + actions */}
-      <div className="px-2 py-3 border-t border-zinc-800 shrink-0">
-        <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
-          <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
-            <span className="text-white/50 text-[10px] font-medium">{initials}</span>
+      <div className="px-3 py-4 border-t border-white/5 shrink-0">
+        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-white/[0.03] rounded-xl">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 flex items-center justify-center shrink-0 border border-[#FA7B21]/15">
+            <span className="text-[#FA7B21] text-[11px] font-bold">{initials}</span>
           </div>
           <div className="min-w-0">
             <p className="text-white text-xs font-medium truncate">{user.nombre}</p>
-            <p className="text-white/30 text-[10px] truncate">{user.email}</p>
+            <p className="text-white/25 text-[10px] truncate">{user.rol === 'admin' ? 'Administrador' : 'Profesor'}</p>
           </div>
         </div>
-        <button onClick={() => { close(); onExit(); }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-white/40 hover:text-white hover:bg-zinc-800/50 transition-colors">
-          <ExternalLink size={14} /> Salir al sitio
-        </button>
-        <button onClick={() => { close(); onLogout(); }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-red-400/40 hover:text-red-400 hover:bg-red-500/5 transition-colors">
-          <LogOut size={14} /> Cerrar sesion
-        </button>
+        <div className="flex gap-1">
+          <button
+            onClick={() => { close(); onExit(); }}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
+          >
+            <ExternalLink size={12} /> Sitio
+          </button>
+          <button
+            onClick={() => { close(); onLogout(); }}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-red-400/40 hover:text-red-400 hover:bg-red-500/5 transition-all"
+          >
+            <LogOut size={12} /> Salir
+          </button>
+        </div>
       </div>
     </div>
   );
 
   return (
-    <div className="h-dvh flex bg-zinc-950 overflow-hidden">
+    <div className="h-dvh flex bg-[#0a0a0a] overflow-hidden">
 
-      {/* MOBILE: Overlay sidebar */}
+      {/* MOBILE: Overlay */}
       {isMobile && open && (
         <div className="fixed inset-0 z-50 flex">
-          <div className="shrink-0 shadow-2xl shadow-black/50">
+          <div className="shrink-0 shadow-2xl shadow-black/80 animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </div>
-          <div className="flex-1 bg-black/50" onClick={close} />
+          <div className="flex-1 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={close} />
         </div>
       )}
 
       {/* DESKTOP: Push sidebar */}
       {!isMobile && (
-        <aside className={`h-dvh border-r border-zinc-800 shrink-0 transition-[width] duration-200 ease-out overflow-hidden ${
-          open ? 'w-60' : 'w-0'
+        <aside className={`h-dvh shrink-0 transition-[width] duration-300 ease-out overflow-hidden ${
+          open ? 'w-64' : 'w-0'
         }`}>
           {sidebarContent}
         </aside>
@@ -139,23 +153,21 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 flex items-center gap-3 px-4 border-b border-zinc-800 shrink-0">
+        <header className="h-14 flex items-center gap-3 px-4 sm:px-5 border-b border-white/5 shrink-0 bg-[#0a0a0a]">
           {(!open || isMobile) && (
-            <button onClick={() => setOpen(true)} className="p-1.5 text-white/30 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" aria-label="Abrir menu">
+            <button
+              onClick={() => setOpen(true)}
+              className="p-2 text-white/30 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+              aria-label="Menu"
+            >
               <PanelLeftOpen size={18} />
             </button>
           )}
           <h1 className="text-white font-semibold text-[15px]">{TITLES[currentPage]}</h1>
-          <div className="ml-auto flex items-center gap-2.5">
-            <span className="text-white/30 text-sm hidden md:block">{user.nombre}</span>
-            <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center">
-              <span className="text-white/50 text-[10px] font-medium">{initials}</span>
-            </div>
-          </div>
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain">
-          <div className="p-4 md:p-5 lg:p-6">
+          <div className="p-4 md:p-5 lg:p-6 max-w-7xl">
             {children}
           </div>
         </main>
