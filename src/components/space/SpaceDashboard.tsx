@@ -131,7 +131,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: SpaceDashboardPr
   return (
     <div className="space-y-6">
       {/* Welcome banner */}
-      <div className="bg-gradient-to-r from-[#FA7B21]/10 to-transparent border border-[#FA7B21]/10 rounded-2xl p-6">
+      <div className="bg-[#FA7B21]/5 border border-[#FA7B21]/10 rounded-2xl p-6">
         <h2 className="text-white text-xl font-bold mb-1">
           Bienvenido{userName ? `, ${userName}` : ''}
         </h2>
