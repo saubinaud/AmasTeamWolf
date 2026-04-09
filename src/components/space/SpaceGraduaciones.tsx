@@ -436,7 +436,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#FA7B21] to-[#e06510] hover:brightness-110 active:scale-95 transition-all shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] active:scale-95 transition-all shrink-0"
         >
           <Plus size={16} />
           Nueva graduacion
@@ -555,7 +555,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                         <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
                         <button
                           onClick={openCreate}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-[#FA7B21] to-[#e06510] hover:brightness-110 active:scale-95 transition-all"
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-[#FA7B21] hover:bg-[#E56D15] active:scale-95 transition-all"
                         >
                           <Plus size={14} />
                           Crear graduacion
@@ -572,7 +572,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                           {g.nombre.toUpperCase()} {g.apellido.toUpperCase()}
                         </td>
                         <td className="px-5 py-3.5">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-[#FA7B21]/20 to-[#e06510]/20 text-[#FA7B21] border border-[#FA7B21]/30">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/25">
                             <Award size={12} />
                             {g.rango}
                           </span>
@@ -841,7 +841,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-[#FA7B21] to-[#e06510] hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 Guardar
