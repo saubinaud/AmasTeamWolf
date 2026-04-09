@@ -205,40 +205,35 @@ router.post('/verificar-codigo', async (req, res) => {
   }
 });
 
-// POST /api/auth/crear-password — Crear contraseña y auto-login
+// POST /api/auth/crear-password — Crear contraseña (solo si no tiene una) y auto-login
 router.post('/crear-password', async (req, res) => {
   try {
-    const { dni, code, password } = req.body;
-    if (!dni || !code || !password) {
-      return res.status(400).json({ error: 'DNI, código y contraseña requeridos' });
+    const { dni, password } = req.body;
+    if (!dni || !password) {
+      return res.status(400).json({ error: 'DNI y contraseña requeridos' });
     }
     if (password.length < 6) {
       return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
     }
 
+    if (!checkRateLimit(dni)) {
+      return res.status(429).json({ error: 'Demasiados intentos. Espera 15 minutos.' });
+    }
+
     const alumno = await queryOne(
-      'SELECT id FROM alumnos WHERE dni_apoderado = $1 LIMIT 1',
+      'SELECT id, password_hash FROM alumnos WHERE dni_apoderado = $1 LIMIT 1',
       [dni]
     );
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
 
-    // Verificar código
-    const vc = await queryOne(
-      'SELECT id FROM verification_codes WHERE alumno_id = $1 AND code = $2 AND used = FALSE AND expires_at > NOW()',
-      [alumno.id, code]
-    );
-    if (!vc) {
-      return res.status(400).json({ error: 'Código inválido o expirado' });
+    // Solo permite crear si NO tiene contraseña aún
+    if (alumno.password_hash) {
+      return res.status(400).json({ error: 'Ya tienes contraseña. Usa el login normal.' });
     }
 
-    // Hash y guardar contraseña
     const hash = await bcrypt.hash(password, 10);
     await pool.query('UPDATE alumnos SET password_hash = $1 WHERE id = $2', [hash, alumno.id]);
 
-    // Marcar código como usado
-    await pool.query('UPDATE verification_codes SET used = TRUE WHERE id = $1', [vc.id]);
-
-    // Auto-login
     const token = signToken(alumno.id, dni);
     const perfil = await cargarPerfil(alumno.id);
 

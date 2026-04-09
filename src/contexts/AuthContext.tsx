@@ -260,12 +260,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const setPassword = useCallback(async (dni: string, code: string, password: string): Promise<LoginResult> => {
+  const setPassword = useCallback(async (dni: string, _code: string, password: string): Promise<LoginResult> => {
     try {
       const res = await fetch(`${AUTH_API}/crear-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dni, code, password }),
+        body: JSON.stringify({ dni, password }),
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error };
