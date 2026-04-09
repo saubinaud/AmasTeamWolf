@@ -10,7 +10,7 @@ router.get('/vencimientos', async (_req, res) => {
       `SELECT i.*, a.nombre_alumno
        FROM inscripciones i
        JOIN alumnos a ON a.id = i.alumno_id
-       WHERE i.activa = true
+       WHERE i.estado = 'Activo'
          AND i.fecha_fin BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'
        ORDER BY i.fecha_fin ASC`
     );
@@ -43,8 +43,8 @@ router.get('/', async (req, res) => {
       params.push(estado_pago);
     }
     if (activa !== undefined && activa !== '') {
-      conditions.push(`i.activa = $${paramIndex++}`);
-      params.push(activa === 'true');
+      conditions.push(`i.estado = $${paramIndex++}`);
+      params.push(activa === 'true' ? 'Activo' : 'Inactivo');
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -113,7 +113,7 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const allowedFields = [
-      'programa', 'estado_pago', 'activa', 'fecha_inicio', 'fecha_fin',
+      'programa', 'estado_pago', 'estado', 'fecha_inicio', 'fecha_fin',
       'monto', 'turno', 'horario', 'sede_id', 'observaciones',
     ];
 

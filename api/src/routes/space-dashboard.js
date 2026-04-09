@@ -15,13 +15,13 @@ router.get('/stats', async (_req, res) => {
       ultimasAsistencias,
       ultimoLogin,
     ] = await Promise.all([
-      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE estado = 'activo'"),
-      queryOne('SELECT COUNT(*) AS total FROM inscripciones WHERE activa = true'),
+      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE estado IN ('activo', 'Activo')"),
+      queryOne('SELECT COUNT(*) AS total FROM inscripciones WHERE estado = 'Activo''),
       queryOne('SELECT COUNT(*) AS total FROM asistencias WHERE fecha = CURRENT_DATE'),
       queryOne("SELECT COUNT(*) AS total FROM leads WHERE estado = 'Nuevo'"),
       queryOne(
         `SELECT COUNT(*) AS total FROM inscripciones
-         WHERE activa = true
+         WHERE estado = 'Activo'
            AND fecha_fin BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'`
       ),
       query(
@@ -43,8 +43,8 @@ router.get('/stats', async (_req, res) => {
     return res.json({
       success: true,
       stats: {
-        alumnos: parseInt(alumnos.total, 10),
-        inscripciones: parseInt(inscripciones.total, 10),
+        alumnosActivos: parseInt(alumnos.total, 10),
+        inscripcionesActivas: parseInt(inscripciones.total, 10),
         asistenciasHoy: parseInt(asistenciasHoy.total, 10),
         leadsNuevos: parseInt(leadsNuevos.total, 10),
         inscripcionesPorVencer: parseInt(inscripcionesPorVencer.total, 10),

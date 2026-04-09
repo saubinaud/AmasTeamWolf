@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus,
@@ -31,7 +31,22 @@ const TITLES: Record<SpacePage, string> = {
 };
 
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children }: Props) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  // Open sidebar by default on desktop
+  useEffect(() => {
+    if (!isMobile) setOpen(true);
+    else setOpen(false);
+  }, [isMobile]);
 
   const initials = useMemo(
     () => user.nombre.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase(),
@@ -40,91 +55,93 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
 
   const go = useCallback((page: SpacePage) => {
     onNavigate(page);
-    // En mobile, cerrar sidebar al navegar
-    if (window.innerWidth < 768) setOpen(false);
-  }, [onNavigate]);
+    if (isMobile) setOpen(false);
+  }, [onNavigate, isMobile]);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  // Sidebar content (shared between mobile overlay and desktop push)
+  const sidebarContent = (
+    <div className="w-60 h-full flex flex-col bg-zinc-900">
+      {/* Brand */}
+      <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800 shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded bg-[#FA7B21] flex items-center justify-center shrink-0">
+            <span className="text-[10px] font-black text-white">S</span>
+          </div>
+          <span className="text-white font-semibold text-sm">SPACE</span>
+        </div>
+        <button onClick={close} className="p-1.5 text-white/30 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" aria-label="Cerrar menu">
+          <PanelLeftClose size={16} />
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
+        {NAV.map(({ page, label, icon: Icon }) => {
+          const active = currentPage === page;
+          return (
+            <button key={page} onClick={() => go(page)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] transition-colors ${
+                active ? 'bg-zinc-800 text-white font-medium' : 'text-white/50 hover:text-white hover:bg-zinc-800/50'
+              }`}>
+              <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-white/30'} />
+              {label}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* User + actions */}
+      <div className="px-2 py-3 border-t border-zinc-800 shrink-0">
+        <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
+          <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
+            <span className="text-white/50 text-[10px] font-medium">{initials}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-white text-xs font-medium truncate">{user.nombre}</p>
+            <p className="text-white/30 text-[10px] truncate">{user.email}</p>
+          </div>
+        </div>
+        <button onClick={() => { close(); onExit(); }}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-white/40 hover:text-white hover:bg-zinc-800/50 transition-colors">
+          <ExternalLink size={14} /> Salir al sitio
+        </button>
+        <button onClick={() => { close(); onLogout(); }}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-red-400/40 hover:text-red-400 hover:bg-red-500/5 transition-colors">
+          <LogOut size={14} /> Cerrar sesion
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="h-dvh flex bg-zinc-950 overflow-hidden">
 
-      {/* ── Sidebar — empuja el contenido ── */}
-      <aside
-        className={`h-dvh bg-zinc-900 border-r border-zinc-800 flex flex-col shrink-0 transition-[width] duration-200 ease-out overflow-hidden ${
-          open ? 'w-60' : 'w-0'
-        }`}
-      >
-        <div className="w-60 h-full flex flex-col">
-          {/* Brand + collapse */}
-          <div className="h-14 flex items-center justify-between px-4 border-b border-zinc-800 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded bg-[#FA7B21] flex items-center justify-center shrink-0">
-                <span className="text-[10px] font-black text-white">S</span>
-              </div>
-              <span className="text-white font-semibold text-sm">SPACE</span>
-            </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="p-1.5 text-white/30 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-              aria-label="Cerrar menu"
-            >
-              <PanelLeftClose size={16} />
-            </button>
+      {/* MOBILE: Overlay sidebar */}
+      {isMobile && open && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="shrink-0 shadow-2xl shadow-black/50">
+            {sidebarContent}
           </div>
-
-          {/* Nav */}
-          <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
-            {NAV.map(({ page, label, icon: Icon }) => {
-              const active = currentPage === page;
-              return (
-                <button
-                  key={page}
-                  onClick={() => go(page)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors ${
-                    active
-                      ? 'bg-zinc-800 text-white font-medium'
-                      : 'text-white/50 hover:text-white hover:bg-zinc-800/50'
-                  }`}
-                >
-                  <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-white/30'} />
-                  {label}
-                </button>
-              );
-            })}
-          </nav>
-
-          {/* User + actions */}
-          <div className="px-2 py-3 border-t border-zinc-800 shrink-0">
-            <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
-              <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
-                <span className="text-white/50 text-[10px] font-medium">{initials}</span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-white text-xs font-medium truncate">{user.nombre}</p>
-                <p className="text-white/30 text-[10px] truncate">{user.email}</p>
-              </div>
-            </div>
-            <button onClick={onExit}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-white/40 hover:text-white hover:bg-zinc-800/50 transition-colors">
-              <ExternalLink size={14} /> Salir al sitio
-            </button>
-            <button onClick={onLogout}
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-red-400/40 hover:text-red-400 hover:bg-red-500/5 transition-colors">
-              <LogOut size={14} /> Cerrar sesion
-            </button>
-          </div>
+          <div className="flex-1 bg-black/50" onClick={close} />
         </div>
-      </aside>
+      )}
 
-      {/* ── Main area ── */}
+      {/* DESKTOP: Push sidebar */}
+      {!isMobile && (
+        <aside className={`h-dvh border-r border-zinc-800 shrink-0 transition-[width] duration-200 ease-out overflow-hidden ${
+          open ? 'w-60' : 'w-0'
+        }`}>
+          {sidebarContent}
+        </aside>
+      )}
+
+      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
         <header className="h-14 flex items-center gap-3 px-4 border-b border-zinc-800 shrink-0">
-          {!open && (
-            <button
-              onClick={() => setOpen(true)}
-              className="p-1.5 text-white/30 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
-              aria-label="Abrir menu"
-            >
+          {(!open || isMobile) && (
+            <button onClick={() => setOpen(true)} className="p-1.5 text-white/30 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" aria-label="Abrir menu">
               <PanelLeftOpen size={18} />
             </button>
           )}
@@ -137,7 +154,6 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           </div>
         </header>
 
-        {/* Content */}
         <main className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain">
           <div className="p-4 md:p-5 lg:p-6">
             {children}

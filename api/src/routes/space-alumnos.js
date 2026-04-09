@@ -88,8 +88,7 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Alumno no encontrado', code: 'ALUM_NOT_FOUND' });
     }
 
-    const [apoderado, inscripciones, asistencias] = await Promise.all([
-      queryOne('SELECT * FROM apoderados WHERE alumno_id = $1', [req.params.id]),
+    const [inscripciones, asistencias] = await Promise.all([
       query('SELECT * FROM inscripciones WHERE alumno_id = $1 ORDER BY created_at DESC', [req.params.id]),
       query(
         `SELECT * FROM asistencias
@@ -99,11 +98,20 @@ router.get('/:id', async (req, res) => {
       ),
     ]);
 
+    // Apoderado data is in the same alumnos table
+    const apoderado = {
+      nombre: alumno.nombre_apoderado,
+      dni: alumno.dni_apoderado,
+      correo: alumno.correo,
+      telefono: alumno.telefono,
+      direccion: alumno.direccion,
+    };
+
     return res.json({
       success: true,
       data: {
         alumno,
-        apoderado: apoderado || null,
+        apoderado,
         inscripciones,
         asistencias,
       },
