@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import {
-  GraduationCap, Plus, Pencil, Trash2, Search,
-  Check, X, Calendar, Clock, Award, Loader2,
-} from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Check, X, Loader2, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 
@@ -43,65 +40,6 @@ interface AlumnoBusqueda {
   apellido: string;
 }
 
-interface SpaceGraduacionesProps {
-  token: string;
-}
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const RANGOS = [
-  'Cinturon Blanco',
-  'Punta Amarilla',
-  'Cinturon Amarillo',
-  'Punta Verde',
-  'Cinturon Verde',
-  'Punta Azul',
-  'Cinturon Azul',
-  'Punta Roja',
-  'Cinturon Rojo',
-  'Punta Negra',
-  'Cinturon Negro',
-];
-
-const TURNOS = [
-  { value: 'primer', label: 'Primer Turno' },
-  { value: 'segundo', label: 'Segundo Turno' },
-  { value: 'tercer', label: 'Tercer Turno' },
-  { value: 'cuarto', label: 'Cuarto Turno' },
-];
-
-const TURNO_COLORS: Record<string, string> = {
-  primer: 'bg-[#FA7B21]',
-  segundo: 'bg-blue-500',
-  tercer: 'bg-emerald-500',
-  cuarto: 'bg-zinc-500',
-};
-
-const ESTADO_STYLES: Record<string, { bg: string; text: string }> = {
-  programada: { bg: 'bg-yellow-500/15 border border-yellow-500/30', text: 'text-yellow-400' },
-  completada: { bg: 'bg-emerald-500/15 border border-emerald-500/30', text: 'text-emerald-400' },
-  cancelada: { bg: 'bg-zinc-500/15 border border-zinc-500/30', text: 'text-zinc-400' },
-};
-
-const CORRECCION_STYLES: Record<string, { bg: string; text: string }> = {
-  pendiente: { bg: 'bg-yellow-500/15 border border-yellow-500/30', text: 'text-yellow-400' },
-  resuelta: { bg: 'bg-emerald-500/15 border border-emerald-500/30', text: 'text-emerald-400' },
-  rechazada: { bg: 'bg-red-500/15 border border-red-500/30', text: 'text-red-400' },
-};
-
-const EMPTY_FORM: FormData = {
-  alumno_id: null,
-  nombre: '',
-  apellido: '',
-  rango: RANGOS[0],
-  horario: '',
-  turno: 'primer',
-  fecha: '',
-  observaciones: '',
-};
-
 interface FormData {
   alumno_id: number | null;
   nombre: string;
@@ -113,71 +51,392 @@ interface FormData {
   observaciones: string;
 }
 
-const LOADING_SKELETON_KEYS = ['ls-1', 'ls-2', 'ls-3', 'ls-4', 'ls-5'] as const;
-const LOADING_CELL_KEYS = ['c-1', 'c-2', 'c-3', 'c-4', 'c-5', 'c-6', 'c-7'] as const;
+interface SpaceGraduacionesProps {
+  token: string;
+}
 
-// Active filter chip styles
-const TURNO_ACTIVE_CHIP = 'bg-[#FA7B21] border-[#FA7B21] text-white';
-const TURNO_INACTIVE_CHIP = 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80';
-const ESTADO_CHIP_ACTIVE = {
-  programada: 'bg-yellow-500 border-yellow-500 text-white',
-  completada: 'bg-emerald-500 border-emerald-500 text-white',
-} as const;
-const ESTADO_CHIP_INACTIVE = 'bg-zinc-800/60 border-white/10 text-white/50 hover:text-white/80';
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const RANGOS = [
+  'Cinturon Blanco', 'Punta Amarilla', 'Cinturon Amarillo', 'Punta Verde',
+  'Cinturon Verde', 'Punta Azul', 'Cinturon Azul', 'Punta Roja',
+  'Cinturon Rojo', 'Punta Negra', 'Cinturon Negro',
+];
+
+const TURNOS = [
+  { value: 'primer', label: 'Primer Turno' },
+  { value: 'segundo', label: 'Segundo Turno' },
+  { value: 'tercer', label: 'Tercer Turno' },
+  { value: 'cuarto', label: 'Cuarto Turno' },
+];
+
+const EMPTY_FORM: FormData = {
+  alumno_id: null, nombre: '', apellido: '', rango: RANGOS[0],
+  horario: '', turno: 'primer', fecha: '', observaciones: '',
+};
+
+const ESTADO_PILL: Record<string, string> = {
+  programada: 'bg-yellow-500/10 text-yellow-400',
+  completada: 'bg-emerald-500/10 text-emerald-400',
+  cancelada: 'bg-zinc-800 text-zinc-400',
+};
+
+const CORRECCION_PILL: Record<string, string> = {
+  pendiente: 'bg-yellow-500/10 text-yellow-400',
+  resuelta: 'bg-emerald-500/10 text-emerald-400',
+  rechazada: 'bg-red-500/10 text-red-400',
+};
+
+const SKELETON_KEYS = ['ls-1', 'ls-2', 'ls-3', 'ls-4', 'ls-5'] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function headers(token: string) {
+function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
-function formatFecha(iso: string) {
+function formatFecha(iso: string): string {
   try {
-    const d = new Date(iso);
-    return d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
   } catch {
     return iso;
   }
 }
 
-function turnoLabel(val: string) {
+function turnoLabel(val: string): string {
   return TURNOS.find(t => t.value === val)?.label ?? val;
 }
 
 // ---------------------------------------------------------------------------
-// Component
+// Sub-components
+// ---------------------------------------------------------------------------
+
+function GraduacionesTable({
+  loading, graduaciones, onEdit, onDelete, onOpenCreate,
+}: {
+  loading: boolean;
+  graduaciones: Graduacion[];
+  onEdit: (g: Graduacion) => void;
+  onDelete: (id: number) => void;
+  onOpenCreate: () => void;
+}) {
+  if (loading) {
+    return (
+      <div className="bg-zinc-900 rounded-xl overflow-hidden">
+        {SKELETON_KEYS.map(sk => (
+          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-zinc-800 last:border-0">
+            <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
+            <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse hidden sm:block" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (graduaciones.length === 0) {
+    return (
+      <div className="bg-zinc-900 rounded-xl py-16 text-center">
+        <GraduationCap size={40} className="mx-auto text-white/10 mb-3" />
+        <p className="text-white/50 mb-1">Sin graduaciones</p>
+        <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
+        <button
+          onClick={onOpenCreate}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#FA7B21] hover:bg-[#E56D15] transition-colors"
+        >
+          <Plus size={14} />
+          Crear graduacion
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-zinc-900 rounded-xl overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-zinc-800">
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {graduaciones.map(g => (
+              <tr key={g.id} className="border-b border-zinc-800 last:border-0">
+                <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
+                  {g.nombre} {g.apellido}
+                </td>
+                <td className="px-5 py-3.5">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-[#FA7B21]/10 text-[#FA7B21]">
+                    {g.rango}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5 text-white/60 hidden md:table-cell">{turnoLabel(g.turno)}</td>
+                <td className="px-5 py-3.5 text-white/60 hidden sm:table-cell">{formatFecha(g.fecha)}</td>
+                <td className="px-5 py-3.5">
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-white/50'}`}>
+                    {g.estado}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5 text-right">
+                  <div className="inline-flex gap-1">
+                    <button onClick={() => onEdit(g)} className="p-2 rounded-lg text-white/40 hover:text-white transition-colors" title="Editar">
+                      <Pencil size={15} />
+                    </button>
+                    <button onClick={() => onDelete(g.id)} className="p-2 rounded-lg text-white/40 hover:text-red-400 transition-colors" title="Eliminar">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function CorreccionesTable({
+  correcciones, onResolve, onReject,
+}: {
+  correcciones: Correccion[];
+  onResolve: (id: number) => void;
+  onReject: (id: number) => void;
+}) {
+  if (correcciones.length === 0) {
+    return (
+      <div className="bg-zinc-900 rounded-xl py-16 text-center">
+        <Check size={40} className="mx-auto text-white/10 mb-3" />
+        <p className="text-white/50 text-sm">No hay correcciones pendientes</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-zinc-900 rounded-xl overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-zinc-800">
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
+              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {correcciones.map(c => (
+              <tr key={c.id} className="border-b border-zinc-800 last:border-0">
+                <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
+                <td className="px-5 py-3.5 text-white/60 max-w-xs truncate">{c.comentario}</td>
+                <td className="px-5 py-3.5">
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CORRECCION_PILL[c.estado] ?? 'text-white/50'}`}>
+                    {c.estado}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5 text-right">
+                  {c.estado === 'pendiente' && (
+                    <div className="inline-flex gap-2">
+                      <button
+                        onClick={() => onResolve(c.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                      >
+                        Resolver
+                      </button>
+                      <button
+                        onClick={() => onReject(c.id)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+                      >
+                        Rechazar
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Modal
+// ---------------------------------------------------------------------------
+
+function GraduacionModal({
+  open, editingId, form, saving, alumnoQuery, alumnoResults, showAutocomplete, autocompleteRef,
+  onClose, onSave, onFormChange, onAlumnoSearch, onSelectAlumno,
+}: {
+  open: boolean;
+  editingId: number | null;
+  form: FormData;
+  saving: boolean;
+  alumnoQuery: string;
+  alumnoResults: AlumnoBusqueda[];
+  showAutocomplete: boolean;
+  autocompleteRef: React.RefObject<HTMLDivElement | null>;
+  onClose: () => void;
+  onSave: () => void;
+  onFormChange: (patch: Partial<FormData>) => void;
+  onAlumnoSearch: (q: string) => void;
+  onSelectAlumno: (a: AlumnoBusqueda) => void;
+}) {
+  if (!open) return null;
+
+  const inputClass = 'w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-colors';
+  const labelClass = 'block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
+      <div className="relative bg-zinc-900 rounded-xl w-full max-w-lg max-h-[90dvh] overflow-y-auto">
+        <div className="h-0.5 bg-[#FA7B21] rounded-t-xl" />
+
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+          <h2 className="text-white text-lg font-bold">
+            {editingId ? 'Editar graduacion' : 'Nueva graduacion'}
+          </h2>
+          <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white transition-colors">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="px-6 py-5 space-y-4">
+          <div ref={autocompleteRef} className="relative">
+            <label className={labelClass}>Alumno</label>
+            <input
+              type="text"
+              placeholder="Buscar alumno..."
+              value={alumnoQuery}
+              onChange={e => onAlumnoSearch(e.target.value)}
+              className={inputClass}
+            />
+            {showAutocomplete && alumnoResults.length > 0 && (
+              <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg overflow-hidden">
+                {alumnoResults.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => onSelectAlumno(a)}
+                    className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-zinc-700 transition-colors"
+                  >
+                    {a.nombre} {a.apellido}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Nombre</label>
+              <input type="text" value={form.nombre} onChange={e => onFormChange({ nombre: e.target.value })} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Apellido</label>
+              <input type="text" value={form.apellido} onChange={e => onFormChange({ apellido: e.target.value })} className={inputClass} />
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Rango</label>
+            <select value={form.rango} onChange={e => onFormChange({ rango: e.target.value })} className={inputClass + ' appearance-none'}>
+              {RANGOS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelClass}>Horario</label>
+              <input type="text" placeholder="3:30 PM" value={form.horario} onChange={e => onFormChange({ horario: e.target.value })} className={inputClass} />
+            </div>
+            <div>
+              <label className={labelClass}>Turno</label>
+              <select value={form.turno} onChange={e => onFormChange({ turno: e.target.value })} className={inputClass + ' appearance-none'}>
+                {TURNOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Fecha</label>
+            <input type="date" value={form.fecha} onChange={e => onFormChange({ fecha: e.target.value })} className={inputClass} />
+          </div>
+
+          <div>
+            <label className={labelClass}>Observaciones</label>
+            <textarea
+              value={form.observaciones}
+              onChange={e => onFormChange({ observaciones: e.target.value })}
+              rows={3}
+              placeholder="Opcional..."
+              className={inputClass + ' resize-none'}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 transition-colors">
+            Cancelar
+          </button>
+          <button
+            onClick={onSave}
+            disabled={saving}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving && <Loader2 size={15} className="animate-spin" />}
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
 // ---------------------------------------------------------------------------
 
 export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
-  // State: data
   const [graduaciones, setGraduaciones] = useState<Graduacion[]>([]);
   const [stats, setStats] = useState<GraduacionStats>({ programadas: 0, completadas: 0, canceladas: 0 });
   const [correcciones, setCorrecciones] = useState<Correccion[]>([]);
-
-  // State: UI
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'graduaciones' | 'correcciones'>('graduaciones');
   const [search, setSearch] = useState('');
   const [filterTurno, setFilterTurno] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
 
-  // State: Modal
+  // Modal state
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState<FormData>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
 
-  // State: Autocomplete
+  // Autocomplete state
   const [alumnoQuery, setAlumnoQuery] = useState('');
   const [alumnoResults, setAlumnoResults] = useState<AlumnoBusqueda[]>([]);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const autocompleteRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Debounced search input
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // -----------------------------------------------------------------------
-  // Fetch helpers
+  // Fetch
   // -----------------------------------------------------------------------
 
   const fetchGraduaciones = useCallback(async () => {
@@ -187,42 +446,31 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       if (filterTurno) params.set('turno', filterTurno);
       if (filterEstado) params.set('estado', filterEstado);
       const qs = params.toString();
-      const url = `${API_BASE}/space/graduaciones${qs ? `?${qs}` : ''}`;
-      const res = await fetch(url, { headers: headers(token) });
+      const res = await fetch(`${API_BASE}/space/graduaciones${qs ? `?${qs}` : ''}`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.success !== false) {
         setGraduaciones(Array.isArray(data.graduaciones) ? data.graduaciones : (Array.isArray(data) ? data : []));
       }
-    } catch {
-      // silent - list may be empty during API build
-    }
+    } catch { /* silent */ }
   }, [token, search, filterTurno, filterEstado]);
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/space/graduaciones/stats`, { headers: headers(token) });
+      const res = await fetch(`${API_BASE}/space/graduaciones/stats`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.programadas !== undefined) setStats(data);
       else if (data.stats) setStats(data.stats);
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
   }, [token]);
 
   const fetchCorrecciones = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/space/graduaciones/correcciones`, { headers: headers(token) });
+      const res = await fetch(`${API_BASE}/space/graduaciones/correcciones`, { headers: authHeaders(token) });
       const data = await res.json();
       if (Array.isArray(data.correcciones)) setCorrecciones(data.correcciones);
       else if (Array.isArray(data)) setCorrecciones(data);
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
   }, [token]);
-
-  // -----------------------------------------------------------------------
-  // Effects
-  // -----------------------------------------------------------------------
 
   useEffect(() => {
     setLoading(true);
@@ -234,13 +482,10 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   }, [tab, fetchCorrecciones]);
 
   // Debounced search
-  const debouncedSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [searchInput, setSearchInput] = useState('');
-
   useEffect(() => {
-    if (debouncedSearchRef.current) clearTimeout(debouncedSearchRef.current);
-    debouncedSearchRef.current = setTimeout(() => setSearch(searchInput), 300);
-    return () => { if (debouncedSearchRef.current) clearTimeout(debouncedSearchRef.current); };
+    if (debouncedRef.current) clearTimeout(debouncedRef.current);
+    debouncedRef.current = setTimeout(() => setSearch(searchInput), 300);
+    return () => { if (debouncedRef.current) clearTimeout(debouncedRef.current); };
   }, [searchInput]);
 
   // Close autocomplete on outside click
@@ -255,14 +500,6 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   }, []);
 
   // -----------------------------------------------------------------------
-  // Computed: total count for pagination info
-  // -----------------------------------------------------------------------
-
-  const totalGraduaciones = useMemo(() => {
-    return stats.programadas + stats.completadas + stats.canceladas;
-  }, [stats]);
-
-  // -----------------------------------------------------------------------
   // Alumno autocomplete
   // -----------------------------------------------------------------------
 
@@ -272,7 +509,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     if (q.length < 2) { setAlumnoResults([]); setShowAutocomplete(false); return; }
     searchTimerRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(`${API_BASE}/space/graduaciones/alumnos/buscar?q=${encodeURIComponent(q)}`, { headers: headers(token) });
+        const res = await fetch(`${API_BASE}/space/graduaciones/alumnos/buscar?q=${encodeURIComponent(q)}`, { headers: authHeaders(token) });
         const data = await res.json();
         const list = Array.isArray(data.alumnos) ? data.alumnos : (Array.isArray(data) ? data : []);
         setAlumnoResults(list);
@@ -294,21 +531,13 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   // -----------------------------------------------------------------------
 
   const handleSave = useCallback(async () => {
-    if (!form.nombre.trim() || !form.apellido.trim()) {
-      toast.error('Nombre y apellido son obligatorios');
-      return;
-    }
-    if (!form.fecha) {
-      toast.error('La fecha es obligatoria');
-      return;
-    }
+    if (!form.nombre.trim() || !form.apellido.trim()) { toast.error('Nombre y apellido son obligatorios'); return; }
+    if (!form.fecha) { toast.error('La fecha es obligatoria'); return; }
     setSaving(true);
     try {
-      const url = editingId
-        ? `${API_BASE}/space/graduaciones/${editingId}`
-        : `${API_BASE}/space/graduaciones`;
+      const url = editingId ? `${API_BASE}/space/graduaciones/${editingId}` : `${API_BASE}/space/graduaciones`;
       const method = editingId ? 'PUT' : 'POST';
-      const res = await fetch(url, { method, headers: headers(token), body: JSON.stringify(form) });
+      const res = await fetch(url, { method, headers: authHeaders(token), body: JSON.stringify(form) });
       const data = await res.json();
       if (res.ok && data.success !== false) {
         toast.success(editingId ? 'Graduacion actualizada' : 'Graduacion creada');
@@ -328,16 +557,9 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const handleDelete = useCallback(async (id: number) => {
     if (!window.confirm('Eliminar esta graduacion?')) return;
     try {
-      const res = await fetch(`${API_BASE}/space/graduaciones/${id}`, {
-        method: 'DELETE', headers: headers(token),
-      });
-      if (res.ok) {
-        toast.success('Graduacion eliminada');
-        fetchGraduaciones();
-        fetchStats();
-      } else {
-        toast.error('Error al eliminar');
-      }
+      const res = await fetch(`${API_BASE}/space/graduaciones/${id}`, { method: 'DELETE', headers: authHeaders(token) });
+      if (res.ok) { toast.success('Graduacion eliminada'); fetchGraduaciones(); fetchStats(); }
+      else toast.error('Error al eliminar');
     } catch {
       toast.error('Error de conexion');
     }
@@ -346,14 +568,10 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const handleCorreccion = useCallback(async (id: number, accion: 'resuelta' | 'rechazada') => {
     try {
       const res = await fetch(`${API_BASE}/space/graduaciones/correcciones/${id}`, {
-        method: 'PUT', headers: headers(token), body: JSON.stringify({ estado: accion }),
+        method: 'PUT', headers: authHeaders(token), body: JSON.stringify({ estado: accion }),
       });
-      if (res.ok) {
-        toast.success(accion === 'resuelta' ? 'Correccion resuelta' : 'Correccion rechazada');
-        fetchCorrecciones();
-      } else {
-        toast.error('Error al actualizar correccion');
-      }
+      if (res.ok) { toast.success(accion === 'resuelta' ? 'Correccion resuelta' : 'Correccion rechazada'); fetchCorrecciones(); }
+      else toast.error('Error al actualizar correccion');
     } catch {
       toast.error('Error de conexion');
     }
@@ -373,45 +591,53 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const openEdit = useCallback((g: Graduacion) => {
     setEditingId(g.id);
     setForm({
-      alumno_id: g.alumno_id,
-      nombre: g.nombre,
-      apellido: g.apellido,
-      rango: g.rango,
-      horario: g.horario,
-      turno: g.turno,
-      fecha: g.fecha?.slice(0, 10) ?? '',
-      observaciones: g.observaciones ?? '',
+      alumno_id: g.alumno_id, nombre: g.nombre, apellido: g.apellido, rango: g.rango,
+      horario: g.horario, turno: g.turno, fecha: g.fecha?.slice(0, 10) ?? '', observaciones: g.observaciones ?? '',
     });
     setAlumnoQuery(`${g.nombre} ${g.apellido}`);
     setModalOpen(true);
   }, []);
 
-  function closeModal() {
+  const closeModal = useCallback(() => {
     setModalOpen(false);
     setEditingId(null);
     setForm({ ...EMPTY_FORM });
     setAlumnoQuery('');
     setShowAutocomplete(false);
-  }
+  }, []);
+
+  const handleFormChange = useCallback((patch: Partial<FormData>) => {
+    setForm(f => ({ ...f, ...patch }));
+  }, []);
 
   // -----------------------------------------------------------------------
-  // Filter chip handlers
+  // Filter handlers
   // -----------------------------------------------------------------------
 
-  const handleTurnoFilter = useCallback((value: string) => {
-    setFilterTurno(prev => prev === value ? '' : value);
-  }, []);
+  const handleTurnoFilter = useCallback((value: string) => setFilterTurno(prev => prev === value ? '' : value), []);
+  const handleEstadoFilter = useCallback((value: string) => setFilterEstado(prev => prev === value ? '' : value), []);
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value), []);
 
-  const handleEstadoFilter = useCallback((value: string) => {
-    setFilterEstado(prev => prev === value ? '' : value);
-  }, []);
+  const handleResolve = useCallback((id: number) => handleCorreccion(id, 'resuelta'), [handleCorreccion]);
+  const handleReject = useCallback((id: number) => handleCorreccion(id, 'rechazada'), [handleCorreccion]);
 
-  const handleTabGraduaciones = useCallback(() => setTab('graduaciones'), []);
-  const handleTabCorrecciones = useCallback(() => setTab('correcciones'), []);
+  // -----------------------------------------------------------------------
+  // Computed
+  // -----------------------------------------------------------------------
 
-  const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchInput(e.target.value);
-  }, []);
+  const totalCount = useMemo(() => stats.programadas + stats.completadas + stats.canceladas, [stats]);
+
+  const turnoChipClass = useCallback((value: string) => {
+    return filterTurno === value
+      ? 'bg-[#FA7B21] text-white'
+      : 'bg-zinc-800 text-white/50 hover:text-white';
+  }, [filterTurno]);
+
+  const estadoChipClass = useCallback((value: string) => {
+    if (filterEstado !== value) return 'bg-zinc-800 text-white/50 hover:text-white';
+    if (value === 'programada') return 'bg-yellow-500 text-white';
+    return 'bg-emerald-500 text-white';
+  }, [filterEstado]);
 
   // -----------------------------------------------------------------------
   // Render
@@ -419,24 +645,19 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   return (
     <div className="space-y-5">
-      {/* Top bar: title + stats + action */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <GraduationCap size={24} className="text-[#FA7B21] shrink-0" />
+        <div>
           <h1 className="text-white text-xl font-bold">Graduaciones</h1>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/30">
-            {stats.programadas} programadas
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-            {stats.completadas} completadas
-          </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-500/15 text-zinc-400 border border-zinc-500/30">
-            {stats.canceladas} canceladas
-          </span>
+          <div className="flex gap-3 mt-1 text-xs text-white/40">
+            <span>{stats.programadas} programadas</span>
+            <span>{stats.completadas} completadas</span>
+            <span>{stats.canceladas} canceladas</span>
+          </div>
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] active:scale-95 transition-all shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] transition-colors shrink-0"
         >
           <Plus size={16} />
           Nueva graduacion
@@ -444,19 +665,19 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-zinc-900/60 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-zinc-900 rounded-lg p-1 w-fit">
         <button
-          onClick={handleTabGraduaciones}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            tab === 'graduaciones' ? 'bg-[#FA7B21]/20 text-[#FA7B21]' : 'text-white/50 hover:text-white/80'
+          onClick={() => setTab('graduaciones')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            tab === 'graduaciones' ? 'bg-zinc-800 text-white' : 'text-white/50 hover:text-white'
           }`}
         >
           Graduaciones
         </button>
         <button
-          onClick={handleTabCorrecciones}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-            tab === 'correcciones' ? 'bg-[#FA7B21]/20 text-[#FA7B21]' : 'text-white/50 hover:text-white/80'
+          onClick={() => setTab('correcciones')}
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            tab === 'correcciones' ? 'bg-zinc-800 text-white' : 'text-white/50 hover:text-white'
           }`}
         >
           Correcciones
@@ -465,7 +686,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
       {tab === 'graduaciones' && (
         <>
-          {/* Search + Filters */}
+          {/* Search + filters */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-sm">
               <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
@@ -473,8 +694,8 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                 type="text"
                 placeholder="Buscar por nombre..."
                 value={searchInput}
-                onChange={handleSearchInputChange}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-sm placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
+                onChange={handleSearchChange}
+                className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-colors"
               />
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -482,374 +703,63 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                 <button
                   key={t.value}
                   onClick={() => handleTurnoFilter(t.value)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
-                    filterTurno === t.value
-                      ? TURNO_ACTIVE_CHIP
-                      : TURNO_INACTIVE_CHIP
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${turnoChipClass(t.value)}`}
                 >
                   {t.label}
                 </button>
               ))}
               <button
                 onClick={() => handleEstadoFilter('programada')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
-                  filterEstado === 'programada'
-                    ? ESTADO_CHIP_ACTIVE.programada
-                    : ESTADO_CHIP_INACTIVE
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${estadoChipClass('programada')}`}
               >
                 Programada
               </button>
               <button
                 onClick={() => handleEstadoFilter('completada')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
-                  filterEstado === 'completada'
-                    ? ESTADO_CHIP_ACTIVE.completada
-                    : ESTADO_CHIP_INACTIVE
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${estadoChipClass('completada')}`}
               >
                 Completada
               </button>
             </div>
           </div>
 
-          {/* Pagination info */}
-          <div className="flex items-center justify-between">
-            <p className="text-white/30 text-xs">
-              Mostrando {graduaciones.length} de {totalGraduaciones} graduaciones
-            </p>
-          </div>
+          <p className="text-white/30 text-xs">
+            Mostrando {graduaciones.length} de {totalCount} graduaciones
+          </p>
 
-          {/* Data table */}
-          <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="sticky top-0 z-10">
-                  <tr className="bg-zinc-900 border-b border-white/10">
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Horario</th>
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Turno</th>
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
-                    <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    LOADING_SKELETON_KEYS.map(sk => (
-                      <tr key={sk} className="border-b border-white/5">
-                        {LOADING_CELL_KEYS.map(ck => (
-                          <td key={ck} className="px-5 py-4">
-                            <div className="h-4 bg-white/5 rounded animate-pulse" />
-                          </td>
-                        ))}
-                      </tr>
-                    ))
-                  ) : graduaciones.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-5 py-16 text-center">
-                        <GraduationCap size={48} className="mx-auto text-white/10 mb-4" />
-                        <p className="text-white/60 text-base font-medium mb-1">Sin graduaciones</p>
-                        <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
-                        <button
-                          onClick={openCreate}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-[#FA7B21] hover:bg-[#E56D15] active:scale-95 transition-all"
-                        >
-                          <Plus size={14} />
-                          Crear graduacion
-                        </button>
-                      </td>
-                    </tr>
-                  ) : (
-                    graduaciones.map((g) => (
-                      <tr
-                        key={g.id}
-                        className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                      >
-                        <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
-                          {g.nombre.toUpperCase()} {g.apellido.toUpperCase()}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/25">
-                            <Award size={12} />
-                            {g.rango}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-white/70 hidden md:table-cell">
-                          <span className="inline-flex items-center gap-1">
-                            <Clock size={13} className="text-white/30" />
-                            {g.horario}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className="inline-flex items-center gap-1.5 text-white/70 text-xs">
-                            <span className={`w-2 h-2 rounded-full ${TURNO_COLORS[g.turno] ?? 'bg-zinc-500'}`} />
-                            {turnoLabel(g.turno)}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-white/70 hidden sm:table-cell">
-                          <span className="inline-flex items-center gap-1">
-                            <Calendar size={13} className="text-white/30" />
-                            {formatFecha(g.fecha)}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${ESTADO_STYLES[g.estado]?.bg ?? ''} ${ESTADO_STYLES[g.estado]?.text ?? 'text-white/50'}`}>
-                            {g.estado}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 text-right">
-                          <div className="inline-flex gap-1">
-                            <button
-                              onClick={() => openEdit(g)}
-                              className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
-                              title="Editar"
-                            >
-                              <Pencil size={15} />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(g.id)}
-                              className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 active:scale-95 transition-all"
-                              title="Eliminar"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <GraduacionesTable
+            loading={loading}
+            graduaciones={graduaciones}
+            onEdit={openEdit}
+            onDelete={handleDelete}
+            onOpenCreate={openCreate}
+          />
         </>
       )}
 
-      {/* Corrections tab */}
       {tab === 'correcciones' && (
-        <div className="bg-zinc-900/80 border border-white/10 rounded-2xl overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="sticky top-0 z-10">
-                <tr className="bg-zinc-900 border-b border-white/10">
-                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
-                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
-                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
-                  <th className="px-5 py-3.5 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {correcciones.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-5 py-16 text-center">
-                      <Check size={40} className="mx-auto text-white/10 mb-3" />
-                      <p className="text-white/50 text-sm">No hay correcciones pendientes</p>
-                    </td>
-                  </tr>
-                ) : (
-                  correcciones.map((c) => (
-                    <tr
-                      key={c.id}
-                      className="border-b border-white/5 hover:bg-white/[0.02] transition-colors"
-                    >
-                      <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
-                      <td className="px-5 py-3.5 text-white/70 max-w-xs truncate">{c.comentario}</td>
-                      <td className="px-5 py-3.5 text-white/70 hidden sm:table-cell">{formatFecha(c.fecha)}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${CORRECCION_STYLES[c.estado]?.bg ?? ''} ${CORRECCION_STYLES[c.estado]?.text ?? 'text-white/50'}`}>
-                          {c.estado}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        {c.estado === 'pendiente' && (
-                          <div className="inline-flex gap-1">
-                            <button
-                              onClick={() => handleCorreccion(c.id, 'resuelta')}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 active:scale-95 transition-all"
-                            >
-                              <Check size={13} />
-                              Resolver
-                            </button>
-                            <button
-                              onClick={() => handleCorreccion(c.id, 'rechazada')}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 active:scale-95 transition-all"
-                            >
-                              <X size={13} />
-                              Rechazar
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <CorreccionesTable
+          correcciones={correcciones}
+          onResolve={handleResolve}
+          onReject={handleReject}
+        />
       )}
 
-      {/* Create/Edit Modal (Dialog overlay) */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeModal} />
-
-          {/* Dialog */}
-          <div className="relative bg-zinc-900 border border-white/10 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
-            {/* Gradient top bar */}
-            <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-              <h2 className="text-white text-lg font-bold">
-                {editingId ? 'Editar graduacion' : 'Nueva graduacion'}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-all"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Body */}
-            <div className="px-6 py-5 space-y-4">
-              {/* Alumno autocomplete */}
-              <div ref={autocompleteRef} className="relative">
-                <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Alumno</label>
-                <input
-                  type="text"
-                  placeholder="Buscar alumno..."
-                  value={alumnoQuery}
-                  onChange={e => { handleAlumnoSearch(e.target.value); setAlumnoQuery(e.target.value); }}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
-                />
-                {showAutocomplete && alumnoResults.length > 0 && (
-                  <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-zinc-800 border border-white/20 rounded-xl shadow-xl overflow-hidden">
-                    {alumnoResults.map(a => (
-                      <button
-                        key={a.id}
-                        onClick={() => selectAlumno(a)}
-                        className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-white/10 transition-colors"
-                      >
-                        {a.nombre} {a.apellido}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Nombre y Apellido */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Nombre</label>
-                  <input
-                    type="text"
-                    value={form.nombre}
-                    onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Apellido</label>
-                  <input
-                    type="text"
-                    value={form.apellido}
-                    onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Rango */}
-              <div>
-                <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Rango</label>
-                <select
-                  value={form.rango}
-                  onChange={e => setForm(f => ({ ...f, rango: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all appearance-none"
-                >
-                  {RANGOS.map(r => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Horario + Turno */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Horario</label>
-                  <input
-                    type="text"
-                    placeholder="3:30 PM"
-                    value={form.horario}
-                    onChange={e => setForm(f => ({ ...f, horario: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Turno</label>
-                  <select
-                    value={form.turno}
-                    onChange={e => setForm(f => ({ ...f, turno: e.target.value }))}
-                    className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all appearance-none"
-                  >
-                    {TURNOS.map(t => (
-                      <option key={t.value} value={t.value}>{t.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Fecha */}
-              <div>
-                <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Fecha</label>
-                <input
-                  type="date"
-                  value={form.fecha}
-                  onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all"
-                />
-              </div>
-
-              {/* Observaciones */}
-              <div>
-                <label className="block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider">Observaciones</label>
-                <textarea
-                  value={form.observaciones}
-                  onChange={e => setForm(f => ({ ...f, observaciones: e.target.value }))}
-                  rows={3}
-                  placeholder="Opcional..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-800 border border-white/20 text-white text-base placeholder:text-white/30 focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30 outline-none transition-all resize-none"
-                />
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/10">
-              <button
-                onClick={closeModal}
-                className="px-4 py-2.5 rounded-xl text-sm font-medium text-white/70 border border-white/20 hover:bg-white/5 active:scale-95 transition-all"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] active:scale-95 transition-all disabled:opacity-60 disabled:pointer-events-none"
-              >
-                {saving && <Loader2 size={15} className="animate-spin" />}
-                Guardar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <GraduacionModal
+        open={modalOpen}
+        editingId={editingId}
+        form={form}
+        saving={saving}
+        alumnoQuery={alumnoQuery}
+        alumnoResults={alumnoResults}
+        showAutocomplete={showAutocomplete}
+        autocompleteRef={autocompleteRef}
+        onClose={closeModal}
+        onSave={handleSave}
+        onFormChange={handleFormChange}
+        onAlumnoSearch={handleAlumnoSearch}
+        onSelectAlumno={selectAlumno}
+      />
     </div>
   );
 }
