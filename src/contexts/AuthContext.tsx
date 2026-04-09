@@ -168,7 +168,14 @@ function transformProfile(data: any): UserData {
           estado: a.asistio === 'Sí' ? 'asistio' as const : 'falta' as const,
         }))
       : [],
-    congelaciones: Array.isArray(data.congelaciones) ? data.congelaciones : [],
+    congelaciones: Array.isArray(data.congelaciones)
+      ? data.congelaciones.map((c: any) => ({
+          fechaInicio: c.fecha_inicio,
+          fechaFin: c.fecha_fin || '',
+          estado: c.estado || 'activo',
+          dias: Number(c.dias) || 0,
+        }))
+      : [],
   };
 }
 

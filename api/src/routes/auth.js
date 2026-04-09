@@ -86,6 +86,12 @@ async function cargarPerfil(alumnoId) {
 
   const clases_totales = parseInt(perfil.clases_totales || '0');
 
+  // Congelamientos
+  const congelaciones = await query(
+    'SELECT fecha_inicio, fecha_fin, dias, motivo, estado FROM congelamientos WHERE alumno_id = $1 ORDER BY fecha_inicio DESC',
+    [alumnoId]
+  );
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -97,7 +103,7 @@ async function cargarPerfil(alumnoId) {
     clases_asistidas,
     clases_restantes: Math.max(0, clases_totales - clases_asistidas),
     asistencias,
-    congelaciones: [],
+    congelaciones,
   };
 }
 
@@ -279,6 +285,36 @@ router.get('/me', authMiddleware, async (req, res) => {
     res.json(perfil);
   } catch (err) {
     console.error('Error en /me:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// POST /api/auth/congelar — Solicitar congelamiento de membresía
+router.post('/congelar', authMiddleware, async (req, res) => {
+  try {
+    const { fecha_inicio, fecha_fin, dias, motivo } = req.body;
+    if (!fecha_inicio || !fecha_fin || !dias) {
+      return res.status(400).json({ error: 'Fechas y días requeridos' });
+    }
+
+    // Verificar que no tenga un congelamiento activo
+    const activo = await queryOne(
+      "SELECT id FROM congelamientos WHERE alumno_id = $1 AND estado = 'activo'",
+      [req.user.alumno_id]
+    );
+    if (activo) {
+      return res.status(400).json({ error: 'Ya tienes un congelamiento activo' });
+    }
+
+    await pool.query(
+      'INSERT INTO congelamientos (alumno_id, fecha_inicio, fecha_fin, dias, motivo, estado) VALUES ($1, $2, $3, $4, $5, $6)',
+      [req.user.alumno_id, fecha_inicio, fecha_fin, dias, motivo || 'Solicitud del apoderado', 'activo']
+    );
+
+    console.log(`[AUTH] Congelamiento creado: alumno_id=${req.user.alumno_id}, ${fecha_inicio} → ${fecha_fin}, ${dias} días`);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error congelando:', err);
     res.status(500).json({ error: 'Error del servidor' });
   }
 });

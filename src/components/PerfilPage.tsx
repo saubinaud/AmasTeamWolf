@@ -313,11 +313,33 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
       return;
     }
     setIsFreezing(true);
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem('amasToken');
+      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? '/api/auth/congelar'
+        : 'https://amas-api.s6hx3x.easypanel.host/api/auth/congelar';
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          fecha_inicio: format(freezeRange.from, 'yyyy-MM-dd'),
+          fecha_fin: format(freezeRange.to, 'yyyy-MM-dd'),
+          dias: effectiveFreezeDays,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Congelamiento registrado');
+        setIsFreezeDialogOpen(false);
+        await refreshUserData();
+      } else {
+        toast.error(data.error || 'Error al congelar');
+      }
+    } catch {
+      toast.error('Error de conexión');
+    } finally {
       setIsFreezing(false);
-      setIsFreezeDialogOpen(false);
-      toast.success('Congelamiento solicitado');
-    }, 1500);
+    }
   };
 
   const effectiveFreezeDays = useMemo(() => {
@@ -340,15 +362,15 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     return user?.asistencias?.find(a => isSameDay(new Date(a.fecha), day));
   };
 
-  const totalAsistencias = user?.asistencias?.filter(a => a.estado === 'asistio').length || 0;
+  const totalAsistencias = user?.matricula?.clasesAsistidas || user?.asistencias?.filter(a => a.estado === 'asistio').length || 0;
 
+  // Progreso basado en clases asistidas vs totales (no días)
   const progress = useMemo(() => {
-    if (!user?.matricula?.fechaInicio || !user?.matricula?.fechaFin) return 0;
-    const start = new Date(user.matricula.fechaInicio).getTime();
-    const end = new Date(user.matricula.fechaFin).getTime();
-    const now = Date.now();
-    return Math.min(Math.max(((now - start) / (end - start)) * 100, 0), 100);
-  }, [user?.matricula?.fechaInicio, user?.matricula?.fechaFin]);
+    const total = user?.matricula?.clasesTotales || 0;
+    if (total === 0) return 0;
+    const asistidas = user?.matricula?.clasesAsistidas || 0;
+    return Math.min(Math.round((asistidas / total) * 100), 100);
+  }, [user?.matricula?.clasesTotales, user?.matricula?.clasesAsistidas]);
 
   // Check if user has linked profile data
   const hasLinkedProfile = user && user.estudiante && user.estudiante.nombre;
@@ -456,15 +478,17 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.5 }}
                     >
-                      {Math.abs(diasRestantes)}
+                      {user?.matricula?.clasesRestantes ?? Math.abs(diasRestantes)}
                     </motion.span>
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-wide">{estaVencido ? 'Vencido' : 'Días'}</span>
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wide">
+                      {estaVencido ? 'Vencido' : 'Clases'}
+                    </span>
                   </div>
                 </div>
 
                 <div className={cn("flex-1 space-y-4", isMobile && "text-center w-full")}>
                   <div>
-                    <p className="text-xs text-zinc-500 mb-1">Progreso del ciclo</p>
+                    <p className="text-xs text-zinc-500 mb-1">{totalAsistencias} de {user?.matricula?.clasesTotales || '—'} clases</p>
                     <p className="text-2xl font-bold">{Math.round(progress)}%</p>
                   </div>
                   <div className={cn("grid grid-cols-2 gap-4", isMobile && "text-left")}>
