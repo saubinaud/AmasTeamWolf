@@ -1,63 +1,51 @@
 import { useState } from 'react';
-import { Lock, ArrowLeft, Mail, KeyRound, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Lock, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../contexts/AuthContext';
 
-type Step = 'login' | 'request-code' | 'verify-code' | 'set-password';
+type Step = 'login' | 'set-password';
 
 interface InicioSesionPageProps {
   onNavigate: (page: string) => void;
 }
 
 export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
-  const { login, requestCode, verifyCode, setPassword } = useAuth();
+  const { login, setPassword } = useAuth();
 
   const [step, setStep] = useState<Step>('login');
   const [dni, setDni] = useState('');
   const [password, setPassword_] = useState('');
-  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [emailHint, setEmailHint] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!dni) { setError('Ingresa tu DNI'); return; }
-    if (step === 'login' && !password) {
-      // First try without password to check if they need to create one
-      setLoading(true);
-      setError('');
+
+    setLoading(true);
+    setError('');
+
+    if (!password) {
+      // Sin contraseña: verificar si existe y si necesita crearla
       const result = await login(dni, '');
       setLoading(false);
-
       if (result.needsPassword) {
-        if (result.hasEmail) {
-          setStep('request-code');
-          setError('');
-        } else {
-          setError('No tienes correo registrado. Contacta a la academia por WhatsApp.');
-        }
+        setStep('set-password');
+        setError('');
         return;
       }
-      // If they do have a password, show error asking for it
       setError('Ingresa tu contraseña');
       return;
     }
 
-    setLoading(true);
-    setError('');
     const result = await login(dni, password);
     setLoading(false);
 
     if (result.needsPassword) {
-      if (result.hasEmail) {
-        setStep('request-code');
-        setError('');
-      } else {
-        setError('No tienes correo registrado. Contacta a la academia por WhatsApp.');
-      }
+      setStep('set-password');
+      setError('');
       return;
     }
 
@@ -68,42 +56,13 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     }
   };
 
-  const handleRequestCode = async () => {
-    setLoading(true);
-    setError('');
-    const result = await requestCode(dni);
-    setLoading(false);
-
-    if (result.success) {
-      setEmailHint(result.emailHint || '');
-      setStep('verify-code');
-    } else {
-      setError(result.error || 'Error al enviar código');
-    }
-  };
-
-  const handleVerifyCode = async () => {
-    if (!code || code.length !== 6) { setError('Ingresa el código de 6 dígitos'); return; }
-    setLoading(true);
-    setError('');
-    const result = await verifyCode(dni, code);
-    setLoading(false);
-
-    if (result.success) {
-      setStep('set-password');
-      setError('');
-    } else {
-      setError(result.error || 'Código inválido');
-    }
-  };
-
   const handleSetPassword = async () => {
     if (newPassword.length < 6) { setError('Mínimo 6 caracteres'); return; }
     if (newPassword !== confirmPassword) { setError('Las contraseñas no coinciden'); return; }
 
     setLoading(true);
     setError('');
-    const result = await setPassword(dni, code, newPassword);
+    const result = await setPassword(dni, '', newPassword);
     setLoading(false);
 
     if (result.success) {
@@ -132,16 +91,12 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
               <span className="text-4xl">🐺</span>
             </div>
             <h2 className="text-2xl font-bold text-white">
-              {step === 'login' && 'Iniciar Sesión'}
-              {step === 'request-code' && 'Crear tu acceso'}
-              {step === 'verify-code' && 'Verificar correo'}
-              {step === 'set-password' && 'Crear contraseña'}
+              {step === 'login' ? 'Iniciar Sesión' : 'Crea tu contraseña'}
             </h2>
             <p className="mt-2 text-white/60 text-sm">
-              {step === 'login' && 'Ingresa con tu DNI de apoderado'}
-              {step === 'request-code' && 'Te enviaremos un código a tu correo registrado'}
-              {step === 'verify-code' && `Ingresa el código enviado a ${emailHint}`}
-              {step === 'set-password' && 'Elige una contraseña para tu cuenta'}
+              {step === 'login'
+                ? 'Ingresa con tu DNI de apoderado'
+                : `Primera vez accediendo con DNI ${dni}. Elige una contraseña.`}
             </p>
           </div>
 
@@ -199,80 +154,19 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
                 Entrar
               </Button>
 
-              <button
-                onClick={() => {
-                  if (!dni) { setError('Primero ingresa tu DNI'); return; }
-                  setError('');
-                  setStep('request-code');
-                }}
-                className="w-full text-center text-[#FCA929]/80 hover:text-[#FCA929] text-sm transition-colors pt-2"
-              >
-                Primera vez? Crear mi acceso
-              </button>
+              <p className="text-center text-white/40 text-xs pt-2">
+                Primera vez? Ingresa tu DNI y presiona Entrar
+              </p>
             </div>
           )}
 
-          {/* Step: Request Code */}
-          {step === 'request-code' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-lg">
-                <p className="text-white/80 text-sm">
-                  <Mail className="w-4 h-4 inline mr-2 text-[#FCA929]" />
-                  Enviaremos un código de verificación al correo registrado para el DNI <strong className="text-white">{dni}</strong>.
-                </p>
-              </div>
-
-              <Button
-                onClick={handleRequestCode}
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02] disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Mail className="w-5 h-5 mr-2" />}
-                Enviar código
-              </Button>
-
-              <button onClick={() => { setStep('login'); setError(''); }} className="w-full text-center text-white/50 hover:text-white/70 text-sm transition-colors">
-                Volver al login
-              </button>
-            </div>
-          )}
-
-          {/* Step: Verify Code */}
-          {step === 'verify-code' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-white/70 text-sm mb-1.5">Código de verificación</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={code}
-                  onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
-                  onKeyDown={e => handleKeyDown(e, handleVerifyCode)}
-                  placeholder="123456"
-                  className="w-full px-4 py-4 bg-zinc-800 border border-white/10 rounded-lg text-white text-center text-2xl tracking-[0.5em] placeholder-white/20 focus:outline-none focus:border-[#FA7B21]/50 focus:ring-1 focus:ring-[#FA7B21]/30 transition-colors font-mono"
-                  autoFocus
-                />
-              </div>
-
-              <Button
-                onClick={handleVerifyCode}
-                disabled={loading || code.length !== 6}
-                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02] disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <KeyRound className="w-5 h-5 mr-2" />}
-                Verificar
-              </Button>
-
-              <button onClick={handleRequestCode} disabled={loading} className="w-full text-center text-[#FCA929]/70 hover:text-[#FCA929] text-sm transition-colors">
-                Reenviar código
-              </button>
-            </div>
-          )}
-
-          {/* Step: Set Password */}
+          {/* Step: Create Password */}
           {step === 'set-password' && (
             <div className="space-y-4">
+              <div className="p-3 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-lg text-sm text-white/80 text-center">
+                DNI encontrado. Crea una contraseña para acceder a tu cuenta.
+              </div>
+
               <div>
                 <label className="block text-white/70 text-sm mb-1.5">Nueva contraseña</label>
                 <div className="relative">
@@ -314,6 +208,10 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
                 {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
                 Crear contraseña y entrar
               </Button>
+
+              <button onClick={() => { setStep('login'); setError(''); }} className="w-full text-center text-white/50 hover:text-white/70 text-sm transition-colors">
+                Volver al login
+              </button>
             </div>
           )}
 
