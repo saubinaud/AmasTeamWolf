@@ -99,11 +99,11 @@ function EditModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} />
-      <div className="relative bg-zinc-900 rounded-xl w-full max-w-md">
-        <div className="h-0.5 bg-[#FA7B21] rounded-t-xl" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="h-0.5 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <h2 className="text-white text-lg font-bold">Editar inscripcion</h2>
           <button onClick={onClose} className={cx.btnIcon}>
             <X size={18} />
@@ -144,7 +144,7 @@ function EditModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">
           <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
           <button onClick={handleSave} disabled={saving} className={cx.btnPrimary + ' flex items-center gap-2'}>
             {saving && <Loader2 size={15} className="animate-spin" />}
@@ -298,7 +298,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   // -----------------------------------------------------------------------
 
   const chipClass = useCallback((active: boolean, color?: string) => {
-    if (!active) return 'bg-zinc-800 text-white/50 hover:text-white';
+    if (!active) return cx.chip(false);
     if (color) return `${color} text-white`;
     return 'bg-[#FA7B21] text-white';
   }, []);
@@ -358,7 +358,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
             <button
               key={p}
               onClick={() => handleProgramaFilter(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${chipClass(filterPrograma === p)}`}
+              className={`transition-all duration-200 ${chipClass(filterPrograma === p)}`}
             >
               {p}
             </button>
@@ -372,7 +372,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
             <button
               key={ep}
               onClick={() => handleEstadoPagoFilter(ep)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${chipClass(filterEstadoPago === ep, estadoPagoChipColor(ep))}`}
+              className={`transition-all duration-200 ${chipClass(filterEstadoPago === ep, estadoPagoChipColor(ep))}`}
             >
               {ep.charAt(0).toUpperCase() + ep.slice(1)}
             </button>
@@ -385,7 +385,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
             <button
               key={opt.value}
               onClick={() => handleActivaFilter(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${chipClass(filterActiva === opt.value, opt.value === 'si' ? 'bg-emerald-500' : 'bg-zinc-600')}`}
+              className={`transition-all duration-200 ${chipClass(filterActiva === opt.value, opt.value === 'si' ? 'bg-emerald-500' : 'bg-zinc-600')}`}
             >
               {opt.label}
             </button>
@@ -411,7 +411,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-white/5">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>Programa</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Fecha inicio</th>
