@@ -281,6 +281,18 @@
   }
 }
 
+/* SPACE admin portal animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 html {
   font-size: var(--font-size);
   -webkit-font-smoothing: antialiased;
