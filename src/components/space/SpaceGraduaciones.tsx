@@ -449,7 +449,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       const res = await fetch(`${API_BASE}/space/graduaciones${qs ? `?${qs}` : ''}`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.success !== false) {
-        setGraduaciones(Array.isArray(data.graduaciones) ? data.graduaciones : (Array.isArray(data) ? data : []));
+        setGraduaciones(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
       }
     } catch { /* silent */ }
   }, [token, search, filterTurno, filterEstado]);
@@ -458,8 +458,8 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     try {
       const res = await fetch(`${API_BASE}/space/graduaciones/stats`, { headers: authHeaders(token) });
       const data = await res.json();
-      if (data.programadas !== undefined) setStats(data);
-      else if (data.stats) setStats(data.stats);
+      if (data.stats) setStats(data.stats);
+      else if (data.programadas !== undefined) setStats(data);
     } catch { /* silent */ }
   }, [token]);
 
@@ -467,7 +467,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     try {
       const res = await fetch(`${API_BASE}/space/graduaciones/correcciones`, { headers: authHeaders(token) });
       const data = await res.json();
-      if (Array.isArray(data.correcciones)) setCorrecciones(data.correcciones);
+      if (Array.isArray(data.data)) setCorrecciones(data.data);
       else if (Array.isArray(data)) setCorrecciones(data);
     } catch { /* silent */ }
   }, [token]);
