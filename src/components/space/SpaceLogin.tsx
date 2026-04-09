@@ -1,20 +1,21 @@
-import { useState, useCallback, FormEvent } from 'react';
+import { useState, useCallback, type FormEvent } from 'react';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import type { SpaceUser } from './SpaceApp';
+import { cx } from './tokens';
 
-interface SpaceLoginProps {
+interface Props {
   onLogin: (token: string, usuario: SpaceUser) => void;
 }
 
-export function SpaceLogin({ onLogin }: SpaceLoginProps) {
+export function SpaceLogin({ onLogin }: Props) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = useCallback(async (e: FormEvent) => {
+  const submit = useCallback(async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -25,85 +26,62 @@ export function SpaceLogin({ onLogin }: SpaceLoginProps) {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (data.success && data.token && data.usuario) {
+      if (data.success && data.token) {
         onLogin(data.token, data.usuario);
       } else {
         setError(data.error || 'Credenciales incorrectas');
       }
     } catch {
-      setError('Error de conexion. Intenta de nuevo.');
+      setError('Error de conexion');
     } finally {
       setLoading(false);
     }
   }, [email, password, onLogin]);
 
-  const togglePassword = useCallback(() => setShowPassword(prev => !prev), []);
-  const handleEmail = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value), []);
-  const handlePassword = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value), []);
-
   return (
     <div className="h-dvh bg-zinc-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="bg-zinc-900 rounded-2xl p-8">
+        <div className="bg-zinc-900 rounded-2xl p-7">
+          {/* Brand */}
           <div className="text-center mb-8">
-            <h1 className="text-white text-2xl font-bold tracking-tight">SPACE</h1>
-            <p className="text-white/40 text-sm mt-1">AMAS Team Wolf</p>
+            <div className="w-10 h-10 rounded-lg bg-[#FA7B21] flex items-center justify-center mx-auto mb-3">
+              <span className="text-sm font-black text-white">S</span>
+            </div>
+            <h1 className="text-white text-xl font-bold">SPACE</h1>
+            <p className="text-white/40 text-sm mt-0.5">AMAS Team Wolf</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Form */}
+          <form onSubmit={submit} className="space-y-4">
             <div>
-              <label htmlFor="space-email" className="block text-white/60 text-sm mb-1.5">
-                Correo electronico
-              </label>
+              <label htmlFor="sp-email" className={cx.label}>Correo</label>
               <input
-                id="space-email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={handleEmail}
-                className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-colors"
-                placeholder="admin@amasteamwolf.com"
+                id="sp-email" type="email" required autoComplete="email"
+                value={email} onChange={e => setEmail(e.target.value)}
+                className={cx.input} placeholder="admin@amasteamwolf.com"
               />
             </div>
 
             <div>
-              <label htmlFor="space-password" className="block text-white/60 text-sm mb-1.5">
-                Contrasena
-              </label>
+              <label htmlFor="sp-pass" className={cx.label}>Contraseña</label>
               <div className="relative">
                 <input
-                  id="space-password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={handlePassword}
-                  className="w-full px-4 py-3 pr-12 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-colors"
-                  placeholder="********"
+                  id="sp-pass" type={show ? 'text' : 'password'} required autoComplete="current-password"
+                  value={password} onChange={e => setPassword(e.target.value)}
+                  className={cx.input + ' pr-11'} placeholder="••••••••"
                 />
-                <button
-                  type="button"
-                  onClick={togglePassword}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/30 hover:text-white/60 transition-colors"
-                  tabIndex={-1}
-                  aria-label={showPassword ? 'Ocultar contrasena' : 'Mostrar contrasena'}
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                <button type="button" onClick={() => setShow(v => !v)} tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                  aria-label={show ? 'Ocultar' : 'Mostrar'}>
+                  {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            {error && (
-              <p className="text-red-400 text-sm">{error}</p>
-            )}
+            {error && <p className="text-red-400 text-sm">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-[#FA7B21] text-white font-semibold rounded-lg transition-colors hover:bg-[#E56D15] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading && <Loader2 size={18} className="animate-spin" />}
+            <button type="submit" disabled={loading} className={cx.btnPrimary + ' w-full flex items-center justify-center gap-2'}>
+              {loading && <Loader2 size={16} className="animate-spin" />}
               {loading ? 'Ingresando...' : 'Ingresar'}
             </button>
           </form>
