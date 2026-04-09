@@ -16,7 +16,7 @@ router.get('/stats', async (_req, res) => {
       ultimoLogin,
     ] = await Promise.all([
       queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE estado IN ('activo', 'Activo')"),
-      queryOne('SELECT COUNT(*) AS total FROM inscripciones WHERE estado = 'Activo''),
+      queryOne("SELECT COUNT(*) AS total FROM inscripciones WHERE estado = 'Activo'"),
       queryOne('SELECT COUNT(*) AS total FROM asistencias WHERE fecha = CURRENT_DATE'),
       queryOne("SELECT COUNT(*) AS total FROM leads WHERE estado = 'Nuevo'"),
       queryOne(
