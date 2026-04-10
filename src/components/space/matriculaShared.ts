@@ -352,6 +352,7 @@ export function formatearFechaLarga(iso: string): string {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
+      timeZone: 'America/Lima',
     });
   } catch {
     return iso;
