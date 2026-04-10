@@ -109,7 +109,7 @@ router.get('/:id', async (req, res) => {
     const id = req.params.id;
 
     // Parallel queries for speed
-    const [alumno, inscripciones, asistenciasRecientes, totalAsistencias] = await Promise.all([
+    const [alumno, inscripciones, asistenciasRecientes, totalAsistencias, implementos] = await Promise.all([
       queryOne('SELECT * FROM alumnos WHERE id = $1', [id]),
       query(`
         SELECT id, programa, fecha_inscripcion, fecha_inicio, fecha_fin,
@@ -125,6 +125,11 @@ router.get('/:id', async (req, res) => {
         ORDER BY fecha DESC, hora DESC LIMIT 30
       `, [id]),
       queryOne('SELECT COUNT(*) AS total FROM asistencias WHERE alumno_id = $1', [id]),
+      query(`
+        SELECT id, categoria, tipo, talla, precio, origen, fecha_adquisicion, observaciones
+        FROM implementos WHERE alumno_id = $1
+        ORDER BY fecha_adquisicion DESC, created_at DESC
+      `, [id]).catch(() => []),
     ]);
 
     if (!alumno) {
@@ -179,6 +184,9 @@ router.get('/:id', async (req, res) => {
         // Asistencias
         asistencias_total: parseInt(totalAsistencias?.total || '0'),
         asistencias_recientes: asistenciasRecientes,
+        // Implementos / armas
+        implementos: implementos || [],
+        armas: (implementos || []).filter(i => i.categoria === 'arma'),
       },
     });
   } catch (err) {

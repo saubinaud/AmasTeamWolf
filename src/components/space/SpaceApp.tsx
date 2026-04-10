@@ -10,8 +10,9 @@ import { SpaceAsistencia } from './SpaceAsistencia';
 import { SpaceLeads } from './SpaceLeads';
 import { SpaceConfig } from './SpaceConfig';
 import { SpaceMensajes } from './SpaceMensajes';
+import { SpaceCompras } from './SpaceCompras';
 
-export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'mensajes' | 'config';
+export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'mensajes' | 'compras' | 'config';
 
 export interface SpaceUser {
   id: number;
@@ -80,6 +81,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'asistencia' && <SpaceAsistencia token={token} />}
       {currentPage === 'leads' && <SpaceLeads token={token} />}
       {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
+      {currentPage === 'compras' && <SpaceCompras token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
   );
