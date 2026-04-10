@@ -672,9 +672,10 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
         { headers: authHeaders(token) },
       );
       const data = await res.json();
-      const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+      const inner = data?.data || data;
+      const list = Array.isArray(inner?.mensajes) ? inner.mensajes : Array.isArray(inner) ? inner : [];
       setMensajes(list);
-      setTotal(data.total ?? list.length);
+      setTotal(inner?.pagination?.total ?? data?.total ?? list.length);
     } catch {
       toast.error('Error al cargar mensajes');
     } finally {
