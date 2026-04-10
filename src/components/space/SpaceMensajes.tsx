@@ -651,10 +651,11 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
         headers: authHeaders(token),
       });
       const data = await res.json();
+      const s = data.data ?? data;
       setStats({
-        total: data.total ?? 0,
-        difusiones: data.difusiones ?? 0,
-        individuales: data.individuales ?? 0,
+        total: s.total ?? 0,
+        difusiones: s.difusion ?? s.difusiones ?? 0,
+        individuales: s.individual ?? s.individuales ?? 0,
       });
     } catch {
       toast.error('Error al cargar estadisticas');
@@ -671,7 +672,7 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
         { headers: authHeaders(token) },
       );
       const data = await res.json();
-      const list = Array.isArray(data) ? data : data.mensajes ?? [];
+      const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
       setMensajes(list);
       setTotal(data.total ?? list.length);
     } catch {
