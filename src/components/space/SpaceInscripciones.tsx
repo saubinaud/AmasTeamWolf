@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, FileText, Loader2, AlertTriangle, Plus } from 'lucide-react';
+import { Search, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { Modal } from './Modal';
-import { SpaceNuevaInscripcion } from './SpaceNuevaInscripcion';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -158,9 +157,6 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   const [editingInscripcion, setEditingInscripcion] = useState<Inscripcion | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // New inscripcion modal
-  const [nuevaOpen, setNuevaOpen] = useState(false);
-
   // Debounced search
   const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
@@ -310,18 +306,9 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-white text-xl font-bold">Inscripciones</h1>
-          <p className="text-zinc-500 text-xs mt-1">{total} inscripciones registradas</p>
-        </div>
-        <button
-          onClick={() => setNuevaOpen(true)}
-          className={cx.btnPrimary + ' flex items-center gap-2 shrink-0'}
-        >
-          <Plus size={16} />
-          Nueva inscripción
-        </button>
+      <div>
+        <h1 className="text-white text-xl font-bold">Inscritos</h1>
+        <p className="text-zinc-500 text-xs mt-1">{total} inscripciones registradas</p>
       </div>
 
       {/* Vencimientos alert */}
@@ -476,17 +463,6 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           onSave={handleSaveEdit}
         />
       )}
-
-      {/* Nueva inscripción modal */}
-      <SpaceNuevaInscripcion
-        open={nuevaOpen}
-        onClose={() => setNuevaOpen(false)}
-        onSaved={() => {
-          fetchInscripciones();
-          fetchVencimientos();
-        }}
-        token={token}
-      />
     </div>
   );
 }
