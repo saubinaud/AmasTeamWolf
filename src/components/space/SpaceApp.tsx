@@ -48,11 +48,35 @@ function PlaceholderPage({ title, description }: { title: string; description: s
   );
 }
 
+export type SpaceTheme = 'dark' | 'light';
+
 export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('space_token'));
   const [user, setUser] = useState<SpaceUser | null>(null);
   const [currentPage, setCurrentPage] = useState<SpacePage>('dashboard');
   const [loading, setLoading] = useState(true);
+  const [theme, setTheme] = useState<SpaceTheme>(
+    () => (localStorage.getItem('space_theme') as SpaceTheme | null) ?? 'dark',
+  );
+
+  // Aplicar clase al body para que modales (React Portal) también la hereden.
+  // Al desmontar Space (salir al sitio) limpiar la clase para no afectar al site público.
+  useEffect(() => {
+    const body = document.body;
+    if (theme === 'light') {
+      body.classList.add('space-light');
+    } else {
+      body.classList.remove('space-light');
+    }
+    localStorage.setItem('space_theme', theme);
+    return () => {
+      body.classList.remove('space-light');
+    };
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+  }, []);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('space_token');
@@ -98,7 +122,15 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
   if (!user || !token) return <SpaceLogin onLogin={handleLogin} />;
 
   return (
-    <SpaceLayout user={user} currentPage={currentPage} onNavigate={handleNavigate} onLogout={handleLogout} onExit={handleExit}>
+    <SpaceLayout
+      user={user}
+      currentPage={currentPage}
+      onNavigate={handleNavigate}
+      onLogout={handleLogout}
+      onExit={handleExit}
+      theme={theme}
+      onToggleTheme={toggleTheme}
+    >
       {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} />}
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
       {currentPage === 'alumnos' && <SpaceAlumnos token={token} />}
