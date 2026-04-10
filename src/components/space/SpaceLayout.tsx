@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
 import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
-  Settings, LogOut, ExternalLink, ClipboardList, UserPlus,
-  PanelLeftOpen, X, MessageSquare, ShoppingBag,
+  Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
+  PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser } from './SpaceApp';
 
@@ -18,7 +18,9 @@ interface Props {
 const NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
   { page: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { page: 'alumnos', label: 'Alumnos', icon: Users },
-  { page: 'inscripciones', label: 'Inscripciones', icon: ClipboardList },
+  { page: 'inscripciones', label: 'Inscritos', icon: ClipboardList },
+  { page: 'inscribir', label: 'Inscribir', icon: Sparkles },
+  { page: 'renovar', label: 'Renovar', icon: RefreshCw },
   { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
   { page: 'asistencia', label: 'Asistencia', icon: CalendarCheck },
   { page: 'leads', label: 'Leads', icon: UserPlus },
@@ -29,7 +31,8 @@ const NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = 
 
 const TITLES: Record<SpacePage, string> = {
   dashboard: 'Dashboard', graduaciones: 'Graduaciones', alumnos: 'Alumnos',
-  inscripciones: 'Inscripciones', asistencia: 'Asistencia', leads: 'Leads',
+  inscripciones: 'Inscritos', inscribir: 'Inscribir', renovar: 'Renovar',
+  asistencia: 'Asistencia', leads: 'Leads',
   compras: 'Compras', mensajes: 'Mensajes', config: 'Ajustes',
 };
 

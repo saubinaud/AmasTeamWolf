@@ -6,13 +6,26 @@ import { SpaceDashboard } from './SpaceDashboard';
 import { SpaceGraduaciones } from './SpaceGraduaciones';
 import { SpaceAlumnos } from './SpaceAlumnos';
 import { SpaceInscripciones } from './SpaceInscripciones';
+import { SpaceInscribir } from './SpaceInscribir';
+import { SpaceRenovar } from './SpaceRenovar';
 import { SpaceAsistencia } from './SpaceAsistencia';
 import { SpaceLeads } from './SpaceLeads';
 import { SpaceConfig } from './SpaceConfig';
 import { SpaceMensajes } from './SpaceMensajes';
 import { SpaceCompras } from './SpaceCompras';
 
-export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'mensajes' | 'compras' | 'config';
+export type SpacePage =
+  | 'dashboard'
+  | 'graduaciones'
+  | 'alumnos'
+  | 'inscripciones'
+  | 'inscribir'
+  | 'renovar'
+  | 'asistencia'
+  | 'leads'
+  | 'mensajes'
+  | 'compras'
+  | 'config';
 
 export interface SpaceUser {
   id: number;
@@ -78,6 +91,8 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
       {currentPage === 'alumnos' && <SpaceAlumnos token={token} />}
       {currentPage === 'inscripciones' && <SpaceInscripciones token={token} />}
+      {currentPage === 'inscribir' && <SpaceInscribir token={token} onGoToInscritos={() => handleNavigate('inscripciones')} />}
+      {currentPage === 'renovar' && <SpaceRenovar token={token} onGoToInscritos={() => handleNavigate('inscripciones')} />}
       {currentPage === 'asistencia' && <SpaceAsistencia token={token} />}
       {currentPage === 'leads' && <SpaceLeads token={token} />}
       {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
