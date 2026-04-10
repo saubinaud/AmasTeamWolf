@@ -12,19 +12,33 @@ import { Modal } from './Modal';
 interface Alumno {
   id: number;
   nombre: string;
-  apellido: string;
   dni: string;
-  fecha_nacimiento?: string;
-  categoria: string;
-  estado: 'activo' | 'inactivo' | 'congelado';
-  telefono_apoderado?: string;
+  dni_apoderado?: string;
   nombre_apoderado?: string;
-  correo_apoderado?: string;
+  categoria: string;
+  cinturon_actual?: string;
+  estado: 'activo' | 'inactivo' | 'congelado';
+  programa?: string;
+  clases_totales?: number;
+  clases_asistidas?: number;
+  clases_restantes?: number;
+  telefono?: string;
+  correo?: string;
 }
 
 interface AlumnoDetalle extends Alumno {
+  fecha_nacimiento?: string;
+  telefono_apoderado?: string;
+  correo_apoderado?: string;
+  direccion?: string;
+  programa_activo?: string;
+  fecha_fin_plan?: string;
+  estado_pago?: string;
+  turno?: string;
+  dias?: string;
+  asistencias_total?: number;
+  asistencias_recientes?: Array<{ fecha: string; hora: string; turno: string; asistio: string }>;
   inscripciones?: InscripcionMini[];
-  asistencias_30d?: number;
 }
 
 interface InscripcionMini {
@@ -34,6 +48,7 @@ interface InscripcionMini {
   fecha_fin: string;
   estado_pago: string;
   activa: boolean;
+  clases_totales?: number;
 }
 
 interface SpaceAlumnosProps {
@@ -176,11 +191,52 @@ function AlumnoDetailPanel({
         </div>
       ) : alumno ? (
         <div className="space-y-6">
-          {/* Edit button */}
+          {/* Edit button + Plan summary */}
           {!editing && (
-            <button onClick={() => setEditing(true)} className={cx.btnSecondary + ' flex items-center gap-2 w-full justify-center'}>
-              <Pencil size={14} /> Editar datos
-            </button>
+            <>
+              <button onClick={() => setEditing(true)} className={cx.btnSecondary + ' flex items-center gap-2 w-full justify-center'}>
+                <Pencil size={14} /> Editar datos
+              </button>
+
+              {/* Plan activo + clases */}
+              {alumno.programa_activo && (
+                <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#FA7B21] text-sm font-semibold">{alumno.programa_activo}</span>
+                    {alumno.estado_pago && (
+                      <span className={cx.badge(alumno.estado_pago?.toLowerCase() === 'pagado' ? badgeColors.green : badgeColors.yellow)}>
+                        {alumno.estado_pago}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-2 bg-zinc-800 rounded-full">
+                      <div
+                        className="h-2 bg-emerald-500 rounded-full transition-all"
+                        style={{ width: `${alumno.clases_totales ? Math.min(100, (alumno.clases_asistidas! / alumno.clases_totales) * 100) : 0}%` }}
+                      />
+                    </div>
+                    <span className="text-white text-sm font-bold">{alumno.clases_asistidas}/{alumno.clases_totales}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-zinc-800 rounded-lg p-2">
+                      <p className="text-emerald-400 text-lg font-bold">{alumno.clases_asistidas}</p>
+                      <p className="text-zinc-500 text-[10px]">Asistidas</p>
+                    </div>
+                    <div className="bg-zinc-800 rounded-lg p-2">
+                      <p className="text-sky-400 text-lg font-bold">{alumno.clases_restantes}</p>
+                      <p className="text-zinc-500 text-[10px]">Restantes</p>
+                    </div>
+                    <div className="bg-zinc-800 rounded-lg p-2">
+                      <p className="text-white text-lg font-bold">{alumno.asistencias_total}</p>
+                      <p className="text-zinc-500 text-[10px]">Total hist.</p>
+                    </div>
+                  </div>
+                  {alumno.turno && <p className="text-zinc-500 text-xs">Turno: {alumno.turno} · {alumno.dias}</p>}
+                  {alumno.fecha_fin_plan && <p className="text-zinc-500 text-xs">Vence: {formatFecha(alumno.fecha_fin_plan)}</p>}
+                </div>
+              )}
+            </>
           )}
 
           {/* Datos del alumno */}
@@ -467,9 +523,11 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-zinc-800">
-                  <th className={cx.th}>Nombre</th>
+                  <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>DNI</th>
-                  <th className={cx.th + ' hidden sm:table-cell'}>Categoria</th>
+                  <th className={cx.th + ' hidden md:table-cell'}>Programa</th>
+                  <th className={cx.th + ' hidden lg:table-cell'}>Clases</th>
+                  <th className={cx.th + ' hidden sm:table-cell'}>Cinturon</th>
                   <th className={cx.th}>Estado</th>
                 </tr>
               </thead>
@@ -480,11 +538,40 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
                     onClick={() => handleRowClick(a.id)}
                     className={cx.tr + ' cursor-pointer'}
                   >
-                    <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>
-                      {a.nombre} {a.apellido}
+                    <td className={cx.td + ' whitespace-nowrap'}>
+                      <div>
+                        <p className="text-white font-medium">{a.nombre}</p>
+                        <p className="text-zinc-500 text-xs">{a.nombre_apoderado || ''}</p>
+                      </div>
                     </td>
-                    <td className={cx.td + ' text-white/60'}>{a.dni}</td>
-                    <td className={cx.td + ' text-white/60 hidden sm:table-cell'}>{a.categoria}</td>
+                    <td className={cx.td + ' text-zinc-400 font-mono text-xs'}>{a.dni}</td>
+                    <td className={cx.td + ' text-zinc-400 hidden md:table-cell'}>
+                      {a.programa ? (
+                        <span className="text-xs">{a.programa}</span>
+                      ) : (
+                        <span className="text-zinc-600 text-xs">Sin plan</span>
+                      )}
+                    </td>
+                    <td className={cx.td + ' hidden lg:table-cell'}>
+                      {a.clases_totales ? (
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full max-w-16">
+                            <div
+                              className="h-1.5 bg-emerald-500 rounded-full"
+                              style={{ width: `${Math.min(100, ((a.clases_asistidas || 0) / a.clases_totales) * 100)}%` }}
+                            />
+                          </div>
+                          <span className="text-zinc-400 text-xs whitespace-nowrap">
+                            {a.clases_asistidas}/{a.clases_totales}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-zinc-600 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className={cx.td + ' hidden sm:table-cell'}>
+                      <span className="text-zinc-400 text-xs">{a.cinturon_actual || 'Blanco'}</span>
+                    </td>
                     <td className={cx.td}>
                       <span className={cx.badge(ESTADO_BADGE[a.estado] ?? badgeColors.gray)}>
                         {a.estado}
