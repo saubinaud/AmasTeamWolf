@@ -100,10 +100,10 @@ function EditModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-zinc-950 border border-zinc-700 rounded-2xl w-full max-w-md shadow-2xl shadow-black/50">
+      <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl shadow-black/50">
         <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
           <h2 className="text-white text-lg font-bold">Editar inscripcion</h2>
           <button onClick={onClose} className={cx.btnIcon}>
             <X size={18} />
@@ -144,7 +144,7 @@ function EditModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-700">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
           <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
           <button onClick={handleSave} disabled={saving} className={cx.btnPrimary + ' flex items-center gap-2'}>
             {saving && <Loader2 size={15} className="animate-spin" />}
@@ -411,7 +411,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-700">
+                <tr className="border-b border-zinc-800">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>Programa</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Fecha inicio</th>
