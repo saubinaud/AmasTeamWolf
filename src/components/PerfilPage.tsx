@@ -1105,6 +1105,22 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           </motion.div>
         );
       case 'messages':
+        const unreadCount = user.mensajes?.filter(m => !m.leido).length || 0;
+        const handleMarkRead = async (msgId: number) => {
+          try {
+            const token = localStorage.getItem('amasToken');
+            if (!token) return;
+            const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+              ? `/api/auth/mensajes/${msgId}/leido`
+              : `https://amas-api.s6hx3x.easypanel.host/api/auth/mensajes/${msgId}/leido`;
+            await fetch(apiUrl, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            await refreshUserData();
+          } catch { /* silently fail */ }
+        };
+
         return (
           <motion.div
             key="messages"
@@ -1112,25 +1128,49 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="space-y-6"
+            className="space-y-4"
           >
-            {user.mensaje?.contenido ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 rounded-2xl overflow-hidden border border-white/5"
-              >
-                <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between bg-[#FA7B21]/5">
-                  <div className="flex items-center gap-3">
-                    <MessageCircle className="w-5 h-5 text-[#FA7B21]" />
-                    <span className="font-semibold">Mensaje del Equipo</span>
-                  </div>
-                  <span className="text-xs text-zinc-500">{formatDate(user.mensaje.fecha)}</span>
-                </div>
-                <div className="p-5">
-                  <p className="text-base text-zinc-300 leading-relaxed">{user.mensaje.contenido}</p>
-                </div>
-              </motion.div>
+            {unreadCount > 0 && (
+              <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl px-4 py-3 flex items-center gap-3">
+                <MessageCircle className="w-5 h-5 text-[#FA7B21]" />
+                <span className="text-[#FA7B21] text-sm font-medium">{unreadCount} mensaje{unreadCount > 1 ? 's' : ''} sin leer</span>
+              </div>
+            )}
+
+            {user.mensajes && user.mensajes.length > 0 ? (
+              <div className="space-y-3">
+                {user.mensajes.map((msg, i) => (
+                  <motion.button
+                    key={msg.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    onClick={() => !msg.leido && handleMarkRead(msg.id)}
+                    className={cn(
+                      "w-full text-left bg-zinc-900/80 rounded-2xl overflow-hidden border transition-all",
+                      !msg.leido ? "border-l-4 border-l-[#FA7B21] border-zinc-800" : "border-zinc-800/50"
+                    )}
+                  >
+                    <div className="px-5 py-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          {msg.tipo === 'difusion' && <MessageCircle className="w-4 h-4 text-[#FA7B21]" />}
+                          {msg.tipo === 'programa' && <Award className="w-4 h-4 text-sky-400" />}
+                          {msg.tipo === 'individual' && <Mail className="w-4 h-4 text-emerald-400" />}
+                          <span className={cn("text-sm font-semibold", !msg.leido ? "text-white" : "text-zinc-400")}>
+                            {msg.asunto}
+                          </span>
+                        </div>
+                        {!msg.leido && <div className="w-2 h-2 rounded-full bg-[#FA7B21]" />}
+                      </div>
+                      <p className={cn("text-sm leading-relaxed", !msg.leido ? "text-zinc-300" : "text-zinc-500")}>
+                        {msg.contenido.length > 120 ? msg.contenido.slice(0, 120) + '...' : msg.contenido}
+                      </p>
+                      <p className="text-[10px] text-zinc-600 mt-2">{formatDate(msg.fecha)}</p>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
             ) : (
               <div className="text-center py-20">
                 <motion.div
@@ -1146,31 +1186,10 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               </div>
             )}
 
-            {user.notificaciones && user.notificaciones.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-xs text-zinc-500 font-medium uppercase tracking-wider px-1">Notificaciones</h3>
-                {user.notificaciones.map((notif, i) => (
-                  <motion.div
-                    key={notif.id || i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className={cn(
-                      "bg-zinc-900/40 border rounded-xl p-4",
-                      !notif.leido ? "border-l-2 border-l-[#FA7B21] border-white/5" : "border-white/5"
-                    )}
-                  >
-                    <p className="text-sm text-zinc-300">{notif.mensaje}</p>
-                    <p className="text-[10px] text-zinc-600 mt-2">{formatDate(notif.fecha)}</p>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 variant="outline"
-                className="w-full border-white/10 bg-white/5 hover:bg-white/10 h-14 rounded-2xl text-base"
+                className="w-full border-zinc-800 bg-zinc-900 hover:bg-zinc-800 h-14 rounded-2xl text-base"
                 onClick={() => window.open('https://wa.me/51989717412', '_blank')}
               >
                 <Phone className="w-5 h-5 mr-2" /> Contactar Soporte
