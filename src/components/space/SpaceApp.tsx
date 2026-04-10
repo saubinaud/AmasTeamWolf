@@ -13,6 +13,7 @@ import { SpaceLeads } from './SpaceLeads';
 import { SpaceConfig } from './SpaceConfig';
 import { SpaceMensajes } from './SpaceMensajes';
 import { SpaceCompras } from './SpaceCompras';
+import { AsistenciaPanelPage } from '../AsistenciaPanelPage';
 
 export type SpacePage =
   | 'dashboard'
@@ -22,6 +23,7 @@ export type SpacePage =
   | 'inscribir'
   | 'renovar'
   | 'asistencia'
+  | 'tomar-asistencia'
   | 'leads'
   | 'mensajes'
   | 'compras'
@@ -32,6 +34,7 @@ export interface SpaceUser {
   nombre: string;
   email: string;
   rol: 'admin' | 'profesor';
+  permisos?: SpacePage[]; // NULL/undefined = admin con acceso total
 }
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
@@ -72,7 +75,16 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
     setUser(usuario);
   }, []);
 
-  const handleNavigate = useCallback((page: SpacePage) => setCurrentPage(page), []);
+  const handleNavigate = useCallback((page: SpacePage) => {
+    // Bloquear navegación a páginas sin permiso
+    if (user && user.rol !== 'admin' && Array.isArray(user.permisos) && page !== 'dashboard') {
+      if (!user.permisos.includes(page)) {
+        setCurrentPage('dashboard');
+        return;
+      }
+    }
+    setCurrentPage(page);
+  }, [user]);
   const handleExit = useCallback(() => onNavigate('home'), [onNavigate]);
 
   if (loading) {
@@ -94,6 +106,9 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'inscribir' && <SpaceInscribir token={token} onGoToInscritos={() => handleNavigate('inscripciones')} />}
       {currentPage === 'renovar' && <SpaceRenovar token={token} onGoToInscritos={() => handleNavigate('inscripciones')} />}
       {currentPage === 'asistencia' && <SpaceAsistencia token={token} />}
+      {currentPage === 'tomar-asistencia' && (
+        <AsistenciaPanelPage onNavigate={() => handleNavigate('asistencia')} skipAuth embedMode />
+      )}
       {currentPage === 'leads' && <SpaceLeads token={token} />}
       {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
       {currentPage === 'compras' && <SpaceCompras token={token} />}

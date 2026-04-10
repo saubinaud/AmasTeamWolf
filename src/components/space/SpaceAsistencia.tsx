@@ -20,9 +20,9 @@ interface AsistenciaHoy {
 }
 
 interface AsistenciaStats {
-  asistencias_hoy: number;
-  alumnos_unicos_hoy: number;
-  asistencias_semana: number;
+  asistenciasHoy: number;
+  alumnosUnicosHoy: number;
+  asistenciasSemana: number;
 }
 
 interface ResumenDiario {
@@ -188,7 +188,13 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
       const res = await fetch(`${API_BASE}/space/asistencia/stats`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.success !== false) {
-        setStats(data.stats ?? data.data ?? data);
+        const raw = data.stats ?? data.data ?? data;
+        // Backend devuelve camelCase; normalizar por si algún endpoint legacy usa snake_case
+        setStats({
+          asistenciasHoy: Number(raw.asistenciasHoy ?? raw.asistencias_hoy ?? 0),
+          alumnosUnicosHoy: Number(raw.alumnosUnicosHoy ?? raw.alumnos_unicos_hoy ?? 0),
+          asistenciasSemana: Number(raw.asistenciasSemana ?? raw.asistencias_semana ?? 0),
+        });
       }
     } catch {
       toast.error('Error al cargar estadisticas');
@@ -328,19 +334,19 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
             label="Asistencias hoy"
-            value={stats.asistencias_hoy}
+            value={stats.asistenciasHoy}
             icon={CalendarCheck}
             gradient={statGradients.blue}
           />
           <StatCard
             label="Alumnos unicos hoy"
-            value={stats.alumnos_unicos_hoy}
+            value={stats.alumnosUnicosHoy}
             icon={Users}
             gradient={statGradients.green}
           />
           <StatCard
             label="Asistencias esta semana"
-            value={stats.asistencias_semana}
+            value={stats.asistenciasSemana}
             icon={Clock}
             gradient={statGradients.orange}
           />
