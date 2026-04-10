@@ -1244,18 +1244,48 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             Mensajes
                                         </h3>
 
-                                        {user?.mensaje?.contenido ? (
-                                            <div className="bg-gradient-to-br from-[#FA7B21]/10 to-transparent border border-[#FA7B21]/20 rounded-2xl p-6">
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <div className="w-10 h-10 bg-[#FA7B21]/20 rounded-full flex items-center justify-center">
-                                                        <Mail className="w-5 h-5 text-[#FCA929]" />
+                                        {user?.mensajes && user.mensajes.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {(() => {
+                                                    const unread = user.mensajes.filter((m: any) => !m.leido).length;
+                                                    return unread > 0 ? (
+                                                        <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl px-4 py-3 flex items-center gap-3 mb-4">
+                                                            <MessageCircle className="w-5 h-5 text-[#FA7B21]" />
+                                                            <span className="text-[#FA7B21] font-medium">{unread} mensaje{unread > 1 ? 's' : ''} sin leer</span>
+                                                        </div>
+                                                    ) : null;
+                                                })()}
+                                                {user.mensajes.map((msg: any) => (
+                                                    <div
+                                                        key={msg.id}
+                                                        onClick={async () => {
+                                                            if (msg.leido) return;
+                                                            try {
+                                                                const token = localStorage.getItem('amasToken');
+                                                                const apiUrl = window.location.hostname === 'localhost'
+                                                                    ? `/api/auth/mensajes/${msg.id}/leido`
+                                                                    : `https://amas-api.s6hx3x.easypanel.host/api/auth/mensajes/${msg.id}/leido`;
+                                                                await fetch(apiUrl, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+                                                                await onRefresh();
+                                                            } catch { /* silent */ }
+                                                        }}
+                                                        className={`cursor-pointer bg-zinc-900 border rounded-2xl p-6 transition-all ${!msg.leido ? 'border-l-4 border-l-[#FA7B21] border-zinc-800' : 'border-zinc-800/50'}`}
+                                                    >
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 bg-[#FA7B21]/20 rounded-full flex items-center justify-center">
+                                                                    <Mail className="w-5 h-5 text-[#FCA929]" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className={`font-medium ${!msg.leido ? 'text-white' : 'text-white/60'}`}>{msg.asunto}</p>
+                                                                    <p className="text-white/40 text-sm">{formatDate(msg.fecha)}</p>
+                                                                </div>
+                                                            </div>
+                                                            {!msg.leido && <div className="w-2.5 h-2.5 rounded-full bg-[#FA7B21]" />}
+                                                        </div>
+                                                        <p className={`leading-relaxed mt-3 ${!msg.leido ? 'text-white/80' : 'text-white/50'}`}>{msg.contenido}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-white font-medium">AMAS Team Wolf</p>
-                                                        <p className="text-white/40 text-sm">{formatDate(user.mensaje.fecha)}</p>
-                                                    </div>
-                                                </div>
-                                                <p className="text-white/80 leading-relaxed">{user.mensaje.contenido}</p>
+                                                ))}
                                             </div>
                                         ) : (
                                             <div className="text-center py-16">
