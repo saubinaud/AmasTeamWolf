@@ -3,6 +3,7 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
+  ChevronRight, FileSignature,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser } from './SpaceApp';
 
@@ -15,12 +16,40 @@ interface Props {
   children: ReactNode;
 }
 
-const NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = [
+type IconType = typeof LayoutDashboard;
+
+interface NavItem {
+  page: SpacePage;
+  label: string;
+  icon: IconType;
+}
+
+interface NavGroup {
+  key: string;
+  label: string;
+  icon: IconType;
+  children: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isGroup(e: NavEntry): e is NavGroup {
+  return (e as NavGroup).children !== undefined;
+}
+
+const NAV: NavEntry[] = [
   { page: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { page: 'alumnos', label: 'Alumnos', icon: Users },
-  { page: 'inscripciones', label: 'Inscritos', icon: ClipboardList },
-  { page: 'inscribir', label: 'Inscribir', icon: Sparkles },
-  { page: 'renovar', label: 'Renovar', icon: RefreshCw },
+  {
+    key: 'inscripciones-group',
+    label: 'Inscripciones',
+    icon: FileSignature,
+    children: [
+      { page: 'inscripciones', label: 'Inscritos', icon: ClipboardList },
+      { page: 'inscribir', label: 'Inscribir', icon: Sparkles },
+      { page: 'renovar', label: 'Renovar', icon: RefreshCw },
+    ],
+  },
   { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
   { page: 'asistencia', label: 'Asistencia', icon: CalendarCheck },
   { page: 'leads', label: 'Leads', icon: UserPlus },
@@ -39,6 +68,7 @@ const TITLES: Record<SpacePage, string> = {
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children }: Props) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -51,6 +81,19 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
     if (!isMobile) setOpen(true);
     else setOpen(false);
   }, [isMobile]);
+
+  // Auto-expand grupo que contiene la página activa
+  useEffect(() => {
+    for (const entry of NAV) {
+      if (isGroup(entry) && entry.children.some((c) => c.page === currentPage)) {
+        setExpandedGroups((prev) => (prev[entry.key] ? prev : { ...prev, [entry.key]: true }));
+      }
+    }
+  }, [currentPage]);
+
+  const toggleGroup = useCallback((key: string) => {
+    setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   const initials = useMemo(
     () => user.nombre.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase(),
@@ -86,22 +129,76 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto">
-        {NAV.map(({ page, label, icon: Icon }) => {
-          const active = currentPage === page;
+        {NAV.map((entry) => {
+          if (!isGroup(entry)) {
+            const { page, label, icon: Icon } = entry;
+            const active = currentPage === page;
+            return (
+              <button
+                key={page}
+                onClick={() => go(page)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
+                  active
+                    ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
+                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
+                }`}
+              >
+                <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-zinc-600'} />
+                {label}
+                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
+              </button>
+            );
+          }
+
+          // Grupo desplegable
+          const Icon = entry.icon;
+          const containsActive = entry.children.some((c) => c.page === currentPage);
+          const expanded = expandedGroups[entry.key] ?? containsActive;
           return (
-            <button
-              key={page}
-              onClick={() => go(page)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
-                active
-                  ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
-                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
-              }`}
-            >
-              <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-zinc-600'} />
-              {label}
-              {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
-            </button>
+            <div key={entry.key}>
+              <button
+                onClick={() => toggleGroup(entry.key)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
+                  containsActive
+                    ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
+                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
+                }`}
+                aria-expanded={expanded}
+              >
+                <Icon size={16} className={containsActive ? 'text-[#FA7B21]' : 'text-zinc-600'} />
+                {entry.label}
+                <ChevronRight
+                  size={14}
+                  className={`ml-auto transition-transform duration-200 ${
+                    expanded ? 'rotate-90' : ''
+                  } ${containsActive ? 'text-[#FA7B21]' : 'text-zinc-600'}`}
+                />
+              </button>
+
+              {expanded && (
+                <div className="mt-1 ml-3 pl-3 border-l border-zinc-800 space-y-1">
+                  {entry.children.map((child) => {
+                    const ChildIcon = child.icon;
+                    const childActive = currentPage === child.page;
+                    return (
+                      <button
+                        key={child.page}
+                        onClick={() => go(child.page)}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] transition-all duration-200 ${
+                          childActive
+                            ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
+                            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
+                        }`}
+                      >
+                        <ChildIcon size={14} className={childActive ? 'text-[#FA7B21]' : 'text-zinc-600'} />
+                        {child.label}
+                        {childActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>
