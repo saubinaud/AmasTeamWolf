@@ -103,7 +103,7 @@ function EditModal({
       <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl shadow-black/50">
         <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
           <h2 className="text-white text-lg font-bold">Editar inscripcion</h2>
           <button onClick={onClose} className={cx.btnIcon}>
             <X size={18} />
@@ -115,7 +115,7 @@ function EditModal({
             <p className="text-white font-medium text-sm">
               {inscripcion.alumno_nombre} {inscripcion.alumno_apellido}
             </p>
-            <p className="text-white/40 text-xs mt-0.5">{inscripcion.programa}</p>
+            <p className="text-zinc-500 text-xs mt-0.5">{inscripcion.programa}</p>
           </div>
 
           <div>
@@ -144,7 +144,7 @@ function EditModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
           <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
           <button onClick={handleSave} disabled={saving} className={cx.btnPrimary + ' flex items-center gap-2'}>
             {saving && <Loader2 size={15} className="animate-spin" />}
@@ -326,7 +326,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
       {/* Header */}
       <div>
         <h1 className="text-white text-xl font-bold">Inscripciones</h1>
-        <p className="text-white/40 text-xs mt-1">{total} inscripciones registradas</p>
+        <p className="text-zinc-500 text-xs mt-1">{total} inscripciones registradas</p>
       </div>
 
       {/* Vencimientos alert */}
@@ -342,7 +342,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
       {/* Search + filters */}
       <div className="flex flex-col gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input
             type="text"
             placeholder="Buscar por alumno..."
@@ -393,7 +393,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
         </div>
       </div>
 
-      <p className="text-white/30 text-xs">
+      <p className="text-zinc-500 text-xs">
         Mostrando {showingFrom}–{showingTo} de {total} inscripciones
       </p>
 
@@ -402,16 +402,16 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
         <InscripcionesTableSkeleton />
       ) : inscripciones.length === 0 ? (
         <div className={cx.card + ' py-16 text-center'}>
-          <FileText size={40} className="mx-auto text-white/10 mb-3" />
-          <p className="text-white/50 mb-1">Sin inscripciones</p>
-          <p className="text-white/30 text-sm">No se encontraron inscripciones con los filtros actuales</p>
+          <FileText size={40} className="mx-auto text-zinc-700 mb-3" />
+          <p className="text-zinc-400 mb-1">Sin inscripciones</p>
+          <p className="text-zinc-500 text-sm">No se encontraron inscripciones con los filtros actuales</p>
         </div>
       ) : (
         <div className={cx.card + ' overflow-hidden'}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-zinc-800">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>Programa</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Fecha inicio</th>
@@ -459,7 +459,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           >
             Anterior
           </button>
-          <span className="text-white/40 text-sm">
+          <span className="text-zinc-500 text-sm">
             Pagina {page} de {totalPages}
           </span>
           <button
