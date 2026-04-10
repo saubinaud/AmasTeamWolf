@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, X, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { Search, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
+import { Modal } from './Modal';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -98,61 +99,42 @@ function EditModal({
   }, [inscripcion.id, estadoPago, activa, onSave]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl shadow-black/50">
-        <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
-
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <h2 className="text-white text-lg font-bold">Editar inscripcion</h2>
-          <button onClick={onClose} className={cx.btnIcon}>
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="px-6 py-5 space-y-4">
-          <div>
-            <p className="text-white font-medium text-sm">
-              {inscripcion.alumno_nombre} {inscripcion.alumno_apellido}
-            </p>
-            <p className="text-zinc-500 text-xs mt-0.5">{inscripcion.programa}</p>
-          </div>
-
-          <div>
-            <label className={cx.label}>Estado de pago</label>
-            <select
-              value={estadoPago}
-              onChange={e => setEstadoPago(e.target.value as Inscripcion['estado_pago'])}
-              className={cx.select}
-            >
-              {ESTADO_PAGO_OPTIONS.map(ep => (
-                <option key={ep} value={ep}>{ep.charAt(0).toUpperCase() + ep.slice(1)}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className={cx.label}>Activa</label>
-            <select
-              value={activa ? 'si' : 'no'}
-              onChange={e => setActiva(e.target.value === 'si')}
-              className={cx.select}
-            >
-              <option value="si">Si</option>
-              <option value="no">No</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
+    <Modal
+      open={true}
+      onClose={onClose}
+      title="Editar inscripcion"
+      footer={
+        <>
           <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
           <button onClick={handleSave} disabled={saving} className={cx.btnPrimary + ' flex items-center gap-2'}>
             {saving && <Loader2 size={15} className="animate-spin" />}
             Guardar
           </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <p className="text-white font-medium text-sm">{inscripcion.alumno_nombre} {inscripcion.alumno_apellido}</p>
+          <p className="text-zinc-500 text-xs mt-0.5">{inscripcion.programa}</p>
+        </div>
+        <div>
+          <label className={cx.label}>Estado de pago</label>
+          <select value={estadoPago} onChange={e => setEstadoPago(e.target.value as Inscripcion['estado_pago'])} className={cx.select}>
+            {ESTADO_PAGO_OPTIONS.map(ep => (
+              <option key={ep} value={ep}>{ep.charAt(0).toUpperCase() + ep.slice(1)}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={cx.label}>Activa</label>
+          <select value={activa ? 'si' : 'no'} onChange={e => setActiva(e.target.value === 'si')} className={cx.select}>
+            <option value="si">Si</option>
+            <option value="no">No</option>
+          </select>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
