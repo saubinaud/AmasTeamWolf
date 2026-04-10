@@ -130,9 +130,9 @@ function GraduacionesTable({
 }) {
   if (loading) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden">
         {SKELETON_KEYS.map(sk => (
-          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-zinc-800 last:border-0">
+          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-zinc-700 last:border-0">
             <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
             <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
             <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse hidden sm:block" />
@@ -144,7 +144,7 @@ function GraduacionesTable({
 
   if (graduaciones.length === 0) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl py-16 text-center">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl py-16 text-center">
         <GraduationCap size={40} className="mx-auto text-zinc-700 mb-3" />
         <p className="text-zinc-400 mb-1">Sin graduaciones</p>
         <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
@@ -160,11 +160,11 @@ function GraduacionesTable({
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-zinc-700">
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
@@ -175,7 +175,7 @@ function GraduacionesTable({
           </thead>
           <tbody>
             {graduaciones.map(g => (
-              <tr key={g.id} className="border-b border-zinc-800 last:border-0">
+              <tr key={g.id} className="border-b border-zinc-700 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
                   {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
                 </td>
@@ -219,7 +219,7 @@ function CorreccionesTable({
 }) {
   if (correcciones.length === 0) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl py-16 text-center">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl py-16 text-center">
         <Check size={40} className="mx-auto text-zinc-700 mb-3" />
         <p className="text-zinc-400 text-sm">No hay correcciones pendientes</p>
       </div>
@@ -227,11 +227,11 @@ function CorreccionesTable({
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div className="bg-zinc-900 border border-zinc-700 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-zinc-700">
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
@@ -240,7 +240,7 @@ function CorreccionesTable({
           </thead>
           <tbody>
             {correcciones.map(c => (
-              <tr key={c.id} className="border-b border-zinc-800 last:border-0">
+              <tr key={c.id} className="border-b border-zinc-700 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
                 <td className="px-5 py-3.5 text-white/60 max-w-xs truncate">{c.comentario}</td>
                 <td className="px-5 py-3.5">
@@ -305,10 +305,10 @@ function GraduacionModal({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl shadow-black/50">
+      <div className="relative bg-zinc-950 border border-zinc-700 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl shadow-black/50">
         <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
 
-        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-700">
           <h2 className="text-white text-lg font-bold">
             {editingId ? 'Editar graduacion' : 'Nueva graduacion'}
           </h2>
@@ -333,7 +333,7 @@ function GraduacionModal({
                   <button
                     key={a.id}
                     onClick={() => onSelectAlumno(a)}
-                    className="w-full text-left px-4 py-3 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
+                    className="w-full text-left px-4 py-3 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-700 last:border-0"
                   >
                     {a.nombre} {a.apellido}
                   </button>
@@ -390,7 +390,7 @@ function GraduacionModal({
           </div>
         </div>
 
-        <div className="sticky bottom-0 bg-zinc-950 flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
+        <div className="sticky bottom-0 bg-zinc-950 flex justify-end gap-3 px-6 py-4 border-t border-zinc-700">
           <button onClick={onClose} className={cx.btnSecondary}>
             Cancelar
           </button>

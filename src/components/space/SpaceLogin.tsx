@@ -47,7 +47,7 @@ export function SpaceLogin({ onLogin }: Props) {
       </div>
 
       <div className="relative w-full max-w-sm">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 shadow-2xl">
           {/* Brand */}
           <div className="text-center mb-8">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/25">
