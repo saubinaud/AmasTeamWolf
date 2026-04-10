@@ -77,8 +77,12 @@ interface ProximaGraduacion {
 }
 
 interface MensajeData {
-  fecha: string;
+  id: number;
+  tipo: 'difusion' | 'programa' | 'individual';
+  asunto: string;
   contenido: string;
+  fecha: string;
+  leido: boolean;
 }
 
 interface Asistencia {
@@ -102,7 +106,7 @@ interface UserData {
   pagos: Pagos;
   notificaciones: Notificacion[];
   estudiante: EstudianteData;
-  mensaje: MensajeData;
+  mensajes: MensajeData[];
   asistencias: Asistencia[];
   congelaciones: Congelacion[];
 }
@@ -190,7 +194,16 @@ function transformProfile(data: any): UserData {
           cinturonHasta: data.proxima_graduacion.cinturon_hasta || '',
         }
       : null,
-    mensaje: { fecha: '', contenido: '' },
+    mensajes: Array.isArray(data.mensajes)
+      ? data.mensajes.map((m: any) => ({
+          id: m.id,
+          tipo: m.tipo,
+          asunto: m.asunto,
+          contenido: m.contenido,
+          fecha: m.fecha,
+          leido: !!m.leido,
+        }))
+      : [],
     asistencias: Array.isArray(data.asistencias)
       ? data.asistencias.map((a: any) => ({
           fecha: a.fecha,
