@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { cx, badgeColors, statGradients } from './tokens';
 import { Modal } from './Modal';
 import { API_BASE } from '../../config/api';
+// Date helpers — fuerzan timeZone: America/Lima
+import { formatFecha } from './dateUtils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -115,18 +117,6 @@ function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
-function formatFecha(iso: string | undefined | null): string {
-  if (!iso) return '\u2014';
-  try {
-    return new Date(iso).toLocaleDateString('es-PE', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return iso;
-  }
-}
 
 function formatPrecio(n: number | string | null | undefined): string {
   const v = typeof n === 'number' ? n : parseFloat(String(n ?? 0));

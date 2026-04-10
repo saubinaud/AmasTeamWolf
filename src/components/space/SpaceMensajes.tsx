@@ -86,6 +86,7 @@ function formatFecha(iso: string | undefined): string {
       day: '2-digit',
       month: 'short',
       year: 'numeric',
+      timeZone: 'America/Lima',
     });
   } catch {
     return iso;

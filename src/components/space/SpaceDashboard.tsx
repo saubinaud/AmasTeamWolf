@@ -72,7 +72,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
 
   const go = useCallback((page: SpacePage) => onNavigate?.(page), [onNavigate]);
 
-  const today = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
+  const today = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Lima' });
 
   if (loading) {
     return (

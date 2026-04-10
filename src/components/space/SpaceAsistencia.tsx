@@ -3,6 +3,8 @@ import { CalendarCheck, Download, Users, Clock, QrCode, ExternalLink } from 'luc
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors, statGradients } from './tokens';
+// Date/hora helpers — fuerzan timeZone: America/Lima (GMT-5)
+import { formatFecha, formatFechaCorta, formatHora } from './dateUtils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,41 +49,6 @@ const SKELETON_KEYS = ['sk-1', 'sk-2', 'sk-3', 'sk-4', 'sk-5'] as const;
 
 function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-}
-
-function formatFecha(iso: string | undefined): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch {
-    return iso;
-  }
-}
-
-function formatFechaCorta(fecha: string | undefined): string {
-  if (!fecha) return '—';
-  try {
-    const d = new Date(fecha);
-    if (isNaN(d.getTime())) return String(fecha);
-    return d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
-  } catch {
-    return String(fecha);
-  }
-}
-
-function formatHora(hora: string | undefined): string {
-  if (!hora) return '—';
-  try {
-    if (hora.includes('T')) {
-      return new Date(hora).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
-    }
-    // Formato '12:33:26.867835' → '12:33'
-    const match = hora.match(/^(\d{1,2}):(\d{2})/);
-    if (match) return `${match[1].padStart(2, '0')}:${match[2]}`;
-    return hora;
-  } catch {
-    return hora;
-  }
 }
 
 function toISODate(date: Date): string {

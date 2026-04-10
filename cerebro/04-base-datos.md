@@ -117,12 +117,45 @@ Retorna JSON `{success, alumno, programa, hora, clases_restantes}` o `{success: 
 
 ## Convenciones críticas (no olvidar)
 
-1. **`estado` en alumnos** es VARCHAR — usar `LOWER(estado) = 'activo'`
+1. **`estado` en alumnos** es VARCHAR 'Activo'/'Inactivo' (capitalizado). Usar `LOWER(estado) = 'activo'` solo como defensa extra.
 2. **`estado` en inscripciones** es 'Activo'/'Vencido' (case-sensitive)
-3. **`asistio` en asistencias** es VARCHAR 'Sí'/'No'/'Tardanza'
-4. **`nombre_alumno` y `dni_alumno`** — NO `nombre`/`dni` en tabla alumnos
-5. **Password hash** en `password_hash` (bcrypt, 10 rounds)
-6. **PDFs** en `contratos.pdf_bytea` — NO en Cloudinary
+3. **`estado_pago` en inscripciones** es 'Pendiente'/'Parcial'/'Pagado'
+4. **`tipo_cliente` en inscripciones** acepta: 'Nuevo/Primer registro', 'Renovación', 'Walk-in', 'Promocional', 'Transferido'
+5. **`asistio` en asistencias** es VARCHAR 'Sí'/'No'/'Tardanza' (NO boolean)
+6. **`nombre_alumno` y `dni_alumno`** — NO `nombre`/`dni` en tabla alumnos
+7. **Password hash** en `password_hash` (bcrypt, 10 rounds)
+8. **PDFs** en `contratos.pdf_bytea` — NO en Cloudinary
+9. **Pagos** se crean automáticamente desde `/api/matricula` y `/api/renovacion` cuando admin marca estadoPago=Pagado/Parcial — ver `pagos` table con inscripcion_id, monto, tipo, metodo_pago
+10. **`space_usuarios.permisos`** es JSONB — NULL = admin (acceso total), Array de SpacePage = profesor con módulos limitados
+
+## 🕐 TIMEZONE — CRÍTICO
+
+La academia está en **Lima, Perú (America/Lima, GMT-5)**.
+
+**Estado actual:**
+- PostgreSQL: `timezone = America/Lima` ✓
+- Docker container `amas-api`: `TZ = America/Lima` ✓
+- Las queries con `CURRENT_DATE`, `NOW()` devuelven Lima local ✓
+- Los timestamps se guardan como Lima en columnas `timestamp without time zone`
+
+**Regla frontend (IMPORTANTE):**
+Cuando Node serializa un timestamp a JSON lo convierte a UTC ISO (ej. `2026-04-09T22:32:57Z` para las 17:32 Lima). Si el frontend hace `new Date(iso).toLocaleDateString('es-PE')` sin especificar timeZone, **usa la zona horaria del navegador** — lo cual rompe si alguien entra por VPN o tiene mal configurado su equipo.
+
+**SIEMPRE** usar el helper centralizado `src/components/space/dateUtils.ts` o forzar `timeZone: 'America/Lima'` explícitamente en cualquier llamada a `toLocaleDateString`/`toLocaleTimeString`/`toLocaleString`.
+
+```ts
+// ❌ MAL — depende del navegador
+new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
+
+// ✅ BIEN — siempre muestra Lima
+new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', timeZone: 'America/Lima' })
+
+// ✅ MEJOR — helper centralizado
+import { formatFecha, formatHora, formatFechaHora } from './dateUtils';
+```
+
+**Backend queries donde aplicar `AT TIME ZONE 'America/Lima'`:**
+Solo si alguna vez la configuración de TZ cambia. Actualmente ambos están en Lima así que `CURRENT_DATE` y `NOW()` ya funcionan bien. Pero es buena práctica en queries nuevas que formateen fechas con `to_char()`.
 
 ## Schema base
 Ver `database/01_schema.sql`, `02_functions.sql`, `03_views.sql` (parcial — tablas Space se agregaron via migraciones).
