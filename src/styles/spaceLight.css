@@ -1,0 +1,119 @@
+/* ============================================================================
+ * SPACE — Modo claro
+ * ============================================================================
+ * Space se diseñó originalmente con tema oscuro hardcodeado (bg-zinc-950,
+ * text-white, etc.) en decenas de componentes. Para no refactorizar cada uno,
+ * aplicamos la clase `.space-light` al wrapper raíz + `document.body` (para
+ * que los modales con React Portal también la hereden) y sobrescribimos las
+ * utilidades Tailwind específicas con valores claros mediante selectores
+ * descendientes que tienen mayor especificidad que la utilidad Tailwind sola.
+ *
+ * El color de acento #FA7B21 (naranja de marca) se mantiene igual en ambos
+ * modos. Los badges de color (emerald, amber, sky, etc.) también se mantienen
+ * porque funcionan en cualquier fondo.
+ * ========================================================================== */
+
+/* ---- Fondos ---- */
+.space-light .bg-zinc-950 { background-color: #ffffff; }
+.space-light .bg-zinc-900 { background-color: #fafafa; }
+.space-light .bg-zinc-800 { background-color: #f4f4f5; }
+.space-light .bg-zinc-700 { background-color: #e4e4e7; }
+
+/* Fondos con opacidad (card hover states, inputs, etc.) */
+.space-light .bg-zinc-900\/60 { background-color: rgba(250, 250, 250, 0.6); }
+.space-light .bg-zinc-900\/80 { background-color: rgba(250, 250, 250, 0.9); }
+.space-light .bg-zinc-800\/50 { background-color: rgba(244, 244, 245, 0.6); }
+.space-light .bg-zinc-800\/30 { background-color: rgba(244, 244, 245, 0.4); }
+
+/* Overlay oscuro del modal: en modo claro lo hacemos más suave */
+.space-light .bg-black\/80 { background-color: rgba(24, 24, 27, 0.35); }
+.space-light .bg-black\/70 { background-color: rgba(24, 24, 27, 0.3); }
+
+/* ---- Bordes ---- */
+.space-light .border-zinc-800 { border-color: #e4e4e7; }
+.space-light .border-zinc-700 { border-color: #d4d4d8; }
+.space-light .border-white\/10 { border-color: rgba(24, 24, 27, 0.08); }
+.space-light .border-white\/5 { border-color: rgba(24, 24, 27, 0.05); }
+.space-light .border-white\/15 { border-color: rgba(24, 24, 27, 0.12); }
+.space-light .border-white\/20 { border-color: rgba(24, 24, 27, 0.15); }
+
+/* Divide (between list items) */
+.space-light .divide-white\/5 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(24, 24, 27, 0.08); }
+.space-light .divide-white\/10 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(24, 24, 27, 0.1); }
+
+/* ---- Texto ---- */
+.space-light .text-white { color: #18181b; }
+.space-light .text-zinc-300 { color: #3f3f46; }
+.space-light .text-zinc-400 { color: #52525b; }
+.space-light .text-zinc-500 { color: #71717a; }
+.space-light .text-zinc-600 { color: #a1a1aa; }
+.space-light .text-zinc-700 { color: #d4d4d8; }
+
+/* Texto con opacidad (header sidebar, etc.) */
+.space-light .text-white\/40 { color: rgba(24, 24, 27, 0.45); }
+.space-light .text-white\/50 { color: rgba(24, 24, 27, 0.55); }
+.space-light .text-white\/60 { color: rgba(24, 24, 27, 0.65); }
+.space-light .text-white\/70 { color: rgba(24, 24, 27, 0.75); }
+.space-light .text-white\/80 { color: rgba(24, 24, 27, 0.85); }
+.space-light .text-white\/20 { color: rgba(24, 24, 27, 0.3); }
+
+/* Accent orange: se mantiene igual #FA7B21 */
+
+/* ---- Hover states ---- */
+.space-light .hover\:bg-zinc-800:hover { background-color: #f4f4f5; }
+.space-light .hover\:bg-zinc-700:hover { background-color: #e4e4e7; }
+.space-light .hover\:bg-zinc-800\/50:hover { background-color: rgba(244, 244, 245, 0.7); }
+.space-light .hover\:bg-white\/5:hover { background-color: rgba(24, 24, 27, 0.04); }
+.space-light .hover\:bg-white\/10:hover { background-color: rgba(24, 24, 27, 0.06); }
+.space-light .hover\:text-white:hover { color: #18181b; }
+.space-light .hover\:text-zinc-300:hover { color: #27272a; }
+.space-light .hover\:text-zinc-400:hover { color: #3f3f46; }
+.space-light .hover\:text-zinc-500:hover { color: #52525b; }
+
+/* Hover borders */
+.space-light .hover\:border-white\/30:hover { border-color: rgba(24, 24, 27, 0.2); }
+.space-light .hover\:border-white\/40:hover { border-color: rgba(24, 24, 27, 0.25); }
+
+/* Focus rings (mantener pero con contraste correcto) */
+.space-light .focus\:border-\[\#FA7B21\]:focus { border-color: #FA7B21; }
+
+/* ---- Skeletons ---- */
+.space-light .bg-zinc-800.animate-pulse,
+.space-light .animate-pulse.bg-zinc-800 { background-color: #e4e4e7; }
+
+/* ---- Sombras — más sutiles en modo claro ---- */
+.space-light .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(24, 24, 27, 0.15); }
+.space-light .shadow-xl { box-shadow: 0 20px 25px -5px rgba(24, 24, 27, 0.1), 0 8px 10px -6px rgba(24, 24, 27, 0.1); }
+.space-light .shadow-lg { box-shadow: 0 10px 15px -3px rgba(24, 24, 27, 0.08), 0 4px 6px -4px rgba(24, 24, 27, 0.08); }
+.space-light .shadow-2xl.shadow-black\/80 { box-shadow: 0 25px 50px -12px rgba(24, 24, 27, 0.25); }
+
+/* ---- Gradientes stat cards ---- */
+/* Los gradientes existentes (from-sky-500/15 to-sky-500/5, from-emerald-500/15 ...)
+ * se ven BIEN en modo claro porque son opacidades bajas sobre el fondo.
+ * Solo ajustamos el contraste del texto dentro.
+ */
+
+/* ---- Inputs específicos ---- */
+.space-light input,
+.space-light select,
+.space-light textarea {
+  color-scheme: light;
+}
+
+.space-light input::placeholder,
+.space-light textarea::placeholder {
+  color: #a1a1aa;
+}
+
+/* Select dropdown options en modo claro */
+.space-light select option {
+  background-color: #ffffff;
+  color: #18181b;
+}
+
+/* ---- Overrides específicos para el sidebar activo ---- */
+/* El item activo usa bg-[#FA7B21]/10 + border-[#FA7B21]/15 — queda bien claro */
+.space-light .bg-\[\#FA7B21\]\/10 { background-color: rgba(250, 123, 33, 0.12); }
+.space-light .bg-\[\#FA7B21\]\/15 { background-color: rgba(250, 123, 33, 0.15); }
+.space-light .border-\[\#FA7B21\]\/15 { border-color: rgba(250, 123, 33, 0.35); }
+.space-light .border-\[\#FA7B21\]\/30 { border-color: rgba(250, 123, 33, 0.5); }
