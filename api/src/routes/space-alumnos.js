@@ -7,9 +7,9 @@ const router = Router();
 router.get('/stats', async (_req, res) => {
   try {
     const [activos, inactivos, congelados] = await Promise.all([
-      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE estado = 'activo'"),
-      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE estado = 'inactivo'"),
-      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE estado = 'congelado'"),
+      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE LOWER(estado) = 'activo'"),
+      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE LOWER(estado) = 'inactivo'"),
+      queryOne("SELECT COUNT(*) AS total FROM alumnos WHERE LOWER(estado) = 'congelado'"),
     ]);
 
     return res.json({
@@ -39,11 +39,11 @@ router.get('/', async (req, res) => {
     let paramIndex = 1;
 
     if (estado) {
-      conditions.push(`a.estado = $${paramIndex++}`);
-      params.push(estado);
+      conditions.push(`LOWER(a.estado) = $${paramIndex++}`);
+      params.push(estado.toLowerCase());
     }
     if (search) {
-      conditions.push(`(a.nombre_alumno ILIKE $${paramIndex} OR a.dni ILIKE $${paramIndex})`);
+      conditions.push(`(a.nombre_alumno ILIKE $${paramIndex} OR a.dni_alumno ILIKE $${paramIndex} OR a.dni_apoderado ILIKE $${paramIndex})`);
       params.push(`%${search}%`);
       paramIndex++;
     }
@@ -58,7 +58,17 @@ router.get('/', async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     const rows = await query(
-      `SELECT a.*
+      `SELECT a.id,
+              a.nombre_alumno AS nombre,
+              a.dni_alumno AS dni,
+              a.fecha_nacimiento,
+              a.categoria,
+              LOWER(a.estado) AS estado,
+              a.nombre_apoderado AS nombre_apoderado,
+              a.correo AS correo_apoderado,
+              a.telefono AS telefono_apoderado,
+              a.cinturon_actual,
+              a.created_at
        FROM alumnos a
        ${where}
        ORDER BY a.created_at DESC
@@ -110,10 +120,26 @@ router.get('/:id', async (req, res) => {
     return res.json({
       success: true,
       data: {
-        alumno,
-        apoderado,
-        inscripciones,
-        asistencias,
+        id: alumno.id,
+        nombre: alumno.nombre_alumno,
+        dni: alumno.dni_alumno,
+        fecha_nacimiento: alumno.fecha_nacimiento,
+        categoria: alumno.categoria,
+        estado: (alumno.estado || '').toLowerCase(),
+        cinturon_actual: alumno.cinturon_actual || 'Blanco',
+        nombre_apoderado: alumno.nombre_apoderado,
+        telefono_apoderado: alumno.telefono,
+        correo_apoderado: alumno.correo,
+        direccion: alumno.direccion,
+        inscripciones: inscripciones.map(i => ({
+          id: i.id,
+          programa: i.programa,
+          fecha_inicio: i.fecha_inicio,
+          fecha_fin: i.fecha_fin,
+          estado_pago: i.estado_pago,
+          activa: i.estado === 'Activo',
+        })),
+        asistencias_30d: asistencias.length,
       },
     });
   } catch (err) {

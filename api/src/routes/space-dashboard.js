@@ -25,10 +25,11 @@ router.get('/stats', async (_req, res) => {
            AND fecha_fin BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '7 days'`
       ),
       query(
-        `SELECT a.id, a.fecha, a.hora, al.nombre_alumno
+        `SELECT a.id, a.fecha, a.hora::text, a.turno, al.nombre_alumno
          FROM asistencias a
          LEFT JOIN alumnos al ON al.id = a.alumno_id
-         ORDER BY a.fecha DESC, a.hora DESC
+         WHERE a.fecha = CURRENT_DATE
+         ORDER BY a.hora DESC
          LIMIT 5`
       ),
       queryOne(
