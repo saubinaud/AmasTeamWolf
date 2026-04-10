@@ -128,19 +128,19 @@ function AlumnoDetailPanel({
                   <span className="text-white text-sm font-medium">{alumno.nombre} {alumno.apellido}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">DNI</span>
+                  <span className="text-zinc-500 text-sm">DNI</span>
                   <span className="text-white text-sm">{alumno.dni}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">Fecha nacimiento</span>
+                  <span className="text-zinc-500 text-sm">Fecha nacimiento</span>
                   <span className="text-white text-sm">{formatFecha(alumno.fecha_nacimiento)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">Categoria</span>
+                  <span className="text-zinc-500 text-sm">Categoria</span>
                   <span className="text-white text-sm">{alumno.categoria}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/50 text-sm">Estado</span>
+                  <span className="text-zinc-500 text-sm">Estado</span>
                   <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>
                     {alumno.estado}
                   </span>
@@ -157,11 +157,11 @@ function AlumnoDetailPanel({
                   <span className="text-white text-sm">{alumno.nombre_apoderado || '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">Telefono</span>
+                  <span className="text-zinc-500 text-sm">Telefono</span>
                   <span className="text-white text-sm">{alumno.telefono_apoderado || '—'}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">Correo</span>
+                  <span className="text-zinc-500 text-sm">Correo</span>
                   <span className="text-white text-sm">{alumno.correo_apoderado || '—'}</span>
                 </div>
               </div>
@@ -192,7 +192,7 @@ function AlumnoDetailPanel({
                   </table>
                 </div>
               ) : (
-                <p className="text-white/30 text-sm">Sin inscripciones activas</p>
+                <p className="text-zinc-500 text-sm">Sin inscripciones activas</p>
               )}
             </section>
 
@@ -374,16 +374,16 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
         <AlumnosTableSkeleton />
       ) : alumnos.length === 0 ? (
         <div className={cx.card + ' py-16 text-center'}>
-          <Users size={40} className="mx-auto text-white/10 mb-3" />
-          <p className="text-white/50 mb-1">Sin alumnos</p>
-          <p className="text-white/30 text-sm">No se encontraron alumnos con los filtros actuales</p>
+          <Users size={40} className="mx-auto text-zinc-700 mb-3" />
+          <p className="text-zinc-400 mb-1">Sin alumnos</p>
+          <p className="text-zinc-500 text-sm">No se encontraron alumnos con los filtros actuales</p>
         </div>
       ) : (
         <div className={cx.card + ' overflow-hidden'}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-white/5">
+                <tr className="border-b border-zinc-800">
                   <th className={cx.th}>Nombre</th>
                   <th className={cx.th}>DNI</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Categoria</th>

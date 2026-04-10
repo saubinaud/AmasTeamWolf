@@ -72,7 +72,7 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           </div>
         </div>
         {isMobile && (
-          <button onClick={close} className="p-2 text-white/30 hover:text-white hover:bg-white/5 rounded-xl transition-all" aria-label="Cerrar">
+          <button onClick={close} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all" aria-label="Cerrar">
             <X size={18} />
           </button>
         )}
@@ -89,10 +89,10 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
                 active
                   ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/5 border border-transparent'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
               }`}
             >
-              <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-white/25'} />
+              <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-zinc-600'} />
               {label}
               {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
             </button>
@@ -108,13 +108,13 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           </div>
           <div className="min-w-0">
             <p className="text-white text-xs font-medium truncate">{user.nombre}</p>
-            <p className="text-white/25 text-[10px] truncate">{user.rol === 'admin' ? 'Administrador' : 'Profesor'}</p>
+            <p className="text-zinc-600 text-[10px] truncate">{user.rol === 'admin' ? 'Administrador' : 'Profesor'}</p>
           </div>
         </div>
         <div className="flex gap-1">
           <button
             onClick={() => { close(); onExit(); }}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-zinc-500 hover:text-zinc-400 hover:bg-zinc-800 transition-all"
           >
             <ExternalLink size={12} /> Sitio
           </button>
@@ -157,7 +157,7 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           {(!open || isMobile) && (
             <button
               onClick={() => setOpen(true)}
-              className="p-2 text-white/30 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+              className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
               aria-label="Menu"
             >
               <PanelLeftOpen size={18} />
