@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Search, Check, X, Loader2, GraduationCap } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Check, Loader2, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
+import { Modal } from './Modal';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -297,114 +298,52 @@ function GraduacionModal({
   onAlumnoSearch: (q: string) => void;
   onSelectAlumno: (a: AlumnoBusqueda) => void;
 }) {
-  if (!open) return null;
-
   const inputClass = cx.input;
   const labelClass = cx.label;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl shadow-black/50">
-        <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
-
-        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <h2 className="text-white text-lg font-bold">
-            {editingId ? 'Editar graduacion' : 'Nueva graduacion'}
-          </h2>
-          <button onClick={onClose} className="p-1.5 text-white/40 hover:text-white transition-colors">
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="px-6 py-5 space-y-4">
-          <div ref={autocompleteRef} className="relative">
-            <label className={labelClass}>Alumno</label>
-            <input
-              type="text"
-              placeholder="Buscar alumno..."
-              value={alumnoQuery}
-              onChange={e => onAlumnoSearch(e.target.value)}
-              className={inputClass}
-            />
-            {showAutocomplete && alumnoResults.length > 0 && (
-              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl shadow-black/50">
-                {alumnoResults.map(a => (
-                  <button
-                    key={a.id}
-                    onClick={() => onSelectAlumno(a)}
-                    className="w-full text-left px-4 py-3 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
-                  >
-                    {a.nombre} {a.apellido}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Nombre</label>
-              <input type="text" value={form.nombre} onChange={e => onFormChange({ nombre: e.target.value })} className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>Apellido</label>
-              <input type="text" value={form.apellido} onChange={e => onFormChange({ apellido: e.target.value })} className={inputClass} />
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>Rango</label>
-            <select value={form.rango} onChange={e => onFormChange({ rango: e.target.value })} className={inputClass + ' appearance-none'}>
-              {RANGOS.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Horario</label>
-              <input type="text" placeholder="3:30 PM" value={form.horario} onChange={e => onFormChange({ horario: e.target.value })} className={inputClass} />
-            </div>
-            <div>
-              <label className={labelClass}>Turno</label>
-              <select value={form.turno} onChange={e => onFormChange({ turno: e.target.value })} className={inputClass + ' appearance-none'}>
-                {TURNOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>Fecha</label>
-            <input type="date" value={form.fecha} onChange={e => onFormChange({ fecha: e.target.value })} className={inputClass} />
-          </div>
-
-          <div>
-            <label className={labelClass}>Observaciones</label>
-            <textarea
-              value={form.observaciones}
-              onChange={e => onFormChange({ observaciones: e.target.value })}
-              rows={3}
-              placeholder="Opcional..."
-              className={inputClass + ' resize-none'}
-            />
-          </div>
-        </div>
-
-        <div className="sticky bottom-0 bg-zinc-950 flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
-          <button onClick={onClose} className={cx.btnSecondary}>
-            Cancelar
-          </button>
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className={cx.btnPrimary + ' flex items-center gap-2'}
-          >
+    <Modal
+      open={open}
+      onClose={onClose}
+      title={editingId ? 'Editar graduacion' : 'Nueva graduacion'}
+      size="lg"
+      footer={
+        <>
+          <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
+          <button onClick={onSave} disabled={saving} className={cx.btnPrimary + ' flex items-center gap-2'}>
             {saving && <Loader2 size={15} className="animate-spin" />}
             Guardar
           </button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div ref={autocompleteRef} className="relative">
+          <label className={labelClass}>Alumno</label>
+          <input type="text" placeholder="Buscar alumno..." value={alumnoQuery} onChange={e => onAlumnoSearch(e.target.value)} className={inputClass} />
+          {showAutocomplete && alumnoResults.length > 0 && (
+            <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl shadow-black/50">
+              {alumnoResults.map(a => (
+                <button key={a.id} onClick={() => onSelectAlumno(a)} className="w-full text-left px-4 py-3 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0">
+                  {a.nombre} {a.apellido}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelClass}>Nombre</label><input type="text" value={form.nombre} onChange={e => onFormChange({ nombre: e.target.value })} className={inputClass} /></div>
+          <div><label className={labelClass}>Apellido</label><input type="text" value={form.apellido} onChange={e => onFormChange({ apellido: e.target.value })} className={inputClass} /></div>
+        </div>
+        <div><label className={labelClass}>Rango</label><select value={form.rango} onChange={e => onFormChange({ rango: e.target.value })} className={cx.select}>{RANGOS.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
+        <div className="grid grid-cols-2 gap-3">
+          <div><label className={labelClass}>Horario</label><input type="text" placeholder="3:30 PM" value={form.horario} onChange={e => onFormChange({ horario: e.target.value })} className={inputClass} /></div>
+          <div><label className={labelClass}>Turno</label><select value={form.turno} onChange={e => onFormChange({ turno: e.target.value })} className={cx.select}>{TURNOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}</select></div>
+        </div>
+        <div><label className={labelClass}>Fecha</label><input type="date" value={form.fecha} onChange={e => onFormChange({ fecha: e.target.value })} className={inputClass} /></div>
+        <div><label className={labelClass}>Observaciones</label><textarea value={form.observaciones} onChange={e => onFormChange({ observaciones: e.target.value })} rows={3} placeholder="Opcional..." className={inputClass + ' resize-none'} /></div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

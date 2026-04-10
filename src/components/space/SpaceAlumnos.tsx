@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, X, Users, Loader2 } from 'lucide-react';
+import { Search, Users, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
+import { Modal } from './Modal';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -98,116 +99,85 @@ function AlumnoDetailPanel({
   loading: boolean;
   onClose: () => void;
 }) {
-  if (!alumno && !loading) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end">
-      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-zinc-950 border-l border-zinc-800 w-full max-w-md h-full overflow-y-auto shadow-2xl shadow-black/50">
-        <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929]" />
-
-        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-          <h2 className="text-white text-lg font-bold">Detalle del alumno</h2>
-          <button onClick={onClose} className={cx.btnIcon}>
-            <X size={18} />
-          </button>
+    <Modal open={!!alumno || loading} onClose={onClose} title="Detalle del alumno" size="full-right">
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 size={24} className="animate-spin text-[#FA7B21]" />
         </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-[#FA7B21]" />
-          </div>
-        ) : alumno ? (
-          <div className="px-6 py-5 space-y-6">
-            {/* Datos del alumno */}
-            <section>
-              <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">Nombre</span>
-                  <span className="text-white text-sm font-medium">{alumno.nombre} {alumno.apellido}</span>
+      ) : alumno ? (
+        <div className="space-y-6">
+          <section>
+            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
+            <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+              {[
+                ['Nombre', `${alumno.nombre} ${alumno.apellido || ''}`],
+                ['DNI', alumno.dni],
+                ['Nacimiento', formatFecha(alumno.fecha_nacimiento)],
+                ['Categoria', alumno.categoria],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between">
+                  <span className="text-zinc-500 text-sm">{label}</span>
+                  <span className="text-white text-sm font-medium">{value || '—'}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">DNI</span>
-                  <span className="text-white text-sm">{alumno.dni}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">Fecha nacimiento</span>
-                  <span className="text-white text-sm">{formatFecha(alumno.fecha_nacimiento)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">Categoria</span>
-                  <span className="text-white text-sm">{alumno.categoria}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-zinc-500 text-sm">Estado</span>
-                  <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>
-                    {alumno.estado}
-                  </span>
-                </div>
+              ))}
+              <div className="flex justify-between items-center">
+                <span className="text-zinc-500 text-sm">Estado</span>
+                <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>{alumno.estado}</span>
               </div>
-            </section>
+            </div>
+          </section>
 
-            {/* Datos del apoderado */}
-            <section>
-              <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Datos del apoderado</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">Nombre</span>
-                  <span className="text-white text-sm">{alumno.nombre_apoderado || '—'}</span>
+          <section>
+            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Apoderado</h3>
+            <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+              {[
+                ['Nombre', alumno.nombre_apoderado],
+                ['Telefono', alumno.telefono_apoderado],
+                ['Correo', alumno.correo_apoderado],
+              ].map(([label, value]) => (
+                <div key={label} className="flex justify-between">
+                  <span className="text-zinc-500 text-sm">{label}</span>
+                  <span className="text-white text-sm">{value || '—'}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">Telefono</span>
-                  <span className="text-white text-sm">{alumno.telefono_apoderado || '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">Correo</span>
-                  <span className="text-white text-sm">{alumno.correo_apoderado || '—'}</span>
-                </div>
-              </div>
-            </section>
+              ))}
+            </div>
+          </section>
 
-            {/* Inscripciones activas */}
-            <section>
-              <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones activas</h3>
-              {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
-                <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-800">
-                        <th className={cx.th}>Programa</th>
-                        <th className={cx.th}>Inicio</th>
-                        <th className={cx.th}>Fin</th>
+          <section>
+            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones</h3>
+            {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
+              <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+                <table className="w-full text-left text-sm">
+                  <thead><tr className="border-b border-zinc-800">
+                    <th className={cx.th}>Programa</th><th className={cx.th}>Inicio</th><th className={cx.th}>Fin</th>
+                  </tr></thead>
+                  <tbody>
+                    {alumno.inscripciones.map(ins => (
+                      <tr key={ins.id} className={cx.tr}>
+                        <td className={cx.td + ' text-white font-medium'}>{ins.programa}</td>
+                        <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_inicio)}</td>
+                        <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_fin)}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {alumno.inscripciones.map(ins => (
-                        <tr key={ins.id} className={cx.tr}>
-                          <td className={cx.td + ' text-white font-medium'}>{ins.programa}</td>
-                          <td className={cx.td + ' text-white/60'}>{formatFecha(ins.fecha_inicio)}</td>
-                          <td className={cx.td + ' text-white/60'}>{formatFecha(ins.fecha_fin)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="text-zinc-500 text-sm">Sin inscripciones activas</p>
-              )}
-            </section>
-
-            {/* Asistencias */}
-            <section>
-              <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (ultimos 30 dias)</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
-                <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
-                <span className="text-white/40 text-sm ml-2">asistencias</span>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </section>
-          </div>
-        ) : null}
-      </div>
-    </div>
+            ) : (
+              <p className="text-zinc-500 text-sm">Sin inscripciones activas</p>
+            )}
+          </section>
+
+          <section>
+            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (30 dias)</h3>
+            <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
+              <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
+              <span className="text-zinc-500 text-sm ml-2">asistencias</span>
+            </div>
+          </section>
+        </div>
+      ) : null}
+    </Modal>
   );
 }
 
