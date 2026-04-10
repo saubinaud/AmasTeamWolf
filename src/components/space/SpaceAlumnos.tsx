@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, Users, Loader2 } from 'lucide-react';
+import { Search, Users, Loader2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
@@ -94,87 +94,200 @@ function AlumnoDetailPanel({
   alumno,
   loading,
   onClose,
+  token,
+  onUpdated,
 }: {
   alumno: AlumnoDetalle | null;
   loading: boolean;
   onClose: () => void;
+  token: string;
+  onUpdated: () => void;
 }) {
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    nombre_alumno: '', dni_alumno: '', fecha_nacimiento: '', categoria: '', estado: '',
+    nombre_apoderado: '', telefono: '', correo: '', direccion: '',
+  });
+
+  // Sync form with alumno data when panel opens or alumno changes
+  useEffect(() => {
+    if (alumno) {
+      setForm({
+        nombre_alumno: alumno.nombre || '',
+        dni_alumno: alumno.dni || '',
+        fecha_nacimiento: alumno.fecha_nacimiento ? alumno.fecha_nacimiento.split('T')[0] : '',
+        categoria: alumno.categoria || '',
+        estado: alumno.estado || '',
+        nombre_apoderado: alumno.nombre_apoderado || '',
+        telefono: alumno.telefono_apoderado || '',
+        correo: alumno.correo_apoderado || '',
+        direccion: alumno.direccion || '',
+      });
+      setEditing(false);
+    }
+  }, [alumno]);
+
+  const handleSave = async () => {
+    if (!alumno) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_BASE}/space/alumnos/${alumno.id}`, {
+        method: 'PUT',
+        headers: authHeaders(token),
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Alumno actualizado');
+        setEditing(false);
+        onUpdated();
+      } else {
+        toast.error(data.error || 'Error al guardar');
+      }
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const patch = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
   return (
-    <Modal open={!!alumno || loading} onClose={onClose} title="Detalle del alumno" size="full-right">
+    <Modal
+      open={!!alumno || loading}
+      onClose={() => { setEditing(false); onClose(); }}
+      title={editing ? 'Editar alumno' : 'Detalle del alumno'}
+      size="full-right"
+      footer={editing ? (
+        <>
+          <button onClick={() => setEditing(false)} className={cx.btnSecondary}>Cancelar</button>
+          <button onClick={handleSave} disabled={saving} className={cx.btnPrimary + ' flex items-center gap-2'}>
+            {saving && <Loader2 size={15} className="animate-spin" />}
+            Guardar
+          </button>
+        </>
+      ) : undefined}
+    >
       {loading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 size={24} className="animate-spin text-[#FA7B21]" />
         </div>
       ) : alumno ? (
         <div className="space-y-6">
+          {/* Edit button */}
+          {!editing && (
+            <button onClick={() => setEditing(true)} className={cx.btnSecondary + ' flex items-center gap-2 w-full justify-center'}>
+              <Pencil size={14} /> Editar datos
+            </button>
+          )}
+
+          {/* Datos del alumno */}
           <section>
             <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
             <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
-              {[
-                ['Nombre', `${alumno.nombre} ${alumno.apellido || ''}`],
-                ['DNI', alumno.dni],
-                ['Nacimiento', formatFecha(alumno.fecha_nacimiento)],
-                ['Categoria', alumno.categoria],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">{label}</span>
-                  <span className="text-white text-sm font-medium">{value || '—'}</span>
-                </div>
-              ))}
-              <div className="flex justify-between items-center">
-                <span className="text-zinc-500 text-sm">Estado</span>
-                <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>{alumno.estado}</span>
-              </div>
+              {editing ? (
+                <>
+                  <div><label className={cx.label}>Nombre completo</label><input value={form.nombre_alumno} onChange={e => patch('nombre_alumno', e.target.value)} className={cx.input} /></div>
+                  <div><label className={cx.label}>DNI alumno</label><input value={form.dni_alumno} onChange={e => patch('dni_alumno', e.target.value)} className={cx.input} /></div>
+                  <div><label className={cx.label}>Fecha nacimiento</label><input type="date" value={form.fecha_nacimiento} onChange={e => patch('fecha_nacimiento', e.target.value)} className={cx.input} /></div>
+                  <div><label className={cx.label}>Categoria</label><input value={form.categoria} onChange={e => patch('categoria', e.target.value)} className={cx.input} placeholder="Ej: Mini, Niños, Adolescentes" /></div>
+                  <div>
+                    <label className={cx.label}>Estado</label>
+                    <select value={form.estado} onChange={e => patch('estado', e.target.value)} className={cx.select}>
+                      <option value="activo">Activo</option>
+                      <option value="inactivo">Inactivo</option>
+                      <option value="congelado">Congelado</option>
+                    </select>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {[
+                    ['Nombre', `${alumno.nombre} ${alumno.apellido || ''}`],
+                    ['DNI', alumno.dni],
+                    ['Nacimiento', formatFecha(alumno.fecha_nacimiento)],
+                    ['Categoria', alumno.categoria],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between">
+                      <span className="text-zinc-500 text-sm">{label}</span>
+                      <span className="text-white text-sm font-medium">{value || '—'}</span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center">
+                    <span className="text-zinc-500 text-sm">Estado</span>
+                    <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>{alumno.estado}</span>
+                  </div>
+                </>
+              )}
             </div>
           </section>
 
+          {/* Apoderado */}
           <section>
             <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Apoderado</h3>
             <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
-              {[
-                ['Nombre', alumno.nombre_apoderado],
-                ['Telefono', alumno.telefono_apoderado],
-                ['Correo', alumno.correo_apoderado],
-              ].map(([label, value]) => (
-                <div key={label} className="flex justify-between">
-                  <span className="text-zinc-500 text-sm">{label}</span>
-                  <span className="text-white text-sm">{value || '—'}</span>
+              {editing ? (
+                <>
+                  <div><label className={cx.label}>Nombre apoderado</label><input value={form.nombre_apoderado} onChange={e => patch('nombre_apoderado', e.target.value)} className={cx.input} /></div>
+                  <div><label className={cx.label}>Telefono</label><input value={form.telefono} onChange={e => patch('telefono', e.target.value)} className={cx.input} placeholder="Ej: 989717412" /></div>
+                  <div><label className={cx.label}>Correo</label><input type="email" value={form.correo} onChange={e => patch('correo', e.target.value)} className={cx.input} /></div>
+                  <div><label className={cx.label}>Direccion</label><input value={form.direccion} onChange={e => patch('direccion', e.target.value)} className={cx.input} /></div>
+                </>
+              ) : (
+                <>
+                  {[
+                    ['Nombre', alumno.nombre_apoderado],
+                    ['Telefono', alumno.telefono_apoderado],
+                    ['Correo', alumno.correo_apoderado],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between">
+                      <span className="text-zinc-500 text-sm">{label}</span>
+                      <span className="text-white text-sm">{value || '—'}</span>
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+          </section>
+
+          {/* Inscripciones (solo lectura) */}
+          {!editing && (
+            <>
+              <section>
+                <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones</h3>
+                {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
+                  <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+                    <table className="w-full text-left text-sm">
+                      <thead><tr className="border-b border-zinc-800">
+                        <th className={cx.th}>Programa</th><th className={cx.th}>Inicio</th><th className={cx.th}>Fin</th>
+                      </tr></thead>
+                      <tbody>
+                        {alumno.inscripciones.map(ins => (
+                          <tr key={ins.id} className={cx.tr}>
+                            <td className={cx.td + ' text-white font-medium'}>{ins.programa}</td>
+                            <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_inicio)}</td>
+                            <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_fin)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-zinc-500 text-sm">Sin inscripciones activas</p>
+                )}
+              </section>
+
+              <section>
+                <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (30 dias)</h3>
+                <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
+                  <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
+                  <span className="text-zinc-500 text-sm ml-2">asistencias</span>
                 </div>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones</h3>
-            {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
-              <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
-                <table className="w-full text-left text-sm">
-                  <thead><tr className="border-b border-zinc-800">
-                    <th className={cx.th}>Programa</th><th className={cx.th}>Inicio</th><th className={cx.th}>Fin</th>
-                  </tr></thead>
-                  <tbody>
-                    {alumno.inscripciones.map(ins => (
-                      <tr key={ins.id} className={cx.tr}>
-                        <td className={cx.td + ' text-white font-medium'}>{ins.programa}</td>
-                        <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_inicio)}</td>
-                        <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_fin)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-zinc-500 text-sm">Sin inscripciones activas</p>
-            )}
-          </section>
-
-          <section>
-            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (30 dias)</h3>
-            <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
-              <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
-              <span className="text-zinc-500 text-sm ml-2">asistencias</span>
-            </div>
-          </section>
+              </section>
+            </>
+          )}
         </div>
       ) : null}
     </Modal>
@@ -413,6 +526,8 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
         alumno={detalle}
         loading={detalleLoading && selectedId !== null}
         onClose={handleCloseDetail}
+        token={token}
+        onUpdated={() => { fetchAlumnos(); if (selectedId) fetchDetalle(selectedId); }}
       />
     </div>
   );
