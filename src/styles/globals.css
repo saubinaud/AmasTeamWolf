@@ -281,6 +281,24 @@
   }
 }
 
+/* Select dropdowns — dark theme for options */
+select {
+  background-color: #27272a;
+  color: #fff;
+}
+select option {
+  background-color: #27272a;
+  color: #fff;
+  padding: 8px 12px;
+}
+select option:checked {
+  background-color: #FA7B21;
+  color: #fff;
+}
+select option:hover {
+  background-color: #3f3f46;
+}
+
 /* SPACE admin portal animations */
 @keyframes fadeInUp {
   from {
