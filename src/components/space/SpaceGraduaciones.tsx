@@ -130,9 +130,9 @@ function GraduacionesTable({
 }) {
   if (loading) {
     return (
-      <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
         {SKELETON_KEYS.map(sk => (
-          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-white/5 last:border-0">
+          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-zinc-800 last:border-0">
             <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
             <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
             <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse hidden sm:block" />
@@ -144,9 +144,9 @@ function GraduacionesTable({
 
   if (graduaciones.length === 0) {
     return (
-      <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl py-16 text-center">
-        <GraduationCap size={40} className="mx-auto text-white/10 mb-3" />
-        <p className="text-white/50 mb-1">Sin graduaciones</p>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl py-16 text-center">
+        <GraduationCap size={40} className="mx-auto text-zinc-700 mb-3" />
+        <p className="text-zinc-400 mb-1">Sin graduaciones</p>
         <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
         <button
           onClick={onOpenCreate}
@@ -160,11 +160,11 @@ function GraduacionesTable({
   }
 
   return (
-    <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-white/5">
+            <tr className="border-b border-zinc-800">
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
@@ -175,7 +175,7 @@ function GraduacionesTable({
           </thead>
           <tbody>
             {graduaciones.map(g => (
-              <tr key={g.id} className="border-b border-white/5 last:border-0">
+              <tr key={g.id} className="border-b border-zinc-800 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
                   {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
                 </td>
@@ -187,7 +187,7 @@ function GraduacionesTable({
                 <td className="px-5 py-3.5 text-white/60 hidden md:table-cell">{turnoLabel(g.turno)}</td>
                 <td className="px-5 py-3.5 text-white/60 hidden sm:table-cell">{formatFecha(g.fecha_graduacion || g.fecha)}</td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-white/50'}`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-zinc-400'}`}>
                     {g.estado}
                   </span>
                 </td>
@@ -219,19 +219,19 @@ function CorreccionesTable({
 }) {
   if (correcciones.length === 0) {
     return (
-      <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl py-16 text-center">
-        <Check size={40} className="mx-auto text-white/10 mb-3" />
-        <p className="text-white/50 text-sm">No hay correcciones pendientes</p>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl py-16 text-center">
+        <Check size={40} className="mx-auto text-zinc-700 mb-3" />
+        <p className="text-zinc-400 text-sm">No hay correcciones pendientes</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-900/60 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-white/5">
+            <tr className="border-b border-zinc-800">
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
               <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
@@ -240,11 +240,11 @@ function CorreccionesTable({
           </thead>
           <tbody>
             {correcciones.map(c => (
-              <tr key={c.id} className="border-b border-white/5 last:border-0">
+              <tr key={c.id} className="border-b border-zinc-800 last:border-0">
                 <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
                 <td className="px-5 py-3.5 text-white/60 max-w-xs truncate">{c.comentario}</td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CORRECCION_PILL[c.estado] ?? 'text-white/50'}`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CORRECCION_PILL[c.estado] ?? 'text-zinc-400'}`}>
                     {c.estado}
                   </span>
                 </td>
@@ -643,11 +643,11 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const turnoChipClass = useCallback((value: string) => {
     return filterTurno === value
       ? 'px-3 py-1.5 rounded-xl text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/20'
-      : 'px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white/60 transition-all duration-200';
+      : 'px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300 transition-all duration-200';
   }, [filterTurno]);
 
   const estadoChipClass = useCallback((value: string) => {
-    if (filterEstado !== value) return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 text-white/40 border border-white/5 hover:bg-white/10 hover:text-white/60 transition-all duration-200';
+    if (filterEstado !== value) return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300 transition-all duration-200';
     if (value === 'programada') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20';
     return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20';
   }, [filterEstado]);
@@ -682,7 +682,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         <button
           onClick={() => setTab('graduaciones')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'graduaciones' ? 'bg-zinc-800 text-white' : 'text-white/50 hover:text-white'
+            tab === 'graduaciones' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'
           }`}
         >
           Graduaciones
@@ -690,7 +690,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         <button
           onClick={() => setTab('correcciones')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'correcciones' ? 'bg-zinc-800 text-white' : 'text-white/50 hover:text-white'
+            tab === 'correcciones' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'
           }`}
         >
           Correcciones

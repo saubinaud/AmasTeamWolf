@@ -77,12 +77,12 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-16 bg-white/5 rounded-2xl animate-pulse" />
+        <div className="h-16 bg-zinc-800 rounded-2xl animate-pulse" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1,2,3,4].map(k => <div key={k} className="h-28 bg-white/5 rounded-2xl animate-pulse" />)}
+          {[1,2,3,4].map(k => <div key={k} className="h-28 bg-zinc-800 rounded-2xl animate-pulse" />)}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[1,2,3].map(k => <div key={k} className="h-20 bg-white/5 rounded-2xl animate-pulse" />)}
+          {[1,2,3].map(k => <div key={k} className="h-20 bg-zinc-800 rounded-2xl animate-pulse" />)}
         </div>
       </div>
     );
@@ -106,7 +106,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
           <h2 className="text-white text-lg sm:text-xl font-bold">
             Hola, {userName || 'Admin'} 👋
           </h2>
-          <p className="text-white/40 text-sm mt-1 capitalize">{today}</p>
+          <p className="text-zinc-500 text-sm mt-1 capitalize">{today}</p>
         </div>
       </div>
 
@@ -117,13 +117,13 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
             key={id}
             className={`relative overflow-hidden bg-gradient-to-br ${gradient.bg} border ${gradient.border} rounded-2xl p-4 sm:p-5 transition-all duration-200 hover:scale-[1.02]`}
           >
-            <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-3`}>
+            <div className={`w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center mb-3`}>
               <Icon size={18} className={gradient.icon} />
             </div>
             <p className={`text-3xl font-bold ${gradient.text} leading-none`}>
               <AnimatedNumber value={value} />
             </p>
-            <p className="text-white/30 text-xs mt-1.5">{label}</p>
+            <p className="text-zinc-500 text-xs mt-1.5">{label}</p>
           </div>
         ))}
       </div>
@@ -149,7 +149,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
 
       {/* Quick actions */}
       <div>
-        <h3 className="text-white/20 text-[10px] uppercase tracking-widest font-medium mb-3">Acciones rapidas</h3>
+        <h3 className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium mb-3">Acciones rapidas</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
             { page: 'graduaciones' as SpacePage, icon: GraduationCap, title: 'Graduaciones', sub: 'Gestionar evaluaciones', color: 'text-[#FA7B21]' },
@@ -159,16 +159,16 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
             <button
               key={page}
               onClick={() => go(page)}
-              className={`${cx.card} p-4 flex items-center gap-3 text-left hover:bg-zinc-900/80 hover:border-white/10 transition-all duration-200 group`}
+              className={`${cx.card} p-4 flex items-center gap-3 text-left hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 group`}
             >
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors">
                 <Icon size={18} className={color} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-white text-sm font-medium">{title}</p>
                 <p className="text-white/25 text-xs mt-0.5">{sub}</p>
               </div>
-              <ArrowRight size={14} className="text-white/10 group-hover:text-white/30 transition-colors shrink-0" />
+              <ArrowRight size={14} className="text-zinc-700 group-hover:text-zinc-500 transition-colors shrink-0" />
             </button>
           ))}
         </div>
@@ -177,8 +177,8 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
       {/* Recent attendance */}
       {stats?.ultimasAsistencias && stats.ultimasAsistencias.length > 0 && (
         <div>
-          <h3 className="text-white/20 text-[10px] uppercase tracking-widest font-medium mb-3">Ultimas asistencias</h3>
-          <div className={`${cx.card} divide-y divide-white/5`}>
+          <h3 className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium mb-3">Ultimas asistencias</h3>
+          <div className={`${cx.card} divide-y divide-zinc-800`}>
             {stats.ultimasAsistencias.slice(0, 5).map((a, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-3">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
@@ -187,7 +187,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm truncate">{a.nombre_alumno}</p>
                 </div>
-                <span className="text-white/30 text-xs shrink-0">{a.hora?.slice(0, 5)} · {a.turno}</span>
+                <span className="text-zinc-500 text-xs shrink-0">{a.hora?.slice(0, 5)} · {a.turno}</span>
               </div>
             ))}
           </div>
