@@ -6,7 +6,7 @@ const router = Router();
 // GET /api/space/compras/stats
 router.get('/stats', async (_req, res) => {
   try {
-    const [totalRow, ventasMesRow, porCategoria, topTipos] = await Promise.all([
+    const [totalRow, ventasMesRow, porCategoria, topTipos, pendientesRow] = await Promise.all([
       queryOne(`SELECT COUNT(*) AS total FROM implementos`),
       queryOne(`
         SELECT COALESCE(SUM(precio), 0) AS total
@@ -27,6 +27,7 @@ router.get('/stats', async (_req, res) => {
         ORDER BY total DESC
         LIMIT 5
       `),
+      queryOne(`SELECT COUNT(*) AS total FROM implementos WHERE entregado = FALSE`),
     ]);
 
     return res.json({
@@ -34,6 +35,7 @@ router.get('/stats', async (_req, res) => {
       data: {
         total_compras: parseInt(totalRow.total) || 0,
         total_ventas_mes: parseFloat(ventasMesRow.total) || 0,
+        pendientes_entrega: parseInt(pendientesRow.total) || 0,
         por_categoria: porCategoria.map(r => ({
           categoria: r.categoria,
           total: parseInt(r.total) || 0,
@@ -53,7 +55,7 @@ router.get('/stats', async (_req, res) => {
 // GET /api/space/compras — Lista paginada con filtros
 router.get('/', async (req, res) => {
   try {
-    const { search, categoria, alumno_id } = req.query;
+    const { search, categoria, alumno_id, entregado } = req.query;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
     const offset = (page - 1) * limit;
@@ -69,6 +71,11 @@ router.get('/', async (req, res) => {
     if (alumno_id) {
       conditions.push(`i.alumno_id = $${idx++}`);
       params.push(alumno_id);
+    }
+    if (entregado === 'true' || entregado === '1') {
+      conditions.push(`i.entregado = TRUE`);
+    } else if (entregado === 'false' || entregado === '0') {
+      conditions.push(`i.entregado = FALSE`);
     }
     if (search) {
       conditions.push(`(a.nombre_alumno ILIKE $${idx} OR a.dni_alumno ILIKE $${idx})`);
@@ -98,6 +105,9 @@ router.get('/', async (req, res) => {
           i.origen,
           i.metodo_pago,
           i.observaciones,
+          i.entregado,
+          i.fecha_entrega,
+          i.entregado_by,
           i.created_by,
           i.created_at,
           a.nombre_alumno,
@@ -126,6 +136,47 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/space/compras/pendientes-entrega — Implementos sin entregar
+router.get('/pendientes-entrega', async (req, res) => {
+  try {
+    const { search, categoria } = req.query;
+    const conditions = ['i.entregado = FALSE'];
+    const params = [];
+    let idx = 1;
+
+    if (categoria) {
+      conditions.push(`i.categoria = $${idx++}`);
+      params.push(categoria);
+    }
+    if (search) {
+      conditions.push(`(a.nombre_alumno ILIKE $${idx} OR a.dni_alumno ILIKE $${idx})`);
+      params.push(`%${search}%`);
+      idx++;
+    }
+
+    const where = `WHERE ${conditions.join(' AND ')}`;
+
+    const rows = await query(
+      `SELECT
+        i.id, i.alumno_id, i.categoria, i.tipo, i.talla, i.fecha_adquisicion,
+        i.precio, i.origen, i.metodo_pago, i.observaciones,
+        i.entregado, i.fecha_entrega, i.entregado_by,
+        i.created_by, i.created_at,
+        a.nombre_alumno, a.dni_alumno
+       FROM implementos i
+       LEFT JOIN alumnos a ON a.id = i.alumno_id
+       ${where}
+       ORDER BY i.created_at ASC`,
+      params
+    );
+
+    return res.json({ success: true, data: rows, total: rows.length });
+  } catch (err) {
+    console.error('Error listando pendientes de entrega:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
 // GET /api/space/compras/por-alumno/:alumnoId — Implementos agrupados por categoría
 router.get('/por-alumno/:alumnoId', async (req, res) => {
   try {
@@ -134,7 +185,9 @@ router.get('/por-alumno/:alumnoId', async (req, res) => {
     const rows = await query(
       `SELECT
         id, alumno_id, categoria, tipo, talla, fecha_adquisicion,
-        precio, origen, metodo_pago, observaciones, created_by, created_at
+        precio, origen, metodo_pago, observaciones,
+        entregado, fecha_entrega, entregado_by,
+        created_by, created_at
        FROM implementos
        WHERE alumno_id = $1
        ORDER BY categoria ASC, created_at DESC`,
@@ -174,7 +227,9 @@ router.get('/armas-alumno/:alumnoId', async (req, res) => {
     const rows = await query(
       `SELECT
         id, alumno_id, categoria, tipo, talla, fecha_adquisicion,
-        precio, origen, metodo_pago, observaciones, created_by, created_at
+        precio, origen, metodo_pago, observaciones,
+        entregado, fecha_entrega, entregado_by,
+        created_by, created_at
        FROM implementos
        WHERE alumno_id = $1 AND categoria = 'arma'
        ORDER BY created_at DESC`,
@@ -184,6 +239,46 @@ router.get('/armas-alumno/:alumnoId', async (req, res) => {
     return res.json({ success: true, data: rows });
   } catch (err) {
     console.error('Error obteniendo armas del alumno:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// PATCH /api/space/compras/:id/entregar — Marcar como entregado (toggle)
+router.patch('/:id/entregar', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { entregado } = req.body;
+    const userId = req.spaceUser?.id || null;
+
+    // Permite toggle: si llega `entregado` explícito úsalo, si no invierte el estado actual
+    let nuevoEstado;
+    if (typeof entregado === 'boolean') {
+      nuevoEstado = entregado;
+    } else {
+      const actual = await queryOne('SELECT entregado FROM implementos WHERE id = $1', [id]);
+      if (!actual) {
+        return res.status(404).json({ success: false, error: 'Compra no encontrada' });
+      }
+      nuevoEstado = !actual.entregado;
+    }
+
+    const row = await queryOne(
+      `UPDATE implementos
+       SET entregado = $1,
+           fecha_entrega = CASE WHEN $1 = TRUE THEN NOW() ELSE NULL END,
+           entregado_by = CASE WHEN $1 = TRUE THEN $2 ELSE NULL END
+       WHERE id = $3
+       RETURNING id, entregado, fecha_entrega, entregado_by`,
+      [nuevoEstado, userId, id]
+    );
+
+    if (!row) {
+      return res.status(404).json({ success: false, error: 'Compra no encontrada' });
+    }
+
+    return res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('Error marcando entrega:', err);
     return res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
@@ -201,6 +296,7 @@ router.post('/', async (req, res) => {
       metodo_pago,
       observaciones,
       fecha_adquisicion,
+      entregado,
     } = req.body;
 
     if (!alumno_id || !categoria || !tipo) {
@@ -211,12 +307,19 @@ router.post('/', async (req, res) => {
     }
 
     const createdBy = req.spaceUser?.id || null;
+    const entregadoBool = entregado === true || entregado === 'true';
+    const fechaEntrega = entregadoBool ? 'NOW()' : 'NULL';
+    const entregadoByVal = entregadoBool ? createdBy : null;
 
     const row = await queryOne(
       `INSERT INTO implementos (
         alumno_id, categoria, tipo, talla, fecha_adquisicion,
-        precio, origen, metodo_pago, observaciones, created_by, created_at
-      ) VALUES ($1, $2, $3, $4, COALESCE($5, CURRENT_DATE), $6, COALESCE($7, 'compra'), $8, $9, $10, NOW())
+        precio, origen, metodo_pago, observaciones,
+        entregado, fecha_entrega, entregado_by,
+        created_by, created_at
+      ) VALUES ($1, $2, $3, $4, COALESCE($5, CURRENT_DATE), $6, COALESCE($7, 'compra'), $8, $9,
+                $10, ${fechaEntrega}, $11,
+                $12, NOW())
       RETURNING *`,
       [
         alumno_id,
@@ -228,6 +331,8 @@ router.post('/', async (req, res) => {
         origen || null,
         metodo_pago || null,
         observaciones || null,
+        entregadoBool,
+        entregadoByVal,
         createdBy,
       ]
     );
