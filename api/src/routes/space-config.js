@@ -9,8 +9,8 @@ const router = Router();
 // Páginas Space válidas (para validar permisos)
 const PAGINAS_VALIDAS = [
   'dashboard', 'alumnos', 'inscripciones', 'inscribir', 'renovar',
-  'graduaciones', 'asistencia', 'tomar-asistencia', 'leads',
-  'compras', 'mensajes', 'config',
+  'graduaciones', 'asistencia', 'tomar-asistencia', 'asistencia-historica',
+  'leads', 'compras', 'mensajes', 'config',
 ];
 
 function normalizarPermisos(raw) {

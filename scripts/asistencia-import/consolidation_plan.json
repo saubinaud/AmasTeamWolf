@@ -1,0 +1,127 @@
+{
+  "_descripcion": "Plan de consolidación de alumnos duplicados. Para cada par: ganador = ID que se mantiene, perdedor = ID que se elimina (las inscripciones/asistencias/etc. del perdedor se re-asignan al ganador). TODAS las acciones deben ejecutarse dentro de una transacción PostgreSQL.",
+  "_orden_ejecucion": [
+    "UPDATE inscripciones SET alumno_id = ganador WHERE alumno_id = perdedor",
+    "UPDATE asistencias SET alumno_id = ganador WHERE alumno_id = perdedor",
+    "UPDATE implementos SET alumno_id = ganador WHERE alumno_id = perdedor",
+    "UPDATE graduaciones SET alumno_id = ganador WHERE alumno_id = perdedor",
+    "UPDATE historial_cinturones SET alumno_id = ganador WHERE alumno_id = perdedor",
+    "DELETE FROM alumnos WHERE id = perdedor",
+    "(opcional) UPDATE alumnos SET dni_alumno = <dni_valido>, nombre_alumno = <nombre_correcto> WHERE id = ganador"
+  ],
+  "consolidaciones": [
+    {
+      "id": 1,
+      "alumno": "Sofia Valderrama Sigueñas",
+      "patron": "A_PROGRAMA_Y_LEADERSHIP",
+      "ganador_id": 7,
+      "ganador_nombre": "Sofia Valderrama Sigueñas",
+      "perdedor_id": 213,
+      "perdedor_nombre": "Sofía Valderrama Sigueñas",
+      "razon": "#7 tiene el programa principal (3M Full); #213 solo tiene Leadership. Ambos sin DNI, unificar bajo #7 conservando ambas inscripciones.",
+      "observaciones": "Corregir nombre a 'Sofía' (con tilde) en #7 y agregar DNI si se conoce."
+    },
+    {
+      "id": 2,
+      "alumno": "Piero Valentino Flores Núñez",
+      "patron": "A_PROGRAMA_Y_LEADERSHIP",
+      "ganador_id": 124,
+      "ganador_nombre": "Piero Valentino Flores Núñez",
+      "perdedor_id": 207,
+      "perdedor_nombre": "Piero Valentino Flores Nuñez",
+      "razon": "#124 tiene DNI 93772219 + programa 6 MESES + ya tiene 1 asistencia. #207 solo Leadership sin DNI.",
+      "observaciones": "IMPORTANTE: este es el caso 'Piero Valentino' del Excel. El Excel reporta 'Piero Valentino GONZALES Núñez' con 34 asistencias, que probablemente es OTRA persona distinta (no este #124)."
+    },
+    {
+      "id": 3,
+      "alumno": "Noah Alexander Castillo Prado",
+      "patron": "A_PROGRAMA_Y_LEADERSHIP",
+      "ganador_id": 196,
+      "ganador_nombre": "Noah Alexander Castillo Prado",
+      "perdedor_id": 210,
+      "perdedor_nombre": "Noah Alexander Castillo Prado",
+      "razon": "#196 tiene DNI 93947710 + programa 3 Meses Full. #210 solo Leadership sin DNI."
+    },
+    {
+      "id": 4,
+      "alumno": "Luka Derek Huaman Casa",
+      "patron": "A_PROGRAMA_Y_LEADERSHIP",
+      "ganador_id": 102,
+      "ganador_nombre": "Luka Derek Huaman Casa",
+      "perdedor_id": 208,
+      "perdedor_nombre": "Luka Derek Huamán Casas",
+      "razon": "#102 tiene DNI 93539149 + 2 inscripciones 6M Full + 1 asistencia. #208 solo Leadership sin DNI.",
+      "observaciones": "Corregir a 'Luka Derek Huamán Casa' (o Casas?) en #102. Verificar apellido correcto."
+    },
+    {
+      "id": 5,
+      "alumno": "Isao Nicolás Higa Farías",
+      "patron": "A_PROGRAMA_Y_LEADERSHIP",
+      "ganador_id": 205,
+      "ganador_nombre": "Isao Nicolás Higa Farías",
+      "perdedor_id": 184,
+      "perdedor_nombre": "Isao Nicolás Higa Farías",
+      "razon": "AMBOS tienen problemas: #184 tiene DNI inválido (9 dígitos: 937961478), #205 no tiene DNI. #205 es Activo. Mover las inscripciones 3M Full del #184 (histórico oct 2025-feb 2026) al #205 Activo. DNI queda vacío hasta obtener el correcto.",
+      "observaciones": "Hay que obtener el DNI correcto de este alumno y asignarlo a #205."
+    },
+    {
+      "id": 6,
+      "alumno": "Pedro Darío Palli De La Cruz",
+      "patron": "A_PROGRAMA_Y_LEADERSHIP",
+      "ganador_id": 192,
+      "ganador_nombre": "Pedro Darío Palli De La Cruz",
+      "perdedor_id": 167,
+      "perdedor_nombre": "Pedro Darío Palli De La Cruz",
+      "razon": "#192 tiene DNI válido 93508391, Activo. #167 tiene DNI inválido (9 dígitos: 934738863), Inactivo. Ambos con 1 inscripción 3M Full sin fechas."
+    },
+    {
+      "id": 7,
+      "alumno": "Alessia Minerva Moreno Sánchez",
+      "patron": "B_REMATRICULA",
+      "ganador_id": 23,
+      "ganador_nombre": "Alessia Minerva Moreno Sánchez",
+      "perdedor_id": 230,
+      "perdedor_nombre": "Alessia minerva moreno Sánchez",
+      "razon": "#23 tiene 3 inscripciones completas (historial real) + DNI 93701527. #230 fue creado el 2026-04-10 por una re-matrícula sin buscar el existente, DNI 93701525 (1 dígito distinto). Mover la inscripción 3M Full de #230 (abr 15-jul 2 2026) al #23 como la 4ta inscripción.",
+      "observaciones": "Verificar DNI correcto con el apoderado: 93701527 o 93701525. Probable caso donde el DNI del ganador es el erróneo porque #230 es más reciente."
+    },
+    {
+      "id": 8,
+      "alumno": "Dehlé Joaquim Salas Morales",
+      "patron": "C_TYPO",
+      "ganador_id": 189,
+      "ganador_nombre": "Dhlé Joaquim Salas Morales",
+      "perdedor_id": 64,
+      "perdedor_nombre": "Dehlé Joaquim Salas Morales",
+      "razon": "#189 tiene DNI válido 79875272 + 3 inscripciones (historial completo dic 2025-mar 2026 + renovaciones). #64 sin DNI, 1 inscripción reciente (mar 23-jun 15 2026).",
+      "observaciones": "Corregir nombre a 'Dehlé' (con 'e') en #189. Mover inscripción #64 al #189."
+    },
+    {
+      "id": 9,
+      "alumno": "Mía Victoria Barinotto Zavaleta",
+      "patron": "C_TYPO",
+      "ganador_id": 191,
+      "ganador_nombre": "Mía Victoria Barinotto Zavaleta",
+      "perdedor_id": 172,
+      "perdedor_nombre": "Mìa Victoria Barinotto Zavaleta",
+      "razon": "#191 tiene DNI válido 92974477 + Activo. #172 sin DNI + Inactivo + tilde invertida 'Mì'. Ambos tienen 3M Full con fecha inicio dic 2 2025 pero fechas fin distintas (mar 7 vs jul 3). Mover la inscripción de #172 como histórico al #191."
+    },
+    {
+      "id": 10,
+      "alumno": "Vasco Alejandro Quevedo Oroz",
+      "patron": "C_TYPO",
+      "ganador_id": 190,
+      "ganador_nombre": "Vasco Alejando Quevedo Oroz",
+      "perdedor_id": 175,
+      "perdedor_nombre": "Vasco Alejandro Quevedo Oroz",
+      "razon": "#190 tiene DNI válido 93836270 + Activo pero el nombre tiene typo 'Alejando' (falta 'r'). #175 tiene el nombre correcto pero sin DNI + Inactivo. Mover la inscripción histórica de #175 (dic 15 2025-mar 18 2026) al #190.",
+      "observaciones": "CORREGIR nombre del ganador #190 de 'Alejando' → 'Alejandro' después de la consolidación."
+    }
+  ],
+  "correcciones_post_consolidacion": [
+    "UPDATE alumnos SET nombre_alumno = 'Sofía Valderrama Sigueñas' WHERE id = 7",
+    "UPDATE alumnos SET nombre_alumno = 'Dehlé Joaquim Salas Morales' WHERE id = 189",
+    "UPDATE alumnos SET nombre_alumno = 'Vasco Alejandro Quevedo Oroz' WHERE id = 190",
+    "-- Luka Derek Huamán Casa: verificar si el apellido correcto es 'Casa' o 'Casas'"
+  ]
+}

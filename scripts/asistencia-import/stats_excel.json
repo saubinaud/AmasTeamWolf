@@ -1,0 +1,145 @@
+{
+  "total_marcas": 6644,
+  "total_asistio": 6643,
+  "alumnos_unicos": 416,
+  "tipos": {
+    "A": 6643,
+    "V": 1
+  },
+  "años": {
+    "2025": 4686,
+    "2026": 1958
+  },
+  "por_archivo": {
+    "Asistencia 2025 (1).xlsx": {
+      "sheets": {
+        "Enero": {
+          "marcas": 520,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Febrero": {
+          "marcas": 458,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Marzo": {
+          "marcas": 424,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Abril": {
+          "marcas": 317,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Mayo": {
+          "marcas": 387,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Junio": {
+          "marcas": 405,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Julio": {
+          "marcas": 346,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Agosto": {
+          "marcas": 371,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Setiembre": {
+          "marcas": 378,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Octubre": {
+          "marcas": 406,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Noviembre": {
+          "marcas": 443,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Diciembre": {
+          "marcas": 231,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        }
+      },
+      "total_marcas": 4686
+    },
+    "Asistencia 2026 (1).xlsx": {
+      "sheets": {
+        "Enero": {
+          "marcas": 603,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Febrero": {
+          "marcas": 690,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Marzo": {
+          "marcas": 578,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Abril": {
+          "marcas": 87,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 0
+        },
+        "Mayo": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Junio": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Julio": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Agosto": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Setiembre": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Octubre": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Noviembre": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        },
+        "Diciembre": {
+          "marcas": 0,
+          "skipped_invalid_dates": 0,
+          "blocks_con_label_incorrecto": 10
+        }
+      },
+      "total_marcas": 1958
+    }
+  }
+}
