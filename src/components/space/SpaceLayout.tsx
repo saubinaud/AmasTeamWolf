@@ -3,7 +3,7 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature,
+  ChevronRight, FileSignature, BarChart3, QrCode,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser } from './SpaceApp';
 
@@ -14,6 +14,14 @@ interface Props {
   onLogout: () => void;
   onExit: () => void;
   children: ReactNode;
+}
+
+// Dashboard siempre accesible. Si permisos es null (admin) todo visible.
+// Si es array, solo las páginas en el array (más dashboard que es default).
+function puedeVer(user: SpaceUser, page: SpacePage): boolean {
+  if (page === 'dashboard') return true;
+  if (user.permisos === null || user.permisos === undefined) return true; // admin
+  return user.permisos.includes(page);
 }
 
 type IconType = typeof LayoutDashboard;
@@ -51,7 +59,15 @@ const NAV: NavEntry[] = [
     ],
   },
   { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
-  { page: 'asistencia', label: 'Asistencia', icon: CalendarCheck },
+  {
+    key: 'asistencia-group',
+    label: 'Asistencia',
+    icon: CalendarCheck,
+    children: [
+      { page: 'asistencia', label: 'Reportes', icon: BarChart3 },
+      { page: 'tomar-asistencia', label: 'Tomar asistencia', icon: QrCode },
+    ],
+  },
   { page: 'leads', label: 'Leads', icon: UserPlus },
   { page: 'compras', label: 'Compras', icon: ShoppingBag },
   { page: 'mensajes', label: 'Mensajes', icon: MessageSquare },
@@ -61,7 +77,8 @@ const NAV: NavEntry[] = [
 const TITLES: Record<SpacePage, string> = {
   dashboard: 'Dashboard', graduaciones: 'Graduaciones', alumnos: 'Alumnos',
   inscripciones: 'Inscritos', inscribir: 'Inscribir', renovar: 'Renovar',
-  asistencia: 'Asistencia', leads: 'Leads',
+  asistencia: 'Asistencia — Reportes', 'tomar-asistencia': 'Asistencia — Tomar asistencia',
+  leads: 'Leads',
   compras: 'Compras', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
@@ -130,6 +147,15 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
       {/* Nav */}
       <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto">
         {NAV.map((entry) => {
+          // Filtro por permisos
+          if (isGroup(entry)) {
+            const visibles = entry.children.filter((c) => puedeVer(user, c.page));
+            if (visibles.length === 0) return null;
+            entry = { ...entry, children: visibles };
+          } else if (!puedeVer(user, entry.page)) {
+            return null;
+          }
+
           if (!isGroup(entry)) {
             const { page, label, icon: Icon } = entry;
             const active = currentPage === page;

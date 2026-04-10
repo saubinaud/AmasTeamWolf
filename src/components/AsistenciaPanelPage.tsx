@@ -13,6 +13,10 @@ import { API_BASE } from '../config/api';
 
 interface AsistenciaPanelPageProps {
   onNavigate: (page: string) => void;
+  // Cuando se embebe dentro de Space, el usuario ya está autenticado
+  // y no debería ver la pantalla de PIN ni el botón de logout.
+  skipAuth?: boolean;
+  embedMode?: boolean;
 }
 
 interface Asistencia {
@@ -204,8 +208,8 @@ function tiempoRestante(validoHasta: string): string {
 
 // ── Component ──
 
-export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
-  const [autenticada, setAutenticada] = useState(false);
+export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = false }: AsistenciaPanelPageProps) {
+  const [autenticada, setAutenticada] = useState(skipAuth);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
 
@@ -283,10 +287,14 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
     }
   }, [sesionActiva, vista, fetchAsistenciasClase]);
 
-  // Auth persistente
+  // Auth persistente (salvo embedMode — Space ya tiene su propia auth)
   useEffect(() => {
+    if (skipAuth) {
+      setAutenticada(true);
+      return;
+    }
     if (sessionStorage.getItem('amas_panel_auth') === 'true') setAutenticada(true);
-  }, []);
+  }, [skipAuth]);
 
   // Handlers
   const handlePin = (e: React.FormEvent) => {
@@ -504,7 +512,7 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
   const showBackBtn = vista === 'detalle' || vista === 'resumen' || vista === 'dashboard';
 
   return (
-    <div className="h-dvh flex flex-col bg-zinc-950">
+    <div className={`${embedMode ? 'min-h-full' : 'h-dvh'} flex flex-col bg-zinc-950 ${embedMode ? 'rounded-2xl overflow-hidden -m-4 md:-m-5 lg:-m-6' : ''}`}>
       {/* ── Header fijo ── */}
       <div className="shrink-0 bg-zinc-950 border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between max-w-lg mx-auto">
@@ -528,10 +536,12 @@ export function AsistenciaPanelPage({ onNavigate }: AsistenciaPanelPageProps) {
               className="p-2 text-white/50 hover:text-white active:scale-95 transition-all">
               <RefreshCw className="w-4 h-4" />
             </button>
-            <button onClick={handleLogout} aria-label="Cerrar sesion"
-              className="p-2 text-white/50 hover:text-red-400 active:scale-95 transition-all">
-              <LogOut className="w-4 h-4" />
-            </button>
+            {!embedMode && (
+              <button onClick={handleLogout} aria-label="Cerrar sesion"
+                className="p-2 text-white/50 hover:text-red-400 active:scale-95 transition-all">
+                <LogOut className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
