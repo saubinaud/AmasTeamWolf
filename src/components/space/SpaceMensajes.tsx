@@ -287,8 +287,8 @@ function SendModal({
     setSending(true);
     try {
       const body: Record<string, unknown> = { tipo, asunto, contenido };
-      if (tipo === 'programa') body.programa_id = programaId;
-      if (tipo === 'individual') body.alumno_id = alumnoId;
+      if (tipo === 'programa') body.programa_destino = programaId;
+      if (tipo === 'individual') body.alumno_destino_id = alumnoId;
 
       const res = await fetch(`${API_BASE}/space/mensajes`, {
         method: 'POST',
@@ -297,7 +297,7 @@ function SendModal({
       });
       const data = await res.json();
       if (!res.ok || data.success === false) {
-        toast.error(data.message ?? 'Error al enviar mensaje');
+        toast.error(data.error ?? 'Error al enviar mensaje');
         return;
       }
       toast.success('Mensaje enviado correctamente');
