@@ -82,15 +82,15 @@ const EMPTY_FORM: FormData = {
 };
 
 const ESTADO_PILL: Record<string, string> = {
-  programada: 'bg-yellow-500/10 text-yellow-400',
-  completada: 'bg-emerald-500/10 text-emerald-400',
-  cancelada: 'bg-zinc-800 text-zinc-400',
+  programada: badgeColors.yellow,
+  completada: badgeColors.green,
+  cancelada: badgeColors.gray,
 };
 
 const CORRECCION_PILL: Record<string, string> = {
-  pendiente: 'bg-yellow-500/10 text-yellow-400',
-  resuelta: 'bg-emerald-500/10 text-emerald-400',
-  rechazada: 'bg-red-500/10 text-red-400',
+  pendiente: badgeColors.yellow,
+  resuelta: badgeColors.green,
+  rechazada: badgeColors.red,
 };
 
 const SKELETON_KEYS = ['ls-1', 'ls-2', 'ls-3', 'ls-4', 'ls-5'] as const;
@@ -150,7 +150,7 @@ function GraduacionesTable({
         <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
         <button
           onClick={onOpenCreate}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-[#FA7B21] hover:bg-[#E56D15] transition-colors"
+          className={cx.btnPrimary + ' inline-flex items-center gap-2'}
         >
           <Plus size={14} />
           Crear graduacion
@@ -193,10 +193,10 @@ function GraduacionesTable({
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="inline-flex gap-1">
-                    <button onClick={() => onEdit(g)} className="p-2 rounded-lg text-white/40 hover:text-white transition-colors" title="Editar">
+                    <button onClick={() => onEdit(g)} className={cx.btnIcon} title="Editar">
                       <Pencil size={15} />
                     </button>
-                    <button onClick={() => onDelete(g.id)} className="p-2 rounded-lg text-white/40 hover:text-red-400 transition-colors" title="Eliminar">
+                    <button onClick={() => onDelete(g.id)} className={cx.btnDanger} title="Eliminar">
                       <Trash2 size={15} />
                     </button>
                   </div>
@@ -299,8 +299,8 @@ function GraduacionModal({
 }) {
   if (!open) return null;
 
-  const inputClass = 'w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-all';
-  const labelClass = 'block text-zinc-400 text-xs font-medium mb-1.5 uppercase tracking-wider';
+  const inputClass = cx.input;
+  const labelClass = cx.label;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -670,7 +670,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] transition-colors shrink-0"
+          className={cx.btnPrimary + ' flex items-center gap-2 shrink-0'}
         >
           <Plus size={16} />
           Nueva graduacion
@@ -678,7 +678,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-zinc-900 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-zinc-800 rounded-xl p-1 w-fit border border-zinc-700">
         <button
           onClick={() => setTab('graduaciones')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -708,7 +708,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
                 placeholder="Buscar por nombre..."
                 value={searchInput}
                 onChange={handleSearchChange}
-                className="w-full pl-9 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-colors"
+                className={cx.input + ' pl-9'}
               />
             </div>
             <div className="flex gap-2 flex-wrap">
