@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   Search, User, Plus, X, Loader2, CheckCircle2, CalendarCheck,
-  ArrowRight, AlertCircle, Trash2,
+  ArrowRight, AlertCircle, Trash2, ClipboardPaste, Calendar, Wand2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
@@ -39,6 +39,8 @@ interface FechaPendiente {
   observaciones: string;
 }
 
+type Modo = 'individual' | 'lote' | 'rango';
+
 interface Props {
   token: string;
 }
@@ -46,6 +48,91 @@ interface Props {
 function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
+
+// ---------------------------------------------------------------------------
+// Date parsing helpers — múltiples formatos
+// ---------------------------------------------------------------------------
+
+/**
+ * Intenta parsear una fecha en varios formatos comunes.
+ * Devuelve string ISO YYYY-MM-DD o null si no se puede.
+ */
+function parseFechaFlexible(raw: string): string | null {
+  if (!raw) return null;
+  const s = raw.trim();
+  if (!s) return null;
+
+  // Formato 1: YYYY-MM-DD o YYYY/MM/DD
+  let m = s.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (m) {
+    const y = parseInt(m[1], 10);
+    const mo = parseInt(m[2], 10);
+    const d = parseInt(m[3], 10);
+    return validateAndFormat(y, mo, d);
+  }
+
+  // Formato 2: DD/MM/YYYY o DD-MM-YYYY o DD.MM.YYYY
+  m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+  if (m) {
+    const d = parseInt(m[1], 10);
+    const mo = parseInt(m[2], 10);
+    const y = parseInt(m[3], 10);
+    return validateAndFormat(y, mo, d);
+  }
+
+  // Formato 3: DD/MM/YY (año de 2 dígitos — asumir 2000+)
+  m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2})$/);
+  if (m) {
+    const d = parseInt(m[1], 10);
+    const mo = parseInt(m[2], 10);
+    const y = 2000 + parseInt(m[3], 10);
+    return validateAndFormat(y, mo, d);
+  }
+
+  return null;
+}
+
+function validateAndFormat(y: number, mo: number, d: number): string | null {
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const dt = new Date(y, mo - 1, d);
+  if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+  return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+
+/** Genera fechas entre dos ISO date strings que caen en los días de semana seleccionados.
+ *  dias: array de números 0-6 (0=Dom, 1=Lun, ..., 6=Sáb).
+ */
+function generarFechasRango(inicio: string, fin: string, dias: number[]): string[] {
+  if (!inicio || !fin || dias.length === 0) return [];
+  const start = new Date(inicio + 'T12:00:00');
+  const end = new Date(fin + 'T12:00:00');
+  if (start > end) return [];
+  const diasSet = new Set(dias);
+  const result: string[] = [];
+  const cursor = new Date(start);
+  const MAX = 400; // safety cap
+  let count = 0;
+  while (cursor <= end && count < MAX) {
+    if (diasSet.has(cursor.getDay())) {
+      const y = cursor.getFullYear();
+      const m = String(cursor.getMonth() + 1).padStart(2, '0');
+      const d = String(cursor.getDate()).padStart(2, '0');
+      result.push(`${y}-${m}-${d}`);
+    }
+    cursor.setDate(cursor.getDate() + 1);
+    count++;
+  }
+  return result;
+}
+
+const DIAS_SEMANA = [
+  { num: 1, label: 'L', nombre: 'Lunes' },
+  { num: 2, label: 'M', nombre: 'Martes' },
+  { num: 3, label: 'X', nombre: 'Miércoles' },
+  { num: 4, label: 'J', nombre: 'Jueves' },
+  { num: 5, label: 'V', nombre: 'Viernes' },
+  { num: 6, label: 'S', nombre: 'Sábado' },
+] as const;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -63,11 +150,29 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Nueva fecha a agregar
+  // Modo de carga
+  const [modo, setModo] = useState<Modo>('individual');
+
+  // Nueva fecha a agregar (modo individual)
   const [nuevaFecha, setNuevaFecha] = useState('');
   const [nuevoTurno, setNuevoTurno] = useState<Turno>('Tarde');
   const [nuevoAsistio, setNuevoAsistio] = useState<Asistio>('Sí');
   const [nuevaObs, setNuevaObs] = useState('');
+
+  // Modo LOTE: textarea con fechas
+  const [loteTexto, setLoteTexto] = useState('');
+  const [loteTurno, setLoteTurno] = useState<Turno>('Tarde');
+  const [loteAsistio, setLoteAsistio] = useState<Asistio>('Sí');
+  const [loteObs, setLoteObs] = useState('');
+  const [loteParsed, setLoteParsed] = useState<{ ok: string[]; invalid: string[] } | null>(null);
+
+  // Modo RANGO: fechas + días semana
+  const [rangoInicio, setRangoInicio] = useState('');
+  const [rangoFin, setRangoFin] = useState('');
+  const [rangoDias, setRangoDias] = useState<number[]>([]);
+  const [rangoTurno, setRangoTurno] = useState<Turno>('Tarde');
+  const [rangoAsistio, setRangoAsistio] = useState<Asistio>('Sí');
+  const [rangoObs, setRangoObs] = useState('');
 
   // Fechas acumuladas listas para registrar
   const [fechasPendientes, setFechasPendientes] = useState<FechaPendiente[]>([]);
@@ -181,6 +286,125 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
     setFechasPendientes((prev) => prev.filter((p) => p.fecha !== fecha));
   }, []);
 
+  // ---------------------------------------------------------------------
+  // MODO LOTE: parsear texto con fechas
+  // ---------------------------------------------------------------------
+  const handleParseLote = useCallback(() => {
+    const lineas = loteTexto
+      .split(/[\n,;]/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lineas.length === 0) {
+      toast.error('Pega al menos una fecha');
+      setLoteParsed(null);
+      return;
+    }
+    const ok: string[] = [];
+    const invalid: string[] = [];
+    const seen = new Set<string>();
+    for (const linea of lineas) {
+      const iso = parseFechaFlexible(linea);
+      if (!iso) {
+        invalid.push(linea);
+        continue;
+      }
+      if (seen.has(iso)) continue; // dedup interno
+      seen.add(iso);
+      ok.push(iso);
+    }
+    setLoteParsed({ ok, invalid });
+    if (ok.length === 0) {
+      toast.error('Ninguna fecha válida');
+    } else {
+      toast.success(`${ok.length} fecha${ok.length > 1 ? 's' : ''} parseada${ok.length > 1 ? 's' : ''}`);
+    }
+  }, [loteTexto]);
+
+  const handleAgregarLoteAPendientes = useCallback(() => {
+    if (!loteParsed || loteParsed.ok.length === 0) {
+      toast.error('Primero parsea las fechas');
+      return;
+    }
+    // Filtrar las que ya existen (en BD o en pendientes)
+    const nuevas: FechaPendiente[] = [];
+    let yaExistentes = 0;
+    for (const iso of loteParsed.ok) {
+      if (fechasExistentesSet.has(iso)) {
+        yaExistentes++;
+        continue;
+      }
+      nuevas.push({
+        fecha: iso,
+        turno: loteTurno,
+        asistio: loteAsistio,
+        observaciones: loteObs.trim(),
+      });
+    }
+    if (nuevas.length === 0) {
+      toast.error('Todas las fechas ya existen en BD');
+      return;
+    }
+    setFechasPendientes((prev) =>
+      [...prev, ...nuevas].sort((a, b) => a.fecha.localeCompare(b.fecha))
+    );
+    toast.success(
+      `${nuevas.length} fecha${nuevas.length > 1 ? 's' : ''} agregada${nuevas.length > 1 ? 's' : ''}${
+        yaExistentes > 0 ? ` (${yaExistentes} ya existían)` : ''
+      }`
+    );
+    setLoteTexto('');
+    setLoteParsed(null);
+  }, [loteParsed, loteTurno, loteAsistio, loteObs, fechasExistentesSet]);
+
+  // ---------------------------------------------------------------------
+  // MODO RANGO: generar fechas según días semana
+  // ---------------------------------------------------------------------
+  const rangoFechasGeneradas = useMemo(() => {
+    if (!rangoInicio || !rangoFin || rangoDias.length === 0) return [];
+    return generarFechasRango(rangoInicio, rangoFin, rangoDias);
+  }, [rangoInicio, rangoFin, rangoDias]);
+
+  const handleAgregarRangoAPendientes = useCallback(() => {
+    if (rangoFechasGeneradas.length === 0) {
+      toast.error('Genera las fechas primero (elige rango y días)');
+      return;
+    }
+    const nuevas: FechaPendiente[] = [];
+    let yaExistentes = 0;
+    for (const iso of rangoFechasGeneradas) {
+      if (fechasExistentesSet.has(iso)) {
+        yaExistentes++;
+        continue;
+      }
+      nuevas.push({
+        fecha: iso,
+        turno: rangoTurno,
+        asistio: rangoAsistio,
+        observaciones: rangoObs.trim(),
+      });
+    }
+    if (nuevas.length === 0) {
+      toast.error('Todas las fechas generadas ya existen en BD');
+      return;
+    }
+    setFechasPendientes((prev) =>
+      [...prev, ...nuevas].sort((a, b) => a.fecha.localeCompare(b.fecha))
+    );
+    toast.success(
+      `${nuevas.length} fecha${nuevas.length > 1 ? 's' : ''} agregada${nuevas.length > 1 ? 's' : ''}${
+        yaExistentes > 0 ? ` (${yaExistentes} ya existían)` : ''
+      }`
+    );
+    setRangoInicio('');
+    setRangoFin('');
+    setRangoDias([]);
+    setRangoObs('');
+  }, [rangoFechasGeneradas, rangoTurno, rangoAsistio, rangoObs, fechasExistentesSet]);
+
+  const toggleRangoDia = useCallback((num: number) => {
+    setRangoDias((prev) => (prev.includes(num) ? prev.filter((d) => d !== num) : [...prev, num]));
+  }, []);
+
   // -----------------------------------------------------------------------
   // Guardar batch
   // -----------------------------------------------------------------------
@@ -229,6 +453,11 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
     setFechasPendientes([]);
     setAsistenciasExistentes([]);
     setLastResult(null);
+    setLoteTexto('');
+    setLoteParsed(null);
+    setRangoInicio('');
+    setRangoFin('');
+    setRangoDias([]);
   }, []);
 
   // -----------------------------------------------------------------------
@@ -346,66 +575,369 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
         <>
           <section className={cx.card + ' p-5'}>
             <h3 className="text-white text-sm font-semibold mb-4">2. Agregar fechas de asistencia</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className={cx.label}>Fecha *</label>
-                  <input
-                    type="date"
-                    value={nuevaFecha}
-                    onChange={(e) => setNuevaFecha(e.target.value)}
-                    max={new Date().toISOString().slice(0, 10)}
-                    className={cx.input}
-                  />
-                  {nuevaFecha && fechasExistentesSet.has(nuevaFecha) && (
-                    <p className="text-amber-400 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle size={12} /> Ya existe asistencia para esa fecha
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className={cx.label}>Turno</label>
-                  <select
-                    value={nuevoTurno}
-                    onChange={(e) => setNuevoTurno(e.target.value as Turno)}
-                    className={cx.select}
-                  >
-                    <option value="Mañana">Mañana</option>
-                    <option value="Tarde">Tarde</option>
-                    <option value="Noche">Noche</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={cx.label}>Estado</label>
-                  <select
-                    value={nuevoAsistio}
-                    onChange={(e) => setNuevoAsistio(e.target.value as Asistio)}
-                    className={cx.select}
-                  >
-                    <option value="Sí">Asistió</option>
-                    <option value="Tardanza">Tardanza</option>
-                    <option value="No">No asistió</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={cx.label}>Observaciones (opcional)</label>
-                  <input
-                    type="text"
-                    value={nuevaObs}
-                    onChange={(e) => setNuevaObs(e.target.value)}
-                    placeholder="Notas internas"
-                    className={cx.input}
-                  />
-                </div>
-              </div>
+
+            {/* Tabs de modo */}
+            <div className="grid grid-cols-3 gap-2 mb-5">
               <button
-                onClick={handleAddFecha}
-                disabled={!nuevaFecha || fechasExistentesSet.has(nuevaFecha)}
-                className={cx.btnSecondary + ' flex items-center gap-2'}
+                onClick={() => setModo('individual')}
+                className={
+                  modo === 'individual'
+                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
               >
-                <Plus size={14} /> Agregar a la lista
+                <Plus size={14} /> Individual
+              </button>
+              <button
+                onClick={() => setModo('lote')}
+                className={
+                  modo === 'lote'
+                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
+              >
+                <ClipboardPaste size={14} /> Pegar lote
+              </button>
+              <button
+                onClick={() => setModo('rango')}
+                className={
+                  modo === 'rango'
+                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
+              >
+                <Calendar size={14} /> Por rango
               </button>
             </div>
+
+            {/* ========== MODO INDIVIDUAL ========== */}
+            {modo === 'individual' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={cx.label}>Fecha *</label>
+                    <input
+                      type="date"
+                      value={nuevaFecha}
+                      onChange={(e) => setNuevaFecha(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                      className={cx.input}
+                    />
+                    {nuevaFecha && fechasExistentesSet.has(nuevaFecha) && (
+                      <p className="text-amber-400 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle size={12} /> Ya existe asistencia para esa fecha
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className={cx.label}>Turno</label>
+                    <select
+                      value={nuevoTurno}
+                      onChange={(e) => setNuevoTurno(e.target.value as Turno)}
+                      className={cx.select}
+                    >
+                      <option value="Mañana">Mañana</option>
+                      <option value="Tarde">Tarde</option>
+                      <option value="Noche">Noche</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={cx.label}>Estado</label>
+                    <select
+                      value={nuevoAsistio}
+                      onChange={(e) => setNuevoAsistio(e.target.value as Asistio)}
+                      className={cx.select}
+                    >
+                      <option value="Sí">Asistió</option>
+                      <option value="Tardanza">Tardanza</option>
+                      <option value="No">No asistió</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={cx.label}>Observaciones (opcional)</label>
+                    <input
+                      type="text"
+                      value={nuevaObs}
+                      onChange={(e) => setNuevaObs(e.target.value)}
+                      placeholder="Notas internas"
+                      className={cx.input}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={handleAddFecha}
+                  disabled={!nuevaFecha || fechasExistentesSet.has(nuevaFecha)}
+                  className={cx.btnSecondary + ' flex items-center gap-2'}
+                >
+                  <Plus size={14} /> Agregar a la lista
+                </button>
+              </div>
+            )}
+
+            {/* ========== MODO LOTE (PEGAR TEXTO) ========== */}
+            {modo === 'lote' && (
+              <div className="space-y-4">
+                <div>
+                  <label className={cx.label}>Pegar fechas (una por línea)</label>
+                  <textarea
+                    value={loteTexto}
+                    onChange={(e) => {
+                      setLoteTexto(e.target.value);
+                      setLoteParsed(null);
+                    }}
+                    placeholder={'Ejemplos válidos:\n2025-03-15\n2025-03-22\n15/03/2025\n22-03-2025\n15.03.25'}
+                    rows={8}
+                    className={cx.input + ' resize-y font-mono text-xs'}
+                  />
+                  <p className="text-zinc-500 text-xs mt-1">
+                    Acepta formatos: <code className="text-zinc-400">YYYY-MM-DD</code>,{' '}
+                    <code className="text-zinc-400">DD/MM/YYYY</code>,{' '}
+                    <code className="text-zinc-400">DD-MM-YYYY</code>,{' '}
+                    <code className="text-zinc-400">DD.MM.YY</code>. Separa con salto de línea, coma o punto y coma.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className={cx.label}>Turno para todas</label>
+                    <select
+                      value={loteTurno}
+                      onChange={(e) => setLoteTurno(e.target.value as Turno)}
+                      className={cx.select}
+                    >
+                      <option value="Mañana">Mañana</option>
+                      <option value="Tarde">Tarde</option>
+                      <option value="Noche">Noche</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={cx.label}>Estado para todas</label>
+                    <select
+                      value={loteAsistio}
+                      onChange={(e) => setLoteAsistio(e.target.value as Asistio)}
+                      className={cx.select}
+                    >
+                      <option value="Sí">Asistió</option>
+                      <option value="Tardanza">Tardanza</option>
+                      <option value="No">No asistió</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={cx.label}>Observaciones</label>
+                    <input
+                      type="text"
+                      value={loteObs}
+                      onChange={(e) => setLoteObs(e.target.value)}
+                      placeholder="Opcional"
+                      className={cx.input}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleParseLote}
+                    disabled={!loteTexto.trim()}
+                    className={cx.btnSecondary + ' flex items-center gap-2'}
+                  >
+                    <Wand2 size={14} /> Parsear fechas
+                  </button>
+                  {loteParsed && loteParsed.ok.length > 0 && (
+                    <button
+                      onClick={handleAgregarLoteAPendientes}
+                      className={cx.btnPrimary + ' flex items-center gap-2'}
+                    >
+                      <Plus size={14} /> Agregar {loteParsed.ok.length} fechas a la lista
+                    </button>
+                  )}
+                </div>
+
+                {/* Preview del parseo */}
+                {loteParsed && (
+                  <div className="space-y-2">
+                    {loteParsed.ok.length > 0 && (
+                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                        <p className="text-emerald-400 text-xs font-semibold mb-2">
+                          ✓ {loteParsed.ok.length} fecha{loteParsed.ok.length > 1 ? 's' : ''} válida
+                          {loteParsed.ok.length > 1 ? 's' : ''}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {loteParsed.ok.slice(0, 50).map((f) => {
+                            const existe = fechasExistentesSet.has(f);
+                            return (
+                              <span
+                                key={f}
+                                className={
+                                  existe
+                                    ? 'inline-flex px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 line-through'
+                                    : 'inline-flex px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300'
+                                }
+                                title={existe ? 'Ya existe — se saltará' : 'Nueva'}
+                              >
+                                {f}
+                              </span>
+                            );
+                          })}
+                          {loteParsed.ok.length > 50 && (
+                            <span className="text-zinc-500 text-[10px]">+{loteParsed.ok.length - 50} más</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {loteParsed.invalid.length > 0 && (
+                      <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <p className="text-red-400 text-xs font-semibold mb-2">
+                          ✗ {loteParsed.invalid.length} línea{loteParsed.invalid.length > 1 ? 's' : ''} inválida
+                          {loteParsed.invalid.length > 1 ? 's' : ''}
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {loteParsed.invalid.slice(0, 20).map((l, i) => (
+                            <span key={i} className="inline-flex px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-300">
+                              {l}
+                            </span>
+                          ))}
+                          {loteParsed.invalid.length > 20 && (
+                            <span className="text-zinc-500 text-[10px]">+{loteParsed.invalid.length - 20} más</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ========== MODO RANGO ========== */}
+            {modo === 'rango' && (
+              <div className="space-y-4">
+                <p className="text-zinc-500 text-xs">
+                  Genera automáticamente las fechas entre dos días filtrando por días de la semana.
+                  Útil para cargar "todos los martes y jueves del 1 de marzo al 30 de abril".
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={cx.label}>Fecha inicio</label>
+                    <input
+                      type="date"
+                      value={rangoInicio}
+                      onChange={(e) => setRangoInicio(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                      className={cx.input}
+                    />
+                  </div>
+                  <div>
+                    <label className={cx.label}>Fecha fin</label>
+                    <input
+                      type="date"
+                      value={rangoFin}
+                      onChange={(e) => setRangoFin(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                      className={cx.input}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={cx.label}>Días de la semana (selecciona uno o más)</label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {DIAS_SEMANA.map((d) => {
+                      const active = rangoDias.includes(d.num);
+                      return (
+                        <button
+                          key={d.num}
+                          onClick={() => toggleRangoDia(d.num)}
+                          title={d.nombre}
+                          className={
+                            active
+                              ? 'px-2 py-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] font-bold text-sm'
+                              : 'px-2 py-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 font-bold text-sm hover:border-[#FA7B21]/30 transition-all'
+                          }
+                        >
+                          {d.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className={cx.label}>Turno para todas</label>
+                    <select
+                      value={rangoTurno}
+                      onChange={(e) => setRangoTurno(e.target.value as Turno)}
+                      className={cx.select}
+                    >
+                      <option value="Mañana">Mañana</option>
+                      <option value="Tarde">Tarde</option>
+                      <option value="Noche">Noche</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={cx.label}>Estado para todas</label>
+                    <select
+                      value={rangoAsistio}
+                      onChange={(e) => setRangoAsistio(e.target.value as Asistio)}
+                      className={cx.select}
+                    >
+                      <option value="Sí">Asistió</option>
+                      <option value="Tardanza">Tardanza</option>
+                      <option value="No">No asistió</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={cx.label}>Observaciones</label>
+                    <input
+                      type="text"
+                      value={rangoObs}
+                      onChange={(e) => setRangoObs(e.target.value)}
+                      placeholder="Opcional"
+                      className={cx.input}
+                    />
+                  </div>
+                </div>
+
+                {/* Preview */}
+                {rangoFechasGeneradas.length > 0 && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-emerald-400 text-xs font-semibold mb-2">
+                      ✓ Se generarán {rangoFechasGeneradas.length} fecha
+                      {rangoFechasGeneradas.length > 1 ? 's' : ''}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {rangoFechasGeneradas.slice(0, 50).map((f) => {
+                        const existe = fechasExistentesSet.has(f);
+                        return (
+                          <span
+                            key={f}
+                            className={
+                              existe
+                                ? 'inline-flex px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 line-through'
+                                : 'inline-flex px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300'
+                            }
+                            title={existe ? 'Ya existe — se saltará' : 'Nueva'}
+                          >
+                            {f}
+                          </span>
+                        );
+                      })}
+                      {rangoFechasGeneradas.length > 50 && (
+                        <span className="text-zinc-500 text-[10px]">+{rangoFechasGeneradas.length - 50} más</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleAgregarRangoAPendientes}
+                  disabled={rangoFechasGeneradas.length === 0}
+                  className={cx.btnPrimary + ' flex items-center gap-2'}
+                >
+                  <Plus size={14} /> Agregar {rangoFechasGeneradas.length} fechas a la lista
+                </button>
+              </div>
+            )}
           </section>
 
           {/* Lista pendientes */}
