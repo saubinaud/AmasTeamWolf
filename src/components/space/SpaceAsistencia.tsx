@@ -173,7 +173,7 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
       const res = await fetch(`${API_BASE}/space/asistencia/stats`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.success !== false) {
-        setStats(data.data ?? data);
+        setStats(data.stats ?? data.data ?? data);
       }
     } catch {
       toast.error('Error al cargar estadisticas');
