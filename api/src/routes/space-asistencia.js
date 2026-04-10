@@ -5,7 +5,8 @@ const router = Router();
 
 // Valores válidos para asistio (VARCHAR)
 const ASISTIO_VALIDOS = ['Sí', 'No', 'Tardanza'];
-const TURNOS_VALIDOS = ['Mañana', 'Tarde', 'Noche'];
+// Clases válidas (el campo 'turno' en asistencias guarda el nombre de la clase/programa)
+const CLASES_VALIDAS = ['Súper Baby Wolf', 'Baby Wolf', 'Little Wolf', 'Junior Wolf', 'Adolescentes Wolf'];
 
 // GET /api/space/asistencia/stats — Quick counts: hoy, semana, alumnos unicos hoy
 router.get('/stats', async (_req, res) => {
@@ -266,7 +267,8 @@ router.post('/historica', async (req, res) => {
     }
 
     const asistioFinal = ASISTIO_VALIDOS.includes(asistio) ? asistio : 'Sí';
-    const turnoFinal = TURNOS_VALIDOS.includes(turno) ? turno : 'Tarde';
+    // turno = nombre de la clase. Acepta cualquier string no vacío; si no viene, null
+    const turnoFinal = (typeof turno === 'string' && turno.trim()) ? turno.trim() : null;
 
     // Dedup: si ya existe asistencia mismo alumno + misma fecha, rechazar
     const existe = await queryOne(
@@ -381,7 +383,7 @@ router.post('/historica/batch', async (req, res) => {
         continue;
       }
 
-      const turno = TURNOS_VALIDOS.includes(item.turno) ? item.turno : 'Tarde';
+      const turno = (typeof item.turno === 'string' && item.turno.trim()) ? item.turno.trim() : null;
       const asistio = ASISTIO_VALIDOS.includes(item.asistio) ? item.asistio : 'Sí';
       const obs = item.observaciones || null;
 
