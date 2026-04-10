@@ -4,6 +4,8 @@ import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { Modal } from './Modal';
+// Fechas — timeZone: America/Lima forzado
+import { formatFecha } from './dateUtils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -52,14 +54,6 @@ function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }
 
-function formatFecha(iso: string | undefined): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch {
-    return iso;
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Sub-components

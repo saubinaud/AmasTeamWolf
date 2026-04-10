@@ -860,7 +860,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                         {obtenerNombreDia(f)}
                       </div>
                       <div className="text-zinc-500 text-xs capitalize">
-                        {f.toLocaleDateString('es-PE', { month: 'long' })}
+                        {f.toLocaleDateString('es-PE', { month: 'long', timeZone: 'America/Lima' })}
                       </div>
                     </div>
                   </div>

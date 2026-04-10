@@ -106,7 +106,7 @@ function authHeaders(token: string) {
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
+    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Lima' });
   } catch {
     return iso;
   }
