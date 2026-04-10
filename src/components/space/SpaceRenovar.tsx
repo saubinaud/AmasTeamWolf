@@ -1,22 +1,42 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Loader2, RefreshCw, CheckCircle2, ArrowRight, Search, User, AlertCircle } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle2, ArrowRight, X, Tag, Search, User, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx } from './tokens';
+import { ContratoFirma } from '../ContratoFirma';
+import {
+  PROGRAMAS_RENOVACION,
+  PROGRAMA_CLASES,
+  PRECIOS_BASE,
+  PRECIOS_POLOS,
+  NOMBRES_PROGRAMA,
+  TALLAS_OPTIONS,
+  type ProgramaKey,
+  type HorariosInfo,
+  type CodigoAplicado,
+  calcularHorarios,
+  obtenerFechasDisponiblesInicio,
+  diasPermitidosPorTurnoCategoria,
+  obtenerNombreDia,
+  calcularFechaFin,
+  validarCodigoPromocional,
+  obtenerClasesExtraDePromo,
+  formatearFechaLarga,
+  toISODateString,
+} from './matriculaShared';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-type ProgramaKey = '1mes' | 'full' | '6meses';
-
-interface ProgramaDef {
-  key: ProgramaKey;
-  nombre: string;
-  clases: number;
-  precio: number;
-  duracionMeses: number;
+interface Props {
+  token: string;
+  onGoToInscritos?: () => void;
 }
+
+type PolosOption = '0' | '1' | '2' | '3';
+type Turno = 'manana' | 'tarde';
+type OpcionFecha = 'fechas' | 'no-especificado' | 'otra';
 
 interface AlumnoBusqueda {
   id: number;
@@ -24,6 +44,12 @@ interface AlumnoBusqueda {
   nombre?: string;
   dni_alumno?: string;
   dni?: string;
+  fecha_nacimiento?: string;
+  nombre_apoderado?: string;
+  dni_apoderado?: string;
+  correo?: string;
+  telefono?: string;
+  direccion?: string;
 }
 
 interface InscripcionActiva {
@@ -32,101 +58,42 @@ interface InscripcionActiva {
   estado_pago: string;
 }
 
-interface Props {
-  token: string;
-  onGoToInscritos?: () => void;
+interface FormState {
+  alumno_id: number | null;
+  nombreAlumno: string;
+  dniAlumno: string;
+  fechaNacimiento: string;
+  nombrePadre: string;
+  dniPadre: string;
+  telefono: string;
+  direccion: string;
+  email: string;
+  fechaInicio: string;
 }
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+const INITIAL_FORM: FormState = {
+  alumno_id: null,
+  nombreAlumno: '',
+  dniAlumno: '',
+  fechaNacimiento: '',
+  nombrePadre: '',
+  dniPadre: '',
+  telefono: '',
+  direccion: '',
+  email: '',
+  fechaInicio: '',
+};
 
-const PROGRAMAS: ProgramaDef[] = [
-  { key: '1mes', nombre: 'Programa 1 Mes', clases: 8, precio: 330, duracionMeses: 1 },
-  { key: 'full', nombre: 'Programa 3 Meses FULL', clases: 24, precio: 869, duracionMeses: 3 },
-  { key: '6meses', nombre: 'Programa 6 Meses', clases: 48, precio: 1699, duracionMeses: 6 },
-];
-
-const TURNOS = [
-  'Mañana (10:00 - 11:00)',
-  'Mañana (11:00 - 12:00)',
-  'Tarde (16:00 - 17:00)',
-  'Tarde (17:00 - 18:00)',
-  'Tarde (18:00 - 19:00)',
-  'Noche (19:00 - 20:00)',
-] as const;
-
-const ESTADOS_PAGO = ['Pendiente', 'Parcial', 'Pagado'] as const;
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+const PROGRAMA_LABELS: Record<ProgramaKey, { titulo: string; sub: string }> = {
+  '1mes': { titulo: '1 Mes', sub: '8 clases · S/ 330' },
+  full: { titulo: '3 Meses FULL', sub: '24 clases · S/ 869' },
+  '6meses': { titulo: '6 Meses', sub: '48 clases · S/ 1699' },
+  '12meses_sin': { titulo: '12 Meses', sub: '96 clases · S/ 2999' },
+  '12meses_con': { titulo: 'WOLF ELITE 365', sub: '96 clases · S/ 3699' },
+};
 
 function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
-}
-
-function todayISO(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function addMonthsISO(iso: string, months: number): string {
-  if (!iso) return '';
-  const d = new Date(iso + 'T00:00:00');
-  d.setMonth(d.getMonth() + months);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
-function formatFecha(iso: string | undefined | null): string {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch {
-    return iso;
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Form state
-// ---------------------------------------------------------------------------
-
-interface FormState {
-  alumno_id: number | null;
-  alumno_nombre: string;
-  alumno_dni: string;
-  programa_key: ProgramaKey;
-  fecha_inicio: string;
-  fecha_fin: string;
-  clases_totales: string;
-  turno: string;
-  dias_tentativos: string;
-  precio_programa: string;
-  precio_pagado: string;
-  descuento: string;
-  estado_pago: (typeof ESTADOS_PAGO)[number];
-  codigo_promocional: string;
-}
-
-function initialForm(): FormState {
-  const prog = PROGRAMAS[1];
-  const hoy = todayISO();
-  return {
-    alumno_id: null,
-    alumno_nombre: '',
-    alumno_dni: '',
-    programa_key: prog.key,
-    fecha_inicio: hoy,
-    fecha_fin: addMonthsISO(hoy, prog.duracionMeses),
-    clases_totales: String(prog.clases),
-    turno: '',
-    dias_tentativos: '',
-    precio_programa: String(prog.precio),
-    precio_pagado: '',
-    descuento: '0',
-    estado_pago: 'Pendiente',
-    codigo_promocional: '',
-  };
 }
 
 // ---------------------------------------------------------------------------
@@ -134,9 +101,15 @@ function initialForm(): FormState {
 // ---------------------------------------------------------------------------
 
 export function SpaceRenovar({ token, onGoToInscritos }: Props) {
-  const [form, setForm] = useState<FormState>(initialForm());
-  const [saving, setSaving] = useState(false);
-  const [lastCreated, setLastCreated] = useState<{ nombre: string; programa: string } | null>(null);
+  // Programa
+  const [programa, setPrograma] = useState<ProgramaKey>('full');
+
+  // Form
+  const [form, setForm] = useState<FormState>(INITIAL_FORM);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [firmaBase64, setFirmaBase64] = useState<string | null>(null);
+  const [polosOption, setPolosOption] = useState<PolosOption>('0');
+  const [tallasPolos, setTallasPolos] = useState<string[]>([]);
 
   // Búsqueda alumno
   const [searchQuery, setSearchQuery] = useState('');
@@ -145,23 +118,61 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-
-  // Inscripción activa del alumno (para referencia)
   const [inscripcionActiva, setInscripcionActiva] = useState<InscripcionActiva | null>(null);
 
-  const programaDef = useMemo(
-    () => PROGRAMAS.find((p) => p.key === form.programa_key) ?? PROGRAMAS[0],
-    [form.programa_key],
-  );
+  // Horarios / fechas / dias
+  const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
+  const [categoriaAlumno, setCategoriaAlumno] = useState('');
+  const [diasTentativos, setDiasTentativos] = useState<string[]>([]);
+  const [turnoSeleccionado, setTurnoSeleccionado] = useState<Turno>('tarde');
+  const [opcionFecha, setOpcionFecha] = useState<OpcionFecha>('fechas');
+  const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
+  const [fechaFinCalculada, setFechaFinCalculada] = useState('');
+  const [detallesFechaFin, setDetallesFechaFin] = useState<{
+    clasesTotales: number;
+    semanasAproximadas: number;
+  } | null>(null);
 
-  // Debounced alumno search
+  // Promo
+  const [codigoInput, setCodigoInput] = useState('');
+  const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
+
+  // Success
+  const [lastCreated, setLastCreated] = useState<{ nombre: string; programa: string; total: number } | null>(null);
+
+  // -----------------------------------------------------------------------
+  // Reset
+  // -----------------------------------------------------------------------
+  const resetAll = useCallback(() => {
+    setForm(INITIAL_FORM);
+    setFirmaBase64(null);
+    setPolosOption('0');
+    setTallasPolos([]);
+    setSearchQuery('');
+    setSearchResults([]);
+    setInscripcionActiva(null);
+    setHorariosInfo(null);
+    setCategoriaAlumno('');
+    setDiasTentativos([]);
+    setTurnoSeleccionado('tarde');
+    setOpcionFecha('fechas');
+    setFechasDisponibles([]);
+    setFechaFinCalculada('');
+    setDetallesFechaFin(null);
+    setCodigoInput('');
+    setCodigoAplicado(null);
+  }, []);
+
+  // -----------------------------------------------------------------------
+  // Búsqueda alumno
+  // -----------------------------------------------------------------------
   useEffect(() => {
     if (searchQuery.length < 2) {
       setSearchResults([]);
       setShowResults(false);
       return;
     }
-    if (form.alumno_id && form.alumno_nombre === searchQuery) return;
+    if (form.alumno_id && form.nombreAlumno === searchQuery) return;
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
@@ -172,7 +183,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
           { headers: authHeaders(token) },
         );
         const data = await res.json();
-        const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
+        const list: AlumnoBusqueda[] = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setSearchResults(list);
         setShowResults(true);
       } catch {
@@ -184,14 +195,11 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [searchQuery, token, form.alumno_id, form.alumno_nombre]);
+  }, [searchQuery, token, form.alumno_id, form.nombreAlumno]);
 
-  // Close autocomplete on outside click
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (resultsRef.current && !resultsRef.current.contains(e.target as Node)) {
-        setShowResults(false);
-      }
+      if (resultsRef.current && !resultsRef.current.contains(e.target as Node)) setShowResults(false);
     }
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
@@ -201,98 +209,304 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     async (a: AlumnoBusqueda) => {
       const nombre = a.nombre_alumno ?? a.nombre ?? '';
       const dni = a.dni_alumno ?? a.dni ?? '';
-      setForm((f) => ({ ...f, alumno_id: a.id, alumno_nombre: nombre, alumno_dni: dni }));
+      const fNac = a.fecha_nacimiento ? a.fecha_nacimiento.slice(0, 10) : '';
+      setForm((f) => ({
+        ...f,
+        alumno_id: a.id,
+        nombreAlumno: nombre,
+        dniAlumno: dni,
+        fechaNacimiento: fNac,
+        nombrePadre: a.nombre_apoderado ?? '',
+        dniPadre: a.dni_apoderado ?? '',
+        telefono: a.telefono ?? '',
+        email: a.correo ?? '',
+        direccion: a.direccion ?? '',
+      }));
       setSearchQuery(nombre);
       setShowResults(false);
       setInscripcionActiva(null);
 
-      // Cargar inscripción activa del alumno
+      if (fNac) {
+        const horarios = calcularHorarios(fNac);
+        setHorariosInfo(horarios);
+        setCategoriaAlumno(horarios.categoria);
+      }
+
+      // Cargar inscripción activa actual
       try {
-        const res = await fetch(
-          `${API_BASE}/space/alumnos/${a.id}`,
-          { headers: authHeaders(token) },
-        );
+        const res = await fetch(`${API_BASE}/space/alumnos/${a.id}`, { headers: authHeaders(token) });
         const data = await res.json();
-        const inscripciones: InscripcionActiva[] = data?.data?.inscripciones ?? [];
-        const activa = inscripciones.find((i) => (i as unknown as { estado?: string }).estado === 'Activo');
-        if (activa) setInscripcionActiva(activa);
+        const inscripciones = data?.data?.inscripciones ?? [];
+        const activa = inscripciones.find((i: { estado?: string }) => i.estado === 'Activo');
+        if (activa) setInscripcionActiva(activa as InscripcionActiva);
       } catch {
-        // silencioso
+        /* silencioso */
       }
     },
     [token],
   );
 
-  const handleProgramaChange = useCallback((key: ProgramaKey) => {
-    const def = PROGRAMAS.find((p) => p.key === key) ?? PROGRAMAS[0];
-    setForm((f) => ({
-      ...f,
-      programa_key: key,
-      clases_totales: String(def.clases),
-      precio_programa: String(def.precio),
-      fecha_fin: addMonthsISO(f.fecha_inicio, def.duracionMeses),
-    }));
+  // -----------------------------------------------------------------------
+  // Efectos fechas/horarios
+  // -----------------------------------------------------------------------
+
+  useEffect(() => {
+    if (form.fechaNacimiento) {
+      const todas = obtenerFechasDisponiblesInicio();
+      const horarios = calcularHorarios(form.fechaNacimiento);
+      const diasPermitidos = diasPermitidosPorTurnoCategoria(turnoSeleccionado, horarios.categoria);
+      const filtradas = todas.filter((f) => diasPermitidos.includes(obtenerNombreDia(f)));
+      setFechasDisponibles(filtradas.slice(0, 5));
+    } else {
+      setFechasDisponibles(obtenerFechasDisponiblesInicio());
+    }
+  }, [form.fechaNacimiento, turnoSeleccionado]);
+
+  useEffect(() => {
+    if (diasTentativos.length === 0) return;
+    const permitidos = diasPermitidosPorTurnoCategoria(turnoSeleccionado, categoriaAlumno);
+    const filtrados = diasTentativos.filter((d) => permitidos.includes(d));
+    if (filtrados.length !== diasTentativos.length) setDiasTentativos(filtrados);
+  }, [turnoSeleccionado, categoriaAlumno, diasTentativos]);
+
+  useEffect(() => {
+    if (!form.fechaInicio || form.fechaInicio === 'no-especificado' || diasTentativos.length < 1) {
+      setFechaFinCalculada('');
+      setDetallesFechaFin(null);
+      return;
+    }
+    const clasesExtra = codigoAplicado?.codigo ? obtenerClasesExtraDePromo(codigoAplicado.codigo) : 0;
+    const resultado = calcularFechaFin(new Date(form.fechaInicio), programa, diasTentativos, clasesExtra);
+    setFechaFinCalculada(toISODateString(resultado.fechaFin));
+    setDetallesFechaFin({
+      clasesTotales: resultado.clasesTotales,
+      semanasAproximadas: resultado.semanasAproximadas,
+    });
+  }, [form.fechaInicio, diasTentativos, codigoAplicado, programa]);
+
+  // -----------------------------------------------------------------------
+  // Handlers
+  // -----------------------------------------------------------------------
+
+  const handleInputChange = useCallback((field: keyof FormState, value: string) => {
+    setForm((f) => ({ ...f, [field]: value }));
   }, []);
 
-  const handleFechaInicioChange = useCallback((iso: string) => {
-    setForm((f) => {
-      const def = PROGRAMAS.find((p) => p.key === f.programa_key) ?? PROGRAMAS[0];
-      return { ...f, fecha_inicio: iso, fecha_fin: addMonthsISO(iso, def.duracionMeses) };
+  const handleFechaNacimientoChange = useCallback(
+    (fecha: string) => {
+      handleInputChange('fechaNacimiento', fecha);
+      if (fecha) {
+        const horarios = calcularHorarios(fecha);
+        setHorariosInfo(horarios);
+        setCategoriaAlumno(horarios.categoria);
+      } else {
+        setHorariosInfo(null);
+        setCategoriaAlumno('');
+      }
+    },
+    [handleInputChange],
+  );
+
+  const handlePolosChange = useCallback((v: PolosOption) => {
+    setPolosOption(v);
+    setTallasPolos(new Array(parseInt(v, 10)).fill(''));
+  }, []);
+
+  const handleTallaPoloChange = useCallback((index: number, talla: string) => {
+    setTallasPolos((prev) => {
+      const next = [...prev];
+      next[index] = talla;
+      return next;
     });
   }, []);
 
-  const canSave = form.alumno_id !== null && form.fecha_inicio.length > 0;
-
-  const handleReset = useCallback(() => {
-    setForm(initialForm());
-    setSearchQuery('');
-    setInscripcionActiva(null);
-    setLastCreated(null);
+  const handleDiaTentativoToggle = useCallback((dia: string) => {
+    setDiasTentativos((prev) => (prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]));
   }, []);
 
-  const handleSave = useCallback(async () => {
-    if (!canSave) {
-      toast.error('Selecciona un alumno y la fecha de inicio');
+  const handleAplicarCodigo = useCallback(() => {
+    if (!codigoInput.trim()) {
+      toast.error('Ingresa un código');
       return;
     }
-    setSaving(true);
+    const resultado = validarCodigoPromocional(codigoInput, programa);
+    if (!resultado.valido) {
+      toast.error(resultado.mensaje ?? 'Código no válido');
+      setCodigoAplicado(null);
+      return;
+    }
+    setCodigoAplicado(resultado);
+    toast.success(`Código "${resultado.codigo}" aplicado`);
+  }, [codigoInput, programa]);
+
+  const handleQuitarCodigo = useCallback(() => {
+    setCodigoInput('');
+    setCodigoAplicado(null);
+  }, []);
+
+  // -----------------------------------------------------------------------
+  // Cálculo de precio
+  // -----------------------------------------------------------------------
+
+  const precioBase = PRECIOS_BASE[programa];
+  let precioPolosAjustado = PRECIOS_POLOS[polosOption];
+  let descuentoDinero = 0;
+  let descuentoPorcentaje = 0;
+
+  if (codigoAplicado?.valido && codigoAplicado.valor !== undefined && codigoAplicado.tipo !== 'desbloquear_1mes') {
+    if (codigoAplicado.tipo === 'descuento_dinero') descuentoDinero = codigoAplicado.valor;
+    else if (codigoAplicado.tipo === 'descuento_porcentaje') descuentoPorcentaje = codigoAplicado.valor;
+    else if (codigoAplicado.tipo === 'polo_gratis') {
+      const valorDesc = codigoAplicado.valor === 1 ? 60 : 110;
+      precioPolosAjustado = Math.max(0, PRECIOS_POLOS[polosOption] - valorDesc);
+    }
+  }
+
+  const subtotal = precioBase + precioPolosAjustado - descuentoDinero;
+  const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
+  const total = Math.max(0, subtotal - descuentoPorcentualMonto);
+
+  const needsPoloSize = polosOption !== '0';
+
+  // -----------------------------------------------------------------------
+  // Contrato: datos
+  // -----------------------------------------------------------------------
+
+  const datosContrato = useMemo(
+    () => ({
+      nombrePadre: form.nombrePadre,
+      dniPadre: form.dniPadre,
+      email: form.email,
+      telefono: form.telefono,
+      direccion: form.direccion,
+      nombreAlumno: form.nombreAlumno,
+      dniAlumno: form.dniAlumno,
+      fechaNacimiento: form.fechaNacimiento,
+      categoriaAlumno,
+      programa: NOMBRES_PROGRAMA[programa],
+      fechaInicio: form.fechaInicio,
+      fechaFin: fechaFinCalculada || '',
+      clasesTotales: detallesFechaFin?.clasesTotales,
+      turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
+      diasTentativos: diasTentativos.join(', '),
+      precioPrograma: precioBase,
+      descuentoDinero,
+      total,
+    }),
+    [form, categoriaAlumno, programa, fechaFinCalculada, detallesFechaFin, turnoSeleccionado, diasTentativos, precioBase, descuentoDinero, total],
+  );
+
+  // -----------------------------------------------------------------------
+  // Submit
+  // -----------------------------------------------------------------------
+
+  const handleSubmit = useCallback(async () => {
+    if (!form.nombreAlumno || !form.dniAlumno || !form.nombrePadre || !form.dniPadre || !form.email || !form.fechaInicio) {
+      toast.error('Completa todos los campos obligatorios');
+      return;
+    }
+    if (!form.fechaNacimiento) {
+      toast.error('Ingresa la fecha de nacimiento del alumno');
+      return;
+    }
+    if (form.fechaInicio !== 'no-especificado' && diasTentativos.length < 1) {
+      toast.error('Selecciona al menos 1 día tentativo');
+      return;
+    }
+    if (form.fechaInicio !== 'no-especificado' && !fechaFinCalculada) {
+      toast.error('La fecha de fin no se calculó correctamente');
+      return;
+    }
+    if (needsPoloSize && tallasPolos.some((t) => !t)) {
+      toast.error('Selecciona todas las tallas de polos');
+      return;
+    }
+    if (!firmaBase64) {
+      toast.error('Firma el contrato antes de enviar');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
-      const body = {
-        alumno_id: form.alumno_id,
-        programa: programaDef.nombre,
-        fecha_inicio: form.fecha_inicio,
-        fecha_fin: form.fecha_fin || null,
-        clases_totales: parseInt(form.clases_totales, 10) || programaDef.clases,
-        turno: form.turno || null,
-        dias_tentativos: form.dias_tentativos || null,
-        precio_programa: parseFloat(form.precio_programa) || 0,
-        precio_pagado: parseFloat(form.precio_pagado) || 0,
-        descuento: parseFloat(form.descuento) || 0,
-        codigo_promocional: form.codigo_promocional || null,
-        estado_pago: form.estado_pago,
+      const payload = {
+        tipoFormulario: 'Renovación',
+        programa: NOMBRES_PROGRAMA[programa],
+        clasesTotales: form.fechaInicio === 'no-especificado'
+          ? PROGRAMA_CLASES[programa]
+          : (detallesFechaFin?.clasesTotales ?? PROGRAMA_CLASES[programa]),
+
+        nombreAlumno: form.nombreAlumno,
+        dniAlumno: form.dniAlumno,
+        fechaNacimiento: form.fechaNacimiento,
+        categoriaAlumno: categoriaAlumno || 'No especificada',
+
+        turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
+        horariosDisponibles: horariosInfo
+          ? {
+              horarioSemana: turnoSeleccionado === 'manana' ? horariosInfo.horarioManana : horariosInfo.horarioSemana,
+              horarioSabado: horariosInfo.horarioSabado,
+              horarioManana: horariosInfo.horarioManana,
+              horarioTarde: horariosInfo.horarioSemana,
+              diasSemana: turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana,
+            }
+          : null,
+
+        tallasPolos: needsPoloSize ? tallasPolos : [],
+
+        nombrePadre: form.nombrePadre,
+        dniPadre: form.dniPadre,
+        telefono: form.telefono,
+        direccion: form.direccion,
+        email: form.email,
+
+        polos: polosOption === '0' ? 'No' : `${polosOption} polo(s)`,
+        precioPolos: PRECIOS_POLOS[polosOption],
+
+        fechaInicio: form.fechaInicio,
+        diasTentativos: form.fechaInicio === 'no-especificado' ? 'Aún no especificado' : diasTentativos.join(', '),
+        fechaFin: form.fechaInicio === 'no-especificado' ? 'Por calcular' : fechaFinCalculada,
+        semanasAproximadas: form.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas ?? 0),
+
+        codigoPromocional: codigoAplicado?.codigo ?? 'No aplicado',
+        tipoDescuento: codigoAplicado?.tipo ?? 'ninguno',
+        descuentoDinero,
+        descuentoPorcentaje,
+        descuentoPorcentualMonto,
+
+        precioPrograma: precioBase,
+        subtotal,
+        total,
+
+        contratoFirmado: firmaBase64,
+        fechaRegistro: new Date().toISOString(),
+        origen: 'space',
       };
 
-      const res = await fetch(`${API_BASE}/space/inscripciones/renovar`, {
+      const res = await fetch(`${API_BASE}/renovacion`, {
         method: 'POST',
-        headers: authHeaders(token),
-        body: JSON.stringify(body),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
       });
-      const data = await res.json().catch(() => ({}));
 
-      if (!res.ok || data?.success === false) {
-        toast.error(data?.error ?? 'Error al renovar inscripción');
-        return;
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
       }
 
-      toast.success('Renovación registrada');
-      setLastCreated({ nombre: form.alumno_nombre, programa: programaDef.nombre });
-      handleReset();
-    } catch {
-      toast.error('Error de conexión');
+      toast.success('Renovación registrada correctamente');
+      setLastCreated({ nombre: form.nombreAlumno, programa: NOMBRES_PROGRAMA[programa], total });
+      resetAll();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error('Error en renovación:', err);
+      toast.error('Hubo un error al registrar la renovación');
     } finally {
-      setSaving(false);
+      setIsSubmitting(false);
     }
-  }, [canSave, form, programaDef, token, handleReset]);
+  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsPoloSize, codigoAplicado, descuentoDinero, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, resetAll]);
+
+  // -----------------------------------------------------------------------
+  // Render
+  // -----------------------------------------------------------------------
 
   return (
     <div className="space-y-5 max-w-4xl">
@@ -300,7 +514,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
       <div>
         <h1 className="text-white text-xl font-bold">Renovar inscripción</h1>
         <p className="text-zinc-500 text-xs mt-1">
-          Busca al alumno y registra su renovación. Las inscripciones activas previas se marcarán como vencidas.
+          Busca al alumno para pre-llenar sus datos, selecciona programa, códigos, fechas y firma el contrato.
         </p>
       </div>
 
@@ -309,25 +523,23 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
           <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
           <div className="flex-1">
-            <p className="text-emerald-400 text-sm font-semibold">
-              Renovación registrada: {lastCreated.nombre}
-            </p>
-            <p className="text-emerald-400/70 text-xs">{lastCreated.programa}</p>
+            <p className="text-emerald-400 text-sm font-semibold">Renovación registrada: {lastCreated.nombre}</p>
+            <p className="text-emerald-400/70 text-xs">{lastCreated.programa} · Total S/ {lastCreated.total}</p>
           </div>
           {onGoToInscritos && (
-            <button
-              onClick={onGoToInscritos}
-              className="flex items-center gap-1 text-emerald-400 text-xs font-medium hover:text-emerald-300"
-            >
+            <button onClick={onGoToInscritos} className="flex items-center gap-1 text-emerald-400 text-xs font-medium hover:text-emerald-300">
               Ver inscritos <ArrowRight size={12} />
             </button>
           )}
+          <button onClick={() => setLastCreated(null)} className={cx.btnIcon}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
       {/* Búsqueda alumno */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">Alumno</h3>
+        <h3 className="text-white text-sm font-semibold mb-4">1. Buscar alumno</h3>
         <div className="relative" ref={resultsRef}>
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
           <input
@@ -335,10 +547,12 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setForm((f) => ({ ...f, alumno_id: null, alumno_nombre: '', alumno_dni: '' }));
-              setInscripcionActiva(null);
+              if (e.target.value === '') {
+                setForm(INITIAL_FORM);
+                setInscripcionActiva(null);
+              }
             }}
-            placeholder="Buscar por nombre o DNI..."
+            placeholder="Buscar por nombre o DNI (opcional — también puedes llenar manualmente)"
             className={cx.input + ' pl-9'}
           />
           {searching && (
@@ -365,36 +579,20 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
           )}
           {showResults && searchResults.length === 0 && searchQuery.length >= 2 && !searching && (
             <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-sm text-zinc-500">
-              Sin resultados
+              Sin resultados — puedes llenar los datos manualmente
             </div>
           )}
         </div>
 
-        {/* Info alumno seleccionado */}
-        {form.alumno_id && (
-          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-zinc-800 border border-zinc-800">
-            <div className="w-10 h-10 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center shrink-0">
-              <User size={18} className="text-[#FA7B21]" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold">{form.alumno_nombre}</p>
-              <p className="text-zinc-500 text-xs">DNI: {form.alumno_dni}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Inscripción activa previa */}
         {inscripcionActiva && (
           <div className="mt-3 flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
             <AlertCircle size={16} className="text-amber-400 shrink-0 mt-0.5" />
             <div className="flex-1 text-xs">
               <p className="text-amber-400 font-semibold">Inscripción activa actual</p>
               <p className="text-amber-400/80 mt-0.5">
-                {inscripcionActiva.programa} · vence {formatFecha(inscripcionActiva.fecha_fin)} · pago {inscripcionActiva.estado_pago}
+                {inscripcionActiva.programa} · vence {inscripcionActiva.fecha_fin} · pago {inscripcionActiva.estado_pago}
               </p>
-              <p className="text-amber-400/60 mt-1">
-                Al renovar, esta inscripción se marcará como vencida automáticamente.
-              </p>
+              <p className="text-amber-400/60 mt-1">Al registrar la renovación, esta inscripción se marcará como vencida.</p>
             </div>
           </div>
         )}
@@ -402,179 +600,383 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Programa */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">Nuevo programa</h3>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {PROGRAMAS.map((p) => (
+        <h3 className="text-white text-sm font-semibold mb-3">2. Programa a renovar</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {PROGRAMAS_RENOVACION.map((k) => {
+            const lbl = PROGRAMA_LABELS[k];
+            const active = programa === k;
+            return (
               <button
-                key={p.key}
-                onClick={() => handleProgramaChange(p.key)}
+                key={k}
+                onClick={() => setPrograma(k)}
                 className={
-                  form.programa_key === p.key
+                  active
                     ? 'px-3 py-3 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-left'
                     : 'px-3 py-3 rounded-xl bg-zinc-800 border border-zinc-800 hover:bg-zinc-700 text-left transition-all'
                 }
               >
-                <div
+                <div className={active ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                  {lbl.titulo}
+                </div>
+                <div className="text-zinc-500 text-xs mt-0.5">{lbl.sub}</div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Datos alumno */}
+      <section className={cx.card + ' p-5'}>
+        <h3 className="text-white text-sm font-semibold mb-4">3. Datos del alumno</h3>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={cx.label}>Nombre completo *</label>
+              <input type="text" value={form.nombreAlumno} onChange={(e) => handleInputChange('nombreAlumno', e.target.value)} className={cx.input} />
+            </div>
+            <div>
+              <label className={cx.label}>DNI *</label>
+              <input type="text" inputMode="numeric" maxLength={8} value={form.dniAlumno} onChange={(e) => handleInputChange('dniAlumno', e.target.value)} className={cx.input} />
+            </div>
+          </div>
+          <div>
+            <label className={cx.label}>Fecha de nacimiento *</label>
+            <input type="date" value={form.fechaNacimiento} onChange={(e) => handleFechaNacimientoChange(e.target.value)} className={cx.input} />
+          </div>
+
+          {horariosInfo && horariosInfo.horarioSemana && (
+            <div className="mt-2 p-4 rounded-xl bg-zinc-800 border border-[#FA7B21]/20">
+              <p className="text-white text-sm font-semibold mb-3">Turno preferido</p>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setTurnoSeleccionado('manana')}
                   className={
-                    form.programa_key === p.key
-                      ? 'text-[#FA7B21] text-sm font-semibold'
-                      : 'text-white text-sm font-semibold'
+                    turnoSeleccionado === 'manana'
+                      ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-center'
+                      : 'p-3 rounded-xl border-2 border-zinc-700 bg-zinc-900 hover:border-[#FA7B21]/50 text-center transition-all'
                   }
                 >
-                  {p.nombre}
-                </div>
-                <div className="text-zinc-500 text-xs mt-0.5">
-                  {p.clases} clases · S/ {p.precio}
-                </div>
-              </button>
+                  <div className={turnoSeleccionado === 'manana' ? 'text-[#FA7B21] font-semibold text-sm' : 'text-white font-semibold text-sm'}>Mañana</div>
+                  <div className="text-zinc-500 text-xs mt-1">{horariosInfo.horarioManana}</div>
+                </button>
+                <button
+                  onClick={() => setTurnoSeleccionado('tarde')}
+                  className={
+                    turnoSeleccionado === 'tarde'
+                      ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-center'
+                      : 'p-3 rounded-xl border-2 border-zinc-700 bg-zinc-900 hover:border-[#FA7B21]/50 text-center transition-all'
+                  }
+                >
+                  <div className={turnoSeleccionado === 'tarde' ? 'text-[#FA7B21] font-semibold text-sm' : 'text-white font-semibold text-sm'}>Tarde</div>
+                  <div className="text-zinc-500 text-xs mt-1">{horariosInfo.horarioSemana}</div>
+                </button>
+              </div>
+              {horariosInfo.categoria && <p className="text-zinc-500 text-xs mt-3">Categoría: {horariosInfo.categoria}</p>}
+              <p className="text-zinc-500 text-xs mt-1">
+                Días disponibles: {turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana}
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Datos apoderado */}
+      <section className={cx.card + ' p-5'}>
+        <h3 className="text-white text-sm font-semibold mb-4">4. Datos del apoderado</h3>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={cx.label}>Nombre completo *</label>
+              <input type="text" value={form.nombrePadre} onChange={(e) => handleInputChange('nombrePadre', e.target.value)} className={cx.input} />
+            </div>
+            <div>
+              <label className={cx.label}>DNI *</label>
+              <input type="text" inputMode="numeric" maxLength={8} value={form.dniPadre} onChange={(e) => handleInputChange('dniPadre', e.target.value)} className={cx.input} />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className={cx.label}>WhatsApp / Celular</label>
+              <input type="tel" value={form.telefono} onChange={(e) => handleInputChange('telefono', e.target.value)} className={cx.input} />
+            </div>
+            <div>
+              <label className={cx.label}>Correo *</label>
+              <input type="email" value={form.email} onChange={(e) => handleInputChange('email', e.target.value)} className={cx.input} />
+            </div>
+          </div>
+          <div>
+            <label className={cx.label}>Dirección</label>
+            <input type="text" value={form.direccion} onChange={(e) => handleInputChange('direccion', e.target.value)} className={cx.input} />
+          </div>
+        </div>
+      </section>
+
+      {/* Polos */}
+      <section className={cx.card + ' p-5'}>
+        <h3 className="text-white text-sm font-semibold mb-4">5. Polos adicionales</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {[
+            { v: '0' as PolosOption, label: 'Ninguno' },
+            { v: '1' as PolosOption, label: '1 × S/ 60' },
+            { v: '2' as PolosOption, label: '2 × S/ 110' },
+            { v: '3' as PolosOption, label: '3 × S/ 150' },
+          ].map((o) => (
+            <button
+              key={o.v}
+              onClick={() => handlePolosChange(o.v)}
+              className={
+                polosOption === o.v
+                  ? 'px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                  : 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+              }
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+        {needsPoloSize && (
+          <div className="mt-4 space-y-2">
+            <label className={cx.label}>Tallas de polos *</label>
+            {Array.from({ length: parseInt(polosOption, 10) }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-zinc-500 text-xs w-16">Polo {i + 1}:</span>
+                <select
+                  value={tallasPolos[i] ?? ''}
+                  onChange={(e) => handleTallaPoloChange(i, e.target.value)}
+                  className={cx.select + ' flex-1'}
+                >
+                  <option value="">Seleccionar talla</option>
+                  {TALLAS_OPTIONS.map((t) => (
+                    <option key={t} value={t}>
+                      Talla {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
             ))}
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={cx.label}>Fecha inicio *</label>
-              <input
-                type="date"
-                value={form.fecha_inicio}
-                onChange={(e) => handleFechaInicioChange(e.target.value)}
-                className={cx.input}
-              />
-            </div>
-            <div>
-              <label className={cx.label}>Fecha fin</label>
-              <input
-                type="date"
-                value={form.fecha_fin}
-                onChange={(e) => setForm((f) => ({ ...f, fecha_fin: e.target.value }))}
-                className={cx.input}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={cx.label}>Clases totales</label>
-              <input
-                type="number"
-                min="0"
-                value={form.clases_totales}
-                onChange={(e) => setForm((f) => ({ ...f, clases_totales: e.target.value }))}
-                className={cx.input}
-              />
-            </div>
-            <div>
-              <label className={cx.label}>Turno</label>
-              <select
-                value={form.turno}
-                onChange={(e) => setForm((f) => ({ ...f, turno: e.target.value }))}
-                className={cx.select}
-              >
-                <option value="">Sin especificar</option>
-                {TURNOS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className={cx.label}>Días tentativos</label>
-            <input
-              type="text"
-              value={form.dias_tentativos}
-              onChange={(e) => setForm((f) => ({ ...f, dias_tentativos: e.target.value }))}
-              placeholder="Ej: Lunes, miércoles y viernes"
-              className={cx.input}
-            />
-          </div>
-        </div>
+        )}
       </section>
 
-      {/* Pago */}
+      {/* Fechas */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">Pago</h3>
+        <h3 className="text-white text-sm font-semibold mb-4">6. Fechas del programa</h3>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className={cx.label}>Precio programa</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.precio_programa}
-                onChange={(e) => setForm((f) => ({ ...f, precio_programa: e.target.value }))}
-                className={cx.input}
-              />
-            </div>
-            <div>
-              <label className={cx.label}>Precio pagado</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.precio_pagado}
-                onChange={(e) => setForm((f) => ({ ...f, precio_pagado: e.target.value }))}
-                placeholder="0.00"
-                className={cx.input}
-              />
-            </div>
-            <div>
-              <label className={cx.label}>Descuento</label>
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                value={form.descuento}
-                onChange={(e) => setForm((f) => ({ ...f, descuento: e.target.value }))}
-                className={cx.input}
-              />
-            </div>
+          <label className={cx.label}>Fecha de inicio *</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {fechasDisponibles.map((f, idx) => {
+              const fechaStr = toISODateString(f);
+              const isSelected = form.fechaInicio === fechaStr && opcionFecha === 'fechas';
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    handleInputChange('fechaInicio', fechaStr);
+                    setOpcionFecha('fechas');
+                  }}
+                  className={
+                    isSelected
+                      ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-left'
+                      : 'p-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 hover:border-[#FA7B21]/30 text-left transition-all'
+                  }
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={isSelected ? 'w-10 h-10 rounded-full bg-[#FA7B21] flex items-center justify-center font-bold text-white' : 'w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white/80'}>
+                      {f.getDate()}
+                    </div>
+                    <div className="flex-1">
+                      <div className={isSelected ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                        {obtenerNombreDia(f)}
+                      </div>
+                      <div className="text-zinc-500 text-xs capitalize">
+                        {f.toLocaleDateString('es-PE', { month: 'long' })}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => {
+                handleInputChange('fechaInicio', 'no-especificado');
+                setOpcionFecha('no-especificado');
+              }}
+              className={
+                opcionFecha === 'no-especificado'
+                  ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-left'
+                  : 'p-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 hover:border-[#FA7B21]/30 text-left transition-all'
+              }
+            >
+              <div className="flex items-center gap-2">
+                <div className={opcionFecha === 'no-especificado' ? 'w-10 h-10 rounded-full bg-[#FA7B21] flex items-center justify-center text-white' : 'w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center text-white/80'}>
+                  ?
+                </div>
+                <div className="flex-1">
+                  <div className={opcionFecha === 'no-especificado' ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                    Sin definir
+                  </div>
+                  <div className="text-zinc-500 text-xs">Lo decidiré después</div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setOpcionFecha('otra')}
+              className={
+                opcionFecha === 'otra'
+                  ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-left'
+                  : 'p-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 hover:border-[#FA7B21]/30 text-left transition-all'
+              }
+            >
+              <div className="flex items-center gap-2">
+                <div className={opcionFecha === 'otra' ? 'w-10 h-10 rounded-full bg-[#FA7B21] flex items-center justify-center text-white' : 'w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center text-white/80'}>
+                  +
+                </div>
+                <div className="flex-1">
+                  <div className={opcionFecha === 'otra' ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                    Otra fecha
+                  </div>
+                  <div className="text-zinc-500 text-xs">Personalizada</div>
+                </div>
+              </div>
+            </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          {opcionFecha === 'otra' && (
             <div>
-              <label className={cx.label}>Estado de pago</label>
-              <select
-                value={form.estado_pago}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, estado_pago: e.target.value as FormState['estado_pago'] }))
-                }
-                className={cx.select}
-              >
-                {ESTADOS_PAGO.map((ep) => (
-                  <option key={ep} value={ep}>
-                    {ep}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={cx.label}>Código promocional</label>
+              <label className={cx.label}>Fecha personalizada</label>
               <input
-                type="text"
-                value={form.codigo_promocional}
-                onChange={(e) => setForm((f) => ({ ...f, codigo_promocional: e.target.value }))}
-                placeholder="Opcional"
+                type="date"
+                value={form.fechaInicio !== 'no-especificado' ? form.fechaInicio : ''}
+                onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
+                min={toISODateString(new Date())}
                 className={cx.input}
               />
             </div>
+          )}
+
+          {form.fechaInicio && form.fechaInicio !== 'no-especificado' && form.fechaNacimiento && (
+            <div>
+              <label className={cx.label}>Días tentativos de clase *</label>
+              <p className="text-zinc-500 text-xs mb-2">Mínimo 1 día. Se usan para calcular la fecha de fin.</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
+                  const permitidos = diasPermitidosPorTurnoCategoria(turnoSeleccionado, categoriaAlumno);
+                  const disabled = !permitidos.includes(dia);
+                  const selected = diasTentativos.includes(dia);
+                  return (
+                    <button
+                      key={dia}
+                      onClick={() => !disabled && handleDiaTentativoToggle(dia)}
+                      disabled={disabled}
+                      className={
+                        disabled
+                          ? 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-900 text-zinc-700 text-xs font-semibold opacity-40 cursor-not-allowed'
+                          : selected
+                            ? 'px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                            : 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                      }
+                    >
+                      {dia}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {fechaFinCalculada && detallesFechaFin && (
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">Fecha de fin calculada</p>
+              <p className="text-white text-base font-bold">{formatearFechaLarga(fechaFinCalculada)}</p>
+              <p className="text-emerald-400/70 text-xs mt-1">
+                {detallesFechaFin.clasesTotales} clases · {detallesFechaFin.semanasAproximadas} semanas
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Código */}
+      <section className={cx.card + ' p-5'}>
+        <h3 className="text-white text-sm font-semibold mb-4">7. Código promocional (opcional)</h3>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={codigoInput}
+            onChange={(e) => setCodigoInput(e.target.value.toUpperCase())}
+            placeholder="RENUEVA100"
+            className={cx.input + ' flex-1 uppercase'}
+          />
+          <button onClick={handleAplicarCodigo} className={cx.btnPrimary + ' flex items-center gap-2'}>
+            <Tag size={14} /> Aplicar
+          </button>
+        </div>
+        {codigoAplicado?.valido && (
+          <div className="mt-3 flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+            <div className="flex-1 text-xs">
+              <p className="text-emerald-400 font-semibold">Código "{codigoAplicado.codigo}" aplicado</p>
+              <p className="text-emerald-400/80 mt-0.5">{codigoAplicado.descripcion}</p>
+            </div>
+            <button onClick={handleQuitarCodigo} className={cx.btnIcon}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* Resumen */}
+      <section className={cx.card + ' p-5'}>
+        <h3 className="text-white text-sm font-semibold mb-4">8. Resumen</h3>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between text-zinc-400">
+            <span>{NOMBRES_PROGRAMA[programa]}</span>
+            <span className="text-white">S/ {precioBase}</span>
+          </div>
+          {polosOption !== '0' && (
+            <div className="flex justify-between text-zinc-400">
+              <span>{polosOption} polo(s){codigoAplicado?.tipo === 'polo_gratis' && ' (desc. aplicado)'}</span>
+              <span className="text-white">S/ {precioPolosAjustado}</span>
+            </div>
+          )}
+          {descuentoDinero > 0 && (
+            <div className="flex justify-between text-emerald-400">
+              <span>Descuento código</span>
+              <span>- S/ {descuentoDinero}</span>
+            </div>
+          )}
+          {descuentoPorcentaje > 0 && (
+            <div className="flex justify-between text-emerald-400">
+              <span>Descuento {descuentoPorcentaje}%</span>
+              <span>- S/ {descuentoPorcentualMonto}</span>
+            </div>
+          )}
+          <div className="flex justify-between items-center pt-3 border-t border-zinc-800">
+            <span className="text-white font-bold text-base">TOTAL</span>
+            <span className="text-[#FCA929] text-2xl font-bold">S/ {total}</span>
           </div>
         </div>
       </section>
 
-      {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pb-4">
-        <button onClick={handleReset} className={cx.btnSecondary}>
+      {/* Contrato */}
+      <section className={cx.card + ' p-5'}>
+        <h3 className="text-white text-sm font-semibold mb-4">9. Contrato y firma</h3>
+        <ContratoFirma datos={datosContrato} onFirmaCompleta={(firma) => setFirmaBase64(firma)} />
+      </section>
+
+      {/* Submit */}
+      <div className="flex items-center justify-end gap-3 pb-6">
+        <button onClick={resetAll} className={cx.btnSecondary}>
           Limpiar
         </button>
         <button
-          onClick={handleSave}
-          disabled={saving || !canSave}
+          onClick={handleSubmit}
+          disabled={isSubmitting || !firmaBase64}
           className={cx.btnPrimary + ' flex items-center gap-2'}
         >
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+          {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           Registrar renovación
         </button>
       </div>
