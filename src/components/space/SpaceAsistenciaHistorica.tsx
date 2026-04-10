@@ -29,12 +29,21 @@ interface AsistenciaExistente {
   metodo_registro: string;
 }
 
-type Turno = 'Mañana' | 'Tarde' | 'Noche';
+// El campo "turno" en la BD guarda el nombre de la clase, no un turno horario.
+type Clase = 'Súper Baby Wolf' | 'Baby Wolf' | 'Little Wolf' | 'Junior Wolf' | 'Adolescentes Wolf';
 type Asistio = 'Sí' | 'No' | 'Tardanza';
+
+const CLASES: Clase[] = [
+  'Súper Baby Wolf',
+  'Baby Wolf',
+  'Little Wolf',
+  'Junior Wolf',
+  'Adolescentes Wolf',
+];
 
 interface FechaPendiente {
   fecha: string;
-  turno: Turno;
+  turno: Clase;
   asistio: Asistio;
   observaciones: string;
 }
@@ -155,13 +164,13 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
 
   // Nueva fecha a agregar (modo individual)
   const [nuevaFecha, setNuevaFecha] = useState('');
-  const [nuevoTurno, setNuevoTurno] = useState<Turno>('Tarde');
+  const [nuevoTurno, setNuevoTurno] = useState<Clase>('Baby Wolf');
   const [nuevoAsistio, setNuevoAsistio] = useState<Asistio>('Sí');
   const [nuevaObs, setNuevaObs] = useState('');
 
   // Modo LOTE: textarea con fechas
   const [loteTexto, setLoteTexto] = useState('');
-  const [loteTurno, setLoteTurno] = useState<Turno>('Tarde');
+  const [loteTurno, setLoteTurno] = useState<Clase>('Baby Wolf');
   const [loteAsistio, setLoteAsistio] = useState<Asistio>('Sí');
   const [loteObs, setLoteObs] = useState('');
   const [loteParsed, setLoteParsed] = useState<{ ok: string[]; invalid: string[] } | null>(null);
@@ -170,7 +179,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
   const [rangoInicio, setRangoInicio] = useState('');
   const [rangoFin, setRangoFin] = useState('');
   const [rangoDias, setRangoDias] = useState<number[]>([]);
-  const [rangoTurno, setRangoTurno] = useState<Turno>('Tarde');
+  const [rangoTurno, setRangoTurno] = useState<Clase>('Baby Wolf');
   const [rangoAsistio, setRangoAsistio] = useState<Asistio>('Sí');
   const [rangoObs, setRangoObs] = useState('');
 
@@ -630,15 +639,17 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                     )}
                   </div>
                   <div>
-                    <label className={cx.label}>Turno</label>
+                    <label className={cx.label}>Clase</label>
                     <select
                       value={nuevoTurno}
-                      onChange={(e) => setNuevoTurno(e.target.value as Turno)}
+                      onChange={(e) => setNuevoTurno(e.target.value as Clase)}
                       className={cx.select}
                     >
-                      <option value="Mañana">Mañana</option>
-                      <option value="Tarde">Tarde</option>
-                      <option value="Noche">Noche</option>
+                      {CLASES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -699,15 +710,17 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className={cx.label}>Turno para todas</label>
+                    <label className={cx.label}>Clase para todas</label>
                     <select
                       value={loteTurno}
-                      onChange={(e) => setLoteTurno(e.target.value as Turno)}
+                      onChange={(e) => setLoteTurno(e.target.value as Clase)}
                       className={cx.select}
                     >
-                      <option value="Mañana">Mañana</option>
-                      <option value="Tarde">Tarde</option>
-                      <option value="Noche">Noche</option>
+                      {CLASES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
@@ -863,15 +876,17 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className={cx.label}>Turno para todas</label>
+                    <label className={cx.label}>Clase para todas</label>
                     <select
                       value={rangoTurno}
-                      onChange={(e) => setRangoTurno(e.target.value as Turno)}
+                      onChange={(e) => setRangoTurno(e.target.value as Clase)}
                       className={cx.select}
                     >
-                      <option value="Mañana">Mañana</option>
-                      <option value="Tarde">Tarde</option>
-                      <option value="Noche">Noche</option>
+                      {CLASES.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div>
