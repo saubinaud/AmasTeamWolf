@@ -32,9 +32,24 @@ router.get('/stats', async (_req, res) => {
   }
 });
 
-// GET /api/space/asistencia/hoy — Today's attendance with alumno info
-router.get('/hoy', async (_req, res) => {
+// GET /api/space/asistencia/hoy — Today's attendance (or date range with pagination)
+router.get('/hoy', async (req, res) => {
   try {
+    const { desde, hasta } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const offset = (page - 1) * limit;
+
+    let where = 'WHERE a.fecha = CURRENT_DATE';
+    let params = [];
+    if (desde && hasta) {
+      where = 'WHERE a.fecha >= $1 AND a.fecha <= $2';
+      params = [desde, hasta];
+    }
+
+    const countResult = await queryOne(`SELECT COUNT(*) AS total FROM asistencias a ${where}`, params);
+    const total = parseInt(countResult.total, 10);
+
     const rows = await query(
       `SELECT a.id, a.fecha, a.hora::text, a.turno, a.asistio, a.observaciones,
               al.nombre_alumno, al.dni_alumno,
@@ -42,13 +57,15 @@ router.get('/hoy', async (_req, res) => {
        FROM asistencias a
        LEFT JOIN alumnos al ON al.id = a.alumno_id
        LEFT JOIN inscripciones i ON i.id = a.inscripcion_id
-       WHERE a.fecha = CURRENT_DATE
-       ORDER BY a.hora DESC`
+       ${where}
+       ORDER BY a.fecha DESC, a.hora DESC
+       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]
     );
 
-    return res.json({ success: true, data: rows });
+    return res.json({ success: true, data: rows, total, page, totalPages: Math.ceil(total / limit) });
   } catch (err) {
-    console.error('Error obteniendo asistencia de hoy:', err);
+    console.error('Error obteniendo asistencia:', err);
     return res.status(500).json({ success: false, error: 'Error del servidor', code: 'ASIST_HOY_ERROR' });
   }
 });
