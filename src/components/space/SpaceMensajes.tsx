@@ -225,7 +225,7 @@ function SendModal({
           { headers: authHeaders(token) },
         );
         const data = await res.json();
-        const list = Array.isArray(data) ? data : data.alumnos ?? [];
+        const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
         setSearchResults(list);
         setShowResults(true);
       } catch {
@@ -491,12 +491,13 @@ function DetailModal({
     if (!mensaje || !open) return;
     setLoadingLecturas(true);
     setConfirmDelete(false);
-    fetch(`${API_BASE}/space/mensajes/${mensaje.id}/lecturas`, {
+    fetch(`${API_BASE}/space/mensajes/${mensaje.id}`, {
       headers: authHeaders(token),
     })
       .then((r) => r.json())
       .then((data) => {
-        const list = Array.isArray(data) ? data : data.lecturas ?? [];
+        const detail = data?.data || data;
+        const list = Array.isArray(detail?.lecturas) ? detail.lecturas : [];
         setLecturas(list);
       })
       .catch(() => toast.error('Error al cargar lecturas'))
