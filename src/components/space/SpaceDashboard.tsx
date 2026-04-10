@@ -159,7 +159,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
             <button
               key={page}
               onClick={() => go(page)}
-              className={`${cx.card} p-4 flex items-center gap-3 text-left hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 group`}
+              className={`${cx.card} p-4 flex items-center gap-3 text-left hover:bg-zinc-800 hover:border-zinc-800 transition-all duration-200 group`}
             >
               <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors">
                 <Icon size={18} className={color} />
