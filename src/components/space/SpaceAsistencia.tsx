@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CalendarCheck, Download, Users, Clock } from 'lucide-react';
+import { CalendarCheck, Download, Users, Clock, QrCode, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors, statGradients } from './tokens';
@@ -10,12 +10,13 @@ import { cx, badgeColors, statGradients } from './tokens';
 
 interface AsistenciaHoy {
   id: number;
-  alumno_nombre: string;
-  alumno_apellido: string;
+  nombre_alumno: string;
+  dni_alumno: string;
+  fecha: string;
   hora: string;
   turno: string;
   programa: string;
-  asistio: boolean;
+  asistio: string;
 }
 
 interface AsistenciaStats {
@@ -57,12 +58,26 @@ function formatFecha(iso: string | undefined): string {
   }
 }
 
+function formatFechaCorta(fecha: string | undefined): string {
+  if (!fecha) return '—';
+  try {
+    const d = new Date(fecha);
+    if (isNaN(d.getTime())) return String(fecha);
+    return d.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
+  } catch {
+    return String(fecha);
+  }
+}
+
 function formatHora(hora: string | undefined): string {
   if (!hora) return '—';
   try {
     if (hora.includes('T')) {
       return new Date(hora).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
     }
+    // Formato '12:33:26.867835' → '12:33'
+    const match = hora.match(/^(\d{1,2}):(\d{2})/);
+    if (match) return `${match[1].padStart(2, '0')}:${match[2]}`;
     return hora;
   } catch {
     return hora;
@@ -188,6 +203,8 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
       const params = new URLSearchParams();
       params.set('page', String(pageHoy));
       params.set('limit', String(limit));
+      if (desde) params.set('desde', desde);
+      if (hasta) params.set('hasta', hasta);
       const res = await fetch(`${API_BASE}/space/asistencia/hoy?${params.toString()}`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.success !== false) {
@@ -195,11 +212,11 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
         setTotalHoy(data.total ?? data.data?.length ?? 0);
       }
     } catch {
-      toast.error('Error al cargar asistencias de hoy');
+      toast.error('Error al cargar asistencias');
     } finally {
       setLoadingHoy(false);
     }
-  }, [token, pageHoy]);
+  }, [token, pageHoy, desde, hasta]);
 
   const fetchResumen = useCallback(async () => {
     setLoadingResumen(true);
@@ -288,9 +305,20 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-white text-xl font-bold">Asistencia</h1>
-        <p className="text-zinc-500 text-xs mt-1">Control de asistencia de alumnos</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-white text-xl font-bold">Asistencia</h1>
+          <p className="text-zinc-500 text-xs mt-1">Control de asistencia de alumnos</p>
+        </div>
+        <a
+          href="/asistencia/panel"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cx.btnPrimary + ' flex items-center gap-2 shrink-0'}
+        >
+          <QrCode size={16} /> Tomar asistencia
+          <ExternalLink size={12} className="opacity-70" />
+        </a>
       </div>
 
       {/* Stats */}
@@ -351,7 +379,7 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
 
       {/* Today's attendance table */}
       <div>
-        <h2 className="text-white text-sm font-semibold mb-3">Asistencias de hoy</h2>
+        <h2 className="text-white text-sm font-semibold mb-3">Registro de asistencias</h2>
         <p className="text-zinc-500 text-xs mb-3">
           Mostrando {showingFrom}–{showingTo} de {totalHoy} registros
         </p>
@@ -371,6 +399,7 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
                 <thead>
                   <tr className="border-b border-zinc-800">
                     <th className={cx.th}>Alumno</th>
+                    <th className={cx.th}>Fecha</th>
                     <th className={cx.th}>Hora</th>
                     <th className={cx.th + ' hidden sm:table-cell'}>Turno</th>
                     <th className={cx.th + ' hidden md:table-cell'}>Programa</th>
@@ -381,14 +410,18 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
                   {asistencias.map(a => (
                     <tr key={a.id} className={cx.tr}>
                       <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>
-                        {a.alumno_nombre} {a.alumno_apellido}
+                        <div>
+                          <p>{a.nombre_alumno || '—'}</p>
+                          {a.dni_alumno && <p className="text-zinc-500 text-xs font-mono">{a.dni_alumno}</p>}
+                        </div>
                       </td>
+                      <td className={cx.td + ' text-zinc-400 whitespace-nowrap'}>{formatFechaCorta(a.fecha)}</td>
                       <td className={cx.td + ' text-zinc-400'}>{formatHora(a.hora)}</td>
                       <td className={cx.td + ' text-zinc-400 hidden sm:table-cell'}>{a.turno || '—'}</td>
                       <td className={cx.td + ' text-zinc-400 hidden md:table-cell'}>{a.programa || '—'}</td>
                       <td className={cx.td}>
-                        <span className={cx.badge(a.asistio ? badgeColors.green : badgeColors.red)}>
-                          {a.asistio ? 'Si' : 'No'}
+                        <span className={cx.badge(a.asistio === 'Sí' ? badgeColors.green : badgeColors.red)}>
+                          {a.asistio || 'No'}
                         </span>
                       </td>
                     </tr>
