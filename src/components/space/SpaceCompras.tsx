@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ShoppingBag, Plus, Pencil, Trash2, Search, Package,
-  Shield, Shirt, Sparkles, Loader2, User,
+  Shield, Shirt, Loader2, User, Check, Clock, PackageCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cx, badgeColors, statGradients } from './tokens';
@@ -19,7 +19,7 @@ type MetodoPago = 'efectivo' | 'yape' | 'transferencia' | 'tarjeta';
 interface ComprasStats {
   total: number;
   ventas_mes: number;
-  armas: number;
+  pendientes_entrega: number;
   uniformes: number;
 }
 
@@ -36,6 +36,9 @@ interface Compra {
   metodo_pago?: MetodoPago | null;
   fecha_adquisicion: string;
   observaciones?: string | null;
+  entregado: boolean;
+  fecha_entrega?: string | null;
+  entregado_by?: number | null;
 }
 
 interface AlumnoBusqueda {
@@ -143,61 +146,74 @@ function todayISO(): string {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function StatsBar({ stats, loading }: { stats: ComprasStats; loading: boolean }) {
+function StatsBar({ stats, loading, onPendientesClick }: { stats: ComprasStats; loading: boolean; onPendientesClick: () => void }) {
   const items = [
     {
       label: 'Total compras',
       value: String(stats.total),
       gradient: statGradients.blue,
       icon: <ShoppingBag size={18} />,
+      onClick: undefined as (() => void) | undefined,
     },
     {
       label: 'Ventas este mes',
       value: formatPrecio(stats.ventas_mes),
       gradient: statGradients.orange,
-      icon: <Sparkles size={18} />,
+      icon: <PackageCheck size={18} />,
+      onClick: undefined as (() => void) | undefined,
     },
     {
-      label: 'Armas registradas',
-      value: String(stats.armas),
+      label: 'Pendientes entrega',
+      value: String(stats.pendientes_entrega),
       gradient: statGradients.violet,
-      icon: <Shield size={18} />,
+      icon: <Clock size={18} />,
+      onClick: onPendientesClick,
     },
     {
       label: 'Uniformes',
       value: String(stats.uniformes),
       gradient: statGradients.green,
       icon: <Shirt size={18} />,
+      onClick: undefined as (() => void) | undefined,
     },
   ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className={`bg-gradient-to-br ${item.gradient.bg} border ${item.gradient.border} rounded-2xl p-4`}
-        >
-          {loading ? (
-            <div className="space-y-2">
-              <div className={cx.skeleton + ' h-4 w-20'} />
-              <div className={cx.skeleton + ' h-7 w-16'} />
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
-                  {item.label}
-                </span>
-                <span className={item.gradient.icon}>{item.icon}</span>
-              </div>
-              <span className={`text-2xl font-bold ${item.gradient.text}`}>
-                {item.value}
+      {items.map((item) => {
+        const baseCls = `bg-gradient-to-br ${item.gradient.bg} border ${item.gradient.border} rounded-2xl p-4 text-left`;
+        const interactiveCls = item.onClick ? ' hover:brightness-125 transition-all active:scale-[0.98] cursor-pointer' : '';
+        const content = loading ? (
+          <div className="space-y-2">
+            <div className={cx.skeleton + ' h-4 w-20'} />
+            <div className={cx.skeleton + ' h-7 w-16'} />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
+                {item.label}
               </span>
-            </>
-          )}
-        </div>
-      ))}
+              <span className={item.gradient.icon}>{item.icon}</span>
+            </div>
+            <span className={`text-2xl font-bold ${item.gradient.text}`}>
+              {item.value}
+            </span>
+          </>
+        );
+        if (item.onClick) {
+          return (
+            <button key={item.label} onClick={item.onClick} className={baseCls + interactiveCls}>
+              {content}
+            </button>
+          );
+        }
+        return (
+          <div key={item.label} className={baseCls}>
+            {content}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -245,6 +261,7 @@ interface CompraFormState {
   metodo_pago: MetodoPago;
   fecha_adquisicion: string;
   observaciones: string;
+  entregado: boolean;
 }
 
 function emptyForm(): CompraFormState {
@@ -259,6 +276,7 @@ function emptyForm(): CompraFormState {
     metodo_pago: 'efectivo',
     fecha_adquisicion: todayISO(),
     observaciones: '',
+    entregado: false,
   };
 }
 
@@ -299,6 +317,7 @@ function CompraFormModal({
         metodo_pago: editing.metodo_pago ?? 'efectivo',
         fecha_adquisicion: (editing.fecha_adquisicion ?? todayISO()).slice(0, 10),
         observaciones: editing.observaciones ?? '',
+        entregado: Boolean(editing.entregado),
       });
       setSearchQuery(editing.alumno_nombre);
     } else {
@@ -394,6 +413,9 @@ function CompraFormModal({
         fecha_adquisicion: form.fecha_adquisicion,
         observaciones: form.observaciones.trim() || null,
       };
+      if (!editing) {
+        body.entregado = form.entregado;
+      }
       if (form.origen === 'compra') {
         body.metodo_pago = form.metodo_pago;
       } else {
@@ -607,6 +629,24 @@ function CompraFormModal({
             className={cx.input + ' resize-none'}
           />
         </div>
+
+        {/* Entrega (solo al crear) */}
+        {!editing && (
+          <label className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-3 cursor-pointer hover:bg-zinc-800/50 transition-colors">
+            <input
+              type="checkbox"
+              checked={form.entregado}
+              onChange={(e) => setForm((f) => ({ ...f, entregado: e.target.checked }))}
+              className="w-4 h-4 accent-[#FA7B21]"
+            />
+            <div className="flex-1">
+              <div className="text-white text-sm font-medium">Entregar ahora</div>
+              <div className="text-zinc-500 text-xs">
+                Marcar como entregado en el momento del registro. Si no, quedará pendiente.
+              </div>
+            </div>
+          </label>
+        )}
       </div>
     </Modal>
   );
@@ -620,7 +660,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
   const [stats, setStats] = useState<ComprasStats>({
     total: 0,
     ventas_mes: 0,
-    armas: 0,
+    pendientes_entrega: 0,
     uniformes: 0,
   });
   const [compras, setCompras] = useState<Compra[]>([]);
@@ -629,11 +669,13 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [categoriaFilter, setCategoriaFilter] = useState<Categoria | 'all'>('all');
+  const [entregaFilter, setEntregaFilter] = useState<'all' | 'pendiente' | 'entregado'>('all');
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Compra | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [entregandoId, setEntregandoId] = useState<number | null>(null);
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
@@ -646,10 +688,10 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
     return () => clearTimeout(id);
   }, [searchInput]);
 
-  // Reset page when category filter changes
+  // Reset page when category or entrega filter changes
   useEffect(() => {
     setPage(1);
-  }, [categoriaFilter]);
+  }, [categoriaFilter, entregaFilter]);
 
   const fetchStats = useCallback(async () => {
     setLoadingStats(true);
@@ -659,11 +701,14 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       });
       const data = await res.json();
       const s = data?.data ?? data ?? {};
+      // Backend returns total_compras, total_ventas_mes, pendientes_entrega, por_categoria[]
+      const porCat: Array<{ categoria: string; total: number }> = Array.isArray(s.por_categoria) ? s.por_categoria : [];
+      const uniformesCount = porCat.find((c) => c.categoria === 'uniforme')?.total ?? 0;
       setStats({
-        total: Number(s.total ?? 0),
-        ventas_mes: Number(s.ventas_mes ?? s.ventas_este_mes ?? 0),
-        armas: Number(s.armas ?? 0),
-        uniformes: Number(s.uniformes ?? 0),
+        total: Number(s.total_compras ?? s.total ?? 0),
+        ventas_mes: Number(s.total_ventas_mes ?? s.ventas_mes ?? 0),
+        pendientes_entrega: Number(s.pendientes_entrega ?? 0),
+        uniformes: Number(uniformesCount),
       });
     } catch {
       toast.error('Error al cargar estadisticas');
@@ -679,6 +724,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       params.set('page', String(page));
       params.set('limit', String(LIMIT));
       if (categoriaFilter !== 'all') params.set('categoria', categoriaFilter);
+      if (entregaFilter === 'pendiente') params.set('entregado', 'false');
+      else if (entregaFilter === 'entregado') params.set('entregado', 'true');
       if (debouncedSearch) params.set('search', debouncedSearch);
 
       const res = await fetch(`${API_BASE}/space/compras?${params.toString()}`, {
@@ -691,10 +738,28 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
         : Array.isArray(inner)
           ? inner
           : [];
-      setCompras(list);
+      // Normalize from backend row shape (nombre_alumno, dni_alumno)
+      const normalized: Compra[] = list.map((r: Record<string, unknown>) => ({
+        id: Number(r.id),
+        alumno_id: Number(r.alumno_id),
+        alumno_nombre: String(r.alumno_nombre ?? r.nombre_alumno ?? r.alumno_nombre ?? ''),
+        alumno_dni: (r.alumno_dni ?? r.dni_alumno) as string | undefined,
+        categoria: r.categoria as Categoria,
+        tipo: String(r.tipo ?? ''),
+        talla: (r.talla ?? null) as string | null,
+        precio: Number(r.precio ?? 0),
+        origen: (r.origen ?? 'compra') as Origen,
+        metodo_pago: (r.metodo_pago ?? null) as MetodoPago | null,
+        fecha_adquisicion: String(r.fecha_adquisicion ?? ''),
+        observaciones: (r.observaciones ?? null) as string | null,
+        entregado: Boolean(r.entregado),
+        fecha_entrega: (r.fecha_entrega ?? null) as string | null,
+        entregado_by: (r.entregado_by ?? null) as number | null,
+      }));
+      setCompras(normalized);
       setTotal(
         Number(
-          inner?.pagination?.total ?? inner?.total ?? data?.total ?? list.length,
+          data?.total ?? inner?.total ?? inner?.pagination?.total ?? list.length,
         ),
       );
     } catch {
@@ -702,7 +767,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
     } finally {
       setLoadingTable(false);
     }
-  }, [token, page, categoriaFilter, debouncedSearch]);
+  }, [token, page, categoriaFilter, entregaFilter, debouncedSearch]);
 
   useEffect(() => {
     fetchStats();
@@ -725,6 +790,45 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
   const handleCreate = useCallback(() => {
     setEditing(null);
     setFormOpen(true);
+  }, []);
+
+  const handleToggleEntrega = useCallback(
+    async (c: Compra) => {
+      if (entregandoId !== null) return;
+      const marcarEntregado = !c.entregado;
+      if (marcarEntregado) {
+        const ok = window.confirm(
+          `Marcar como entregado: ${c.tipo} de ${c.alumno_nombre}?`,
+        );
+        if (!ok) return;
+      }
+      setEntregandoId(c.id);
+      try {
+        const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
+          method: 'PATCH',
+          headers: authHeaders(token),
+          body: JSON.stringify({ entregado: marcarEntregado }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || data?.success === false) {
+          toast.error(data?.error ?? 'Error al marcar entrega');
+          return;
+        }
+        toast.success(marcarEntregado ? 'Marcado como entregado' : 'Entrega revertida');
+        fetchStats();
+        fetchCompras();
+      } catch {
+        toast.error('Error de conexion');
+      } finally {
+        setEntregandoId(null);
+      }
+    },
+    [entregandoId, token, fetchStats, fetchCompras],
+  );
+
+  const handlePendientesShortcut = useCallback(() => {
+    setEntregaFilter('pendiente');
+    setCategoriaFilter('all');
   }, []);
 
   const handleDelete = useCallback(
@@ -777,9 +881,9 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       </div>
 
       {/* Stats */}
-      <StatsBar stats={stats} loading={loadingStats} />
+      <StatsBar stats={stats} loading={loadingStats} onPendientesClick={handlePendientesShortcut} />
 
-      {/* Filter chips */}
+      {/* Filter chips categoría */}
       <div className="flex flex-wrap gap-2">
         {CATEGORIAS.map((c) => (
           <button
@@ -790,6 +894,20 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
             {c.label}
           </button>
         ))}
+      </div>
+
+      {/* Filter chips entrega */}
+      <div className="flex flex-wrap gap-2 items-center">
+        <span className="text-zinc-500 text-xs uppercase tracking-wider mr-1">Entrega:</span>
+        <button onClick={() => setEntregaFilter('all')} className={cx.chip(entregaFilter === 'all')}>
+          Todas
+        </button>
+        <button onClick={() => setEntregaFilter('pendiente')} className={cx.chip(entregaFilter === 'pendiente')}>
+          <Clock size={12} className="inline mr-1" /> Pendientes
+        </button>
+        <button onClick={() => setEntregaFilter('entregado')} className={cx.chip(entregaFilter === 'entregado')}>
+          <Check size={12} className="inline mr-1" /> Entregadas
+        </button>
       </div>
 
       {/* Search */}
@@ -823,7 +941,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                   <th className={cx.th}>Tipo</th>
                   <th className={cx.th}>Precio</th>
                   <th className={cx.th + ' hidden md:table-cell'}>Origen</th>
-                  <th className={cx.th + ' hidden lg:table-cell'}>Fecha</th>
+                  <th className={cx.th + ' hidden lg:table-cell'}>Fecha compra</th>
+                  <th className={cx.th}>Entrega</th>
                   <th className={cx.th + ' text-right'}>Acciones</th>
                 </tr>
               </thead>
@@ -880,6 +999,32 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                     </td>
                     <td className={cx.td + ' hidden lg:table-cell text-zinc-500 text-xs'}>
                       {formatFecha(c.fecha_adquisicion)}
+                    </td>
+                    <td className={cx.td}>
+                      <button
+                        onClick={() => handleToggleEntrega(c)}
+                        disabled={entregandoId === c.id}
+                        className={
+                          c.entregado
+                            ? 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 transition-all disabled:opacity-50'
+                            : 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-semibold hover:bg-amber-500/25 transition-all disabled:opacity-50'
+                        }
+                        title={c.entregado && c.fecha_entrega ? `Entregado: ${formatFecha(c.fecha_entrega)}` : 'Pendiente de entrega'}
+                      >
+                        {entregandoId === c.id ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : c.entregado ? (
+                          <Check size={12} />
+                        ) : (
+                          <Clock size={12} />
+                        )}
+                        {c.entregado ? 'Entregado' : 'Pendiente'}
+                      </button>
+                      {c.entregado && c.fecha_entrega && (
+                        <div className="text-zinc-500 text-[10px] mt-0.5">
+                          {formatFecha(c.fecha_entrega)}
+                        </div>
+                      )}
                     </td>
                     <td className={cx.td + ' text-right'}>
                       <div className="flex items-center justify-end gap-1">
