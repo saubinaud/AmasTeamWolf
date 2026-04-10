@@ -101,12 +101,12 @@ function AlumnoDetailPanel({
   if (!alumno && !loading) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#0c0c0c] border-l border-white/5 w-full max-w-md h-full overflow-y-auto animate-in slide-in-from-right duration-200">
-        <div className="h-0.5 bg-gradient-to-r from-[#FA7B21] to-[#FCA929]" />
+    <div className="fixed inset-0 z-[100] flex justify-end">
+      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+      <div className="relative bg-zinc-950 border-l border-zinc-800 w-full max-w-md h-full overflow-y-auto shadow-2xl shadow-black/50">
+        <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929]" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-800">
           <h2 className="text-white text-lg font-bold">Detalle del alumno</h2>
           <button onClick={onClose} className={cx.btnIcon}>
             <X size={18} />
@@ -122,9 +122,9 @@ function AlumnoDetailPanel({
             {/* Datos del alumno */}
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
-              <div className={cx.card + ' p-4 space-y-2'}>
+              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">Nombre</span>
+                  <span className="text-zinc-500 text-sm">Nombre</span>
                   <span className="text-white text-sm font-medium">{alumno.nombre} {alumno.apellido}</span>
                 </div>
                 <div className="flex justify-between">
@@ -151,9 +151,9 @@ function AlumnoDetailPanel({
             {/* Datos del apoderado */}
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Datos del apoderado</h3>
-              <div className={cx.card + ' p-4 space-y-2'}>
+              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
                 <div className="flex justify-between">
-                  <span className="text-white/50 text-sm">Nombre</span>
+                  <span className="text-zinc-500 text-sm">Nombre</span>
                   <span className="text-white text-sm">{alumno.nombre_apoderado || '—'}</span>
                 </div>
                 <div className="flex justify-between">
@@ -171,7 +171,7 @@ function AlumnoDetailPanel({
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones activas</h3>
               {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
-                <div className={cx.card + ' overflow-hidden'}>
+                <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
                   <table className="w-full text-left text-sm">
                     <thead>
                       <tr className="border-b border-zinc-800">
@@ -199,7 +199,7 @@ function AlumnoDetailPanel({
             {/* Asistencias */}
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (ultimos 30 dias)</h3>
-              <div className={cx.card + ' p-4 text-center'}>
+              <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
                 <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
                 <span className="text-white/40 text-sm ml-2">asistencias</span>
               </div>

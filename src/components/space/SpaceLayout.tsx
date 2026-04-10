@@ -59,7 +59,7 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
   const close = useCallback(() => setOpen(false), []);
 
   const sidebarContent = (
-    <div className="w-64 h-full flex flex-col bg-[#0c0c0c] border-r border-white/5">
+    <div className="w-64 h-full flex flex-col bg-zinc-950 border-r border-zinc-800">
       {/* Brand */}
       <div className="h-16 flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
@@ -101,8 +101,8 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
       </nav>
 
       {/* User + actions */}
-      <div className="px-3 py-4 border-t border-white/5 shrink-0">
-        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-white/[0.03] rounded-xl">
+      <div className="px-3 py-4 border-t border-zinc-800 shrink-0">
+        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-zinc-900 rounded-xl border border-zinc-800">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 flex items-center justify-center shrink-0 border border-[#FA7B21]/15">
             <span className="text-[#FA7B21] text-[11px] font-bold">{initials}</span>
           </div>
@@ -130,15 +130,15 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
   );
 
   return (
-    <div className="h-dvh flex bg-[#0a0a0a] overflow-hidden">
+    <div className="h-dvh flex bg-zinc-950 overflow-hidden">
 
       {/* MOBILE: Overlay */}
       {isMobile && open && (
-        <div className="fixed inset-0 z-50 flex">
-          <div className="shrink-0 shadow-2xl shadow-black/80 animate-in slide-in-from-left duration-200">
+        <div className="fixed inset-0 z-[90] flex">
+          <div className="shrink-0 shadow-2xl shadow-black/80">
             {sidebarContent}
           </div>
-          <div className="flex-1 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={close} />
+          <div className="flex-1 bg-black/80" onClick={close} />
         </div>
       )}
 
@@ -153,7 +153,7 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 flex items-center gap-3 px-4 sm:px-5 border-b border-white/5 shrink-0 bg-[#0a0a0a]">
+        <header className="h-14 flex items-center gap-3 px-4 sm:px-5 border-b border-zinc-800 shrink-0 bg-zinc-950">
           {(!open || isMobile) && (
             <button
               onClick={() => setOpen(true)}

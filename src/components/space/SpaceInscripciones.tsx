@@ -98,10 +98,10 @@ function EditModal({
   }, [inscripcion.id, estadoPago, activa, onSave]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="h-0.5 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+      <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl shadow-black/50">
+        <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <h2 className="text-white text-lg font-bold">Editar inscripcion</h2>
