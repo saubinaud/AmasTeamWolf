@@ -7,49 +7,105 @@
 - User: `amas_user`
 - Puerto: 5432 (solo interno)
 
-Dragon Knight usa la misma estructura en `dragonknight_database` / `dk_user` / puerto 5436 (externo).
+Dragon Knight usa misma estructura en `dragonknight_database` / `dk_user` / puerto 5436 (externo).
 
 ## Tablas principales
 
 ### alumnos
-Cada fila = un alumno. Vinculado a un apoderado.
-- `id`, `nombre` (VARCHAR 200), `dni` (VARCHAR 20, UNIQUE)
-- `fecha_nacimiento`, `categoria`, `estado` (activo/inactivo/congelado)
+- `id`, `nombre_alumno` (VARCHAR), `dni_alumno` (VARCHAR, UNIQUE)
+- `fecha_nacimiento`, `categoria`, `cinturon_actual`
+- `estado` (VARCHAR: activo/inactivo/congelado) — **siempre usar LOWER() en queries**
 - `apoderado_id` → apoderados
 
 ### apoderados
 - `id`, `nombre`, `dni`, `correo`, `telefono`, `direccion`
-- `auth_id` — vincula con Logto para login
+- `password_hash` — **auth propia (bcrypt)**, reemplazó auth_id/Logto
+- `email_verified`, `created_at`
 
 ### inscripciones
-Cada inscripción a un programa. Un alumno puede tener varias (renovaciones).
-- `alumno_id` → alumnos
-- `programa`, `fecha_inicio`, `fecha_fin`, `clases_totales`
-- `turno`, `dias_tentativos`, `precio_programa`, `precio_pagado`
-- `activa` (boolean), `estado_pago` (pendiente/parcial/pagado/vencido)
+- `alumno_id`, `programa`, `fecha_inicio`, `fecha_fin`
+- `clases_totales`, `turno`, `dias_tentativos`
+- `precio_programa`, `precio_pagado`, `descuento`
+- `codigo_promocional`, `tipo_cliente`
+- `estado` (VARCHAR: 'Activo'/'Vencido'), `estado_pago` (pendiente/parcial/pagado)
+- **IMPORTANTE:** No existen columnas `monto`, `horario`, `sede_id`, `activa` (boolean). La activa se deriva de `estado = 'Activo'`.
 
 ### asistencias
-Registro por QR o manual. Una por alumno por día por turno.
 - `alumno_id`, `inscripcion_id`, `fecha`, `hora`, `turno`
-- `asistio` (Sí/No/Tardanza), `sede_id`, `qr_sesion_id`
-- `metodo_registro` (qr/manual/auto)
+- `asistio` — **VARCHAR** con valores `'Sí'`/`'No'`/`'Tardanza'` (NO boolean)
+- `sede_id`, `qr_sesion_id`, `metodo_registro` (qr/manual/auto)
 
 ### qr_sesiones
-Token QR generado por la profesora para cada clase.
 - `sede_id`, `token` (UUID), `fecha`, `hora_apertura`, `hora_cierre`
 - `activa`, `hora_clase`, `programa`
 
-### Otras tablas
-- `sedes` — locales (nombre, dirección, activa)
-- `horarios` — clases programadas por sede
-- `leads` — prospectos interesados
-- `pagos` — registro de pagos por inscripción
-- `contratos` — documentos firmados
-- `tallas` — tallas de uniforme/polo
+### space_usuarios
+- `id`, `nombre`, `email`, `password_hash`, `rol` (admin/staff), `activo`, `ultimo_login`
+- Auth para Space (JWT propio, middleware `spaceAuth`)
+
+### sedes
+- `id`, `nombre`, `direccion`, `activa`
+
+### horarios
+- `id`, `sede_id`, `dia_semana`, `hora_inicio`, `hora_fin`
+- `nombre_clase`, `capacidad`, `instructor`, `activo`
+
+### leads
+- `id`, `nombre`, `dni`, `telefono`, `email`, `programa_interes`
+- `estado` (Nuevo/Contactado/Interesado/Convertido/Descartado)
+- `observaciones` — **agregada este sesión** (ALTER TABLE)
+- `created_at`
+
+### pagos
+- `inscripcion_id`, `monto`, `metodo_pago`, `fecha_pago`, `comprobante_url`
+
+### contratos
+- `inscripcion_id`, `nombre_archivo`
+- `pdf_bytea` — **PDF almacenado en BD (reemplazó Cloudinary)**
+- `pdf_path` — opcional, ruta en disco `/opt/amas-contratos/`
+- `created_at`
+
+### graduaciones
+- `alumno_id`, `cinturon_anterior`, `cinturon_nuevo`
+- `fecha_examen`, `turno`, `horario`, `aprobado`, `observaciones`
+
+### graduacion_correcciones (creada este sesión)
+- `graduacion_id`, `campo_corregido`, `valor_anterior`, `valor_nuevo`, `corregido_por`, `fecha`
+
+### historial_cinturones (creada este sesión)
+- `alumno_id`, `cinturon`, `fecha`, `graduacion_id`
+- Registro inmutable. Al aprobar graduación se inserta fila.
+
+### implementos (recreada este sesión con schema nuevo)
+- `id`, `alumno_id`, `categoria` (arma/uniforme/protector/polo)
+- `tipo` (sable/nunchaku/dobok/peto/...), `talla`, `precio`
+- `fecha_compra`, `observaciones`
+- Usada por SpaceCompras y mostrada en detalle de alumno + modal graduación
+
+### mensajes (creada este sesión — auto por space-mensajes.js)
+- `id`, `tipo` (difusion/programa/individual)
+- `asunto`, `contenido`
+- `programa_destino` (NULL = difusión)
+- `alumno_destino_id` (NULL salvo individual)
+- `created_by`, `created_at`
+
+### mensajes_leidos (creada este sesión)
+- `id`, `mensaje_id` → mensajes (CASCADE)
+- `alumno_id` → alumnos (CASCADE)
+- `leido_at`, UNIQUE(mensaje_id, alumno_id)
+
+### congelamientos
+- `inscripcion_id`, `fecha_inicio`, `fecha_fin`, `motivo`, `aprobado`
+
+### verification_codes
+- `email`, `codigo`, `expiracion`, `usado`
+- Para verificación email en registro
+
+### Otras
+- `tallas` — tallas uniformes
 - `inscripciones_adicionales` — Leadership, Fighters
-- `graduaciones`, `graduacion_correcciones`
 - `torneos`, `torneo_participantes`
-- `implementos_pedidos`
+- `implementos_pedidos` (legacy)
 
 ## Función: registrar_asistencia
 
@@ -57,15 +113,16 @@ Token QR generado por la profesora para cada clase.
 SELECT registrar_asistencia('DNI', 'TOKEN_QR', 'TURNO');
 ```
 
-Retorna JSON:
-- OK: `{success: true, alumno: "...", programa: "...", hora: "17:43", clases_restantes: 5}`
-- Error: `{success: false, error: "DNI no encontrado"}`
+Retorna JSON `{success, alumno, programa, hora, clases_restantes}` o `{success: false, error}`.
 
-Valida: DNI existe, QR válido y no expirado, inscripción activa, no marcó ya hoy.
+## Convenciones críticas (no olvidar)
 
-## Vistas
-- `v_asistencia_hoy` — asistencias del día con datos alumno
-- `v_asistencia_mensual` — resumen por mes con porcentaje
+1. **`estado` en alumnos** es VARCHAR — usar `LOWER(estado) = 'activo'`
+2. **`estado` en inscripciones** es 'Activo'/'Vencido' (case-sensitive)
+3. **`asistio` en asistencias** es VARCHAR 'Sí'/'No'/'Tardanza'
+4. **`nombre_alumno` y `dni_alumno`** — NO `nombre`/`dni` en tabla alumnos
+5. **Password hash** en `password_hash` (bcrypt, 10 rounds)
+6. **PDFs** en `contratos.pdf_bytea` — NO en Cloudinary
 
-## Schema completo
-Ver `database/01_schema.sql`, `02_functions.sql`, `03_views.sql`
+## Schema base
+Ver `database/01_schema.sql`, `02_functions.sql`, `03_views.sql` (parcial — tablas Space se agregaron via migraciones).
