@@ -151,19 +151,27 @@ router.get('/:id', async (req, res) => {
 // PUT /api/space/alumnos/:id — Update alumno fields
 router.put('/:id', async (req, res) => {
   try {
-    const allowedFields = [
-      'nombre_alumno', 'dni', 'fecha_nacimiento', 'telefono', 'email',
-      'direccion', 'estado', 'sede_id', 'observaciones',
-    ];
+    // Map frontend field names to DB column names
+    const fieldMap = {
+      nombre_alumno: 'nombre_alumno',
+      dni_alumno: 'dni_alumno',
+      fecha_nacimiento: 'fecha_nacimiento',
+      categoria: 'categoria',
+      estado: 'estado',
+      nombre_apoderado: 'nombre_apoderado',
+      telefono: 'telefono',
+      correo: 'correo',
+      direccion: 'direccion',
+    };
 
     const updates = [];
     const params = [];
     let paramIndex = 1;
 
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) {
-        updates.push(`${field} = $${paramIndex++}`);
-        params.push(req.body[field]);
+    for (const [bodyField, dbField] of Object.entries(fieldMap)) {
+      if (req.body[bodyField] !== undefined) {
+        updates.push(`${dbField} = $${paramIndex++}`);
+        params.push(req.body[bodyField]);
       }
     }
 
