@@ -112,6 +112,22 @@ async function cargarPerfil(alumnoId) {
     ORDER BY fecha_graduacion ASC LIMIT 1
   `, [alumnoId]);
 
+  // Mensajes para este alumno (difusión + programa + individual)
+  let mensajes = [];
+  try {
+    mensajes = await query(`
+      SELECT m.id, m.tipo, m.asunto, m.contenido, m.created_at AS fecha,
+             (ml.id IS NOT NULL) AS leido
+      FROM mensajes m
+      LEFT JOIN mensajes_leidos ml ON ml.mensaje_id = m.id AND ml.alumno_id = $1
+      WHERE m.tipo = 'difusion'
+         OR (m.tipo = 'programa' AND m.programa_destino = $2)
+         OR (m.tipo = 'individual' AND m.alumno_destino_id = $1)
+      ORDER BY m.created_at DESC
+      LIMIT 20
+    `, [alumnoId, perfil.programa || '']);
+  } catch (_) { /* table may not exist yet */ }
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -127,6 +143,7 @@ async function cargarPerfil(alumnoId) {
     proxima_graduacion,
     asistencias,
     congelaciones,
+    mensajes,
   };
 }
 
@@ -338,6 +355,20 @@ router.post('/congelar', authMiddleware, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error congelando:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// POST /api/auth/mensajes/:id/leido — Marcar mensaje como leído
+router.post('/mensajes/:id/leido', authMiddleware, async (req, res) => {
+  try {
+    await pool.query(
+      'INSERT INTO mensajes_leidos (mensaje_id, alumno_id) VALUES ($1, $2) ON CONFLICT (mensaje_id, alumno_id) DO NOTHING',
+      [req.params.id, req.user.alumno_id]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error marcando mensaje leído:', err);
     res.status(500).json({ error: 'Error del servidor' });
   }
 });
