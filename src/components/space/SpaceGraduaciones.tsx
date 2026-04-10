@@ -281,7 +281,7 @@ function CorreccionesTable({
 // ---------------------------------------------------------------------------
 
 function GraduacionModal({
-  open, editingId, form, saving, alumnoQuery, alumnoResults, showAutocomplete, autocompleteRef,
+  open, editingId, form, saving, alumnoQuery, alumnoResults, showAutocomplete, autocompleteRef, alumnoArmas,
   onClose, onSave, onFormChange, onAlumnoSearch, onSelectAlumno,
 }: {
   open: boolean;
@@ -292,6 +292,7 @@ function GraduacionModal({
   alumnoResults: AlumnoBusqueda[];
   showAutocomplete: boolean;
   autocompleteRef: React.RefObject<HTMLDivElement | null>;
+  alumnoArmas: Array<{ id: number; tipo: string }>;
   onClose: () => void;
   onSave: () => void;
   onFormChange: (patch: Partial<FormData>) => void;
@@ -335,6 +336,27 @@ function GraduacionModal({
           <div><label className={labelClass}>Nombre</label><input type="text" value={form.nombre} onChange={e => onFormChange({ nombre: e.target.value })} className={inputClass} /></div>
           <div><label className={labelClass}>Apellido</label><input type="text" value={form.apellido} onChange={e => onFormChange({ apellido: e.target.value })} className={inputClass} /></div>
         </div>
+
+        {/* Armas del alumno (modalidades disponibles) */}
+        {form.alumno_id && (
+          <div className="bg-[#FA7B21]/5 border border-[#FA7B21]/20 rounded-xl p-4">
+            <label className={labelClass + ' text-[#FA7B21]'}>⚔️ Modalidades / Armas disponibles</label>
+            {alumnoArmas.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {alumnoArmas.map(arma => (
+                  <span key={arma.id} className="inline-flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-[#FCA929]">⚔</span>
+                    <span className="text-white font-medium">{arma.tipo}</span>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-zinc-500 text-xs mt-2">
+                Este alumno no tiene armas registradas. Puedes agregarlas en el módulo de Compras.
+              </p>
+            )}
+          </div>
+        )}
         <div><label className={labelClass}>Rango</label><select value={form.rango} onChange={e => onFormChange({ rango: e.target.value })} className={cx.select}>{RANGOS.map(r => <option key={r} value={r}>{r}</option>)}</select></div>
         <div className="grid grid-cols-2 gap-3">
           <div><label className={labelClass}>Horario</label><input type="text" placeholder="3:30 PM" value={form.horario} onChange={e => onFormChange({ horario: e.target.value })} className={inputClass} /></div>
@@ -371,6 +393,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const [alumnoQuery, setAlumnoQuery] = useState('');
   const [alumnoResults, setAlumnoResults] = useState<AlumnoBusqueda[]>([]);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [alumnoArmas, setAlumnoArmas] = useState<Array<{ id: number; tipo: string }>>([]);
   const autocompleteRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -463,11 +486,23 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     }, 300);
   }, [token]);
 
-  const selectAlumno = useCallback((a: AlumnoBusqueda) => {
+  const selectAlumno = useCallback(async (a: AlumnoBusqueda) => {
     setForm(f => ({ ...f, alumno_id: a.id, nombre: a.nombre, apellido: a.apellido }));
     setAlumnoQuery(`${a.nombre} ${a.apellido}`);
     setShowAutocomplete(false);
-  }, []);
+    // Fetch armas del alumno
+    try {
+      const res = await fetch(`${API_BASE}/space/compras/armas-alumno/${a.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success !== false) {
+        setAlumnoArmas(Array.isArray(data.data) ? data.data : []);
+      }
+    } catch {
+      setAlumnoArmas([]);
+    }
+  }, [token]);
 
   // -----------------------------------------------------------------------
   // CRUD
@@ -706,6 +741,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         alumnoResults={alumnoResults}
         showAutocomplete={showAutocomplete}
         autocompleteRef={autocompleteRef}
+        alumnoArmas={alumnoArmas}
         onClose={closeModal}
         onSave={handleSave}
         onFormChange={handleFormChange}

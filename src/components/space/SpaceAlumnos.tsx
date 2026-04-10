@@ -26,6 +26,16 @@ interface Alumno {
   correo?: string;
 }
 
+interface Implemento {
+  id: number;
+  categoria: string;
+  tipo: string;
+  talla?: string;
+  precio?: number;
+  origen?: string;
+  fecha_adquisicion?: string;
+}
+
 interface AlumnoDetalle extends Alumno {
   fecha_nacimiento?: string;
   telefono_apoderado?: string;
@@ -39,6 +49,8 @@ interface AlumnoDetalle extends Alumno {
   asistencias_total?: number;
   asistencias_recientes?: Array<{ fecha: string; hora: string; turno: string; asistio: string }>;
   inscripciones?: InscripcionMini[];
+  implementos?: Implemento[];
+  armas?: Implemento[];
 }
 
 interface InscripcionMini {
@@ -342,6 +354,43 @@ function AlumnoDetailPanel({
                   <span className="text-zinc-500 text-sm ml-2">asistencias</span>
                 </div>
               </section>
+
+              {/* Implementos */}
+              {alumno.implementos && alumno.implementos.length > 0 && (
+                <section>
+                  <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">
+                    Implementos ({alumno.implementos.length})
+                  </h3>
+                  <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+                    {Object.entries(
+                      alumno.implementos.reduce<Record<string, Implemento[]>>((acc, imp) => {
+                        const cat = imp.categoria || 'otro';
+                        if (!acc[cat]) acc[cat] = [];
+                        acc[cat].push(imp);
+                        return acc;
+                      }, {})
+                    ).map(([cat, items]) => (
+                      <div key={cat} className="border-b border-zinc-800 last:border-0 p-4">
+                        <p className="text-[10px] text-zinc-500 uppercase font-semibold mb-2">
+                          {cat === 'arma' ? '⚔️ Armas' :
+                           cat === 'uniforme' ? '🥋 Uniformes' :
+                           cat === 'protector' ? '🛡️ Protectores' :
+                           cat === 'polo' ? '👕 Polos' :
+                           cat === 'accesorio' ? '✨ Accesorios' : '📦 Otros'}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {items.map(imp => (
+                            <div key={imp.id} className="bg-zinc-800 rounded-lg px-3 py-1.5 text-xs">
+                              <span className="text-white font-medium">{imp.tipo}</span>
+                              {imp.talla && <span className="text-zinc-500 ml-1">({imp.talla})</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
             </>
           )}
         </div>

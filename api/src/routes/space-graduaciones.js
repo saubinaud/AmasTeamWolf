@@ -65,9 +65,13 @@ router.get('/alumnos/buscar', async (req, res) => {
 
     const searchTerm = q.trim();
     const rows = await query(
-      `SELECT id, nombre_alumno AS nombre, dni
+      `SELECT id,
+              nombre_alumno AS nombre,
+              '' AS apellido,
+              dni_alumno AS dni
        FROM alumnos
-       WHERE nombre_alumno ILIKE $1 OR dni LIKE $2
+       WHERE nombre_alumno ILIKE $1 OR dni_alumno LIKE $2 OR dni_apoderado LIKE $2
+       ORDER BY nombre_alumno ASC
        LIMIT 10`,
       [`%${searchTerm}%`, `${searchTerm}%`]
     );
