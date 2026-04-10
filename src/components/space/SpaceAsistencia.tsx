@@ -207,7 +207,7 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
       const params = new URLSearchParams();
       if (desde) params.set('desde', desde);
       if (hasta) params.set('hasta', hasta);
-      const res = await fetch(`${API_BASE}/space/asistencia/resumen?${params.toString()}`, { headers: authHeaders(token) });
+      const res = await fetch(`${API_BASE}/space/asistencia/por-fecha?${params.toString()}`, { headers: authHeaders(token) });
       const data = await res.json();
       if (data.success !== false) {
         setResumen(Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []));
