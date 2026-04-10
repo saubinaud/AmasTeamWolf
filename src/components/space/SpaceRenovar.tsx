@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Loader2, RefreshCw, CheckCircle2, ArrowRight, X, Tag, Search, User, AlertCircle } from 'lucide-react';
+import { Loader2, RefreshCw, CheckCircle2, ArrowRight, X, Tag, Search, User, AlertCircle, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx } from './tokens';
@@ -37,6 +37,43 @@ interface Props {
 type PolosOption = '0' | '1' | '2' | '3';
 type Turno = 'manana' | 'tarde';
 type OpcionFecha = 'fechas' | 'no-especificado' | 'otra';
+type EstadoPago = 'Pendiente' | 'Parcial' | 'Pagado';
+type MetodoPago = 'efectivo' | 'yape' | 'transferencia' | 'tarjeta' | 'otro';
+type TipoCliente = 'Nuevo/Primer registro' | 'Renovación' | 'Walk-in' | 'Promocional' | 'Transferido';
+
+interface AdminOverrides {
+  precioProgramaOverride: string;
+  descuentoManual: string;
+  precioPagadoOverride: string;
+  programaCustom: string;
+  clasesTotalesOverride: string;
+  fechaFinOverride: string;
+  estadoPago: EstadoPago;
+  metodoPago: MetodoPago;
+  montoParcial: string;
+  tipoCliente: TipoCliente;
+  observaciones: string;
+  skipContrato: boolean;
+  skipEmail: boolean;
+}
+
+function initialAdmin(): AdminOverrides {
+  return {
+    precioProgramaOverride: '',
+    descuentoManual: '',
+    precioPagadoOverride: '',
+    programaCustom: '',
+    clasesTotalesOverride: '',
+    fechaFinOverride: '',
+    estadoPago: 'Pendiente',
+    metodoPago: 'efectivo',
+    montoParcial: '',
+    tipoCliente: 'Renovación',
+    observaciones: '',
+    skipContrato: false,
+    skipEmail: false,
+  };
+}
 
 interface AlumnoBusqueda {
   id: number;
@@ -137,6 +174,10 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
   const [codigoInput, setCodigoInput] = useState('');
   const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
 
+  // Admin overrides
+  const [admin, setAdmin] = useState<AdminOverrides>(initialAdmin());
+  const [adminOpen, setAdminOpen] = useState(false);
+
   // Success
   const [lastCreated, setLastCreated] = useState<{ nombre: string; programa: string; total: number } | null>(null);
 
@@ -161,6 +202,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     setDetallesFechaFin(null);
     setCodigoInput('');
     setCodigoAplicado(null);
+    setAdmin(initialAdmin());
   }, []);
 
   // -----------------------------------------------------------------------
@@ -345,10 +387,13 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
   }, []);
 
   // -----------------------------------------------------------------------
-  // Cálculo de precio
+  // Cálculo de precio (con overrides admin)
   // -----------------------------------------------------------------------
 
-  const precioBase = PRECIOS_BASE[programa];
+  const precioBase = admin.precioProgramaOverride
+    ? Number(admin.precioProgramaOverride) || 0
+    : PRECIOS_BASE[programa];
+
   let precioPolosAjustado = PRECIOS_POLOS[polosOption];
   let descuentoDinero = 0;
   let descuentoPorcentaje = 0;
@@ -362,9 +407,16 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     }
   }
 
-  const subtotal = precioBase + precioPolosAjustado - descuentoDinero;
+  const descuentoManual = Number(admin.descuentoManual) || 0;
+  const descuentoDineroTotal = descuentoDinero + descuentoManual;
+
+  const subtotal = precioBase + precioPolosAjustado - descuentoDineroTotal;
   const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
-  const total = Math.max(0, subtotal - descuentoPorcentualMonto);
+  const totalCalculado = Math.max(0, subtotal - descuentoPorcentualMonto);
+
+  const total = admin.precioPagadoOverride
+    ? Number(admin.precioPagadoOverride) || 0
+    : totalCalculado;
 
   const needsPoloSize = polosOption !== '0';
 
@@ -421,19 +473,29 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
       toast.error('Selecciona todas las tallas de polos');
       return;
     }
-    if (!firmaBase64) {
-      toast.error('Firma el contrato antes de enviar');
+    if (!firmaBase64 && !admin.skipContrato) {
+      toast.error('Firma el contrato o marca "Registrar sin firma" en Ajustes admin');
       return;
     }
 
     setIsSubmitting(true);
     try {
+      const programaFinal = admin.programaCustom.trim() || NOMBRES_PROGRAMA[programa];
+      const clasesTotalesFinal = admin.clasesTotalesOverride
+        ? Number(admin.clasesTotalesOverride) || PROGRAMA_CLASES[programa]
+        : form.fechaInicio === 'no-especificado'
+          ? PROGRAMA_CLASES[programa]
+          : (detallesFechaFin?.clasesTotales ?? PROGRAMA_CLASES[programa]);
+      const fechaFinFinal = admin.fechaFinOverride
+        ? admin.fechaFinOverride
+        : form.fechaInicio === 'no-especificado'
+          ? 'Por calcular'
+          : fechaFinCalculada;
+
       const payload = {
         tipoFormulario: 'Renovación',
-        programa: NOMBRES_PROGRAMA[programa],
-        clasesTotales: form.fechaInicio === 'no-especificado'
-          ? PROGRAMA_CLASES[programa]
-          : (detallesFechaFin?.clasesTotales ?? PROGRAMA_CLASES[programa]),
+        programa: programaFinal,
+        clasesTotales: clasesTotalesFinal,
 
         nombreAlumno: form.nombreAlumno,
         dniAlumno: form.dniAlumno,
@@ -464,12 +526,12 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
         fechaInicio: form.fechaInicio,
         diasTentativos: form.fechaInicio === 'no-especificado' ? 'Aún no especificado' : diasTentativos.join(', '),
-        fechaFin: form.fechaInicio === 'no-especificado' ? 'Por calcular' : fechaFinCalculada,
+        fechaFin: fechaFinFinal,
         semanasAproximadas: form.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas ?? 0),
 
         codigoPromocional: codigoAplicado?.codigo ?? 'No aplicado',
         tipoDescuento: codigoAplicado?.tipo ?? 'ninguno',
-        descuentoDinero,
+        descuentoDinero: descuentoDineroTotal,
         descuentoPorcentaje,
         descuentoPorcentualMonto,
 
@@ -477,9 +539,18 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
         subtotal,
         total,
 
-        contratoFirmado: firmaBase64,
+        contratoFirmado: admin.skipContrato ? null : firmaBase64,
         fechaRegistro: new Date().toISOString(),
         origen: 'space',
+
+        // ── Admin overrides ──
+        estadoPago: admin.estadoPago,
+        metodoPago: admin.estadoPago !== 'Pendiente' ? admin.metodoPago : null,
+        montoParcial: admin.estadoPago === 'Parcial' ? Number(admin.montoParcial) || 0 : undefined,
+        tipoCliente: admin.tipoCliente,
+        observaciones: admin.observaciones.trim() || null,
+        skipContrato: admin.skipContrato,
+        skipEmail: admin.skipEmail,
       };
 
       const res = await fetch(`${API_BASE}/renovacion`, {
@@ -502,7 +573,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsPoloSize, codigoAplicado, descuentoDinero, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, resetAll]);
+  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsPoloSize, codigoAplicado, descuentoDineroTotal, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, admin, resetAll]);
 
   // -----------------------------------------------------------------------
   // Render
@@ -947,10 +1018,21 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
               <span>- S/ {descuentoDinero}</span>
             </div>
           )}
+          {descuentoManual > 0 && (
+            <div className="flex justify-between text-emerald-400">
+              <span>Descuento manual admin</span>
+              <span>- S/ {descuentoManual}</span>
+            </div>
+          )}
           {descuentoPorcentaje > 0 && (
             <div className="flex justify-between text-emerald-400">
               <span>Descuento {descuentoPorcentaje}%</span>
               <span>- S/ {descuentoPorcentualMonto}</span>
+            </div>
+          )}
+          {admin.precioPagadoOverride && (
+            <div className="text-amber-400 text-xs italic pt-1">
+              * Total sobrescrito manualmente (calculado: S/ {totalCalculado})
             </div>
           )}
           <div className="flex justify-between items-center pt-3 border-t border-zinc-800">
@@ -958,6 +1040,223 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
             <span className="text-[#FCA929] text-2xl font-bold">S/ {total}</span>
           </div>
         </div>
+      </section>
+
+      {/* Ajustes admin */}
+      <section className={cx.card + ' overflow-hidden'}>
+        <button
+          onClick={() => setAdminOpen(!adminOpen)}
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-zinc-800/50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center">
+              <Shield size={14} className="text-[#FA7B21]" />
+            </div>
+            <div className="text-left">
+              <h3 className="text-white text-sm font-semibold">Ajustes de administrador</h3>
+              <p className="text-zinc-500 text-xs">Override de precios, estado de pago, firma, notas internas</p>
+            </div>
+          </div>
+          {adminOpen ? <ChevronUp size={16} className="text-zinc-400" /> : <ChevronDown size={16} className="text-zinc-400" />}
+        </button>
+
+        {adminOpen && (
+          <div className="px-5 pb-5 space-y-5 border-t border-zinc-800">
+            {/* Overrides de precio */}
+            <div className="pt-4">
+              <p className="text-zinc-400 text-xs uppercase tracking-wider mb-3">Overrides de precio</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className={cx.label}>Precio programa override</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={admin.precioProgramaOverride}
+                    onChange={(e) => setAdmin((a) => ({ ...a, precioProgramaOverride: e.target.value }))}
+                    placeholder={`S/ ${PRECIOS_BASE[programa]} (default)`}
+                    className={cx.input}
+                  />
+                </div>
+                <div>
+                  <label className={cx.label}>Descuento manual S/</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={admin.descuentoManual}
+                    onChange={(e) => setAdmin((a) => ({ ...a, descuentoManual: e.target.value }))}
+                    placeholder="0"
+                    className={cx.input}
+                  />
+                </div>
+                <div>
+                  <label className={cx.label}>Total final override</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={admin.precioPagadoOverride}
+                    onChange={(e) => setAdmin((a) => ({ ...a, precioPagadoOverride: e.target.value }))}
+                    placeholder={`S/ ${totalCalculado} (calculado)`}
+                    className={cx.input}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Estado de pago */}
+            <div>
+              <p className="text-zinc-400 text-xs uppercase tracking-wider mb-3">Estado de pago</p>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                {(['Pendiente', 'Parcial', 'Pagado'] as EstadoPago[]).map((ep) => (
+                  <button
+                    key={ep}
+                    onClick={() => setAdmin((a) => ({ ...a, estadoPago: ep }))}
+                    className={
+                      admin.estadoPago === ep
+                        ? 'px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                        : 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                    }
+                  >
+                    {ep}
+                  </button>
+                ))}
+              </div>
+
+              {(admin.estadoPago === 'Pagado' || admin.estadoPago === 'Parcial') && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={cx.label}>Método de pago</label>
+                    <select
+                      value={admin.metodoPago}
+                      onChange={(e) => setAdmin((a) => ({ ...a, metodoPago: e.target.value as MetodoPago }))}
+                      className={cx.select}
+                    >
+                      <option value="efectivo">Efectivo</option>
+                      <option value="yape">Yape</option>
+                      <option value="transferencia">Transferencia</option>
+                      <option value="tarjeta">Tarjeta</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </div>
+                  {admin.estadoPago === 'Parcial' && (
+                    <div>
+                      <label className={cx.label}>Monto parcial pagado</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={admin.montoParcial}
+                        onChange={(e) => setAdmin((a) => ({ ...a, montoParcial: e.target.value }))}
+                        placeholder="S/ 0"
+                        className={cx.input}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="text-zinc-500 text-xs mt-2">
+                Si seleccionas Pagado o Parcial, se registrará automáticamente una entrada en la tabla de pagos.
+              </p>
+            </div>
+
+            {/* Programa y clases override */}
+            <div>
+              <p className="text-zinc-400 text-xs uppercase tracking-wider mb-3">Overrides de programa</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className={cx.label}>Nombre programa custom</label>
+                  <input
+                    type="text"
+                    value={admin.programaCustom}
+                    onChange={(e) => setAdmin((a) => ({ ...a, programaCustom: e.target.value }))}
+                    placeholder={NOMBRES_PROGRAMA[programa]}
+                    className={cx.input}
+                  />
+                </div>
+                <div>
+                  <label className={cx.label}>Clases totales override</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={admin.clasesTotalesOverride}
+                    onChange={(e) => setAdmin((a) => ({ ...a, clasesTotalesOverride: e.target.value }))}
+                    placeholder={`${PROGRAMA_CLASES[programa]} (default)`}
+                    className={cx.input}
+                  />
+                </div>
+                <div>
+                  <label className={cx.label}>Fecha fin override</label>
+                  <input
+                    type="date"
+                    value={admin.fechaFinOverride}
+                    onChange={(e) => setAdmin((a) => ({ ...a, fechaFinOverride: e.target.value }))}
+                    className={cx.input}
+                  />
+                </div>
+                <div>
+                  <label className={cx.label}>Tipo de cliente</label>
+                  <select
+                    value={admin.tipoCliente}
+                    onChange={(e) => setAdmin((a) => ({ ...a, tipoCliente: e.target.value as TipoCliente }))}
+                    className={cx.select}
+                  >
+                    <option value="Renovación">Renovación</option>
+                    <option value="Nuevo/Primer registro">Nuevo / Primer registro</option>
+                    <option value="Walk-in">Walk-in (presencial)</option>
+                    <option value="Promocional">Promocional</option>
+                    <option value="Transferido">Transferido</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Observaciones */}
+            <div>
+              <label className={cx.label}>Observaciones internas</label>
+              <textarea
+                value={admin.observaciones}
+                onChange={(e) => setAdmin((a) => ({ ...a, observaciones: e.target.value }))}
+                placeholder="Notas para el equipo — aparecerán en el registro de pago si se crea uno"
+                rows={3}
+                className={cx.input + ' resize-none'}
+              />
+            </div>
+
+            {/* Flags */}
+            <div className="space-y-2">
+              <label className="flex items-start gap-3 p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+                <input
+                  type="checkbox"
+                  checked={admin.skipContrato}
+                  onChange={(e) => setAdmin((a) => ({ ...a, skipContrato: e.target.checked }))}
+                  className="mt-1 w-4 h-4 accent-[#FA7B21]"
+                />
+                <div className="flex-1">
+                  <div className="text-white text-sm font-medium">Registrar sin firma del contrato</div>
+                  <div className="text-zinc-500 text-xs mt-0.5">
+                    Útil para walk-ins donde el padre firma un contrato físico aparte.
+                  </div>
+                </div>
+              </label>
+              <label className="flex items-start gap-3 p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+                <input
+                  type="checkbox"
+                  checked={admin.skipEmail}
+                  onChange={(e) => setAdmin((a) => ({ ...a, skipEmail: e.target.checked }))}
+                  className="mt-1 w-4 h-4 accent-[#FA7B21]"
+                />
+                <div className="flex-1">
+                  <div className="text-white text-sm font-medium">No enviar email de confirmación</div>
+                  <div className="text-zinc-500 text-xs mt-0.5">
+                    El registro se guarda pero no se notifica por correo al padre.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Contrato */}
@@ -973,7 +1272,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
         </button>
         <button
           onClick={handleSubmit}
-          disabled={isSubmitting || !firmaBase64}
+          disabled={isSubmitting || (!firmaBase64 && !admin.skipContrato)}
           className={cx.btnPrimary + ' flex items-center gap-2'}
         >
           {isSubmitting ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
