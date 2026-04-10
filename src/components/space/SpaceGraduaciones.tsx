@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Plus, Pencil, Trash2, Search, Check, X, Loader2, GraduationCap } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
+import { cx, badgeColors } from './tokens';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -298,16 +299,16 @@ function GraduacionModal({
 }) {
   if (!open) return null;
 
-  const inputClass = 'w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-colors';
-  const labelClass = 'block text-white/50 text-xs font-medium mb-1.5 uppercase tracking-wider';
+  const inputClass = 'w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder:text-white/30 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/20 transition-all';
+  const labelClass = 'block text-zinc-400 text-xs font-medium mb-1.5 uppercase tracking-wider';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#0c0c0c] border border-white/10 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-        <div className="h-0.5 bg-[#FA7B21] rounded-t-xl" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80" onClick={onClose} />
+      <div className="relative bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl shadow-black/50">
+        <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-t-2xl" />
 
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
+        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-800">
           <h2 className="text-white text-lg font-bold">
             {editingId ? 'Editar graduacion' : 'Nueva graduacion'}
           </h2>
@@ -327,12 +328,12 @@ function GraduacionModal({
               className={inputClass}
             />
             {showAutocomplete && alumnoResults.length > 0 && (
-              <div className="absolute z-10 top-full left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-lg overflow-hidden">
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-xl overflow-hidden shadow-xl shadow-black/50">
                 {alumnoResults.map(a => (
                   <button
                     key={a.id}
                     onClick={() => onSelectAlumno(a)}
-                    className="w-full text-left px-4 py-2.5 text-white text-sm hover:bg-zinc-700 transition-colors"
+                    className="w-full text-left px-4 py-3 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
                   >
                     {a.nombre} {a.apellido}
                   </button>
@@ -389,14 +390,14 @@ function GraduacionModal({
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-white/5">
-          <button onClick={onClose} className="px-4 py-2.5 rounded-lg text-sm font-medium text-white bg-zinc-800 hover:bg-zinc-700 transition-colors">
+        <div className="sticky bottom-0 bg-zinc-950 flex justify-end gap-3 px-6 py-4 border-t border-zinc-800">
+          <button onClick={onClose} className={cx.btnSecondary}>
             Cancelar
           </button>
           <button
             onClick={onSave}
             disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold text-white bg-[#FA7B21] hover:bg-[#E56D15] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={cx.btnPrimary + ' flex items-center gap-2'}
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
             Guardar
