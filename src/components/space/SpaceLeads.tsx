@@ -367,7 +367,7 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
       });
       const data = await res.json();
       if (data.success !== false) {
-        const s = data.data ?? data;
+        const s = data.stats ?? data.data ?? data;
         setStats({
           total: s.total ?? 0,
           nuevos: s.nuevos ?? 0,
