@@ -65,7 +65,7 @@ router.get('/por-fecha', async (req, res) => {
     const rows = await query(
       `SELECT fecha,
               COUNT(*) AS total,
-              COUNT(*) FILTER (WHERE asistio = true) AS presentes
+              COUNT(*) FILTER (WHERE asistio = 'Sí') AS presentes
        FROM asistencias
        WHERE fecha >= $1 AND fecha <= $2
        GROUP BY fecha
@@ -102,8 +102,8 @@ router.get('/por-alumno/:alumnoId', async (req, res) => {
       query(
         `SELECT to_char(fecha, 'YYYY-MM') AS mes,
                 COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE asistio = true) AS presentes,
-                COUNT(*) FILTER (WHERE asistio = false) AS ausentes
+                COUNT(*) FILTER (WHERE asistio = 'Sí') AS presentes,
+                COUNT(*) FILTER (WHERE asistio = 'No') AS ausentes
          FROM asistencias
          WHERE alumno_id = $1
          GROUP BY to_char(fecha, 'YYYY-MM')
@@ -156,7 +156,7 @@ router.get('/exportar', async (req, res) => {
       const csvRows = rows.map((r) => {
         const obs = (r.observaciones || '').replace(/"/g, '""');
         const nombre = (r.nombre_alumno || '').replace(/"/g, '""');
-        return `${r.fecha},${r.hora || ''},${r.turno || ''},${r.asistio ? 'Si' : 'No'},"${nombre}",${r.dni_alumno || ''},${r.programa || ''},"${obs}"`;
+        return `${r.fecha},${r.hora || ''},${r.turno || ''},${r.asistio || 'No'},"${nombre}",${r.dni_alumno || ''},${r.programa || ''},"${obs}"`;
       });
       const csv = [header, ...csvRows].join('\n');
 
@@ -180,7 +180,7 @@ router.get('/resumen-semanal', async (_req, res) => {
         `SELECT to_char(fecha, 'Day') AS dia,
                 EXTRACT(DOW FROM fecha)::int AS dia_num,
                 COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE asistio = true) AS presentes
+                COUNT(*) FILTER (WHERE asistio = 'Sí') AS presentes
          FROM asistencias
          WHERE fecha >= CURRENT_DATE - INTERVAL '28 days'
            AND fecha <= CURRENT_DATE
@@ -190,7 +190,7 @@ router.get('/resumen-semanal', async (_req, res) => {
       query(
         `SELECT turno,
                 COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE asistio = true) AS presentes
+                COUNT(*) FILTER (WHERE asistio = 'Sí') AS presentes
          FROM asistencias
          WHERE fecha >= CURRENT_DATE - INTERVAL '28 days'
            AND fecha <= CURRENT_DATE
@@ -200,7 +200,7 @@ router.get('/resumen-semanal', async (_req, res) => {
       query(
         `SELECT COALESCE(i.programa, 'Sin programa') AS programa,
                 COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE a.asistio = true) AS presentes
+                COUNT(*) FILTER (WHERE a.asistio = 'Sí') AS presentes
          FROM asistencias a
          LEFT JOIN inscripciones i ON i.id = a.inscripcion_id
          WHERE a.fecha >= CURRENT_DATE - INTERVAL '28 days'
