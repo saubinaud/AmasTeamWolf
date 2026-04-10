@@ -3,9 +3,9 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature, BarChart3, QrCode,
+  ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon,
 } from 'lucide-react';
-import type { SpacePage, SpaceUser } from './SpaceApp';
+import type { SpacePage, SpaceUser, SpaceTheme } from './SpaceApp';
 
 interface Props {
   user: SpaceUser;
@@ -14,6 +14,8 @@ interface Props {
   onLogout: () => void;
   onExit: () => void;
   children: ReactNode;
+  theme: SpaceTheme;
+  onToggleTheme: () => void;
 }
 
 // Dashboard siempre accesible. Si permisos es null (admin) todo visible.
@@ -82,7 +84,7 @@ const TITLES: Record<SpacePage, string> = {
   compras: 'Compras', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
-export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children }: Props) {
+export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme }: Props) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
@@ -240,6 +242,16 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
             <p className="text-zinc-600 text-[10px] truncate">{user.rol === 'admin' ? 'Administrador' : 'Profesor'}</p>
           </div>
         </div>
+        <div className="flex gap-1 mb-1">
+          <button
+            onClick={onToggleTheme}
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-zinc-500 hover:text-zinc-400 hover:bg-zinc-800 transition-all"
+            aria-label="Cambiar tema"
+          >
+            {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
+            {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
+          </button>
+        </div>
         <div className="flex gap-1">
           <button
             onClick={() => { close(); onExit(); }}
@@ -293,6 +305,16 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
             </button>
           )}
           <h1 className="text-white font-semibold text-[15px]">{TITLES[currentPage]}</h1>
+          <div className="ml-auto">
+            <button
+              onClick={onToggleTheme}
+              className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
+              aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+              title={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+            >
+              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto overscroll-y-contain">
