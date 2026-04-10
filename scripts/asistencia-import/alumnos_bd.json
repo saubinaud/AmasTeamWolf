@@ -1,0 +1,1549 @@
+[
+  {
+    "id": 1,
+    "nombre_alumno": "Harry Vincent Landeo Lucas",
+    "dni_alumno": "93388842",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 2,
+    "nombre_alumno": "Renzo Elías Rodrigo Justiniano",
+    "dni_alumno": "92481062",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 3,
+    "nombre_alumno": "Isaac Farith Alvarado Olivares",
+    "dni_alumno": "93907037",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 4,
+    "nombre_alumno": "Martin Holgado Paz",
+    "dni_alumno": "47702188",
+    "estado": "Activo",
+    "categoria": "Baby wolf"
+  },
+  {
+    "id": 5,
+    "nombre_alumno": "Olivia Goñez Serna",
+    "dni_alumno": "93952064",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 6,
+    "nombre_alumno": "Orlando Gabriel Bocanegra Rivasplata",
+    "dni_alumno": "93797434",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 7,
+    "nombre_alumno": "Sofia Valderrama Sigueñas",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 8,
+    "nombre_alumno": "Abraham Rafael Kerim Yantas Inoñan",
+    "dni_alumno": "93386914",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 9,
+    "nombre_alumno": "Nakhay Cruz Sarmiento",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 10,
+    "nombre_alumno": "Felipe Pasache Guillen",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": "Littel"
+  },
+  {
+    "id": 11,
+    "nombre_alumno": "Úrsula Julieta Díaz Ortiz",
+    "dni_alumno": "93266573",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 12,
+    "nombre_alumno": "Valentina Alexandra Rosario Cabrera",
+    "dni_alumno": "91428085",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 13,
+    "nombre_alumno": "Alexandra Gabriela Bautista Justiniano",
+    "dni_alumno": "93534390",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 14,
+    "nombre_alumno": "Jorge Francisco Castro Zavaleta",
+    "dni_alumno": "78303659",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 15,
+    "nombre_alumno": "Etham Liam Eduardo Chicchon Apaza",
+    "dni_alumno": "93761230",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 16,
+    "nombre_alumno": "Gael Eduardo Loayza Sánchez",
+    "dni_alumno": "92862968",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 17,
+    "nombre_alumno": "Lúa Alondra Allcca Lunasco",
+    "dni_alumno": "93354931",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 18,
+    "nombre_alumno": "Franco Saldarriaga Ezeta",
+    "dni_alumno": "93416861",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 19,
+    "nombre_alumno": "Lucio Vincenzo Mosquera Angeles",
+    "dni_alumno": "93416179",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 20,
+    "nombre_alumno": "Sofía Romina Rhaenyra Mendieta Valer",
+    "dni_alumno": "93286191",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 21,
+    "nombre_alumno": "Gabriela Isabella Rojas Lazo",
+    "dni_alumno": "93429039",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 22,
+    "nombre_alumno": "Aixa Daphne Martínez Valles",
+    "dni_alumno": "71354012",
+    "estado": "Activo",
+    "categoria": "Adolescentes"
+  },
+  {
+    "id": 23,
+    "nombre_alumno": "Alessia Minerva Moreno Sánchez",
+    "dni_alumno": "93701527",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 24,
+    "nombre_alumno": "Angelo Santiago Segovia Ularte",
+    "dni_alumno": "92964460",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 25,
+    "nombre_alumno": "Piero Gabriel Montenegro Alvarez",
+    "dni_alumno": "92413012",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 26,
+    "nombre_alumno": "Sebastián André Montenegro Alvarez",
+    "dni_alumno": "91279087",
+    "estado": "Activo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 27,
+    "nombre_alumno": "Fabrizio Miguel Astorga Castro",
+    "dni_alumno": "93227608",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 28,
+    "nombre_alumno": "Azul Macarena Tenorio Malca",
+    "dni_alumno": "93735317",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 29,
+    "nombre_alumno": "Keira Danae Sandoval Cabrera",
+    "dni_alumno": "93551884",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 30,
+    "nombre_alumno": "Leah Fernanda Garcia Quiñones",
+    "dni_alumno": "93454411",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 31,
+    "nombre_alumno": "Eithan Sebastián Verastegui Neyra",
+    "dni_alumno": "9386410",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 32,
+    "nombre_alumno": "Emanuel David Rivas Paetan",
+    "dni_alumno": "93378760",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 33,
+    "nombre_alumno": "Matt Jesús Aures Gutiérrez",
+    "dni_alumno": "93883751",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 34,
+    "nombre_alumno": "Camila Maureen Garcia Vega",
+    "dni_alumno": "93428826",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 35,
+    "nombre_alumno": "Adael Jesús Gutiérrez Ureta",
+    "dni_alumno": "93610323",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 36,
+    "nombre_alumno": "Adriana Claudia Alvarado Alvarez",
+    "dni_alumno": "93914797",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 37,
+    "nombre_alumno": "Adriel Andrew Pareja Montes",
+    "dni_alumno": "92853203",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 38,
+    "nombre_alumno": "Camilo Rosario Cabrera",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 39,
+    "nombre_alumno": "Aitana Polo Mercado",
+    "dni_alumno": "93602308",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 40,
+    "nombre_alumno": "Alba Rafaella Montalvo Chipen",
+    "dni_alumno": "81967946",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 41,
+    "nombre_alumno": "Alec Reyes Kroll",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 42,
+    "nombre_alumno": "Camila Jara Paredes",
+    "dni_alumno": "93674929",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 43,
+    "nombre_alumno": "Alejandro Sebastian Valencia Garcia",
+    "dni_alumno": "46309533",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 44,
+    "nombre_alumno": "Laia Thais Jara Paredes",
+    "dni_alumno": "93137872",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 45,
+    "nombre_alumno": "Alessia Valentina Rojas Diaz",
+    "dni_alumno": "94025653",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 46,
+    "nombre_alumno": "Mateo David Porras Ojeda",
+    "dni_alumno": "92344349",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 47,
+    "nombre_alumno": "Alexandra Rojas Siclla",
+    "dni_alumno": "91676791",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 48,
+    "nombre_alumno": "Alhanna Athenea Huamani Cortijo",
+    "dni_alumno": "93903390",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 49,
+    "nombre_alumno": "Aidan Liam Antonio Segura Ibarra",
+    "dni_alumno": "93758535",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 50,
+    "nombre_alumno": "Alma Isabel Castillo Mendoza",
+    "dni_alumno": "93117034",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 51,
+    "nombre_alumno": "Andrea Daniela Reynoso Barahona",
+    "dni_alumno": "93358722",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 52,
+    "nombre_alumno": "Ania Silva Chávez",
+    "dni_alumno": "93720142",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 53,
+    "nombre_alumno": "Antonella Esperanza Olano Contreras",
+    "dni_alumno": "93061924",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 54,
+    "nombre_alumno": "Arthur Matheo Chauca Ramírez",
+    "dni_alumno": "93692770",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 55,
+    "nombre_alumno": "Aurelio Chistians Tristan Alexandrino",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 56,
+    "nombre_alumno": "Benjamin Antonio Romero Camayo",
+    "dni_alumno": "82427235",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 57,
+    "nombre_alumno": "Benjamin Derek Quispe Huapaya",
+    "dni_alumno": "93592205",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 58,
+    "nombre_alumno": "Camila Sofía Gonzales Anaya",
+    "dni_alumno": "92454229",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 59,
+    "nombre_alumno": "Carlos Alberto Fernández Abad",
+    "dni_alumno": "93549369",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 60,
+    "nombre_alumno": "Daniel Tomas Figueroa Fernández",
+    "dni_alumno": "92845950",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 61,
+    "nombre_alumno": "Daniela Reynoso Barahona",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 62,
+    "nombre_alumno": "Yun He David Zhang Izquierdo",
+    "dni_alumno": "93992304",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 63,
+    "nombre_alumno": "David Alonso Velez Falcón",
+    "dni_alumno": "93172160",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 64,
+    "nombre_alumno": "Dehlé Joaquim Salas Morales",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 65,
+    "nombre_alumno": "Derek Michael Gálvez Pachas",
+    "dni_alumno": "93711610",
+    "estado": "Activo",
+    "categoria": "869.0"
+  },
+  {
+    "id": 66,
+    "nombre_alumno": "Aaron Richard Adrian Canaval Florian",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 67,
+    "nombre_alumno": "Alejandro Joaquín Tello Salas",
+    "dni_alumno": "93754124",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 68,
+    "nombre_alumno": "Emilia Marcela Fonseca Salazar",
+    "dni_alumno": "93753632",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 69,
+    "nombre_alumno": "Emiliano Alonso Chia Roman",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 70,
+    "nombre_alumno": "Enrico Jose Savoca Pontiggia",
+    "dni_alumno": "81865350",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 71,
+    "nombre_alumno": "Estefano Salvador Yarasca Acosta",
+    "dni_alumno": "92624722",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 72,
+    "nombre_alumno": "Bruno Sebastián Vigil Paredes",
+    "dni_alumno": "93179861",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 73,
+    "nombre_alumno": "Rafael Alessandro Espinoza Rojas",
+    "dni_alumno": "93862154",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 74,
+    "nombre_alumno": "Sofía Amaia Alarcón Vilchez",
+    "dni_alumno": "43094963",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 75,
+    "nombre_alumno": "Yarek Dylan Díaz Rivera",
+    "dni_alumno": "92219039",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 76,
+    "nombre_alumno": "Aaron Alessandro Inga Arzapalo",
+    "dni_alumno": "93924231",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 77,
+    "nombre_alumno": "Gabriel Adolfo Sánchez Cabello",
+    "dni_alumno": "93951606",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 78,
+    "nombre_alumno": "Gabriel Alberto Montes De Oca Pucutay",
+    "dni_alumno": "92035830",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 79,
+    "nombre_alumno": "Gabriel Andrés Castañeda Cáceres",
+    "dni_alumno": "93982041",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 80,
+    "nombre_alumno": "Alice Kylie Rivas Choqque",
+    "dni_alumno": "79897504",
+    "estado": "Activo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 81,
+    "nombre_alumno": "Dara Cassana Ciurlizza",
+    "dni_alumno": "93547218",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 82,
+    "nombre_alumno": "Gaia Emma Menacho Alvarez",
+    "dni_alumno": "93768685",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 83,
+    "nombre_alumno": "Getzenn Asher Garcia Velit",
+    "dni_alumno": "93830660",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 84,
+    "nombre_alumno": "Dylan Esteban Chacón Rivas",
+    "dni_alumno": "93814267",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 85,
+    "nombre_alumno": "Fabrizzio Ismael Guerrero Álvarez",
+    "dni_alumno": "92430172",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 86,
+    "nombre_alumno": "Giacomo Rem Robles Escudero",
+    "dni_alumno": "93161928",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 87,
+    "nombre_alumno": "Isabella Belinda Moscoso Estrada",
+    "dni_alumno": "73847834",
+    "estado": "Activo",
+    "categoria": "Adolescentes"
+  },
+  {
+    "id": 88,
+    "nombre_alumno": "Jesús Adrian Seco Angulo",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 89,
+    "nombre_alumno": "Joaquín Ignacio Carbajal Espinoza",
+    "dni_alumno": "94010318",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 90,
+    "nombre_alumno": "Jose Andres Veliz Mayta",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 91,
+    "nombre_alumno": "José Angel Seco Angulo",
+    "dni_alumno": "91993947",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 92,
+    "nombre_alumno": "Jose Joaquin Lee Villalta",
+    "dni_alumno": "93951650",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 93,
+    "nombre_alumno": "Juan Gabriel Lee Villalta",
+    "dni_alumno": "93951636",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 94,
+    "nombre_alumno": "Julián Benjamin Cueva Loayza",
+    "dni_alumno": "93660140",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 95,
+    "nombre_alumno": "Santiago Alva Macchiavello",
+    "dni_alumno": "92961833",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 96,
+    "nombre_alumno": "Julio Luciano Paucar Molero",
+    "dni_alumno": "92103478",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 97,
+    "nombre_alumno": "Leonardo Matías Hidalgo Vasquez",
+    "dni_alumno": "93790337",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 98,
+    "nombre_alumno": "Liah Ivana Joyo Campos",
+    "dni_alumno": "93232413",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 99,
+    "nombre_alumno": "Lua Gianella Rodríguez Castro",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 100,
+    "nombre_alumno": "Luca Daniel Otoya Custodio",
+    "dni_alumno": "94074428",
+    "estado": "Activo",
+    "categoria": "869.0"
+  },
+  {
+    "id": 101,
+    "nombre_alumno": "Luciana Celeste Bernis Samame",
+    "dni_alumno": "93875600",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 102,
+    "nombre_alumno": "Luka Derek Huaman Casa",
+    "dni_alumno": "93539149",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 103,
+    "nombre_alumno": "Luka Sebastian Pavic Contreras",
+    "dni_alumno": "93094011",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 104,
+    "nombre_alumno": "Marcelo Suárez Flores",
+    "dni_alumno": "93941493",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 105,
+    "nombre_alumno": "María Fernanda Elera Rey",
+    "dni_alumno": "93747517",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 106,
+    "nombre_alumno": "Mariana Monteza Valentín",
+    "dni_alumno": "93489555",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 107,
+    "nombre_alumno": "Mateo Fabian Castañeda Alvarado",
+    "dni_alumno": "90285348",
+    "estado": "Activo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 108,
+    "nombre_alumno": "Mathias Rodolfo Cardenas Sulcaray",
+    "dni_alumno": "93738041",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 109,
+    "nombre_alumno": "Matias Javier Moreno Vargas",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 110,
+    "nombre_alumno": "Matteo Augusto Rivas Merino",
+    "dni_alumno": "93300095",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 111,
+    "nombre_alumno": "Matteo Jairo Micheel",
+    "dni_alumno": "93926135",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 112,
+    "nombre_alumno": "Mauricio Stefano Villanueva Montaya",
+    "dni_alumno": "93210615",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 113,
+    "nombre_alumno": "Maykel Aziel Curi Yarasca",
+    "dni_alumno": "93029171",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 114,
+    "nombre_alumno": "Merly Alondra Otoya Ramos",
+    "dni_alumno": "93198779",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 115,
+    "nombre_alumno": "Neythan Stephano Aguilera Luyo",
+    "dni_alumno": "93075204",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 116,
+    "nombre_alumno": "Nicolás Ander Paucar Sánchez",
+    "dni_alumno": "93013125",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 117,
+    "nombre_alumno": "Nicolas Ordonez Norieda",
+    "dni_alumno": "93591160",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 118,
+    "nombre_alumno": "Noah Alessandro Aguilera Luyo",
+    "dni_alumno": "93075210",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 119,
+    "nombre_alumno": "Noah Rafael Gonzales Romero",
+    "dni_alumno": "43961073",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 120,
+    "nombre_alumno": "Noha Castillo Prado",
+    "dni_alumno": "947009144",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 121,
+    "nombre_alumno": "Pablo Stefano Mazuelos Lupaca",
+    "dni_alumno": "93936283",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 122,
+    "nombre_alumno": "Paurick Hector Jesús Erazo Limo",
+    "dni_alumno": "93497133",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 123,
+    "nombre_alumno": "Piero Steven Aguirre Uchasara",
+    "dni_alumno": "92471896",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 124,
+    "nombre_alumno": "Piero Valentino Flores Núñez",
+    "dni_alumno": "93772219",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 125,
+    "nombre_alumno": "Rafael Alejandro Luyo Alvarado",
+    "dni_alumno": "93967534",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 126,
+    "nombre_alumno": "Rodrigo Alejandro Palomio Campos",
+    "dni_alumno": "92956736",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 127,
+    "nombre_alumno": "Rodrigo Christian Morales Tarazona",
+    "dni_alumno": "93631243",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 128,
+    "nombre_alumno": "Santiago Alonso Rojas Villasante",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 129,
+    "nombre_alumno": "Santiago Rafael Chiok Huamán",
+    "dni_alumno": "93026812",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 130,
+    "nombre_alumno": "Sergio Jeremy Aguirre Misiyauri",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 131,
+    "nombre_alumno": "Sofía Nicolle Lucena Campo",
+    "dni_alumno": "93261663",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 132,
+    "nombre_alumno": "Speranza Altea Savoca Pontiggia",
+    "dni_alumno": "81865314",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 133,
+    "nombre_alumno": "Vasco Diaz Tapia",
+    "dni_alumno": "93163052",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 134,
+    "nombre_alumno": "Victor Hakim Rodriguez Gomez",
+    "dni_alumno": "91880479",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 135,
+    "nombre_alumno": "Vilma Georgina Puma Estrada",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 136,
+    "nombre_alumno": "Yusef Leonardo Tapia Flores",
+    "dni_alumno": "93815295",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 137,
+    "nombre_alumno": "Jaden Bastien Rios Yomond",
+    "dni_alumno": "",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 138,
+    "nombre_alumno": "Vasco Alvarez Correa",
+    "dni_alumno": "",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 139,
+    "nombre_alumno": "Alexander Andre Romero Rojas",
+    "dni_alumno": "93292732",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 140,
+    "nombre_alumno": "Rafael Ayvar Cueva",
+    "dni_alumno": "42546912",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 141,
+    "nombre_alumno": "Alessio Vegara Ezeta",
+    "dni_alumno": "81965954",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 142,
+    "nombre_alumno": "Esteban Neyra Herencia",
+    "dni_alumno": "74271153",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 143,
+    "nombre_alumno": "Eithan Matheo Polomino Oriundo",
+    "dni_alumno": "93145317",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 144,
+    "nombre_alumno": "Aitana Sosa Quiroz",
+    "dni_alumno": "93500556",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 145,
+    "nombre_alumno": "Luana Fe Mucha Reyes",
+    "dni_alumno": "73403125",
+    "estado": "Inactivo",
+    "categoria": "Adolescentes"
+  },
+  {
+    "id": 146,
+    "nombre_alumno": "Alana Sachie Oshiro Matsufuji",
+    "dni_alumno": "93471840",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 147,
+    "nombre_alumno": "Amely Laura Bermudez Alarcon",
+    "dni_alumno": "78831722",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 148,
+    "nombre_alumno": "Solino Dominic Bermudez Alarcon",
+    "dni_alumno": "926015864",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 149,
+    "nombre_alumno": "Gianirella Zuleby Sequeiros Cano",
+    "dni_alumno": "92846430",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 150,
+    "nombre_alumno": "Micael Benjamin Nuñez Melendez",
+    "dni_alumno": "93202431",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 151,
+    "nombre_alumno": "Leandro Giovanni Montero Carcamo",
+    "dni_alumno": "93807101",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 152,
+    "nombre_alumno": "Derek Mateo Romero Carhuallanqui",
+    "dni_alumno": "92065471",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 153,
+    "nombre_alumno": "Luana Cornejo Pichen",
+    "dni_alumno": "92471344",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 154,
+    "nombre_alumno": "Matthew Gael Ortiz Olaya",
+    "dni_alumno": "93733786",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 155,
+    "nombre_alumno": "Marcus Gondori Baca",
+    "dni_alumno": "92930576",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 156,
+    "nombre_alumno": "Sophia Kai Dávila Guzmán",
+    "dni_alumno": "93447475",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 157,
+    "nombre_alumno": "Sebatian Contreras Rios",
+    "dni_alumno": "9265693",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 158,
+    "nombre_alumno": "Sophfia Quispe Gómez",
+    "dni_alumno": "",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 159,
+    "nombre_alumno": "Matias Nicolas Rojas Villar",
+    "dni_alumno": "93771438",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 160,
+    "nombre_alumno": "Thomas Alejandro Mathey Galindo",
+    "dni_alumno": "93053492",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 161,
+    "nombre_alumno": "Alessandro Mathias Galarza Crisanto",
+    "dni_alumno": "93452504",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 162,
+    "nombre_alumno": "Julian Guttierrez Finetti",
+    "dni_alumno": "92460572",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 163,
+    "nombre_alumno": "Gala Guttierrez Finetti",
+    "dni_alumno": "",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 164,
+    "nombre_alumno": "Lara Velez Perez",
+    "dni_alumno": "91987577",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 165,
+    "nombre_alumno": "Logan Estrada Osorio",
+    "dni_alumno": "93896527",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 166,
+    "nombre_alumno": "Lia Salazar Castillo",
+    "dni_alumno": "93817053",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 167,
+    "nombre_alumno": "Pedro Darío Palli De La Cruz",
+    "dni_alumno": "934738863",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 168,
+    "nombre_alumno": "Santiago Ignacio De Jesus Rojas Cuyubamba",
+    "dni_alumno": "93216047",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 169,
+    "nombre_alumno": "Camila Valentina Gómez Huamán",
+    "dni_alumno": "92824132",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 170,
+    "nombre_alumno": "Isaac Emerson Rengifo Maceda",
+    "dni_alumno": "79587785",
+    "estado": "Inactivo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 171,
+    "nombre_alumno": "Maiza Ariana Velásquez Maceda",
+    "dni_alumno": "79343376",
+    "estado": "Inactivo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 172,
+    "nombre_alumno": "Mìa Victoria Barinotto Zavaleta",
+    "dni_alumno": "",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 173,
+    "nombre_alumno": "Aaron Jeremias Rengifo Maceda",
+    "dni_alumno": "92782233",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 174,
+    "nombre_alumno": "Noah Kroes",
+    "dni_alumno": "94037393",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 175,
+    "nombre_alumno": "Vasco Alejandro Quevedo Oroz",
+    "dni_alumno": "",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 176,
+    "nombre_alumno": "Santiago Alonso Fernández Díaz",
+    "dni_alumno": "93484942",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 177,
+    "nombre_alumno": "Adriel Razek Alfaro Huamani",
+    "dni_alumno": "94082032",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 178,
+    "nombre_alumno": "Alba Cayetana Yepez Veliz",
+    "dni_alumno": "93780974",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 179,
+    "nombre_alumno": "Julieta Zoe Maldonado Guevara",
+    "dni_alumno": "93618448",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 180,
+    "nombre_alumno": "Dariel Mathias Valdez Campos",
+    "dni_alumno": "93702514",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 181,
+    "nombre_alumno": "Catalina Milagros Sandoval Méndez",
+    "dni_alumno": "93908482",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 182,
+    "nombre_alumno": "Daiki Noah Oshiro Lopez",
+    "dni_alumno": "92855075",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 183,
+    "nombre_alumno": "Saori Domenica Oshiro Lopez",
+    "dni_alumno": "93874028",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 184,
+    "nombre_alumno": "Isao Nicolás Higa Farías",
+    "dni_alumno": "937961478",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 185,
+    "nombre_alumno": "Salvador Larco Vargas",
+    "dni_alumno": "93458413",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 186,
+    "nombre_alumno": "Julen Ezequiel Goran Ramírez Maquera",
+    "dni_alumno": "93912266",
+    "estado": "Inactivo",
+    "categoria": ""
+  },
+  {
+    "id": 187,
+    "nombre_alumno": "Santhiago Alexander Agustín Silencio",
+    "dni_alumno": "93809224",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 188,
+    "nombre_alumno": "Aníbal Jael Agustín Silencio",
+    "dni_alumno": "92918523",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 189,
+    "nombre_alumno": "Dhlé Joaquim Salas Morales",
+    "dni_alumno": "79875272",
+    "estado": "Activo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 190,
+    "nombre_alumno": "Vasco Alejando Quevedo Oroz",
+    "dni_alumno": "93836270",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 191,
+    "nombre_alumno": "Mía Victoria Barinotto Zavaleta",
+    "dni_alumno": "92974477",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 192,
+    "nombre_alumno": "Pedro Darío Palli De La Cruz",
+    "dni_alumno": "93508391",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 193,
+    "nombre_alumno": "Alessia Fátima Lasaponara Ruiz",
+    "dni_alumno": "93168963",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 194,
+    "nombre_alumno": "Dafne Ariana Orbegoso Santacruz",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 195,
+    "nombre_alumno": "Amir Yang Alfredo Leon Mendoza",
+    "dni_alumno": "93391965",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 196,
+    "nombre_alumno": "Noah Alexander Castillo Prado",
+    "dni_alumno": "93947710",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 197,
+    "nombre_alumno": "Sebastien Aubinaud",
+    "dni_alumno": "75922540",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 198,
+    "nombre_alumno": "Rafaela Miranda Huamancha Camones",
+    "dni_alumno": "93506452",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 199,
+    "nombre_alumno": "Emma Bianca Matos Palomino",
+    "dni_alumno": "93150940",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 200,
+    "nombre_alumno": "Lucca Adriel Toro Vargas",
+    "dni_alumno": "93688205",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 201,
+    "nombre_alumno": "Maria Lucia Lozada Rosales",
+    "dni_alumno": "93457195",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 202,
+    "nombre_alumno": "Isabella Sofia Chavez Vicente",
+    "dni_alumno": "94209453",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 203,
+    "nombre_alumno": "Micaela Cordero Chavez",
+    "dni_alumno": "93874404",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 204,
+    "nombre_alumno": "Dylan Juan Zabdiel Yangari Quispe",
+    "dni_alumno": "92572554",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 205,
+    "nombre_alumno": "Isao Nicolás Higa Farías",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 206,
+    "nombre_alumno": "Paurick Erazo Limo",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 207,
+    "nombre_alumno": "Piero Valentino Flores Nuñez",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 208,
+    "nombre_alumno": "Luka Derek Huamán Casas",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 209,
+    "nombre_alumno": "Sofía Valderrama Salazar",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 210,
+    "nombre_alumno": "Noah Alexander Castillo Prado",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 211,
+    "nombre_alumno": "Aidan Segura Ibarra",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 212,
+    "nombre_alumno": "Rey",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 213,
+    "nombre_alumno": "Sofía Valderrama Sigueñas",
+    "dni_alumno": "",
+    "estado": "Activo",
+    "categoria": ""
+  },
+  {
+    "id": 214,
+    "nombre_alumno": "LUCIANA CAMILA VARGAS RAMÍREZ ",
+    "dni_alumno": "90001083",
+    "estado": "Activo",
+    "categoria": "Juniors"
+  },
+  {
+    "id": 215,
+    "nombre_alumno": "SANTIAGO MAYU MAITA HUAMAN ",
+    "dni_alumno": "442468",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 220,
+    "nombre_alumno": "David Carranza ",
+    "dni_alumno": "71696748",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 222,
+    "nombre_alumno": "Giselle Mikela Del Risco Huamanciza ",
+    "dni_alumno": "93643115",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 223,
+    "nombre_alumno": "Rogelio Sánchez ",
+    "dni_alumno": "78787878",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 224,
+    "nombre_alumno": "Benjamin Mera Magaraci ",
+    "dni_alumno": "93761619",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 229,
+    "nombre_alumno": "Alanis Albania Torres Llanos ",
+    "dni_alumno": "93926891",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  },
+  {
+    "id": 230,
+    "nombre_alumno": "Alessia minerva moreno Sánchez ",
+    "dni_alumno": "93701525",
+    "estado": "Activo",
+    "categoria": "No especificada"
+  }
+]

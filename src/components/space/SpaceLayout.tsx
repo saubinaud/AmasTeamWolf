@@ -3,7 +3,7 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon,
+  ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon, History,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser, SpaceTheme } from './SpaceApp';
 
@@ -68,6 +68,7 @@ const NAV: NavEntry[] = [
     children: [
       { page: 'asistencia', label: 'Reportes', icon: BarChart3 },
       { page: 'tomar-asistencia', label: 'Tomar asistencia', icon: QrCode },
+      { page: 'asistencia-historica', label: 'Registrar pasadas', icon: History },
     ],
   },
   { page: 'leads', label: 'Leads', icon: UserPlus },
@@ -79,7 +80,9 @@ const NAV: NavEntry[] = [
 const TITLES: Record<SpacePage, string> = {
   dashboard: 'Dashboard', graduaciones: 'Graduaciones', alumnos: 'Alumnos',
   inscripciones: 'Inscritos', inscribir: 'Inscribir', renovar: 'Renovar',
-  asistencia: 'Asistencia — Reportes', 'tomar-asistencia': 'Asistencia — Tomar asistencia',
+  asistencia: 'Asistencia — Reportes',
+  'tomar-asistencia': 'Asistencia — Tomar asistencia',
+  'asistencia-historica': 'Asistencia — Registrar pasadas',
   leads: 'Leads',
   compras: 'Compras', mensajes: 'Mensajes', config: 'Ajustes',
 };

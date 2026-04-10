@@ -28,6 +28,7 @@ const MODULOS_DISPONIBLES: { key: string; label: string }[] = [
   { key: 'graduaciones', label: 'Graduaciones' },
   { key: 'asistencia', label: 'Asistencia (reportes)' },
   { key: 'tomar-asistencia', label: 'Tomar asistencia (QR)' },
+  { key: 'asistencia-historica', label: 'Registrar asistencias pasadas' },
   { key: 'leads', label: 'Leads' },
   { key: 'compras', label: 'Compras' },
   { key: 'mensajes', label: 'Mensajes' },
