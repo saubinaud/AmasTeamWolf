@@ -121,7 +121,9 @@ router.put('/:id', async (req, res) => {
   try {
     const allowedFields = [
       'programa', 'estado_pago', 'estado', 'fecha_inicio', 'fecha_fin',
-      'monto', 'turno', 'horario', 'sede_id', 'observaciones',
+      'clases_totales', 'turno', 'dias_tentativos',
+      'precio_programa', 'precio_pagado', 'descuento',
+      'codigo_promocional', 'tipo_cliente',
     ];
 
     const updates = [];

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react
 import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus,
-  PanelLeftOpen, X, MessageSquare,
+  PanelLeftOpen, X, MessageSquare, ShoppingBag,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser } from './SpaceApp';
 
@@ -22,6 +22,7 @@ const NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = 
   { page: 'graduaciones', label: 'Graduaciones', icon: GraduationCap },
   { page: 'asistencia', label: 'Asistencia', icon: CalendarCheck },
   { page: 'leads', label: 'Leads', icon: UserPlus },
+  { page: 'compras', label: 'Compras', icon: ShoppingBag },
   { page: 'mensajes', label: 'Mensajes', icon: MessageSquare },
   { page: 'config', label: 'Ajustes', icon: Settings },
 ];
@@ -29,7 +30,7 @@ const NAV: { page: SpacePage; label: string; icon: typeof LayoutDashboard }[] = 
 const TITLES: Record<SpacePage, string> = {
   dashboard: 'Dashboard', graduaciones: 'Graduaciones', alumnos: 'Alumnos',
   inscripciones: 'Inscripciones', asistencia: 'Asistencia', leads: 'Leads',
-  mensajes: 'Mensajes', config: 'Ajustes',
+  compras: 'Compras', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children }: Props) {
