@@ -8,8 +8,10 @@ import { SpaceAlumnos } from './SpaceAlumnos';
 import { SpaceInscripciones } from './SpaceInscripciones';
 import { SpaceAsistencia } from './SpaceAsistencia';
 import { SpaceLeads } from './SpaceLeads';
+import { SpaceConfig } from './SpaceConfig';
+import { SpaceMensajes } from './SpaceMensajes';
 
-export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'config';
+export type SpacePage = 'dashboard' | 'graduaciones' | 'alumnos' | 'inscripciones' | 'asistencia' | 'leads' | 'mensajes' | 'config';
 
 export interface SpaceUser {
   id: number;
@@ -77,7 +79,8 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'inscripciones' && <SpaceInscripciones token={token} />}
       {currentPage === 'asistencia' && <SpaceAsistencia token={token} />}
       {currentPage === 'leads' && <SpaceLeads token={token} />}
-      {currentPage === 'config' && <PlaceholderPage title="Configuracion" description="Proximamente - Fase S5" />}
+      {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
+      {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
   );
 }
