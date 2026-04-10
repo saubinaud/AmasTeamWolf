@@ -1,17 +1,37 @@
 const { Router } = require('express');
-const { pool, queryOne } = require('../db');
+const { pool } = require('../db');
 const { emailMatricula3y6Meses, emailMatricula1Mes } = require('../notifuse');
 const { generarPDFContrato } = require('../pdfContrato');
 const { guardarContratoPDF } = require('../cloudinary');
 
 const router = Router();
 
-// POST /api/matricula — Registrar nueva matrícula (3 meses, 6 meses, mensual)
+// Valores aceptados por inscripciones.estado_pago
+const ESTADOS_PAGO_VALIDOS = ['Pendiente', 'Parcial', 'Pagado'];
+// Valores aceptados por inscripciones.tipo_cliente
+const TIPOS_CLIENTE_VALIDOS = ['Nuevo/Primer registro', 'Renovación', 'Walk-in', 'Promocional', 'Transferido'];
+
+// POST /api/matricula — Registrar nueva matrícula
+// Acepta overrides de admin: estadoPago, metodoPago, tipoCliente, observaciones,
+// skipContrato, skipEmail. Si estadoPago != 'Pendiente' inserta fila en pagos.
 router.post('/', async (req, res) => {
   const client = await pool.connect();
   try {
     const d = req.body;
     await client.query('BEGIN');
+
+    // ── Normalización de overrides admin (backwards compatible) ────────────
+    const estadoPago = ESTADOS_PAGO_VALIDOS.includes(d.estadoPago) ? d.estadoPago : 'Pendiente';
+    const tipoCliente = TIPOS_CLIENTE_VALIDOS.includes(d.tipoCliente) ? d.tipoCliente : 'Nuevo/Primer registro';
+    const metodoPago = d.metodoPago ?? null;
+    const observacionesAdmin = d.observaciones ?? null;
+    const skipContrato = d.skipContrato === true;
+    const skipEmail = d.skipEmail === true;
+    const origen = d.origen ?? 'web';
+
+    const precioPrograma = Number(d.precioPrograma) || 0;
+    const precioPagado = Number(d.total ?? d.precioPagado) || 0;
+    const descuento = Number(d.descuentoDinero ?? d.descuento) || 0;
 
     // 1. Buscar o crear alumno
     let alumno = await client.query(
@@ -32,7 +52,7 @@ router.post('/', async (req, res) => {
     } else {
       await client.query(
         `UPDATE alumnos SET nombre_apoderado=$1, dni_apoderado=$2, correo=$3,
-         telefono=$4, direccion=$5, categoria=$6, estado='Activo'
+         telefono=$4, direccion=$5, categoria=$6, estado='Activo', updated_at=NOW()
          WHERE id=$7`,
         [d.nombrePadre, d.dniPadre, d.email, d.telefono, d.direccion,
          d.categoriaAlumno, alumno.id]
@@ -44,12 +64,12 @@ router.post('/', async (req, res) => {
       `INSERT INTO inscripciones (alumno_id, programa, fecha_inscripcion, fecha_inicio, fecha_fin,
        clases_totales, turno, dias_tentativos, precio_programa, precio_pagado,
        descuento, codigo_promocional, tipo_cliente, estado, estado_pago)
-       VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,'Nuevo/Primer registro','Activo','Pendiente')
+       VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'Activo',$13)
        RETURNING id`,
       [alumno.id, d.programa, d.fechaInicio || null, d.fechaFin || null,
        d.clasesTotales || 0, d.turnoSeleccionado, d.diasTentativos,
-       d.precioPrograma || 0, d.total || 0, d.descuentoDinero || 0,
-       d.codigoPromocional || null]
+       precioPrograma, precioPagado, descuento,
+       d.codigoPromocional || null, tipoCliente, estadoPago]
     );
 
     const inscripcionId = inscResult.rows[0].id;
@@ -64,11 +84,23 @@ router.post('/', async (req, res) => {
       );
     }
 
+    // 4. Si el admin marcó Pagado/Parcial, registrar pago automático
+    if (estadoPago === 'Pagado' || estadoPago === 'Parcial') {
+      const montoPago = estadoPago === 'Pagado' ? precioPagado : (Number(d.montoParcial) || precioPagado);
+      if (montoPago > 0) {
+        await client.query(
+          `INSERT INTO pagos (inscripcion_id, monto, fecha, tipo, metodo_pago, observaciones)
+           VALUES ($1, $2, CURRENT_DATE, 'Inscripción', $3, $4)`,
+          [inscripcionId, montoPago, metodoPago, observacionesAdmin]
+        );
+      }
+    }
+
     await client.query('COMMIT');
 
-    // 4. Guardar contrato firmado → PDF en BD + disco (despues del COMMIT para que la FK exista)
+    // 5. Guardar contrato firmado (si viene y no se saltea)
     let contratoUrl = '';
-    if (d.contratoFirmado) {
+    if (d.contratoFirmado && !skipContrato) {
       try {
         const pdfBuffer = await generarPDFContrato(d, d.contratoFirmado);
         const nombreArchivo = `contrato_${(d.nombreAlumno || 'alumno').replace(/\s+/g, '_')}_${inscripcionId}`;
@@ -79,11 +111,10 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // 5. Enviar email de bienvenida con URL del contrato (no bloquea la respuesta)
-    const esMensual = (d.programa || '').toLowerCase().includes('1 mes') ||
-                      (d.programa || '').toLowerCase().includes('mensual');
-
-    if (d.email) {
+    // 6. Email de bienvenida (salvo que admin pida saltarlo)
+    if (d.email && !skipEmail) {
+      const esMensual = (d.programa || '').toLowerCase().includes('1 mes') ||
+                        (d.programa || '').toLowerCase().includes('mensual');
       const emailFn = esMensual ? emailMatricula1Mes : emailMatricula3y6Meses;
       emailFn(d, contratoUrl).catch(err => console.error('Error enviando email matrícula:', err));
     }
@@ -92,9 +123,12 @@ router.post('/', async (req, res) => {
       success: true,
       alumno_id: alumno.id,
       inscripcion_id: inscripcionId,
+      estado_pago: estadoPago,
+      pago_registrado: estadoPago !== 'Pendiente',
+      origen,
     });
   } catch (err) {
-    await client.query('ROLLBACK');
+    await client.query('ROLLBACK').catch(() => {});
     console.error('Error en matrícula:', err);
     res.status(500).json({ success: false, error: 'Error registrando matrícula' });
   } finally {
