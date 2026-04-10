@@ -1,0 +1,88 @@
+{
+  "_descripcion": "Overrides manuales de matching. Cada entrada mapea 'excel_normalized' → bd_id con motivo documentado. Estos matches fueron rescatados del grupo 'sin_match' tras revisión humana caso por caso.",
+  "_fecha_revision": "2026-04-10",
+  "overrides": [
+    {
+      "excel_normalized": "CAMILA VALENTINA GOMEZ GUAMAN",
+      "excel_display": "CAMILA VALENTINA GÓMEZ GUAMAN",
+      "bd_id": 169,
+      "bd_nombre": "Camila Valentina Gómez Huamán",
+      "motivo": "Typo en apellido: GUAMAN vs HUAMÁN. Nombres de pila y apellido paterno idénticos. fuzzy=0.97",
+      "num_asistencias": 47
+    },
+    {
+      "excel_normalized": "CAMILA GOMEZ HUAMAN",
+      "excel_display": "CAMILA GOMEZ HUAMAN",
+      "bd_id": 169,
+      "bd_nombre": "Camila Valentina Gómez Huamán",
+      "motivo": "Nombre incompleto del Excel (le falta 'Valentina'). Misma persona que CAMILA VALENTINA GÓMEZ GUAMAN.",
+      "num_asistencias": 15
+    },
+    {
+      "excel_normalized": "ALMA ISABELA CASTILLO MENDOZA",
+      "excel_display": "ALMA ISABELA CASTILLO MENDOZA",
+      "bd_id": 50,
+      "bd_nombre": "Alma Isabel Castillo Mendoza",
+      "motivo": "Typo en segundo nombre: ISABELA vs ISABEL. Resto idéntico. fuzzy=0.98",
+      "num_asistencias": 37
+    },
+    {
+      "excel_normalized": "LIA SALAZAR CASTILLA",
+      "excel_display": "LIA SALAZAR CASTILLA",
+      "bd_id": 166,
+      "bd_nombre": "Lia Salazar Castillo",
+      "motivo": "Typo en apellido materno: CASTILLA vs CASTILLO. fuzzy=0.95",
+      "num_asistencias": 2
+    },
+    {
+      "excel_normalized": "SANTIAGO FERNANDEZ DIAZ",
+      "excel_display": "SANTIAGO FERNÁNDEZ DÍAZ",
+      "bd_id": 176,
+      "bd_nombre": "Santiago Alonso Fernández Díaz",
+      "motivo": "El Excel omitió el segundo nombre 'Alonso'. fuzzy_apellidos=1.00",
+      "num_asistencias": 2
+    },
+    {
+      "excel_normalized": "LUCIANA VARGAS RAMIREZ",
+      "excel_display": "LUCIANA VARGAS RAMIREZ",
+      "bd_id": 214,
+      "bd_nombre": "Luciana Camila Vargas Ramírez",
+      "motivo": "El Excel omitió el segundo nombre 'Camila'. Apellidos completos idénticos. fuzzy=0.86",
+      "num_asistencias": 1
+    },
+    {
+      "excel_normalized": "NOAH CASTILLO",
+      "excel_display": "NOAH CASTILLO",
+      "bd_id": 120,
+      "bd_nombre": "Noha Castillo Prado",
+      "motivo": "Typo: NOAH vs NOHA (intercambio AH/HA), único 'Noah/Noha Castillo' en ambas fuentes. El Excel omitió el apellido materno 'Prado'.",
+      "num_asistencias": 12
+    },
+    {
+      "excel_normalized": "SOFIA QUISPE",
+      "excel_display": "SOFIA QUISPE",
+      "bd_id": 158,
+      "bd_nombre": "Sophfia Quispe Gómez",
+      "motivo": "Typo: SOFIA vs SOPHFIA. Misma persona que 'SOPHFIA QUISPE GÓMEZ' que ya matcheó en 2026. Excel 2025 tiene 'Sofia' porque estaba mal escrita ese año.",
+      "num_asistencias": 7
+    }
+  ],
+  "pendientes_decision_usuario": [
+    {
+      "excel_normalized": "PIERO VALENTINO GONZALES NUNEZ",
+      "excel_display": "PIERO VALENTINO GONZALES NUÑEZ",
+      "posible_bd_id": 124,
+      "posible_bd_nombre": "Piero Valentino Flores Núñez",
+      "duda": "Nombres de pila 100% idénticos (Piero Valentino) y apellido materno Núñez coincide, pero el apellido PATERNO es distinto (GONZALES en Excel vs FLORES en BD). ¿Es typo severo o son 2 personas distintas? El Excel solo tiene este 'Piero Valentino', no hay 'Piero Valentino Flores' en ningún lado.",
+      "num_asistencias": 34,
+      "años": [2025, 2026]
+    },
+    {
+      "excel_normalized": "EIDRIAN FABIAN FLORES NUNEZ",
+      "excel_display": "EIDRIAN FABIAN FLORES NUÑEZ",
+      "posible_bd_id": 124,
+      "duda": "Apellidos FLORES NÚÑEZ coinciden 100% con BD #124 pero nombres de pila totalmente distintos (Eidrian Fabian vs Piero Valentino). Probable hermano de #124 que NO está en BD.",
+      "num_asistencias": 17
+    }
+  ]
+}

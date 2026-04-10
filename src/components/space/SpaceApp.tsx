@@ -9,6 +9,7 @@ import { SpaceInscripciones } from './SpaceInscripciones';
 import { SpaceInscribir } from './SpaceInscribir';
 import { SpaceRenovar } from './SpaceRenovar';
 import { SpaceAsistencia } from './SpaceAsistencia';
+import { SpaceAsistenciaHistorica } from './SpaceAsistenciaHistorica';
 import { SpaceLeads } from './SpaceLeads';
 import { SpaceConfig } from './SpaceConfig';
 import { SpaceMensajes } from './SpaceMensajes';
@@ -24,6 +25,7 @@ export type SpacePage =
   | 'renovar'
   | 'asistencia'
   | 'tomar-asistencia'
+  | 'asistencia-historica'
   | 'leads'
   | 'mensajes'
   | 'compras'
@@ -141,6 +143,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'tomar-asistencia' && (
         <AsistenciaPanelPage onNavigate={() => handleNavigate('asistencia')} skipAuth embedMode />
       )}
+      {currentPage === 'asistencia-historica' && <SpaceAsistenciaHistorica token={token} />}
       {currentPage === 'leads' && <SpaceLeads token={token} />}
       {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
       {currentPage === 'compras' && <SpaceCompras token={token} />}
