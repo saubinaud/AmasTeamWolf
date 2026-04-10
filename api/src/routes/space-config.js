@@ -6,11 +6,25 @@ const router = Router();
 
 // ─── USUARIOS ────────────────────────────────────────────────
 
+// Páginas Space válidas (para validar permisos)
+const PAGINAS_VALIDAS = [
+  'dashboard', 'alumnos', 'inscripciones', 'inscribir', 'renovar',
+  'graduaciones', 'asistencia', 'tomar-asistencia', 'leads',
+  'compras', 'mensajes', 'config',
+];
+
+function normalizarPermisos(raw) {
+  if (raw === null || raw === undefined) return null; // null = admin con acceso total
+  if (!Array.isArray(raw)) return null;
+  const filtrado = raw.filter((p) => PAGINAS_VALIDAS.includes(p));
+  return filtrado.length > 0 ? filtrado : [];
+}
+
 // GET /usuarios — list all (exclude password_hash)
 router.get('/usuarios', async (req, res) => {
   try {
     const rows = await query(
-      `SELECT id, nombre, email, rol, activo, ultimo_login, created_at
+      `SELECT id, nombre, email, rol, activo, permisos, ultimo_login, created_at
        FROM space_usuarios
        ORDER BY created_at DESC`
     );
@@ -24,7 +38,7 @@ router.get('/usuarios', async (req, res) => {
 // POST /usuarios — create user
 router.post('/usuarios', async (req, res) => {
   try {
-    const { nombre, email, password, rol } = req.body;
+    const { nombre, email, password, rol, permisos } = req.body;
     if (!nombre || !email || !password || !rol) {
       return res.status(400).json({ success: false, error: 'Faltan campos requeridos: nombre, email, password, rol' });
     }
@@ -37,12 +51,16 @@ router.post('/usuarios', async (req, res) => {
       return res.status(409).json({ success: false, error: 'Ya existe un usuario con ese email' });
     }
 
+    // Admin por defecto: permisos NULL (acceso total)
+    // Profesor: usa lo que envíe el admin, o [] (sin acceso) si no envía nada
+    const permisosNormalizados = rol === 'admin' ? null : normalizarPermisos(permisos) ?? [];
+
     const password_hash = await bcrypt.hash(password, 10);
     const row = await queryOne(
-      `INSERT INTO space_usuarios (nombre, email, password_hash, rol)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, nombre, email, rol, activo, created_at`,
-      [nombre, email, password_hash, rol]
+      `INSERT INTO space_usuarios (nombre, email, password_hash, rol, permisos)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, nombre, email, rol, activo, permisos, created_at`,
+      [nombre, email, password_hash, rol, permisosNormalizados ? JSON.stringify(permisosNormalizados) : null]
     );
     res.status(201).json({ success: true, data: row });
   } catch (err) {
@@ -55,7 +73,7 @@ router.post('/usuarios', async (req, res) => {
 router.put('/usuarios/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, email, rol, activo } = req.body;
+    const { nombre, email, rol, activo, permisos } = req.body;
 
     const existing = await queryOne('SELECT id FROM space_usuarios WHERE id = $1', [id]);
     if (!existing) {
@@ -73,15 +91,30 @@ router.put('/usuarios/:id', async (req, res) => {
       }
     }
 
+    // Permisos: si vienen, normalizar. Si rol resulta admin, forzar NULL.
+    let permisosUpdate;
+    const rolFinal = rol || existing.rol;
+    if (permisos !== undefined) {
+      if (rolFinal === 'admin') {
+        permisosUpdate = null; // admin siempre tiene acceso total
+      } else {
+        const normalizados = normalizarPermisos(permisos);
+        permisosUpdate = normalizados ? JSON.stringify(normalizados) : null;
+      }
+    }
+
     const row = await queryOne(
       `UPDATE space_usuarios
        SET nombre  = COALESCE($1, nombre),
            email   = COALESCE($2, email),
            rol     = COALESCE($3, rol),
-           activo  = COALESCE($4, activo)
+           activo  = COALESCE($4, activo),
+           permisos = ${permisosUpdate === undefined ? 'permisos' : '$6'}
        WHERE id = $5
-       RETURNING id, nombre, email, rol, activo, ultimo_login, created_at`,
-      [nombre || null, email || null, rol || null, activo !== undefined ? activo : null, id]
+       RETURNING id, nombre, email, rol, activo, permisos, ultimo_login, created_at`,
+      permisosUpdate === undefined
+        ? [nombre || null, email || null, rol || null, activo !== undefined ? activo : null, id]
+        : [nombre || null, email || null, rol || null, activo !== undefined ? activo : null, id, permisosUpdate]
     );
     res.json({ success: true, data: row });
   } catch (err) {

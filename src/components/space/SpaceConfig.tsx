@@ -16,7 +16,23 @@ interface Usuario {
   rol: string;
   activo: boolean;
   ultimo_login?: string;
+  permisos?: string[] | null;
 }
+
+// Módulos Space con etiquetas legibles — deben coincidir con SpacePage del SpaceApp
+const MODULOS_DISPONIBLES: { key: string; label: string }[] = [
+  { key: 'alumnos', label: 'Alumnos' },
+  { key: 'inscripciones', label: 'Inscritos (lista)' },
+  { key: 'inscribir', label: 'Inscribir' },
+  { key: 'renovar', label: 'Renovar' },
+  { key: 'graduaciones', label: 'Graduaciones' },
+  { key: 'asistencia', label: 'Asistencia (reportes)' },
+  { key: 'tomar-asistencia', label: 'Tomar asistencia (QR)' },
+  { key: 'leads', label: 'Leads' },
+  { key: 'compras', label: 'Compras' },
+  { key: 'mensajes', label: 'Mensajes' },
+  { key: 'config', label: 'Ajustes (admin)' },
+];
 
 interface Sede {
   id: number;
@@ -43,6 +59,7 @@ interface UsuarioForm {
   email: string;
   password: string;
   rol: string;
+  permisos: string[];
 }
 
 interface UsuarioEditForm {
@@ -50,6 +67,7 @@ interface UsuarioEditForm {
   email: string;
   rol: string;
   activo: boolean;
+  permisos: string[];
 }
 
 interface SedeForm {
@@ -135,10 +153,10 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
   const [savingUsuario, setSavingUsuario] = useState(false);
 
   const [createUsuarioForm, setCreateUsuarioForm] = useState<UsuarioForm>({
-    nombre: '', email: '', password: '', rol: 'profesor',
+    nombre: '', email: '', password: '', rol: 'profesor', permisos: [],
   });
   const [editUsuarioForm, setEditUsuarioForm] = useState<UsuarioEditForm>({
-    nombre: '', email: '', rol: 'profesor', activo: true,
+    nombre: '', email: '', rol: 'profesor', activo: true, permisos: [],
   });
   const [newPassword, setNewPassword] = useState('');
 
@@ -239,7 +257,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
       }
       toast.success('Usuario creado');
       setModalUsuarioCreate(false);
-      setCreateUsuarioForm({ nombre: '', email: '', password: '', rol: 'profesor' });
+      setCreateUsuarioForm({ nombre: '', email: '', password: '', rol: 'profesor', permisos: [] });
       fetchUsuarios();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'Error al crear usuario');
@@ -477,7 +495,13 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
   // ── Open edit modals (pre-fill forms) ──
 
   function openEditUsuario(u: Usuario) {
-    setEditUsuarioForm({ nombre: u.nombre, email: u.email, rol: u.rol, activo: u.activo });
+    setEditUsuarioForm({
+      nombre: u.nombre,
+      email: u.email,
+      rol: u.rol,
+      activo: u.activo,
+      permisos: Array.isArray(u.permisos) ? u.permisos : [],
+    });
     setModalUsuarioEdit(u);
   }
 
@@ -805,10 +829,42 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
               value={createUsuarioForm.rol}
               onChange={e => setCreateUsuarioForm(f => ({ ...f, rol: e.target.value }))}
             >
-              <option value="admin">Admin</option>
-              <option value="profesor">Profesor</option>
+              <option value="admin">Admin (acceso total)</option>
+              <option value="profesor">Profesor (permisos limitados)</option>
             </select>
           </div>
+
+          {createUsuarioForm.rol === 'profesor' && (
+            <div>
+              <label className={cx.label}>Módulos a los que tiene acceso</label>
+              <p className="text-zinc-500 text-xs mb-2">
+                El Dashboard siempre está disponible. Selecciona qué otros módulos puede ver este profesor.
+              </p>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {MODULOS_DISPONIBLES.map((m) => {
+                  const checked = createUsuarioForm.permisos.includes(m.key);
+                  return (
+                    <label key={m.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          setCreateUsuarioForm((f) => ({
+                            ...f,
+                            permisos: e.target.checked
+                              ? [...f.permisos, m.key]
+                              : f.permisos.filter((p) => p !== m.key),
+                          }));
+                        }}
+                        className="w-4 h-4 accent-[#FA7B21]"
+                      />
+                      <span className="text-white text-sm">{m.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 
@@ -852,8 +908,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
               value={editUsuarioForm.rol}
               onChange={e => setEditUsuarioForm(f => ({ ...f, rol: e.target.value }))}
             >
-              <option value="admin">Admin</option>
-              <option value="profesor">Profesor</option>
+              <option value="admin">Admin (acceso total)</option>
+              <option value="profesor">Profesor (permisos limitados)</option>
             </select>
           </div>
           <div>
@@ -867,6 +923,38 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
             </button>
             <span className="ml-2 text-sm text-zinc-400">{editUsuarioForm.activo ? 'Activo' : 'Inactivo'}</span>
           </div>
+
+          {editUsuarioForm.rol === 'profesor' && (
+            <div>
+              <label className={cx.label}>Módulos a los que tiene acceso</label>
+              <p className="text-zinc-500 text-xs mb-2">
+                El Dashboard siempre está disponible. Admin tiene acceso total y no usa esta lista.
+              </p>
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {MODULOS_DISPONIBLES.map((m) => {
+                  const checked = editUsuarioForm.permisos.includes(m.key);
+                  return (
+                    <label key={m.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          setEditUsuarioForm((f) => ({
+                            ...f,
+                            permisos: e.target.checked
+                              ? [...f.permisos, m.key]
+                              : f.permisos.filter((p) => p !== m.key),
+                          }));
+                        }}
+                        className="w-4 h-4 accent-[#FA7B21]"
+                      />
+                      <span className="text-white text-sm">{m.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
 

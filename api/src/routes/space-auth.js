@@ -95,6 +95,8 @@ router.post('/login', async (req, res) => {
         nombre: usuario.nombre,
         email: usuario.email,
         rol: usuario.rol,
+        // Admin: permisos null = acceso total. Profesor: lista de páginas
+        permisos: usuario.rol === 'admin' ? null : (usuario.permisos || []),
       },
     });
   } catch (err) {
@@ -108,9 +110,30 @@ router.post('/logout', (_req, res) => {
   return res.json({ success: true, message: 'Sesión cerrada' });
 });
 
-// GET /me
-router.get('/me', spaceAuth, (req, res) => {
-  return res.json({ success: true, usuario: req.spaceUser });
+// GET /me — devuelve datos frescos (incluye permisos actualizados)
+router.get('/me', spaceAuth, async (req, res) => {
+  try {
+    const row = await queryOne(
+      'SELECT id, nombre, email, rol, activo, permisos FROM space_usuarios WHERE id = $1',
+      [req.spaceUser.id]
+    );
+    if (!row || !row.activo) {
+      return res.status(401).json({ success: false, error: 'Usuario inactivo' });
+    }
+    return res.json({
+      success: true,
+      usuario: {
+        id: row.id,
+        nombre: row.nombre,
+        email: row.email,
+        rol: row.rol,
+        permisos: row.rol === 'admin' ? null : (row.permisos || []),
+      },
+    });
+  } catch (err) {
+    console.error('Error en /me:', err);
+    return res.status(500).json({ success: false, error: 'Error interno' });
+  }
 });
 
 module.exports = router;
