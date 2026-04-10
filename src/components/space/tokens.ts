@@ -10,7 +10,7 @@ export const colors = {
     overlay: 'bg-black/80',
   },
   border: {
-    subtle: 'border-zinc-800',
+    subtle: 'border-zinc-700',
     default: 'border-zinc-700',
     active: 'border-[#FA7B21]',
   },
@@ -57,14 +57,14 @@ export const cx = {
   label: 'block text-zinc-400 text-xs font-medium mb-1.5 uppercase tracking-wider',
 
   // Cards — SOLID backgrounds
-  card: 'bg-zinc-900 border border-zinc-800 rounded-2xl',
-  cardHover: 'bg-zinc-900 border border-zinc-800 rounded-2xl hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 cursor-pointer',
+  card: 'bg-zinc-900 border border-zinc-700 rounded-2xl',
+  cardHover: 'bg-zinc-900 border border-zinc-700 rounded-2xl hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 cursor-pointer',
   cardGlow: 'bg-zinc-900 border border-[#FA7B21]/20 rounded-2xl shadow-lg shadow-[#FA7B21]/5',
 
   // Table — visible borders, proper spacing
   th: 'px-4 py-3 text-left text-zinc-500 text-[10px] font-semibold uppercase tracking-widest',
   td: 'px-4 py-3.5 text-sm',
-  tr: 'border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors',
+  tr: 'border-b border-zinc-700 last:border-0 hover:bg-zinc-800/50 transition-colors',
 
   // Badge / Pill
   badge: (color: string) => `inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider ${color}`,

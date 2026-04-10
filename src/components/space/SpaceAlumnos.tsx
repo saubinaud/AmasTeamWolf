@@ -103,10 +103,10 @@ function AlumnoDetailPanel({
   return (
     <div className="fixed inset-0 z-[100] flex justify-end">
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
-      <div className="relative bg-zinc-950 border-l border-zinc-800 w-full max-w-md h-full overflow-y-auto shadow-2xl shadow-black/50">
+      <div className="relative bg-zinc-950 border-l border-zinc-700 w-full max-w-md h-full overflow-y-auto shadow-2xl shadow-black/50">
         <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929]" />
 
-        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-800">
+        <div className="sticky top-0 z-10 bg-zinc-950 flex items-center justify-between px-6 py-4 border-b border-zinc-700">
           <h2 className="text-white text-lg font-bold">Detalle del alumno</h2>
           <button onClick={onClose} className={cx.btnIcon}>
             <X size={18} />
@@ -122,7 +122,7 @@ function AlumnoDetailPanel({
             {/* Datos del alumno */}
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-700">
                 <div className="flex justify-between">
                   <span className="text-zinc-500 text-sm">Nombre</span>
                   <span className="text-white text-sm font-medium">{alumno.nombre} {alumno.apellido}</span>
@@ -151,7 +151,7 @@ function AlumnoDetailPanel({
             {/* Datos del apoderado */}
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Datos del apoderado</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-700">
                 <div className="flex justify-between">
                   <span className="text-zinc-500 text-sm">Nombre</span>
                   <span className="text-white text-sm">{alumno.nombre_apoderado || '—'}</span>
@@ -171,10 +171,10 @@ function AlumnoDetailPanel({
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones activas</h3>
               {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
-                <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+                <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-700">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-800">
+                      <tr className="border-b border-zinc-700">
                         <th className={cx.th}>Programa</th>
                         <th className={cx.th}>Inicio</th>
                         <th className={cx.th}>Fin</th>
@@ -199,7 +199,7 @@ function AlumnoDetailPanel({
             {/* Asistencias */}
             <section>
               <h3 className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (ultimos 30 dias)</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
+              <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-700">
                 <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
                 <span className="text-white/40 text-sm ml-2">asistencias</span>
               </div>
@@ -383,7 +383,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-zinc-700">
                   <th className={cx.th}>Nombre</th>
                   <th className={cx.th}>DNI</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Categoria</th>
