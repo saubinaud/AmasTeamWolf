@@ -39,12 +39,12 @@ router.get('/', async (req, res) => {
       params.push(programa);
     }
     if (estado_pago) {
-      conditions.push(`i.estado_pago = $${paramIndex++}`);
-      params.push(estado_pago);
+      conditions.push(`LOWER(i.estado_pago) = $${paramIndex++}`);
+      params.push(estado_pago.toLowerCase());
     }
     if (activa !== undefined && activa !== '') {
       conditions.push(`i.estado = $${paramIndex++}`);
-      params.push(activa === 'true' ? 'Activo' : 'Inactivo');
+      params.push(activa === 'si' || activa === 'true' ? 'Activo' : 'Vencido');
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -57,7 +57,14 @@ router.get('/', async (req, res) => {
     const totalPages = Math.ceil(total / limit);
 
     const rows = await query(
-      `SELECT i.*, a.nombre_alumno
+      `SELECT i.id, i.alumno_id,
+              a.nombre_alumno AS alumno_nombre,
+              i.programa, i.fecha_inicio, i.fecha_fin,
+              i.clases_totales, i.turno,
+              LOWER(i.estado_pago) AS estado_pago,
+              i.precio_programa, i.precio_pagado,
+              (i.estado = 'Activo') AS activa,
+              i.created_at
        FROM inscripciones i
        JOIN alumnos a ON a.id = i.alumno_id
        ${where}
