@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Search, Check, Loader2, GraduationCap } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Check, Loader2, GraduationCap, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
@@ -92,6 +92,27 @@ const CORRECCION_PILL: Record<string, string> = {
   pendiente: badgeColors.yellow,
   resuelta: badgeColors.green,
   rechazada: badgeColors.red,
+};
+
+const CINTURONES_BATCH = [
+  'Blanco-Amarillo', 'Amarillo', 'Amarillo Camuflado',
+  'Naranja', 'Naranja Camuflado', 'Verde', 'Verde Camuflado',
+  'Azul', 'Azul Camuflado', 'Rojo', 'Rojo Camuflado', 'Negro',
+];
+
+interface BatchRow {
+  alumno_id: number | null;
+  alumno_nombre: string;
+  cinturon_nuevo: string;
+  fecha_examen: string;
+  query: string;
+  results: AlumnoBusqueda[];
+  showResults: boolean;
+}
+
+const EMPTY_BATCH_ROW: BatchRow = {
+  alumno_id: null, alumno_nombre: '', cinturon_nuevo: CINTURONES_BATCH[0],
+  fecha_examen: '', query: '', results: [], showResults: false,
 };
 
 const SKELETON_KEYS = ['ls-1', 'ls-2', 'ls-3', 'ls-4', 'ls-5'] as const;
@@ -370,6 +391,233 @@ function GraduacionModal({
 }
 
 // ---------------------------------------------------------------------------
+// Batch Modal
+// ---------------------------------------------------------------------------
+
+function BatchGraduacionModal({
+  open, onClose, token, onSuccess,
+}: {
+  open: boolean;
+  onClose: () => void;
+  token: string;
+  onSuccess: () => void;
+}) {
+  const [rows, setRows] = useState<BatchRow[]>([{ ...EMPTY_BATCH_ROW }]);
+  const [submitting, setSubmitting] = useState(false);
+  const [results, setResults] = useState<{ processed: number; errors?: Array<{ index: number; error: string }> } | null>(null);
+  const searchTimersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+
+  const addRow = () => setRows(prev => [...prev, { ...EMPTY_BATCH_ROW }]);
+
+  const removeRow = (idx: number) => {
+    setRows(prev => prev.length <= 1 ? prev : prev.filter((_, i) => i !== idx));
+  };
+
+  const updateRow = (idx: number, patch: Partial<BatchRow>) => {
+    setRows(prev => prev.map((r, i) => i === idx ? { ...r, ...patch } : r));
+  };
+
+  const searchAlumno = (idx: number, q: string) => {
+    updateRow(idx, { query: q, alumno_id: null, alumno_nombre: '' });
+    const existing = searchTimersRef.current.get(idx);
+    if (existing) clearTimeout(existing);
+    if (q.length < 2) {
+      updateRow(idx, { results: [], showResults: false });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API_BASE}/space/graduaciones/alumnos/buscar?q=${encodeURIComponent(q)}`, {
+          headers: authHeaders(token),
+        });
+        const data = await res.json();
+        const list = Array.isArray(data.data) ? data.data : [];
+        updateRow(idx, { results: list, showResults: list.length > 0 });
+      } catch {
+        updateRow(idx, { results: [], showResults: false });
+      }
+    }, 300);
+    searchTimersRef.current.set(idx, timer);
+  };
+
+  const selectAlumno = (idx: number, a: AlumnoBusqueda) => {
+    updateRow(idx, {
+      alumno_id: a.id,
+      alumno_nombre: `${a.nombre} ${a.apellido || ''}`.trim(),
+      query: `${a.nombre} ${a.apellido || ''}`.trim(),
+      showResults: false,
+    });
+  };
+
+  const validRows = rows.filter(r => r.alumno_id && r.cinturon_nuevo && r.fecha_examen);
+
+  const handleSubmit = async () => {
+    if (validRows.length === 0) {
+      toast.error('No hay filas validas para procesar');
+      return;
+    }
+    setSubmitting(true);
+    setResults(null);
+    try {
+      const payload = validRows.map(r => ({
+        alumno_id: r.alumno_id,
+        cinturon_nuevo: r.cinturon_nuevo,
+        fecha_examen: r.fecha_examen,
+      }));
+      const res = await fetch(`${API_BASE}/space/graduaciones/batch`, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify({ graduaciones: payload }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setResults({ processed: data.processed, errors: data.errors });
+        toast.success(`${data.processed} graduaciones registradas`);
+        if (!data.errors || data.errors.length === 0) {
+          onSuccess();
+        }
+      } else {
+        toast.error(data.error || 'Error al procesar lote');
+        if (data.errors) setResults({ processed: 0, errors: data.errors });
+      }
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    setRows([{ ...EMPTY_BATCH_ROW }]);
+    setResults(null);
+    onClose();
+  };
+
+  return (
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title="Carga masiva de graduaciones"
+      size="lg"
+      footer={
+        <>
+          <button onClick={handleClose} className={cx.btnSecondary}>Cerrar</button>
+          {!results && (
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || validRows.length === 0}
+              className={cx.btnPrimary + ' flex items-center gap-2'}
+            >
+              {submitting && <Loader2 size={15} className="animate-spin" />}
+              Registrar {validRows.length} graduacion{validRows.length !== 1 ? 'es' : ''}
+            </button>
+          )}
+        </>
+      }
+    >
+      {results ? (
+        <div className="space-y-3">
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-emerald-400 text-sm">
+            {results.processed} graduacion{results.processed !== 1 ? 'es' : ''} registrada{results.processed !== 1 ? 's' : ''} correctamente.
+          </div>
+          {results.errors && results.errors.length > 0 && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm space-y-1">
+              <p className="font-medium">Errores:</p>
+              {results.errors.map((e, i) => (
+                <p key={i}>Fila {e.index + 1}: {e.error}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-800">
+                  <th className="px-2 py-2 text-left text-white/40 text-xs font-medium">Alumno</th>
+                  <th className="px-2 py-2 text-left text-white/40 text-xs font-medium">Cinturon nuevo</th>
+                  <th className="px-2 py-2 text-left text-white/40 text-xs font-medium">Fecha examen</th>
+                  <th className="px-2 py-2 w-10"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, idx) => (
+                  <tr key={idx} className="border-b border-zinc-800/50">
+                    <td className="px-2 py-2 relative">
+                      <input
+                        type="text"
+                        placeholder="Buscar alumno..."
+                        value={row.query}
+                        onChange={e => searchAlumno(idx, e.target.value)}
+                        onFocus={() => row.results.length > 0 && updateRow(idx, { showResults: true })}
+                        className={cx.input + (row.alumno_id ? ' border-emerald-500/30' : '')}
+                      />
+                      {row.showResults && row.results.length > 0 && (
+                        <div className="absolute z-30 top-full left-2 right-2 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl shadow-black/50 max-h-40 overflow-y-auto">
+                          {row.results.map(a => (
+                            <button
+                              key={a.id}
+                              onClick={() => selectAlumno(idx, a)}
+                              className="w-full text-left px-3 py-2 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
+                            >
+                              {a.nombre} {a.apellido}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-2 py-2">
+                      <select
+                        value={row.cinturon_nuevo}
+                        onChange={e => updateRow(idx, { cinturon_nuevo: e.target.value })}
+                        className={cx.select}
+                      >
+                        {CINTURONES_BATCH.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-2 py-2">
+                      <input
+                        type="date"
+                        value={row.fecha_examen}
+                        onChange={e => updateRow(idx, { fecha_examen: e.target.value })}
+                        className={cx.input}
+                      />
+                    </td>
+                    <td className="px-2 py-2">
+                      <button
+                        onClick={() => removeRow(idx)}
+                        className={cx.btnDanger}
+                        title="Quitar fila"
+                      >
+                        <X size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <button onClick={addRow} className={cx.btnSecondary + ' flex items-center gap-2 text-xs'}>
+            <Plus size={14} />
+            Anadir fila
+          </button>
+
+          {validRows.length > 0 && (
+            <p className="text-xs text-white/40">
+              {validRows.length} de {rows.length} filas listas para registrar
+            </p>
+          )}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
 
@@ -382,6 +630,9 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const [search, setSearch] = useState('');
   const [filterTurno, setFilterTurno] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
+
+  // Batch modal state
+  const [batchModalOpen, setBatchModalOpen] = useState(false);
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
@@ -642,13 +893,22 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
             <span>{stats.canceladas} canceladas</span>
           </div>
         </div>
-        <button
-          onClick={openCreate}
-          className={cx.btnPrimary + ' flex items-center gap-2 shrink-0'}
-        >
-          <Plus size={16} />
-          Nueva graduacion
-        </button>
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={() => setBatchModalOpen(true)}
+            className={cx.btnSecondary + ' flex items-center gap-2'}
+          >
+            <Upload size={16} />
+            Carga masiva
+          </button>
+          <button
+            onClick={openCreate}
+            className={cx.btnPrimary + ' flex items-center gap-2'}
+          >
+            <Plus size={16} />
+            Nueva graduacion
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -747,6 +1007,17 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         onFormChange={handleFormChange}
         onAlumnoSearch={handleAlumnoSearch}
         onSelectAlumno={selectAlumno}
+      />
+
+      <BatchGraduacionModal
+        open={batchModalOpen}
+        onClose={() => setBatchModalOpen(false)}
+        token={token}
+        onSuccess={() => {
+          setBatchModalOpen(false);
+          fetchGraduaciones();
+          fetchStats();
+        }}
       />
     </div>
   );

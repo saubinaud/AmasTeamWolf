@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ShoppingBag, Plus, Pencil, Trash2, Search, Package,
   Shield, Shirt, Loader2, User, Check, Clock, PackageCheck,
+  Settings, X, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cx, badgeColors, statGradients } from './tokens';
@@ -47,6 +48,14 @@ interface AlumnoBusqueda {
   id: number;
   nombre: string;
   dni?: string;
+}
+
+interface CatalogoItem {
+  id: number;
+  nombre: string;
+  categoria: string;
+  precio: number;
+  activo: boolean;
 }
 
 interface SpaceComprasProps {
@@ -276,12 +285,14 @@ function CompraFormModal({
   onSaved,
   editing,
   token,
+  catalogo,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
   editing: Compra | null;
   token: string;
+  catalogo: CatalogoItem[];
 }) {
   const [form, setForm] = useState<CompraFormState>(emptyForm());
   const [saving, setSaving] = useState(false);
@@ -289,8 +300,14 @@ function CompraFormModal({
   const [searchResults, setSearchResults] = useState<AlumnoBusqueda[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [searching, setSearching] = useState(false);
+  const [useCustomTipo, setUseCustomTipo] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Items from catálogo filtered by current categoria
+  const catalogoFiltered = catalogo.filter((c) => c.categoria === form.categoria);
+  // Check if current tipo matches a catalog item
+  const isCatalogoTipo = catalogoFiltered.some((c) => c.nombre === form.tipo);
 
   // Load editing data or reset
   useEffect(() => {
@@ -310,13 +327,19 @@ function CompraFormModal({
         entregado: Boolean(editing.entregado),
       });
       setSearchQuery(editing.alumno_nombre);
+      // If the editing tipo is not in catalogo for that category, show free text
+      const matchesCatalog = catalogo.some(
+        (c) => c.categoria === editing.categoria && c.nombre === editing.tipo
+      );
+      setUseCustomTipo(!matchesCatalog);
     } else {
       setForm(emptyForm());
       setSearchQuery('');
+      setUseCustomTipo(false);
     }
     setSearchResults([]);
     setShowResults(false);
-  }, [editing, open]);
+  }, [editing, open, catalogo]);
 
   // Debounced alumno search
   useEffect(() => {
@@ -516,7 +539,11 @@ function CompraFormModal({
             <label className={cx.label}>Categoria</label>
             <select
               value={form.categoria}
-              onChange={(e) => setForm((f) => ({ ...f, categoria: e.target.value as Categoria }))}
+              onChange={(e) => {
+                const newCat = e.target.value as Categoria;
+                setForm((f) => ({ ...f, categoria: newCat, tipo: '', precio: '' }));
+                setUseCustomTipo(false);
+              }}
               className={cx.select}
             >
               <option value="arma">Arma</option>
@@ -529,13 +556,55 @@ function CompraFormModal({
           </div>
           <div>
             <label className={cx.label}>Tipo</label>
-            <input
-              type="text"
-              value={form.tipo}
-              onChange={(e) => setForm((f) => ({ ...f, tipo: e.target.value }))}
-              placeholder="Ej: Nunchaku, Dobok, Polo AMAS..."
-              className={cx.input}
-            />
+            {useCustomTipo ? (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={form.tipo}
+                  onChange={(e) => setForm((f) => ({ ...f, tipo: e.target.value }))}
+                  placeholder="Nombre del implemento..."
+                  className={cx.input}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseCustomTipo(false);
+                    setForm((f) => ({ ...f, tipo: '', precio: '' }));
+                  }}
+                  className={cx.btnGhost + ' shrink-0'}
+                  title="Volver al catalogo"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <select
+                value={form.tipo}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '__otro__') {
+                    setUseCustomTipo(true);
+                    setForm((f) => ({ ...f, tipo: '', precio: '' }));
+                    return;
+                  }
+                  const item = catalogoFiltered.find((c) => c.nombre === val);
+                  setForm((f) => ({
+                    ...f,
+                    tipo: val,
+                    precio: item ? String(item.precio) : f.precio,
+                  }));
+                }}
+                className={cx.select}
+              >
+                <option value="">-- Seleccionar --</option>
+                {catalogoFiltered.map((item) => (
+                  <option key={item.id} value={item.nombre}>
+                    {item.nombre} — S/ {Number(item.precio).toFixed(2)}
+                  </option>
+                ))}
+                <option value="__otro__">Otro (texto libre)</option>
+              </select>
+            )}
           </div>
         </div>
 
@@ -643,6 +712,271 @@ function CompraFormModal({
 }
 
 // ---------------------------------------------------------------------------
+// Catalogo Management Modal
+// ---------------------------------------------------------------------------
+
+function CatalogoModal({
+  open,
+  onClose,
+  token,
+  catalogo,
+  onRefresh,
+}: {
+  open: boolean;
+  onClose: () => void;
+  token: string;
+  catalogo: CatalogoItem[];
+  onRefresh: () => void;
+}) {
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editPrecio, setEditPrecio] = useState('');
+  const [editNombre, setEditNombre] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [newNombre, setNewNombre] = useState('');
+  const [newCategoria, setNewCategoria] = useState<Categoria>('arma');
+  const [newPrecio, setNewPrecio] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const startEdit = useCallback((item: CatalogoItem) => {
+    setEditingId(item.id);
+    setEditPrecio(String(item.precio));
+    setEditNombre(item.nombre);
+  }, []);
+
+  const cancelEdit = useCallback(() => {
+    setEditingId(null);
+    setEditPrecio('');
+    setEditNombre('');
+  }, []);
+
+  const saveEdit = useCallback(async () => {
+    if (editingId === null) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_BASE}/space/compras/catalogo/${editingId}`, {
+        method: 'PUT',
+        headers: authHeaders(token),
+        body: JSON.stringify({ nombre: editNombre.trim(), precio: parseFloat(editPrecio) }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.success === false) {
+        toast.error(data?.error ?? 'Error al actualizar');
+        return;
+      }
+      toast.success('Item actualizado');
+      cancelEdit();
+      onRefresh();
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSaving(false);
+    }
+  }, [editingId, editNombre, editPrecio, token, cancelEdit, onRefresh]);
+
+  const handleDeactivate = useCallback(async (id: number) => {
+    if (!window.confirm('Desactivar este item del catalogo?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/space/compras/catalogo/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders(token),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.success === false) {
+        toast.error(data?.error ?? 'Error al desactivar');
+        return;
+      }
+      toast.success('Item desactivado');
+      onRefresh();
+    } catch {
+      toast.error('Error de conexion');
+    }
+  }, [token, onRefresh]);
+
+  const handleAdd = useCallback(async () => {
+    if (!newNombre.trim() || !newPrecio) {
+      toast.error('Completa nombre y precio');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_BASE}/space/compras/catalogo`, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify({
+          nombre: newNombre.trim(),
+          categoria: newCategoria,
+          precio: parseFloat(newPrecio),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.success === false) {
+        toast.error(data?.error ?? 'Error al crear');
+        return;
+      }
+      toast.success('Item agregado al catalogo');
+      setNewNombre('');
+      setNewPrecio('');
+      setAdding(false);
+      onRefresh();
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSaving(false);
+    }
+  }, [newNombre, newCategoria, newPrecio, token, onRefresh]);
+
+  // Group catalogo by categoria
+  const grouped: Record<string, CatalogoItem[]> = {};
+  for (const item of catalogo) {
+    if (!grouped[item.categoria]) grouped[item.categoria] = [];
+    grouped[item.categoria].push(item);
+  }
+
+  const footer = (
+    <button onClick={onClose} className={cx.btnSecondary}>Cerrar</button>
+  );
+
+  return (
+    <Modal open={open} onClose={onClose} title="Gestionar catalogo" footer={footer} size="lg">
+      <div className="space-y-4">
+        {/* Add new item */}
+        {adding ? (
+          <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4 space-y-3">
+            <p className="text-white text-sm font-medium">Nuevo item</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <input
+                type="text"
+                value={newNombre}
+                onChange={(e) => setNewNombre(e.target.value)}
+                placeholder="Nombre..."
+                className={cx.input}
+              />
+              <select
+                value={newCategoria}
+                onChange={(e) => setNewCategoria(e.target.value as Categoria)}
+                className={cx.select}
+              >
+                <option value="arma">Arma</option>
+                <option value="uniforme">Uniforme</option>
+                <option value="protector">Protector</option>
+                <option value="polo">Polo</option>
+                <option value="accesorio">Accesorio</option>
+                <option value="otro">Otro</option>
+              </select>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={newPrecio}
+                onChange={(e) => setNewPrecio(e.target.value)}
+                placeholder="Precio S/"
+                className={cx.input}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setAdding(false)} className={cx.btnGhost + ' text-xs'}>
+                Cancelar
+              </button>
+              <button
+                onClick={handleAdd}
+                disabled={saving}
+                className={cx.btnPrimary + ' text-xs flex items-center gap-1.5'}
+              >
+                {saving && <Loader2 size={12} className="animate-spin" />}
+                Agregar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setAdding(true)}
+            className={cx.btnSecondary + ' flex items-center gap-2 text-xs'}
+          >
+            <Plus size={14} /> Agregar item
+          </button>
+        )}
+
+        {/* Items grouped by categoria */}
+        {Object.entries(grouped).map(([cat, items]) => (
+          <div key={cat}>
+            <p className="text-zinc-500 text-[10px] font-semibold uppercase tracking-widest mb-2">
+              {CATEGORIA_LABEL[cat as Categoria] ?? cat}
+            </p>
+            <div className="space-y-1">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5"
+                >
+                  {editingId === item.id ? (
+                    <>
+                      <input
+                        type="text"
+                        value={editNombre}
+                        onChange={(e) => setEditNombre(e.target.value)}
+                        className={cx.input + ' flex-1 !py-1.5 text-xs'}
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editPrecio}
+                        onChange={(e) => setEditPrecio(e.target.value)}
+                        className={cx.input + ' w-24 !py-1.5 text-xs'}
+                      />
+                      <button
+                        onClick={saveEdit}
+                        disabled={saving}
+                        className="p-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                      >
+                        {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      </button>
+                      <button
+                        onClick={cancelEdit}
+                        className="p-1.5 text-zinc-400 hover:bg-zinc-700 rounded-lg transition-colors"
+                      >
+                        <X size={14} />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-white text-sm flex-1">{item.nombre}</span>
+                      <span className="text-zinc-400 text-sm font-medium">
+                        S/ {Number(item.precio).toFixed(2)}
+                      </span>
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                        title="Editar"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDeactivate(item.id)}
+                        className="p-1.5 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Desactivar"
+                      >
+                        <ToggleLeft size={14} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+        {catalogo.length === 0 && (
+          <p className="text-zinc-500 text-sm text-center py-6">
+            No hay items en el catalogo
+          </p>
+        )}
+      </div>
+    </Modal>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 
@@ -666,6 +1000,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
   const [editing, setEditing] = useState<Compra | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [entregandoId, setEntregandoId] = useState<number | null>(null);
+  const [catalogo, setCatalogo] = useState<CatalogoItem[]>([]);
+  const [catalogoOpen, setCatalogoOpen] = useState(false);
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
@@ -704,6 +1040,25 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       toast.error('Error al cargar estadisticas');
     } finally {
       setLoadingStats(false);
+    }
+  }, [token]);
+
+  const fetchCatalogo = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/space/compras/catalogo`, {
+        headers: authHeaders(token),
+      });
+      const data = await res.json();
+      const list = Array.isArray(data?.data) ? data.data : [];
+      setCatalogo(list.map((r: Record<string, unknown>) => ({
+        id: Number(r.id),
+        nombre: String(r.nombre ?? ''),
+        categoria: String(r.categoria ?? ''),
+        precio: Number(r.precio ?? 0),
+        activo: Boolean(r.activo),
+      })));
+    } catch {
+      // Silently fail — catalogo is optional convenience
     }
   }, [token]);
 
@@ -762,6 +1117,10 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
+
+  useEffect(() => {
+    fetchCatalogo();
+  }, [fetchCatalogo]);
 
   useEffect(() => {
     fetchCompras();
@@ -861,13 +1220,22 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
             Control de equipamiento, armas y uniformes de alumnos
           </p>
         </div>
-        <button
-          onClick={handleCreate}
-          className={cx.btnPrimary + ' flex items-center gap-2'}
-        >
-          <Plus size={16} />
-          Nueva compra
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCatalogoOpen(true)}
+            className={cx.btnIcon}
+            title="Gestionar catalogo"
+          >
+            <Settings size={18} />
+          </button>
+          <button
+            onClick={handleCreate}
+            className={cx.btnPrimary + ' flex items-center gap-2'}
+          >
+            <Plus size={16} />
+            Nueva compra
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -1082,6 +1450,16 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
         onSaved={handleSaved}
         editing={editing}
         token={token}
+        catalogo={catalogo}
+      />
+
+      {/* Catalogo Management Modal */}
+      <CatalogoModal
+        open={catalogoOpen}
+        onClose={() => setCatalogoOpen(false)}
+        token={token}
+        catalogo={catalogo}
+        onRefresh={fetchCatalogo}
       />
     </div>
   );

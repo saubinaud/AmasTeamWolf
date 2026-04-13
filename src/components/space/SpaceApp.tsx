@@ -16,6 +16,7 @@ import { SpaceMensajes } from './SpaceMensajes';
 import { SpaceCompras } from './SpaceCompras';
 import { AsistenciaPanelPage } from '../AsistenciaPanelPage';
 import { SpaceProfesores } from './SpaceProfesores';
+import { SpaceClasesPrueba } from './SpaceClasesPrueba';
 
 export type SpacePage =
   | 'dashboard'
@@ -31,6 +32,7 @@ export type SpacePage =
   | 'mensajes'
   | 'compras'
   | 'profesores'
+  | 'clases-prueba'
   | 'config';
 
 export interface SpaceUser {
@@ -150,6 +152,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
       {currentPage === 'compras' && <SpaceCompras token={token} />}
       {currentPage === 'profesores' && <SpaceProfesores token={token} />}
+      {currentPage === 'clases-prueba' && <SpaceClasesPrueba token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
   );
