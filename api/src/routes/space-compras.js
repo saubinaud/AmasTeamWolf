@@ -358,19 +358,19 @@ router.patch('/:id/entregar', async (req, res) => {
       nuevoEstado = !actual.entregado;
     }
 
-    // Si viene fecha_entrega explícita, usarla. Si no, NOW() al marcar entregado.
-    const fechaEntregaSQL = nuevoEstado
-      ? (fecha_entrega ? `'${fecha_entrega}'::timestamp` : 'NOW()')
-      : 'NULL';
+    // Fecha entrega: parameterizada (no interpolada) para evitar SQL injection
+    const fechaEntregaVal = nuevoEstado
+      ? (fecha_entrega ? new Date(fecha_entrega) : new Date())
+      : null;
 
     const row = await queryOne(
       `UPDATE implementos
        SET entregado = $1,
-           fecha_entrega = ${fechaEntregaSQL},
-           entregado_by = CASE WHEN $1 = TRUE THEN $2 ELSE NULL END
-       WHERE id = $3
+           fecha_entrega = $2,
+           entregado_by = CASE WHEN $1 = TRUE THEN $3 ELSE NULL END
+       WHERE id = $4
        RETURNING id, entregado, fecha_entrega, entregado_by`,
-      [nuevoEstado, userId, id]
+      [nuevoEstado, fechaEntregaVal, userId, id]
     );
 
     if (!row) {
