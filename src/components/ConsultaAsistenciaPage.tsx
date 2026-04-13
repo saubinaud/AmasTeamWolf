@@ -122,7 +122,7 @@ export function ConsultaAsistenciaPage({ onNavigate }: ConsultaAsistenciaPagePro
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800">
+      <header className="sticky top-0 z-50 bg-zinc-950 border-b border-zinc-800">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
           <button
             onClick={() => onNavigate('home')}
@@ -159,7 +159,8 @@ export function ConsultaAsistenciaPage({ onNavigate }: ConsultaAsistenciaPagePro
               onChange={(e) => setDni(e.target.value)}
               onKeyDown={handleKeyDown}
               maxLength={15}
-              className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#FA7B21]/50 focus:border-[#FA7B21] transition-all"
+              style={{ fontSize: '16px' }}
+              className="w-full pl-10 pr-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#FA7B21]/50 focus:border-[#FA7B21] transition-colors"
             />
           </div>
           <button
