@@ -33,7 +33,7 @@ router.get('/', consultaLimiter, async (req, res) => {
     const alumno = await queryOne(`
       SELECT id, nombre_alumno, cinturon_actual
       FROM alumnos
-      WHERE REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1
+      WHERE dni_alumno_norm = $1
         AND estado = 'Activo'
       LIMIT 1
     `, [dniNorm]);
