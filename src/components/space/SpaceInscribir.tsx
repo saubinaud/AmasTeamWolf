@@ -573,8 +573,8 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
       <section className={cx.card + ' p-5'}>
         <h3 className="text-white text-sm font-semibold mb-4">2. Datos del alumno</h3>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
               <label className={cx.label}>Nombre completo *</label>
               <input
                 type="text"
@@ -585,26 +585,27 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
               />
             </div>
             <div>
-              <label className={cx.label}>Documento *</label>
-              <div className="flex gap-2">
-                <select
-                  value={form.tipoDocumento}
-                  onChange={(e) => handleInputChange('tipoDocumento', e.target.value)}
-                  className={cx.select + ' w-28 shrink-0'}
-                >
-                  <option value="DNI">DNI</option>
-                  <option value="CE">CE</option>
-                  <option value="Pasaporte">Pasaporte</option>
-                </select>
-                <input
-                  type="text"
-                  inputMode={form.tipoDocumento === 'DNI' ? 'numeric' : 'text'}
-                  value={form.dniAlumno}
-                  onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
-                  placeholder={form.tipoDocumento === 'DNI' ? '12345678' : 'Número'}
-                  className={cx.input + ' flex-1'}
-                />
-              </div>
+              <label className={cx.label}>Tipo documento</label>
+              <select
+                value={form.tipoDocumento}
+                onChange={(e) => handleInputChange('tipoDocumento', e.target.value)}
+                className={cx.select}
+              >
+                <option value="DNI">DNI</option>
+                <option value="CE">CE (Carné Extranjería)</option>
+                <option value="Pasaporte">Pasaporte</option>
+              </select>
+            </div>
+            <div>
+              <label className={cx.label}>N° documento alumno *</label>
+              <input
+                type="text"
+                inputMode={form.tipoDocumento === 'DNI' ? 'numeric' : 'text'}
+                value={form.dniAlumno}
+                onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
+                placeholder={form.tipoDocumento === 'DNI' ? '12345678' : 'Número de documento'}
+                className={cx.input}
+              />
             </div>
           </div>
           <div>

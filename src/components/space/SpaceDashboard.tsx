@@ -131,7 +131,11 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
       {/* Alert: inscripciones por vencer */}
       {stats?.inscripcionesPorVencer != null && stats.inscripcionesPorVencer > 0 && (
         <button
-          onClick={() => go('inscripciones')}
+          onClick={() => {
+            // Navigate to inscripciones with vencimientos filter
+            sessionStorage.setItem('space_insc_filter', 'por_vencer');
+            go('inscripciones');
+          }}
           className="w-full flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/15 rounded-2xl text-left hover:bg-amber-500/15 transition-all duration-200 group"
         >
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">

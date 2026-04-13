@@ -58,15 +58,17 @@ router.get('/', async (req, res) => {
       params.push(estado.toLowerCase());
     }
     if (search) {
-      const normalized = normalizeDocumento(search);
-      // Buscar en nombre (ILIKE) y en documento (normalizado sin espacios/guiones)
+      const searchTerm = `%${search.trim()}%`;
+      const normalizedTerm = `%${normalizeDocumento(search)}%`;
+      // Un solo param para nombres, otro para DNIs normalizados
       conditions.push(
         `(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} ` +
-        `OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx + 1} ` +
-        `OR REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $${idx + 1})`
+        `OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx} ` +
+        `OR REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $${idx})`
       );
-      params.push(`%${search}%`, `%${normalized}%`);
-      idx += 2;
+      // Usar el término normalizado que funciona para nombres Y DNIs
+      params.push(normalizedTerm);
+      idx++;
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
