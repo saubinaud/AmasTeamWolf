@@ -35,7 +35,10 @@ import {
   Pencil,
   Save,
   X,
-  MapPin
+  MapPin,
+  Gift,
+  Copy,
+  Users
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays, subDays, isSameDay, isToday } from 'date-fns';
@@ -712,6 +715,62 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 )}
               </motion.div>
 
+              {/* Referido Card */}
+              {user?.codigoReferido && (
+                <motion.div
+                  className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.32 }}
+                >
+                  <div className="p-4 border-b border-white/5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center">
+                        <Gift className="w-4 h-4 text-[#FA7B21]" />
+                      </div>
+                      <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Tu codigo de referido</h4>
+                    </div>
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-2xl font-bold text-white tracking-widest bg-white/5 px-4 py-2 rounded-xl flex-1 text-center select-all">
+                        {user.codigoReferido}
+                      </span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(user.codigoReferido || '');
+                          toast.success('Codigo copiado');
+                        }}
+                        className="w-10 h-10 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center hover:bg-[#FA7B21]/25 transition-colors"
+                      >
+                        <Copy className="w-4 h-4 text-[#FA7B21]" />
+                      </button>
+                    </div>
+                    <p className="text-xs text-zinc-400">Comparte este codigo y gana S/60 por cada amigo que se inscriba</p>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-zinc-500">Bonos acumulados</span>
+                      <span className="text-sm font-bold text-emerald-400">S/ {user.saldoBonos || 0}</span>
+                    </div>
+                    {user.referidos && user.referidos.length > 0 && (
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <Users className="w-3.5 h-3.5 text-zinc-500" />
+                          <span className="text-[10px] text-zinc-500 uppercase tracking-wider">Amigos referidos</span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {user.referidos.map((r, i) => (
+                            <div key={i} className="flex items-center justify-between text-xs bg-white/[0.02] rounded-lg px-3 py-2">
+                              <span className="text-zinc-300">{r.nombre}</span>
+                              <span className="text-zinc-600">{r.fecha ? formatDate(r.fecha) : ''}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
               {/* Progreso de clases */}
               <motion.div
                 className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
@@ -962,6 +1021,59 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <p className="text-3xl font-bold">S/ {user.pagos?.precioPrograma}</p>
               </div>
             </div>
+
+            {/* Historial de pagos (F4) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5"
+            >
+              <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-4">Historial de pagos</h4>
+              <div className="mb-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-zinc-300">
+                    Pagado: <span className="font-semibold text-white">S/ {user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0}</span> de S/ {user.pagos?.precioPrograma ?? 0}
+                  </span>
+                  <span className="text-xs text-zinc-500">
+                    {user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / user.pagos.precioPrograma) * 100)) : 0}%
+                  </span>
+                </div>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full rounded-full bg-emerald-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / user.pagos.precioPrograma) * 100)) : 0}%` }}
+                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+                  />
+                </div>
+              </div>
+              {user.pagos?.historial && user.pagos.historial.length > 0 ? (
+                <div className="space-y-3">
+                  {user.pagos.historial.map((pago, i) => (
+                    <motion.div key={pago.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.05 }} className="flex items-start gap-3">
+                      <div className="mt-1.5 w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-white">S/ {pago.monto}</span>
+                          <span className="text-[10px] text-zinc-500">
+                            {pago.fecha ? new Date(pago.fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Lima' }) : ''}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-zinc-500 bg-white/5 px-2 py-0.5 rounded">{pago.metodo_pago || pago.tipo}</span>
+                          {pago.observaciones && <span className="text-[10px] text-zinc-600 truncate">{pago.observaciones}</span>}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-zinc-500">Sin pagos registrados</p>
+                </div>
+              )}
+            </motion.div>
 
             {/* Freeze */}
             {puedeCongelar && (

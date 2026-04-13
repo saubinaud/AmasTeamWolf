@@ -32,6 +32,7 @@ const MODULOS_DISPONIBLES: { key: string; label: string }[] = [
   { key: 'leads', label: 'Leads' },
   { key: 'compras', label: 'Compras' },
   { key: 'mensajes', label: 'Mensajes' },
+  { key: 'profesores', label: 'Profesores' },
   { key: 'config', label: 'Ajustes (admin)' },
 ];
 

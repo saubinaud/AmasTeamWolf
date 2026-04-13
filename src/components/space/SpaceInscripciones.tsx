@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, FileText, Loader2, AlertTriangle } from 'lucide-react';
+import { Search, FileText, Loader2, AlertTriangle, Plus, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
@@ -22,6 +22,23 @@ interface Inscripcion {
   frecuencia_semanal?: number;
   estado_pago: 'pendiente' | 'parcial' | 'pagado' | 'vencido';
   activa: boolean;
+}
+
+interface PagoDetail {
+  id: number;
+  monto: number;
+  fecha: string;
+  tipo: string;
+  metodo_pago: string;
+  observaciones: string | null;
+  created_at: string;
+}
+
+interface InscripcionDetail {
+  id: number;
+  precio_programa: number;
+  precio_pagado: number;
+  estado_pago: string;
 }
 
 interface SpaceInscripcionesProps {
@@ -75,29 +92,106 @@ function InscripcionesTableSkeleton() {
   );
 }
 
+const METODO_PAGO_OPTIONS = ['Efectivo', 'Yape', 'Plin', 'Transferencia', 'Tarjeta', 'Otro'] as const;
+
 function EditModal({
   inscripcion,
   saving,
   onClose,
   onSave,
+  token,
+  onRefresh,
 }: {
   inscripcion: Inscripcion;
   saving: boolean;
   onClose: () => void;
   onSave: (id: number, patch: { estado_pago: string; activa: boolean }) => void;
+  token: string;
+  onRefresh: () => void;
 }) {
   const [estadoPago, setEstadoPago] = useState(inscripcion.estado_pago);
   const [activa, setActiva] = useState(inscripcion.activa);
+
+  // Pagos detail
+  const [pagos, setPagos] = useState<PagoDetail[]>([]);
+  const [inscDetail, setInscDetail] = useState<InscripcionDetail | null>(null);
+  const [loadingDetail, setLoadingDetail] = useState(true);
+
+  // Register pago form
+  const [showPagoForm, setShowPagoForm] = useState(false);
+  const [pagoMonto, setPagoMonto] = useState('');
+  const [pagoMetodo, setPagoMetodo] = useState('Efectivo');
+  const [pagoObs, setPagoObs] = useState('');
+  const [savingPago, setSavingPago] = useState(false);
+
+  // Load detail with pagos
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingDetail(true);
+    fetch(`${API_BASE}/space/inscripciones/${inscripcion.id}`, { headers: authHeaders(token) })
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        if (data.success !== false && data.data) {
+          setPagos(Array.isArray(data.data.pagos) ? data.data.pagos : []);
+          setInscDetail(data.data.inscripcion || null);
+        }
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoadingDetail(false); });
+    return () => { cancelled = true; };
+  }, [inscripcion.id, token]);
 
   const handleSave = useCallback(() => {
     onSave(inscripcion.id, { estado_pago: estadoPago, activa });
   }, [inscripcion.id, estadoPago, activa, onSave]);
 
+  const handleRegisterPago = useCallback(async () => {
+    const monto = parseFloat(pagoMonto);
+    if (!monto || monto <= 0) { toast.error('Monto invalido'); return; }
+    setSavingPago(true);
+    try {
+      const res = await fetch(`${API_BASE}/space/inscripciones/${inscripcion.id}/pago`, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify({ monto, metodo_pago: pagoMetodo, observaciones: pagoObs || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success !== false) {
+        toast.success('Pago registrado');
+        setPagoMonto('');
+        setPagoObs('');
+        setShowPagoForm(false);
+        // Refresh pagos
+        const detailRes = await fetch(`${API_BASE}/space/inscripciones/${inscripcion.id}`, { headers: authHeaders(token) });
+        const detailData = await detailRes.json();
+        if (detailData.success !== false && detailData.data) {
+          setPagos(Array.isArray(detailData.data.pagos) ? detailData.data.pagos : []);
+          setInscDetail(detailData.data.inscripcion || null);
+          if (detailData.data.inscripcion) {
+            setEstadoPago(detailData.data.inscripcion.estado_pago?.toLowerCase() || estadoPago);
+          }
+        }
+        onRefresh();
+      } else {
+        toast.error(data.error || 'Error al registrar pago');
+      }
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSavingPago(false);
+    }
+  }, [inscripcion.id, pagoMonto, pagoMetodo, pagoObs, token, onRefresh, estadoPago]);
+
+  const precioPrograma = inscDetail ? Number(inscDetail.precio_programa) || 0 : 0;
+  const precioPagado = inscDetail ? Number(inscDetail.precio_pagado) || 0 : 0;
+  const porcentajePagado = precioPrograma > 0 ? Math.min(100, Math.round((precioPagado / precioPrograma) * 100)) : 0;
+
   return (
     <Modal
       open={true}
       onClose={onClose}
-      title="Editar inscripcion"
+      title="Detalle de inscripcion"
       footer={
         <>
           <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
@@ -108,25 +202,135 @@ function EditModal({
         </>
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div>
           <p className="text-white font-medium text-sm">{inscripcion.alumno_nombre} {inscripcion.alumno_apellido}</p>
           <p className="text-zinc-500 text-xs mt-0.5">{inscripcion.programa}</p>
         </div>
-        <div>
-          <label className={cx.label}>Estado de pago</label>
-          <select value={estadoPago} onChange={e => setEstadoPago(e.target.value as Inscripcion['estado_pago'])} className={cx.select}>
-            {ESTADO_PAGO_OPTIONS.map(ep => (
-              <option key={ep} value={ep}>{ep.charAt(0).toUpperCase() + ep.slice(1)}</option>
-            ))}
-          </select>
+
+        {/* Edit fields */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={cx.label}>Estado de pago</label>
+            <select value={estadoPago} onChange={e => setEstadoPago(e.target.value as Inscripcion['estado_pago'])} className={cx.select}>
+              {ESTADO_PAGO_OPTIONS.map(ep => (
+                <option key={ep} value={ep}>{ep.charAt(0).toUpperCase() + ep.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={cx.label}>Activa</label>
+            <select value={activa ? 'si' : 'no'} onChange={e => setActiva(e.target.value === 'si')} className={cx.select}>
+              <option value="si">Si</option>
+              <option value="no">No</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label className={cx.label}>Activa</label>
-          <select value={activa ? 'si' : 'no'} onChange={e => setActiva(e.target.value === 'si')} className={cx.select}>
-            <option value="si">Si</option>
-            <option value="no">No</option>
-          </select>
+
+        {/* Pagos section */}
+        <div className="border-t border-zinc-800 pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Pagos</h4>
+            <button
+              onClick={() => setShowPagoForm(!showPagoForm)}
+              className={cx.btnGhost + ' flex items-center gap-1 text-xs'}
+            >
+              <Plus size={14} /> Registrar pago
+            </button>
+          </div>
+
+          {/* Progress bar */}
+          {!loadingDetail && inscDetail && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="text-zinc-400">S/ {precioPagado} de S/ {precioPrograma}</span>
+                <span className={cx.badge(porcentajePagado >= 100 ? badgeColors.green : porcentajePagado > 0 ? badgeColors.orange : badgeColors.yellow)}>
+                  {porcentajePagado}%
+                </span>
+              </div>
+              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${porcentajePagado >= 100 ? 'bg-emerald-500' : 'bg-[#FA7B21]'}`}
+                  style={{ width: `${porcentajePagado}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Inline pago form */}
+          {showPagoForm && (
+            <div className="bg-zinc-800/50 rounded-xl p-3 mb-3 space-y-2.5 border border-zinc-800">
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className={cx.label}>Monto (S/)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={pagoMonto}
+                    onChange={e => setPagoMonto(e.target.value)}
+                    placeholder="0.00"
+                    className={cx.input}
+                  />
+                </div>
+                <div>
+                  <label className={cx.label}>Metodo</label>
+                  <select value={pagoMetodo} onChange={e => setPagoMetodo(e.target.value)} className={cx.select}>
+                    {METODO_PAGO_OPTIONS.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className={cx.label}>Observaciones (opcional)</label>
+                <input
+                  type="text"
+                  value={pagoObs}
+                  onChange={e => setPagoObs(e.target.value)}
+                  placeholder="Nota..."
+                  className={cx.input}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button onClick={() => setShowPagoForm(false)} className={cx.btnSecondary + ' text-xs py-1.5 px-3'}>Cancelar</button>
+                <button onClick={handleRegisterPago} disabled={savingPago} className={cx.btnPrimary + ' text-xs py-1.5 px-3 flex items-center gap-1.5'}>
+                  {savingPago && <Loader2 size={12} className="animate-spin" />}
+                  Registrar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Pagos timeline */}
+          {loadingDetail ? (
+            <div className="space-y-2">
+              {[1, 2].map(k => <div key={k} className={cx.skeleton + ' h-10 w-full'} />)}
+            </div>
+          ) : pagos.length > 0 ? (
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {pagos.map(p => (
+                <div key={p.id} className="flex items-start gap-2.5 py-2 border-b border-zinc-800/50 last:border-0">
+                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="text-white text-sm font-medium">S/ {Number(p.monto).toFixed(2)}</span>
+                      <span className="text-zinc-500 text-[10px]">
+                        {p.fecha ? new Date(p.fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Lima' }) : ''}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className={cx.badge(badgeColors.gray) + ' text-[9px] py-0.5 px-1.5'}>{p.metodo_pago || p.tipo}</span>
+                      {p.observaciones && <span className="text-zinc-600 text-[10px] truncate">{p.observaciones}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <CreditCard size={24} className="mx-auto text-zinc-700 mb-2" />
+              <p className="text-zinc-500 text-xs">Sin pagos registrados</p>
+            </div>
+          )}
         </div>
       </div>
     </Modal>
@@ -462,6 +666,8 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           saving={saving}
           onClose={handleCloseEdit}
           onSave={handleSaveEdit}
+          token={token}
+          onRefresh={fetchInscripciones}
         />
       )}
     </div>

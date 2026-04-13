@@ -128,7 +128,7 @@ router.get('/:id', async (req, res) => {
     const id = req.params.id;
 
     // Parallel queries for speed
-    const [alumno, inscripciones, asistenciasRecientes, totalAsistencias, implementos] = await Promise.all([
+    const [alumno, inscripciones, asistenciasRecientes, totalAsistencias, implementos, referidosData] = await Promise.all([
       queryOne('SELECT * FROM alumnos WHERE id = $1', [id]),
       query(`
         SELECT id, programa, fecha_inscripcion, fecha_inicio, fecha_fin,
@@ -148,6 +148,12 @@ router.get('/:id', async (req, res) => {
         SELECT id, categoria, tipo, talla, precio, origen, fecha_adquisicion, observaciones
         FROM implementos WHERE alumno_id = $1
         ORDER BY fecha_adquisicion DESC, created_at DESC
+      `, [id]).catch(() => []),
+      query(`
+        SELECT a.nombre_alumno, r.created_at, r.canjeado
+        FROM referidos r JOIN alumnos a ON a.id = r.referido_id
+        WHERE r.referidor_id = $1
+        ORDER BY r.created_at DESC
       `, [id]).catch(() => []),
     ]);
 
@@ -207,6 +213,14 @@ router.get('/:id', async (req, res) => {
         // Implementos / armas
         implementos: implementos || [],
         armas: (implementos || []).filter(i => i.categoria === 'arma'),
+        // Referidos
+        codigo_referido: alumno.codigo_referido || null,
+        saldo_bonos: Number(alumno.saldo_bonos) || 0,
+        referidos: (referidosData || []).map(r => ({
+          nombre: r.nombre_alumno,
+          fecha: r.created_at,
+          canjeado: r.canjeado,
+        })),
       },
     });
   } catch (err) {
