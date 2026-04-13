@@ -61,6 +61,7 @@ router.get('/', async (req, res) => {
               a.nombre_alumno AS alumno_nombre,
               i.programa, i.fecha_inicio, i.fecha_fin,
               i.clases_totales, i.turno,
+              i.frecuencia_semanal,
               LOWER(i.estado_pago) AS estado_pago,
               i.precio_programa, i.precio_pagado,
               (i.estado = 'Activo') AS activa,
@@ -127,7 +128,7 @@ router.put('/:id', async (req, res) => {
       'programa', 'estado_pago', 'estado', 'fecha_inicio', 'fecha_fin',
       'clases_totales', 'turno', 'dias_tentativos',
       'precio_programa', 'precio_pagado', 'descuento',
-      'codigo_promocional', 'tipo_cliente',
+      'codigo_promocional', 'tipo_cliente', 'frecuencia_semanal',
     ];
 
     const updates = [];

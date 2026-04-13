@@ -19,6 +19,7 @@ interface Inscripcion {
   programa: string;
   fecha_inicio: string;
   fecha_fin: string;
+  frecuencia_semanal?: number;
   estado_pago: 'pendiente' | 'parcial' | 'pagado' | 'vencido';
   activa: boolean;
 }
@@ -390,6 +391,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                 <tr className="border-b border-zinc-800">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>Programa</th>
+                  <th className={cx.th + ' hidden sm:table-cell'}>Freq.</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Fecha inicio</th>
                   <th className={cx.th + ' hidden md:table-cell'}>Fecha fin</th>
                   <th className={cx.th}>Estado pago</th>
@@ -407,6 +409,11 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                       {ins.alumno_nombre} {ins.alumno_apellido}
                     </td>
                     <td className={cx.td + ' text-white/60'}>{ins.programa}</td>
+                    <td className={cx.td + ' hidden sm:table-cell'}>
+                      <span className={cx.badge(ins.frecuencia_semanal === 1 ? badgeColors.orange : badgeColors.blue)}>
+                        {ins.frecuencia_semanal === 1 ? '1x/sem' : '2x/sem'}
+                      </span>
+                    </td>
                     <td className={cx.td + ' text-white/60 hidden sm:table-cell'}>{formatFecha(ins.fecha_inicio)}</td>
                     <td className={cx.td + ' text-white/60 hidden md:table-cell'}>{formatFecha(ins.fecha_fin)}</td>
                     <td className={cx.td}>

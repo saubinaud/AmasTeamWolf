@@ -157,6 +157,9 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
   const resultsRef = useRef<HTMLDivElement>(null);
   const [inscripcionActiva, setInscripcionActiva] = useState<InscripcionActiva | null>(null);
 
+  // Frecuencia semanal
+  const [frecuenciaSemanal, setFrecuenciaSemanal] = useState<1 | 2>(2);
+
   // Horarios / fechas / dias
   const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
   const [categoriaAlumno, setCategoriaAlumno] = useState('');
@@ -189,6 +192,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     setFirmaBase64(null);
     setPolosOption('0');
     setTallasPolos([]);
+    setFrecuenciaSemanal(2);
     setSearchQuery('');
     setSearchResults([]);
     setInscripcionActiva(null);
@@ -311,6 +315,13 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     if (filtrados.length !== diasTentativos.length) setDiasTentativos(filtrados);
   }, [turnoSeleccionado, categoriaAlumno, diasTentativos]);
 
+  // Limitar días tentativos al cambiar frecuencia
+  useEffect(() => {
+    if (frecuenciaSemanal === 1 && diasTentativos.length > 1) {
+      setDiasTentativos((prev) => [prev[0]]);
+    }
+  }, [frecuenciaSemanal, diasTentativos.length]);
+
   useEffect(() => {
     if (!form.fechaInicio || form.fechaInicio === 'no-especificado' || diasTentativos.length < 1) {
       setFechaFinCalculada('');
@@ -363,8 +374,12 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
   }, []);
 
   const handleDiaTentativoToggle = useCallback((dia: string) => {
-    setDiasTentativos((prev) => (prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]));
-  }, []);
+    setDiasTentativos((prev) => {
+      if (prev.includes(dia)) return prev.filter((d) => d !== dia);
+      if (frecuenciaSemanal === 1 && prev.length >= 1) return [dia];
+      return [...prev, dia];
+    });
+  }, [frecuenciaSemanal]);
 
   const handleAplicarCodigo = useCallback(() => {
     if (!codigoInput.trim()) {
@@ -542,6 +557,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
         contratoFirmado: admin.skipContrato ? null : firmaBase64,
         fechaRegistro: new Date().toISOString(),
         origen: 'space',
+        frecuenciaSemanal,
 
         // ── Admin overrides ──
         estadoPago: admin.estadoPago,
@@ -573,7 +589,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsPoloSize, codigoAplicado, descuentoDineroTotal, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, admin, resetAll]);
+  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsPoloSize, codigoAplicado, descuentoDineroTotal, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, admin, frecuenciaSemanal, resetAll]);
 
   // -----------------------------------------------------------------------
   // Render
@@ -833,6 +849,38 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
       <section className={cx.card + ' p-5'}>
         <h3 className="text-white text-sm font-semibold mb-4">6. Fechas del programa</h3>
         <div className="space-y-4">
+          {/* Frecuencia semanal */}
+          <div>
+            <label className={cx.label}>Frecuencia semanal</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFrecuenciaSemanal(2)}
+                className={
+                  frecuenciaSemanal === 2
+                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
+              >
+                2x por semana
+              </button>
+              <button
+                onClick={() => setFrecuenciaSemanal(1)}
+                className={
+                  frecuenciaSemanal === 1
+                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
+              >
+                1x por semana
+              </button>
+            </div>
+            {frecuenciaSemanal === 1 && (
+              <p className="text-amber-400 text-xs mt-2">
+                El programa de {programa === '1mes' ? '1 mes' : programa === 'full' ? '3 meses' : programa === '6meses' ? '6 meses' : '12 meses'} se extiende a {programa === '1mes' ? '2 meses' : programa === 'full' ? '6 meses' : programa === '6meses' ? '12 meses' : '24 meses'} (mismo numero de clases, 1 vez por semana). Selecciona solo 1 dia tentativo.
+              </p>
+            )}
+          </div>
+
           <label className={cx.label}>Fecha de inicio *</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {fechasDisponibles.map((f, idx) => {
