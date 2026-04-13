@@ -162,8 +162,8 @@ router.post('/login', async (req, res) => {
     const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
       `SELECT id, password_hash, nombre_apoderado, correo FROM alumnos
-       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
-          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       WHERE REPLACE(REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', ''), '.', '') = $1
+          OR REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1
        LIMIT 1`,
       [dniNorm]
     );
@@ -203,8 +203,8 @@ router.post('/solicitar-codigo', async (req, res) => {
     const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
       `SELECT id, correo, nombre_apoderado FROM alumnos
-       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
-          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       WHERE REPLACE(REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', ''), '.', '') = $1
+          OR REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1
        LIMIT 1`,
       [dniNorm]
     );
@@ -264,8 +264,8 @@ router.post('/verificar-codigo', async (req, res) => {
     const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
       `SELECT id FROM alumnos
-       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
-          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       WHERE REPLACE(REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', ''), '.', '') = $1
+          OR REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1
        LIMIT 1`,
       [dniNorm]
     );
@@ -305,8 +305,8 @@ router.post('/crear-password', async (req, res) => {
     const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
       `SELECT id, password_hash FROM alumnos
-       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
-          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       WHERE REPLACE(REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', ''), '.', '') = $1
+          OR REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1
        LIMIT 1`,
       [dniNorm]
     );

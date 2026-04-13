@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
     // 1. Buscar o crear alumno (normalizar DNI para mejor match)
     const dniNorm = String(d.dniAlumno || '').replace(/[\s\-\.]/g, '').trim();
     let alumno = await client.query(
-      `SELECT id FROM alumnos WHERE REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1`,
+      `SELECT id FROM alumnos WHERE REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1`,
       [dniNorm]
     ).then(r => r.rows[0]);
 
@@ -52,12 +52,16 @@ router.post('/', async (req, res) => {
       );
       alumno = result.rows[0];
     } else {
+      const tipoDocUpdate = ['DNI', 'CE', 'Pasaporte'].includes(d.tipoDocumento) ? d.tipoDocumento : undefined;
       await client.query(
         `UPDATE alumnos SET nombre_apoderado=$1, dni_apoderado=$2, correo=$3,
-         telefono=$4, direccion=$5, categoria=$6, estado='Activo', updated_at=NOW()
+         telefono=$4, direccion=$5, categoria=$6,
+         ${tipoDocUpdate ? 'tipo_documento=$8,' : ''}
+         estado='Activo', updated_at=NOW()
          WHERE id=$7`,
-        [d.nombrePadre, d.dniPadre, d.email, d.telefono, d.direccion,
-         d.categoriaAlumno, alumno.id]
+        tipoDocUpdate
+          ? [d.nombrePadre, d.dniPadre, d.email, d.telefono, d.direccion, d.categoriaAlumno, alumno.id, tipoDocUpdate]
+          : [d.nombrePadre, d.dniPadre, d.email, d.telefono, d.direccion, d.categoriaAlumno, alumno.id]
       );
     }
 
