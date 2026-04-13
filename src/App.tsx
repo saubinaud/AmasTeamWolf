@@ -37,6 +37,7 @@ const TerminosCondicionesPage = lazy(() => import('./components/TerminosCondicio
 const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ default: m.TorneoPage })));
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
+const ConsultaAsistenciaPage = lazy(() => import('./components/ConsultaAsistenciaPage').then(m => ({ default: m.ConsultaAsistenciaPage })));
 const SpaceApp = lazy(() => import('./components/space/SpaceApp').then(m => ({ default: m.SpaceApp })));
 
 // Componente de carga para secciones inline
@@ -97,7 +98,7 @@ class LazyErrorBoundary extends React.Component<
 }
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo' | 'asistencia' | 'asistencia-panel' | 'space'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'leadership' | 'tienda' | 'registro-3-meses' | 'registro-6-meses' | 'registro-mensual' | 'registro-leadership' | 'graduacion' | 'clase-prueba' | 'inicio-sesion' | 'perfil' | 'renovacion-navidad' | 'registro-actividad-navidad' | 'registro-showroom' | 'renovacion' | 'callback' | 'terminos' | 'vincular-cuenta' | 'torneo' | 'asistencia' | 'asistencia-panel' | 'consulta-asistencia' | 'space'>('home');
 
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -211,6 +212,8 @@ function App() {
         setCurrentPage('vincular-cuenta');
       } else if (path === '/torneo') {
         setCurrentPage('torneo');
+      } else if (path === '/consulta-asistencia') {
+        setCurrentPage('consulta-asistencia');
       } else if (path === '/asistencia/panel' || path === '/asistencia/profesora') {
         setCurrentPage('asistencia-panel');
       } else if (path === '/asistencia') {
@@ -551,6 +554,21 @@ function App() {
           url="https://amasteamwolf.com/asistencia/panel"
         />
         <AsistenciaPanelPage onNavigate={handleNavigate} />
+        <Toaster theme="dark" position="bottom-right" />
+      </Suspense></LazyErrorBoundary>
+    );
+  }
+
+  if (currentPage === 'consulta-asistencia') {
+    return (
+      <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+        <SEO
+          title="Consulta de Asistencia - AMAS Team Wolf"
+          description="Consulta el registro de asistencias de tu hijo. Ingresa el DNI para ver clases asistidas, progreso y más."
+          keywords="consulta asistencia, asistencia taekwondo, registro clases AMAS"
+          url="https://amasteamwolf.com/consulta-asistencia"
+        />
+        <ConsultaAsistenciaPage onNavigate={handleNavigate} />
         <Toaster theme="dark" position="bottom-right" />
       </Suspense></LazyErrorBoundary>
     );

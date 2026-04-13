@@ -33,7 +33,10 @@ import {
     TrendingUp,
     CalendarCheck,
     Info,
-    X
+    X,
+    Pencil,
+    Save,
+    MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addMonths, subMonths, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfWeek, addDays, isSameMonth } from 'date-fns';
@@ -190,6 +193,59 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
     const [isFreezing, setIsFreezing] = useState(false);
     const [isFreezeDialogOpen, setIsFreezeDialogOpen] = useState(false);
 
+    // Apoderado edit
+    const [isEditingApoderado, setIsEditingApoderado] = useState(false);
+    const [apoderadoForm, setApoderadoForm] = useState({
+        nombre_apoderado: '',
+        dni_apoderado: '',
+        correo: '',
+        telefono: '',
+        direccion: '',
+    });
+    const [isSavingApoderado, setIsSavingApoderado] = useState(false);
+
+    const startEditApoderado = () => {
+        setApoderadoForm({
+            nombre_apoderado: user?.familia?.nombreFamilia || '',
+            dni_apoderado: user?.familia?.dniFamilia || '',
+            correo: user?.familia?.email || '',
+            telefono: user?.familia?.telefono || '',
+            direccion: user?.familia?.direccion || '',
+        });
+        setIsEditingApoderado(true);
+    };
+
+    const cancelEditApoderado = () => {
+        setIsEditingApoderado(false);
+    };
+
+    const saveApoderado = async () => {
+        setIsSavingApoderado(true);
+        try {
+            const token = localStorage.getItem('amasToken');
+            const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? '/api/auth/perfil'
+                : 'https://amas-api.s6hx3x.easypanel.host/api/auth/perfil';
+            const res = await fetch(API_URL, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify(apoderadoForm),
+            });
+            const data = await res.json();
+            if (res.ok && data.success) {
+                toast.success('Datos actualizados');
+                setIsEditingApoderado(false);
+                await onRefresh();
+            } else {
+                toast.error(data.error || 'Error al guardar');
+            }
+        } catch {
+            toast.error('Error de conexion');
+        } finally {
+            setIsSavingApoderado(false);
+        }
+    };
+
     // Graduation
     const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
     const [graduationError, setGraduationError] = useState<string | null>(null);
@@ -282,6 +338,13 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
         const end = new Date(user.matricula.fechaFin).getTime();
         return Math.min(Math.max(((Date.now() - start) / (end - start)) * 100, 0), 100);
     }, [user?.matricula?.fechaInicio, user?.matricula?.fechaFin]);
+
+    const progressClases = useMemo(() => {
+        const total = user?.matricula?.clasesTotales || 0;
+        if (total === 0) return 0;
+        const asistidas = user?.matricula?.clasesAsistidas || 0;
+        return Math.min(Math.round((asistidas / total) * 100), 100);
+    }, [user?.matricula?.clasesTotales, user?.matricula?.clasesAsistidas]);
 
     const getMaxFreezeDays = () => {
         const prog = user?.matricula?.programa?.toLowerCase() || '';
@@ -621,28 +684,100 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     </div>
                                 </motion.div>
 
-                                {/* Contact Card */}
+                                {/* Mi informacion (Apoderado) */}
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
-                                    whileHover={{ scale: 1.02 }}
+                                    className="col-span-2 lg:col-span-3 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
                                 >
-                                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                                        <Phone className="w-5 h-5 text-[#FCA929]" />
-                                        Contacto
-                                    </h3>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                                            <Mail className="w-4 h-4 text-[#FCA929]" />
-                                            <span className="text-white/80 text-sm truncate">
-                                                {user?.familia?.email || '-'}
-                                            </span>
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                                            <User className="w-5 h-5 text-[#FCA929]" />
+                                            Mi informacion
+                                        </h3>
+                                        {!isEditingApoderado ? (
+                                            <button onClick={startEditApoderado} className="flex items-center gap-1.5 text-[#FA7B21] text-sm font-medium hover:text-[#FCA929] transition-colors">
+                                                <Pencil className="w-4 h-4" /> Editar
+                                            </button>
+                                        ) : (
+                                            <div className="flex items-center gap-3">
+                                                <button onClick={cancelEditApoderado} className="flex items-center gap-1.5 text-zinc-400 text-sm font-medium hover:text-zinc-300 transition-colors">
+                                                    <X className="w-4 h-4" /> Cancelar
+                                                </button>
+                                                <button onClick={saveApoderado} disabled={isSavingApoderado} className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium hover:text-emerald-300 transition-colors disabled:opacity-50">
+                                                    <Save className="w-4 h-4" /> {isSavingApoderado ? 'Guardando...' : 'Guardar'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {isEditingApoderado ? (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {[
+                                                { icon: User, label: 'Nombre', key: 'nombre_apoderado' as const },
+                                                { icon: Shield, label: 'DNI Apoderado', key: 'dni_apoderado' as const },
+                                                { icon: Mail, label: 'Correo', key: 'correo' as const },
+                                                { icon: Phone, label: 'Telefono', key: 'telefono' as const },
+                                                { icon: MapPin, label: 'Direccion', key: 'direccion' as const, colSpan: true },
+                                            ].map((item) => (
+                                                <div key={item.key} className={item.colSpan ? 'col-span-2' : ''}>
+                                                    <label className="text-white/40 text-sm block mb-1">{item.label}</label>
+                                                    <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                                                        <item.icon className="w-4 h-4 text-[#FCA929] flex-shrink-0" />
+                                                        <input
+                                                            type={item.key === 'correo' ? 'email' : 'text'}
+                                                            value={apoderadoForm[item.key]}
+                                                            onChange={(e) => setApoderadoForm(prev => ({ ...prev, [item.key]: e.target.value }))}
+                                                            className="flex-1 bg-transparent border-none text-white text-sm placeholder-zinc-600 focus:outline-none"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                                            <Phone className="w-4 h-4 text-[#FCA929]" />
-                                            <span className="text-white/80 text-sm">
-                                                {user?.familia?.telefono || '-'}
-                                            </span>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <p className="text-white/40 text-sm">Nombre</p>
+                                                    <p className="text-white text-lg">{toTitleCase(user?.familia?.nombreFamilia || '-')}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white/40 text-sm">DNI</p>
+                                                    <p className="text-white text-lg">{user?.familia?.dniFamilia || '-'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white/40 text-sm">Correo</p>
+                                                    <p className="text-white text-lg truncate">{user?.familia?.email || '-'}</p>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <p className="text-white/40 text-sm">Telefono</p>
+                                                    <p className="text-white text-lg">{user?.familia?.telefono || '-'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-white/40 text-sm">Direccion</p>
+                                                    <p className="text-white text-lg">{user?.familia?.direccion || '-'}</p>
+                                                </div>
+                                            </div>
                                         </div>
+                                    )}
+
+                                    {/* Progreso de clases */}
+                                    <div className="mt-8 pt-6 border-t border-white/5">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="text-sm font-medium text-white/60">Progreso de clases</h4>
+                                            <span className="text-sm font-bold text-[#FA7B21]">{Math.round(progressClases)}%</span>
+                                        </div>
+                                        <div className="h-3 bg-white/5 rounded-full overflow-hidden mb-2">
+                                            <motion.div
+                                                className="h-full rounded-full"
+                                                style={{ background: 'linear-gradient(to right, #FA7B21, #FCA929)' }}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${progressClases}%` }}
+                                                transition={{ duration: 1, ease: "easeOut" }}
+                                            />
+                                        </div>
+                                        <p className="text-xs text-white/40">
+                                            {user?.matricula?.clasesAsistidas || 0} de {user?.matricula?.clasesTotales || 0} clases asistidas
+                                        </p>
                                     </div>
                                 </motion.div>
                             </motion.div>

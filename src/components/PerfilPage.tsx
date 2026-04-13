@@ -31,7 +31,11 @@ import {
   Mail,
   Award,
   Shield,
-  ExternalLink
+  ExternalLink,
+  Pencil,
+  Save,
+  X,
+  MapPin
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays, subDays, isSameDay, isToday } from 'date-fns';
@@ -158,6 +162,17 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const [isFreezing, setIsFreezing] = useState(false);
   const [isFreezeDialogOpen, setIsFreezeDialogOpen] = useState(false);
 
+  // Apoderado edit
+  const [isEditingApoderado, setIsEditingApoderado] = useState(false);
+  const [apoderadoForm, setApoderadoForm] = useState({
+    nombre_apoderado: '',
+    dni_apoderado: '',
+    correo: '',
+    telefono: '',
+    direccion: '',
+  });
+  const [isSavingApoderado, setIsSavingApoderado] = useState(false);
+
   // Graduation
   const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
   const [graduationError, setGraduationError] = useState<string | null>(null);
@@ -256,6 +271,48 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const handleLogout = () => {
     logout();
     onNavigate('home');
+  };
+
+  const startEditApoderado = () => {
+    setApoderadoForm({
+      nombre_apoderado: user?.familia?.nombreFamilia || '',
+      dni_apoderado: user?.familia?.dniFamilia || '',
+      correo: user?.familia?.email || '',
+      telefono: user?.familia?.telefono || '',
+      direccion: user?.familia?.direccion || '',
+    });
+    setIsEditingApoderado(true);
+  };
+
+  const cancelEditApoderado = () => {
+    setIsEditingApoderado(false);
+  };
+
+  const saveApoderado = async () => {
+    setIsSavingApoderado(true);
+    try {
+      const token = localStorage.getItem('amasToken');
+      const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? '/api/auth/perfil'
+        : 'https://amas-api.s6hx3x.easypanel.host/api/auth/perfil';
+      const res = await fetch(API_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(apoderadoForm),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success('Datos actualizados');
+        setIsEditingApoderado(false);
+        await refreshUserData();
+      } else {
+        toast.error(data.error || 'Error al guardar');
+      }
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setIsSavingApoderado(false);
+    }
   };
 
   // Swipe handlers
@@ -587,24 +644,97 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                {[
-                  { icon: User, label: 'Apoderado', value: user.familia?.nombreFamilia },
-                  { icon: Phone, label: 'Teléfono', value: user.familia?.telefono },
-                  { icon: Mail, label: 'Email', value: user.familia?.email },
-                ].map((item, i) => (
-                  <div key={i} className={cn(
-                    "p-4 flex items-center gap-4 transition-colors hover:bg-white/[0.02]",
-                    i > 0 && "border-t border-white/5"
-                  )}>
-                    <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-zinc-400" />
+                <div className="p-4 flex items-center justify-between border-b border-white/5">
+                  <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Mi informacion</h4>
+                  {!isEditingApoderado ? (
+                    <button onClick={startEditApoderado} className="flex items-center gap-1 text-[#FA7B21] text-xs font-medium hover:text-[#FCA929] transition-colors">
+                      <Pencil className="w-3.5 h-3.5" /> Editar
+                    </button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button onClick={cancelEditApoderado} className="flex items-center gap-1 text-zinc-400 text-xs font-medium hover:text-zinc-300 transition-colors">
+                        <X className="w-3.5 h-3.5" /> Cancelar
+                      </button>
+                      <button onClick={saveApoderado} disabled={isSavingApoderado} className="flex items-center gap-1 text-emerald-400 text-xs font-medium hover:text-emerald-300 transition-colors disabled:opacity-50">
+                        <Save className="w-3.5 h-3.5" /> {isSavingApoderado ? 'Guardando...' : 'Guardar'}
+                      </button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wide">{item.label}</p>
-                      <p className="text-sm font-medium truncate">{item.value}</p>
-                    </div>
+                  )}
+                </div>
+                {isEditingApoderado ? (
+                  <div className="p-4 space-y-3">
+                    {[
+                      { icon: User, label: 'Nombre', key: 'nombre_apoderado' as const },
+                      { icon: Shield, label: 'DNI Apoderado', key: 'dni_apoderado' as const },
+                      { icon: Mail, label: 'Correo', key: 'correo' as const },
+                      { icon: Phone, label: 'Telefono', key: 'telefono' as const },
+                      { icon: MapPin, label: 'Direccion', key: 'direccion' as const },
+                    ].map((item) => (
+                      <div key={item.key} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-4 h-4 text-zinc-400" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[10px] text-zinc-500 uppercase tracking-wide block mb-1">{item.label}</label>
+                          <input
+                            type={item.key === 'correo' ? 'email' : 'text'}
+                            value={apoderadoForm[item.key]}
+                            onChange={(e) => setApoderadoForm(prev => ({ ...prev, [item.key]: e.target.value }))}
+                            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-[#FA7B21]/50"
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <>
+                    {[
+                      { icon: User, label: 'Apoderado', value: user.familia?.nombreFamilia },
+                      { icon: Shield, label: 'DNI', value: user.familia?.dniFamilia },
+                      { icon: Mail, label: 'Email', value: user.familia?.email },
+                      { icon: Phone, label: 'Telefono', value: user.familia?.telefono },
+                      { icon: MapPin, label: 'Direccion', value: user.familia?.direccion },
+                    ].map((item, i) => (
+                      <div key={i} className={cn(
+                        "p-4 flex items-center gap-4 transition-colors hover:bg-white/[0.02]",
+                        "border-t border-white/5"
+                      )}>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+                          <item.icon className="w-5 h-5 text-zinc-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-zinc-500 uppercase tracking-wide">{item.label}</p>
+                          <p className="text-sm font-medium truncate">{item.value || '-'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </motion.div>
+
+              {/* Progreso de clases */}
+              <motion.div
+                className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Progreso de clases</h4>
+                  <span className="text-sm font-bold text-[#FA7B21]">{Math.round(progress)}%</span>
+                </div>
+                <div className="h-3 bg-white/5 rounded-full overflow-hidden mb-2">
+                  <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: 'linear-gradient(to right, #FA7B21, #FCA929)' }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+                  />
+                </div>
+                <p className="text-xs text-zinc-500">
+                  {user?.matricula?.clasesAsistidas || 0} de {user?.matricula?.clasesTotales || 0} clases asistidas
+                </p>
               </motion.div>
             </div>
 

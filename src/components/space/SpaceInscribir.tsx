@@ -132,6 +132,9 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
   const [includeUniform, setIncludeUniform] = useState(false);
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
 
+  // Frecuencia semanal
+  const [frecuenciaSemanal, setFrecuenciaSemanal] = useState<1 | 2>(2);
+
   // Derived state
   const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
   const [categoriaAlumno, setCategoriaAlumno] = useState('');
@@ -165,6 +168,7 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
     setPolosOption('0');
     setIncludeUniform(false);
     setTallasPolos([]);
+    setFrecuenciaSemanal(2);
     setHorariosInfo(null);
     setCategoriaAlumno('');
     setDiasTentativos([]);
@@ -202,6 +206,13 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
     const filtrados = diasTentativos.filter((d) => permitidos.includes(d));
     if (filtrados.length !== diasTentativos.length) setDiasTentativos(filtrados);
   }, [turnoSeleccionado, categoriaAlumno, diasTentativos]);
+
+  // Limitar días tentativos al cambiar frecuencia
+  useEffect(() => {
+    if (frecuenciaSemanal === 1 && diasTentativos.length > 1) {
+      setDiasTentativos((prev) => [prev[0]]);
+    }
+  }, [frecuenciaSemanal, diasTentativos.length]);
 
   // Calcular fecha fin
   useEffect(() => {
@@ -253,10 +264,13 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
   }, []);
 
   const handleDiaTentativoToggle = useCallback((dia: string) => {
-    setDiasTentativos((prev) =>
-      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia],
-    );
-  }, []);
+    setDiasTentativos((prev) => {
+      if (prev.includes(dia)) return prev.filter((d) => d !== dia);
+      // When frequency is 1, only allow 1 day selected
+      if (frecuenciaSemanal === 1 && prev.length >= 1) return [dia];
+      return [...prev, dia];
+    });
+  }, [frecuenciaSemanal]);
 
   const handleAplicarCodigo = useCallback(() => {
     if (!codigoInput.trim()) {
@@ -452,6 +466,7 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
         contratoFirmado: admin.skipContrato ? null : firmaBase64,
         fechaRegistro: new Date().toISOString(),
         origen: 'space',
+        frecuenciaSemanal,
 
         // ── Admin overrides ──
         estadoPago: admin.estadoPago,
@@ -483,7 +498,7 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsUniformSize, needsPoloSize, includeUniform, precioUniforme, codigoAplicado, descuentoDineroTotal, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, admin, resetAll]);
+  }, [form, programa, categoriaAlumno, turnoSeleccionado, horariosInfo, diasTentativos, fechaFinCalculada, detallesFechaFin, polosOption, tallasPolos, needsUniformSize, needsPoloSize, includeUniform, precioUniforme, codigoAplicado, descuentoDineroTotal, descuentoPorcentaje, descuentoPorcentualMonto, precioBase, subtotal, total, firmaBase64, admin, frecuenciaSemanal, resetAll]);
 
   // -----------------------------------------------------------------------
   // Render
@@ -760,6 +775,38 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
       <section className={cx.card + ' p-5'}>
         <h3 className="text-white text-sm font-semibold mb-4">5. Fechas del programa</h3>
         <div className="space-y-4">
+          {/* Frecuencia semanal */}
+          <div>
+            <label className={cx.label}>Frecuencia semanal</label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setFrecuenciaSemanal(2)}
+                className={
+                  frecuenciaSemanal === 2
+                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
+              >
+                2x por semana
+              </button>
+              <button
+                onClick={() => setFrecuenciaSemanal(1)}
+                className={
+                  frecuenciaSemanal === 1
+                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
+                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                }
+              >
+                1x por semana
+              </button>
+            </div>
+            {frecuenciaSemanal === 1 && (
+              <p className="text-amber-400 text-xs mt-2">
+                El programa de {programa === '1mes' ? '1 mes' : programa === 'full' ? '3 meses' : programa === '6meses' ? '6 meses' : '12 meses'} se extiende a {programa === '1mes' ? '2 meses' : programa === 'full' ? '6 meses' : programa === '6meses' ? '12 meses' : '24 meses'} (mismo numero de clases, 1 vez por semana). Selecciona solo 1 dia tentativo.
+              </p>
+            )}
+          </div>
+
           <label className={cx.label}>Fecha de inicio *</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {fechasDisponibles.map((f, idx) => {
