@@ -62,8 +62,8 @@ router.get('/', async (req, res) => {
       // Buscar en nombre (ILIKE) y en documento (normalizado sin espacios/guiones)
       conditions.push(
         `(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} ` +
-        `OR REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', '') ILIKE $${idx + 1} ` +
-        `OR REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', '') ILIKE $${idx + 1})`
+        `OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx + 1} ` +
+        `OR REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $${idx + 1})`
       );
       params.push(`%${search}%`, `%${normalized}%`);
       idx += 2;

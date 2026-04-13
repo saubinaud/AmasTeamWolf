@@ -30,7 +30,7 @@ router.get('/consultar', async (req, res) => {
         i.fecha_fin
       FROM alumnos a
       LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-      WHERE REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', '') = $1
+      WHERE REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') = $1
     `, [String(dni).replace(/[\s\-\.]/g, '').trim()]);
 
     if (rows.length === 0) {
