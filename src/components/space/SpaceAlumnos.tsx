@@ -218,7 +218,7 @@ function AlumnoDetailPanel({
                     <div className="flex-1 h-2 bg-zinc-800 rounded-full">
                       <div
                         className="h-2 bg-emerald-500 rounded-full transition-all"
-                        style={{ width: `${alumno.clases_totales ? Math.min(100, (alumno.clases_asistidas! / alumno.clases_totales) * 100) : 0}%` }}
+                        style={{ width: `${alumno.clases_totales ? Math.min(100, ((alumno.clases_asistidas ?? 0) / alumno.clases_totales) * 100) : 0}%` }}
                       />
                     </div>
                     <span className="text-white text-sm font-bold">{alumno.clases_asistidas}/{alumno.clases_totales}</span>
@@ -266,7 +266,7 @@ function AlumnoDetailPanel({
               ) : (
                 <>
                   {[
-                    ['Nombre', `${alumno.nombre} ${alumno.apellido || ''}`],
+                    ['Nombre', alumno.nombre || ''],
                     ['DNI', alumno.dni],
                     ['Nacimiento', formatFecha(alumno.fecha_nacimiento)],
                     ['Categoria', alumno.categoria],

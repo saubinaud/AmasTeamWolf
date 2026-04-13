@@ -95,7 +95,10 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
   useEffect(() => {
     if (!token) { setLoading(false); return; }
     fetch(`${API_BASE}/space/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok && r.status >= 500) throw new Error('Server error');
+        return r.json();
+      })
       .then(d => { if (d.success) setUser(d.usuario); else handleLogout(); })
       .catch(() => handleLogout())
       .finally(() => setLoading(false));

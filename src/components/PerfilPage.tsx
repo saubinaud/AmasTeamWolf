@@ -186,7 +186,10 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     if (activeSection === 'graduacion') {
       setGraduationError(null);
       fetch((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api/graduacion' : 'https://amas-api.s6hx3x.easypanel.host/api/graduacion')
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
         .then(data => {
           let dates: Date[] = [];
           const items = Array.isArray(data) ? data : (data.records || [data]);
@@ -250,7 +253,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           setGraduationError('Error cargando fecha');
         });
     }
-  }, [activeSection, user.estudiante?.nombre]);
+  }, [activeSection, user?.estudiante?.nombre]);
 
   // Touch handling for calendar swipe
   const touchStartX = useRef(0);
@@ -1066,14 +1069,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     Pagado: <span className="font-semibold text-white">S/ {user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0}</span> de S/ {user.pagos?.precioPrograma ?? 0}
                   </span>
                   <span className="text-xs text-zinc-500">
-                    {user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / user.pagos.precioPrograma) * 100)) : 0}%
+                    {user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / (user.pagos?.precioPrograma || 1)) * 100)) : 0}%
                   </span>
                 </div>
                 <div className="h-2 bg-white/5 rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full bg-emerald-500"
                     initial={{ width: 0 }}
-                    animate={{ width: `${user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / user.pagos.precioPrograma) * 100)) : 0}%` }}
+                    animate={{ width: `${user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / (user.pagos?.precioPrograma || 1)) * 100)) : 0}%` }}
                     transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
                   />
                 </div>
