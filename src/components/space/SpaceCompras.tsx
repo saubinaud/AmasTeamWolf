@@ -1359,30 +1359,49 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                       {formatFecha(c.fecha_adquisicion)}
                     </td>
                     <td className={cx.td}>
-                      <button
-                        onClick={() => handleToggleEntrega(c)}
-                        disabled={entregandoId === c.id}
-                        className={
-                          c.entregado
-                            ? 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs font-semibold hover:bg-emerald-500/25 transition-all disabled:opacity-50'
-                            : 'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-amber-500/15 text-amber-400 text-xs font-semibold hover:bg-amber-500/25 transition-all disabled:opacity-50'
-                        }
-                        title={c.entregado && c.fecha_entrega ? `Entregado: ${formatFecha(c.fecha_entrega)}` : 'Pendiente de entrega'}
-                      >
-                        {entregandoId === c.id ? (
-                          <Loader2 size={12} className="animate-spin" />
-                        ) : c.entregado ? (
-                          <Check size={12} />
-                        ) : (
-                          <Clock size={12} />
+                      <div className="space-y-1.5">
+                        <select
+                          value={c.entregado ? 'entregado' : 'pendiente'}
+                          onChange={(e) => {
+                            const nuevoEstado = e.target.value === 'entregado';
+                            handleToggleEntrega({ ...c, entregado: !nuevoEstado } as Compra);
+                          }}
+                          disabled={entregandoId === c.id}
+                          className={`w-full px-2.5 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                            c.entregado
+                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                              : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                          } disabled:opacity-50`}
+                        >
+                          <option value="pendiente">Pendiente</option>
+                          <option value="entregado">Entregado</option>
+                        </select>
+                        {c.entregado && (
+                          <input
+                            type="date"
+                            value={c.fecha_entrega ? c.fecha_entrega.slice(0, 10) : ''}
+                            onChange={async (e) => {
+                              const fecha = e.target.value;
+                              if (!fecha) return;
+                              try {
+                                const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
+                                  method: 'PATCH',
+                                  headers: authHeaders(token),
+                                  body: JSON.stringify({ entregado: true, fecha_entrega: fecha }),
+                                });
+                                if (res.ok) {
+                                  toast.success('Fecha de entrega actualizada');
+                                  fetchCompras();
+                                }
+                              } catch { toast.error('Error actualizando fecha'); }
+                            }}
+                            className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-lg text-[10px] text-zinc-400"
+                          />
                         )}
-                        {c.entregado ? 'Entregado' : 'Pendiente'}
-                      </button>
-                      {c.entregado && c.fecha_entrega && (
-                        <div className="text-zinc-500 text-[10px] mt-0.5">
-                          {formatFecha(c.fecha_entrega)}
-                        </div>
-                      )}
+                        {!c.entregado && (
+                          <span className="text-zinc-600 text-[10px]">Sin entregar</span>
+                        )}
+                      </div>
                     </td>
                     <td className={cx.td + ' text-right'}>
                       <div className="flex items-center justify-end gap-1">

@@ -340,14 +340,13 @@ router.get('/armas-alumno/:alumnoId', async (req, res) => {
   }
 });
 
-// PATCH /api/space/compras/:id/entregar — Marcar como entregado (toggle)
+// PATCH /api/space/compras/:id/entregar — Marcar como entregado (toggle) + fecha editable
 router.patch('/:id/entregar', async (req, res) => {
   try {
     const { id } = req.params;
-    const { entregado } = req.body;
+    const { entregado, fecha_entrega } = req.body;
     const userId = req.spaceUser?.id || null;
 
-    // Permite toggle: si llega `entregado` explícito úsalo, si no invierte el estado actual
     let nuevoEstado;
     if (typeof entregado === 'boolean') {
       nuevoEstado = entregado;
@@ -359,10 +358,15 @@ router.patch('/:id/entregar', async (req, res) => {
       nuevoEstado = !actual.entregado;
     }
 
+    // Si viene fecha_entrega explícita, usarla. Si no, NOW() al marcar entregado.
+    const fechaEntregaSQL = nuevoEstado
+      ? (fecha_entrega ? `'${fecha_entrega}'::timestamp` : 'NOW()')
+      : 'NULL';
+
     const row = await queryOne(
       `UPDATE implementos
        SET entregado = $1,
-           fecha_entrega = CASE WHEN $1 = TRUE THEN NOW() ELSE NULL END,
+           fecha_entrega = ${fechaEntregaSQL},
            entregado_by = CASE WHEN $1 = TRUE THEN $2 ELSE NULL END
        WHERE id = $3
        RETURNING id, entregado, fecha_entrega, entregado_by`,
