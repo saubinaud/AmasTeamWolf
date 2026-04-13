@@ -69,6 +69,7 @@ const NAV: NavEntry[] = [
       { page: 'asistencia', label: 'Reportes', icon: BarChart3 },
       { page: 'tomar-asistencia', label: 'Tomar asistencia', icon: QrCode },
       { page: 'asistencia-historica', label: 'Registrar pasadas', icon: History },
+      { page: 'asistencia-profesores', label: 'Asistencia profesores', icon: UserCheck },
     ],
   },
   { page: 'leads', label: 'Leads', icon: UserPlus },
@@ -85,6 +86,7 @@ const TITLES: Record<SpacePage, string> = {
   asistencia: 'Asistencia — Reportes',
   'tomar-asistencia': 'Asistencia — Tomar asistencia',
   'asistencia-historica': 'Asistencia — Registrar pasadas',
+  'asistencia-profesores': 'Asistencia — Profesores',
   leads: 'Leads',
   compras: 'Compras', profesores: 'Profesores', 'clases-prueba': 'Clases de prueba', mensajes: 'Mensajes', config: 'Ajustes',
 };

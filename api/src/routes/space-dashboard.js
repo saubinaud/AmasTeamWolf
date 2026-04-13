@@ -59,4 +59,24 @@ router.get('/stats', async (_req, res) => {
   }
 });
 
+// GET /heatmap — attendance heatmap last 30 days
+router.get('/heatmap', async (_req, res) => {
+  try {
+    const rows = await query(
+      `SELECT
+        EXTRACT(DOW FROM fecha)::int AS dia_semana,
+        turno AS clase,
+        COUNT(*)::int AS total
+      FROM asistencias
+      WHERE fecha >= CURRENT_DATE - INTERVAL '30 days'
+      GROUP BY EXTRACT(DOW FROM fecha), turno
+      ORDER BY dia_semana, total DESC`
+    );
+    return res.json({ success: true, heatmap: rows || [] });
+  } catch (err) {
+    console.error('Error obteniendo heatmap:', err);
+    return res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
 module.exports = router;
