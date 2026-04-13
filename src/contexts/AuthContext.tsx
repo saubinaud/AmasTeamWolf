@@ -109,6 +109,18 @@ interface Congelacion {
   dias: number;
 }
 
+interface TorneoData {
+  id: number;
+  modalidad: string;
+  estado: string;
+  estadoPago: string;
+  torneoNombre: string;
+  tipo: string;
+  fecha: string;
+  lugar: string;
+  precio: number;
+}
+
 interface ReferidoData {
   nombre: string;
   fecha: string;
@@ -132,6 +144,7 @@ interface UserData {
   elegibleLeadership: boolean;
   elegibleFighter: boolean;
   referidos: ReferidoData[];
+  torneos: TorneoData[];
 }
 
 interface LoginResult {
@@ -262,6 +275,19 @@ function transformProfile(data: any): UserData {
           nombre: r.nombre_alumno || r.nombre || '',
           fecha: r.created_at || r.fecha || '',
           canjeado: !!r.canjeado,
+        }))
+      : [],
+    torneos: Array.isArray(data.torneos)
+      ? data.torneos.map((t: any) => ({
+          id: Number(t.id),
+          modalidad: t.modalidad ?? '',
+          estado: t.estado ?? 'seleccionado',
+          estadoPago: t.estado_pago ?? 'Pendiente',
+          torneoNombre: t.torneo_nombre ?? '',
+          tipo: t.tipo ?? 'regional',
+          fecha: t.fecha ?? '',
+          lugar: t.lugar ?? '',
+          precio: Number(t.precio) || 0,
         }))
       : [],
   };

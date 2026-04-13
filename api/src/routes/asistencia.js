@@ -3,6 +3,84 @@ const { query, queryOne } = require('../db');
 
 const router = Router();
 
+// ── Helper: detectar clase por edad ──
+function detectarClase(fechaNacimiento) {
+  if (!fechaNacimiento) return null;
+  const hoy = new Date();
+  const nacimiento = new Date(fechaNacimiento);
+  const edadMeses = Math.floor((hoy - nacimiento) / (1000 * 60 * 60 * 24 * 30.44));
+  const edadAnios = Math.floor(edadMeses / 12);
+
+  if (edadMeses >= 11 && edadMeses <= 26) return 'Súper Baby Wolf';
+  if (edadMeses >= 27 && edadMeses <= 48) return 'Baby Wolf';
+  if (edadMeses >= 49 && edadMeses <= 71) return 'Little Wolf';
+  if (edadAnios >= 6 && edadAnios <= 11) return 'Junior Wolf';
+  if (edadAnios >= 12 && edadAnios <= 17) return 'Adolescentes Wolf';
+  return 'Adolescentes Wolf'; // default for adults
+}
+
+// ── Helper: mapear categoria a nombre de clase ──
+const CATEGORIA_MAP = {
+  'baby wolf': 'Baby Wolf',
+  'baby': 'Baby Wolf',
+  'littel': 'Little Wolf',
+  'little': 'Little Wolf',
+  'little wolf': 'Little Wolf',
+  'juniors': 'Junior Wolf',
+  'junior': 'Junior Wolf',
+  'junior wolf': 'Junior Wolf',
+  'adolescentes': 'Adolescentes Wolf',
+  'adolescentes wolf': 'Adolescentes Wolf',
+  'súper baby wolf': 'Súper Baby Wolf',
+  'super baby wolf': 'Súper Baby Wolf',
+  'súper baby': 'Súper Baby Wolf',
+  'super baby': 'Súper Baby Wolf',
+};
+
+function mapearCategoria(categoria) {
+  if (!categoria) return null;
+  return CATEGORIA_MAP[categoria.toLowerCase().trim()] || null;
+}
+
+// ── Helper: detectar turno del alumno para QR diario ──
+async function detectarTurnoDiario(dniAlumno) {
+  // 1. Buscar turno desde inscripcion activa
+  const inscripcion = await queryOne(`
+    SELECT i.turno, i.programa
+    FROM inscripciones i
+    JOIN alumnos a ON a.id = i.alumno_id
+    WHERE a.dni_alumno = $1 AND i.estado = 'activa'
+    ORDER BY i.fecha_inicio DESC
+    LIMIT 1
+  `, [dniAlumno]);
+
+  if (inscripcion && inscripcion.turno) {
+    return inscripcion.turno;
+  }
+  if (inscripcion && inscripcion.programa) {
+    const mapped = mapearCategoria(inscripcion.programa);
+    if (mapped) return mapped;
+  }
+
+  // 2. Buscar por categoria del alumno
+  const alumno = await queryOne(`
+    SELECT categoria, fecha_nacimiento
+    FROM alumnos
+    WHERE dni_alumno = $1
+  `, [dniAlumno]);
+
+  if (alumno) {
+    const fromCategoria = mapearCategoria(alumno.categoria);
+    if (fromCategoria) return fromCategoria;
+
+    // 3. Inferir por edad
+    const fromEdad = detectarClase(alumno.fecha_nacimiento);
+    if (fromEdad) return fromEdad;
+  }
+
+  return 'General';
+}
+
 // POST /api/asistencia — Registrar asistencia via QR
 // Body: { dni_alumno, token_qr, turno }
 router.post('/', async (req, res) => {
@@ -13,7 +91,22 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, error: 'DNI y token QR son requeridos' });
     }
 
-    const turnoFinal = turno || detectarTurno();
+    // Verificar si es QR diario para auto-detectar turno
+    let turnoFinal = turno || detectarTurno();
+    let esDiario = false;
+
+    try {
+      const sesion = await queryOne(
+        'SELECT programa FROM qr_sesiones WHERE token = $1',
+        [token_qr]
+      );
+      if (sesion && sesion.programa === 'diario') {
+        esDiario = true;
+        turnoFinal = await detectarTurnoDiario(dni_alumno);
+      }
+    } catch (_err) {
+      // Si falla la consulta, continuar con turno normal
+    }
 
     const result = await queryOne(
       'SELECT registrar_asistencia($1, $2, $3) AS resultado',
@@ -23,6 +116,12 @@ router.post('/', async (req, res) => {
     const data = typeof result.resultado === 'string'
       ? JSON.parse(result.resultado)
       : result.resultado;
+
+    // Si es QR diario, agregar info de clase detectada
+    if (esDiario && data && (Array.isArray(data) ? data[0] : data)) {
+      const entry = Array.isArray(data) ? data[0] : data;
+      entry.clase_detectada = turnoFinal;
+    }
 
     res.json(data);
   } catch (err) {
