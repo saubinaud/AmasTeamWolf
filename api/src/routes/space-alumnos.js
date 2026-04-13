@@ -63,8 +63,8 @@ router.get('/', async (req, res) => {
       // Un solo param para nombres, otro para DNIs normalizados
       conditions.push(
         `(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} ` +
-        `OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx} ` +
-        `OR REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $${idx})`
+        `OR a.dni_alumno_norm ILIKE $${idx} ` +
+        `OR a.dni_apoderado_norm ILIKE $${idx})`
       );
       // Usar el término normalizado que funciona para nombres Y DNIs
       params.push(normalizedTerm);

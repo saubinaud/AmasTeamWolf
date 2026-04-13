@@ -72,8 +72,8 @@ router.get('/alumnos/buscar', async (req, res) => {
        FROM alumnos
        WHERE nombre_alumno ILIKE $1
           OR nombre_apoderado ILIKE $1
-          OR REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $2
-          OR REPLACE(REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $2
+          OR dni_alumno_norm ILIKE $2
+          OR dni_apoderado_norm ILIKE $2
        ORDER BY nombre_alumno ASC
        LIMIT 10`,
       [`%${searchTerm}%`, `%${String(searchTerm).replace(/[\s\-\.]/g, '')}%`]

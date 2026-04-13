@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
                  a.nombre_apoderado AS apoderado_nombre, i.programa
           FROM alumnos a
           LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-          WHERE REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') = $1
+          WHERE a.dni_alumno_norm = $1
           LIMIT 1
         `, [dniNorm]);
       } else {
@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
                  a.nombre_apoderado AS apoderado_nombre, i.programa
           FROM alumnos a
           LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-          WHERE REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') = $1
+          WHERE a.dni_apoderado_norm = $1
           LIMIT 1
         `, [dniNorm]);
       }
