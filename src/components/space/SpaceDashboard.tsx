@@ -52,9 +52,13 @@ function AnimatedNumber({ value }: { value: number }) {
 // Heatmap constants
 // ---------------------------------------------------------------------------
 
-const HEATMAP_CLASES_DISPLAY = ['Super Baby Wolf', 'Baby Wolf', 'Little Wolf', 'Junior Wolf', 'Adolescentes Wolf'];
-// Patterns to match turno field values — order matters (Super Baby before Baby)
-const HEATMAP_CLASES_PATTERNS = ['super baby', 'baby wolf', 'little', 'junior', 'adolescente'];
+const HEATMAP_CLASES_DISPLAY = ['Súper Baby Wolf', 'Baby Wolf', 'Little Wolf', 'Junior Wolf', 'Adolescentes Wolf'];
+// Patterns to match turno field — order matters (Súper before Baby), normalize tildes
+const HEATMAP_CLASES_PATTERNS = ['per baby', 'baby wolf', 'little', 'junior', 'adolescente'];
+// Also catch "Tarde"/"Mañana" (legacy QR registrations) — map to nearest class or ignore
+function normalizeClase(clase: string): string {
+  return clase.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
 const HEATMAP_DIAS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 // Map column index (0=Lun..5=Sab) to PostgreSQL DOW (1=Mon..6=Sat)
 const COL_TO_DOW = [1, 2, 3, 4, 5, 6];
@@ -177,7 +181,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
                     {COL_TO_DOW.map((dow, ci) => {
                       const pattern = HEATMAP_CLASES_PATTERNS[claseIdx];
                       const matches = heatmap.filter(
-                        (h) => h.dia_semana === dow && h.clase.toLowerCase().includes(pattern)
+                        (h) => h.dia_semana === dow && normalizeClase(h.clase).includes(pattern)
                       );
                       const count = matches.reduce((sum, m) => sum + m.total, 0);
                       return (
