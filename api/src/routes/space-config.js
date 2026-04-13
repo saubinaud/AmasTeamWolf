@@ -10,7 +10,7 @@ const router = Router();
 const PAGINAS_VALIDAS = [
   'dashboard', 'alumnos', 'inscripciones', 'inscribir', 'renovar',
   'graduaciones', 'asistencia', 'tomar-asistencia', 'asistencia-historica',
-  'leads', 'compras', 'profesores', 'clases-prueba', 'mensajes', 'config',
+  'leads', 'compras', 'profesores', 'asistencia-profesores', 'clases-prueba', 'mensajes', 'config',
 ];
 
 function normalizarPermisos(raw) {

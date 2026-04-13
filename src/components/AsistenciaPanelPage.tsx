@@ -512,7 +512,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const showBackBtn = vista === 'detalle' || vista === 'resumen' || vista === 'dashboard';
 
   return (
-    <div className={`${embedMode ? 'min-h-full' : 'h-dvh'} flex flex-col bg-zinc-950 ${embedMode ? 'rounded-2xl overflow-hidden -m-4 md:-m-5 lg:-m-6' : ''}`}>
+    <div className={`${embedMode ? 'min-h-[80dvh]' : 'h-dvh'} flex flex-col bg-zinc-950 ${embedMode ? 'rounded-2xl -m-4 md:-m-5 lg:-m-6' : ''}`}>
       {/* ── Header fijo ── */}
       <div className="shrink-0 bg-zinc-950 border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between max-w-lg mx-auto">

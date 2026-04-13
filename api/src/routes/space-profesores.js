@@ -225,6 +225,36 @@ router.get('/asistencia/resumen/:id', async (req, res) => {
   }
 });
 
+// GET /asistencia/detalle/:id — daily attendance for a date range (calendar view)
+router.get('/asistencia/detalle/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { desde, hasta } = req.query;
+    if (!desde || !hasta) {
+      return res.status(400).json({ success: false, error: 'Parámetros desde y hasta son requeridos' });
+    }
+    const rows = await query(`
+      SELECT d::date AS fecha,
+             CASE WHEN ap.id IS NOT NULL THEN true ELSE false END AS asistio
+      FROM generate_series($2::date, $3::date, '1 day') d
+      LEFT JOIN asistencias_profesores ap
+        ON ap.profesor_id = $1 AND ap.fecha = d::date
+      ORDER BY d
+    `, [id, desde, hasta]);
+    // Normalize fecha to YYYY-MM-DD string
+    const data = (rows || []).map((r) => ({
+      fecha: r.fecha instanceof Date
+        ? r.fecha.toISOString().slice(0, 10)
+        : String(r.fecha).slice(0, 10),
+      asistio: r.asistio,
+    }));
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error('GET /space/profesores/asistencia/detalle/:id error:', err);
+    res.status(500).json({ success: false, error: 'Error al obtener detalle de asistencia' });
+  }
+});
+
 // GET /asistencia/hoy — who attended today
 router.get('/asistencia/hoy', async (_req, res) => {
   try {
