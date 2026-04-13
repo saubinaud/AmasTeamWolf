@@ -1364,7 +1364,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                         <div className="flex rounded-lg overflow-hidden border border-zinc-700">
                           <button
                             onClick={async () => {
-                              if (c.entregado) return; // ya está pendiente → nada
+                              if (!c.entregado) return; // ya pendiente → nada
                               setEntregandoId(c.id);
                               try {
                                 const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
@@ -1388,19 +1388,18 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                           </button>
                           <button
                             onClick={async () => {
-                              if (!c.entregado) {
-                                setEntregandoId(c.id);
-                                try {
-                                  const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
-                                    method: 'PATCH',
-                                    headers: authHeaders(token),
-                                    body: JSON.stringify({ entregado: true }),
-                                  });
-                                  if (res.ok) { toast.success('Marcado como entregado'); fetchStats(); fetchCompras(); }
-                                  else toast.error('Error al cambiar estado');
-                                } catch { toast.error('Error de conexión'); }
-                                finally { setEntregandoId(null); }
-                              }
+                              if (c.entregado) return; // ya entregado → nada
+                              setEntregandoId(c.id);
+                              try {
+                                const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
+                                  method: 'PATCH',
+                                  headers: authHeaders(token),
+                                  body: JSON.stringify({ entregado: true }),
+                                });
+                                if (res.ok) { toast.success('Marcado como entregado'); fetchStats(); fetchCompras(); }
+                                else toast.error('Error al cambiar estado');
+                              } catch { toast.error('Error de conexión'); }
+                              finally { setEntregandoId(null); }
                             }}
                             disabled={entregandoId === c.id || c.entregado}
                             className={`flex-1 px-2.5 py-2 text-[11px] font-semibold transition-all ${
