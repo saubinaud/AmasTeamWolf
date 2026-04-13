@@ -105,6 +105,38 @@ router.post('/', async (req, res) => {
 
     await client.query('COMMIT');
 
+    // 4b. Referral bonus (after COMMIT, non-blocking)
+    if (d.codigoReferido && typeof d.codigoReferido === 'string' && d.codigoReferido.trim()) {
+      try {
+        const referidor = await pool.query(
+          'SELECT id FROM alumnos WHERE codigo_referido = $1',
+          [d.codigoReferido.trim().toUpperCase()]
+        ).then(r => r.rows[0]);
+
+        if (referidor && referidor.id !== alumno.id) {
+          // Only insert if this referido doesn't already have a record
+          const existing = await pool.query(
+            'SELECT id FROM referidos WHERE referido_id = $1',
+            [alumno.id]
+          ).then(r => r.rows[0]);
+
+          if (!existing) {
+            await pool.query(
+              'INSERT INTO referidos (referidor_id, referido_id, bono) VALUES ($1, $2, 60)',
+              [referidor.id, alumno.id]
+            );
+            await pool.query(
+              'UPDATE alumnos SET saldo_bonos = saldo_bonos + 60 WHERE id = $1',
+              [referidor.id]
+            );
+            console.log(`[REFERIDO] Bono S/60 acreditado a alumno_id=${referidor.id} por referir alumno_id=${alumno.id}`);
+          }
+        }
+      } catch (refErr) {
+        console.error('Error procesando referido (no bloquea inscripción):', refErr.message);
+      }
+    }
+
     // 5. Guardar contrato firmado (si viene y no se saltea)
     let contratoUrl = '';
     if (d.contratoFirmado && !skipContrato) {

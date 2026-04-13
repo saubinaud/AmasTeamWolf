@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { query, queryOne } = require('../db');
+const { query, queryOne, pool } = require('../db');
 
 const router = Router();
 
@@ -162,6 +162,57 @@ router.put('/:id', async (req, res) => {
   } catch (err) {
     console.error('Error actualizando inscripcion:', err);
     return res.status(500).json({ success: false, error: 'Error del servidor', code: 'INSC_UPDATE_ERROR' });
+  }
+});
+
+// POST /api/space/inscripciones/:id/pago — Register a manual payment
+router.post('/:id/pago', async (req, res) => {
+  try {
+    const { monto, metodo_pago, observaciones } = req.body;
+
+    if (!monto || isNaN(Number(monto)) || Number(monto) <= 0) {
+      return res.status(400).json({ success: false, error: 'Monto inválido', code: 'PAGO_INVALID_MONTO' });
+    }
+    if (!metodo_pago) {
+      return res.status(400).json({ success: false, error: 'Método de pago requerido', code: 'PAGO_NO_METODO' });
+    }
+
+    const inscripcion = await queryOne('SELECT * FROM inscripciones WHERE id = $1', [req.params.id]);
+    if (!inscripcion) {
+      return res.status(404).json({ success: false, error: 'Inscripción no encontrada', code: 'INSC_NOT_FOUND' });
+    }
+
+    const montoNum = Number(monto);
+
+    // Insert pago
+    const pago = await queryOne(
+      `INSERT INTO pagos (inscripcion_id, monto, fecha, tipo, metodo_pago, observaciones)
+       VALUES ($1, $2, NOW(), 'Pago manual', $3, $4)
+       RETURNING *`,
+      [req.params.id, montoNum, metodo_pago, observaciones || null]
+    );
+
+    // Update precio_pagado
+    const nuevoPagado = parseFloat(inscripcion.precio_pagado || 0) + montoNum;
+    const precioPrograma = parseFloat(inscripcion.precio_programa || 0);
+    const nuevoEstadoPago = nuevoPagado >= precioPrograma ? 'Pagado' : 'Parcial';
+
+    const updatedInscripcion = await queryOne(
+      `UPDATE inscripciones SET precio_pagado = $1, estado_pago = $2, updated_at = NOW()
+       WHERE id = $3 RETURNING *`,
+      [nuevoPagado, nuevoEstadoPago, req.params.id]
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        pago,
+        inscripcion: updatedInscripcion,
+      },
+    });
+  } catch (err) {
+    console.error('Error registrando pago:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'PAGO_CREATE_ERROR' });
   }
 });
 

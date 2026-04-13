@@ -3,7 +3,7 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon, History,
+  ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon, History, UserCheck,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser, SpaceTheme } from './SpaceApp';
 
@@ -73,6 +73,7 @@ const NAV: NavEntry[] = [
   },
   { page: 'leads', label: 'Leads', icon: UserPlus },
   { page: 'compras', label: 'Compras', icon: ShoppingBag },
+  { page: 'profesores', label: 'Profesores', icon: UserCheck },
   { page: 'mensajes', label: 'Mensajes', icon: MessageSquare },
   { page: 'config', label: 'Ajustes', icon: Settings },
 ];
@@ -84,7 +85,7 @@ const TITLES: Record<SpacePage, string> = {
   'tomar-asistencia': 'Asistencia — Tomar asistencia',
   'asistencia-historica': 'Asistencia — Registrar pasadas',
   leads: 'Leads',
-  compras: 'Compras', mensajes: 'Mensajes', config: 'Ajustes',
+  compras: 'Compras', profesores: 'Profesores', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme }: Props) {

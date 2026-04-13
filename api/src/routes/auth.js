@@ -41,6 +41,8 @@ async function cargarPerfil(alumnoId) {
       a.telefono AS apoderado_telefono,
       a.direccion,
       a.estado,
+      a.codigo_referido,
+      a.saldo_bonos,
       i.id AS inscripcion_id,
       i.programa,
       i.fecha_inscripcion,
@@ -62,6 +64,22 @@ async function cargarPerfil(alumnoId) {
   `, [alumnoId]);
 
   if (!perfil) return null;
+
+  // Auto-generate referral code if missing
+  if (!perfil.codigo_referido) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let code;
+    for (let attempts = 0; attempts < 5; attempts++) {
+      code = 'AMAS-' + Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+      try {
+        await pool.query('UPDATE alumnos SET codigo_referido = $1 WHERE id = $2', [code, alumnoId]);
+        perfil.codigo_referido = code;
+        break;
+      } catch (e) {
+        if (attempts === 4) console.error('Could not generate unique referral code:', e);
+      }
+    }
+  }
 
   // Tallas (última registrada)
   const talla = await queryOne(
@@ -129,6 +147,35 @@ async function cargarPerfil(alumnoId) {
     `, [alumnoId, perfil.programa || '']);
   } catch (_) { /* table may not exist yet */ }
 
+  // Referidos (students this user referred)
+  let referidos_lista = [];
+  try {
+    referidos_lista = await query(
+      `SELECT a.nombre_alumno, r.created_at, r.canjeado
+       FROM referidos r JOIN alumnos a ON a.id = r.referido_id
+       WHERE r.referidor_id = $1 ORDER BY r.created_at DESC`,
+      [alumnoId]
+    );
+  } catch (_) { /* table may not exist yet */ }
+
+  // Pagos de la inscripción activa (F4)
+  let pagos_historial = [];
+  let pagos_total = 0;
+  if (perfil.inscripcion_id) {
+    pagos_historial = await query(
+      `SELECT p.id, p.monto, p.fecha, p.tipo, p.metodo_pago, p.observaciones, p.created_at
+       FROM pagos p
+       WHERE p.inscripcion_id = $1
+       ORDER BY p.fecha DESC, p.created_at DESC`,
+      [perfil.inscripcion_id]
+    );
+    const sumaResult = await queryOne(
+      'SELECT COALESCE(SUM(monto), 0) AS total FROM pagos WHERE inscripcion_id = $1',
+      [perfil.inscripcion_id]
+    );
+    pagos_total = parseFloat(sumaResult?.total || '0');
+  }
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -146,6 +193,11 @@ async function cargarPerfil(alumnoId) {
     asistencias,
     congelaciones,
     mensajes,
+    codigo_referido: perfil.codigo_referido || null,
+    saldo_bonos: Number(perfil.saldo_bonos) || 0,
+    referidos: referidos_lista,
+    pagos_historial,
+    pagos_total,
   };
 }
 

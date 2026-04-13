@@ -35,6 +35,16 @@ interface PagoData {
   estado: string;
 }
 
+interface PagoHistorial {
+  id: number;
+  monto: number;
+  fecha: string;
+  tipo: string;
+  metodo_pago: string;
+  observaciones: string | null;
+  created_at: string;
+}
+
 interface Pagos {
   proximoPago: PagoData;
   ultimoPago?: PagoData;
@@ -42,6 +52,8 @@ interface Pagos {
   precioAPagar: number;
   descuento: number;
   estadoPago: string;
+  historial: PagoHistorial[];
+  totalPagado: number;
 }
 
 interface Notificacion {
@@ -97,6 +109,12 @@ interface Congelacion {
   dias: number;
 }
 
+interface ReferidoData {
+  nombre: string;
+  fecha: string;
+  canjeado: boolean;
+}
+
 interface UserData {
   familia: FamiliaData;
   historialCinturones: CinturonHistorial[];
@@ -109,6 +127,9 @@ interface UserData {
   mensajes: MensajeData[];
   asistencias: Asistencia[];
   congelaciones: Congelacion[];
+  codigoReferido: string | null;
+  saldoBonos: number;
+  referidos: ReferidoData[];
 }
 
 interface LoginResult {
@@ -170,6 +191,18 @@ function transformProfile(data: any): UserData {
       precioAPagar: Number(data.precio_pagado) || 0,
       descuento: Number(data.descuento) || 0,
       estadoPago: data.estado_pago || 'Pendiente',
+      historial: Array.isArray(data.pagos_historial)
+        ? data.pagos_historial.map((p: Record<string, unknown>) => ({
+            id: Number(p.id),
+            monto: Number(p.monto) || 0,
+            fecha: String(p.fecha || ''),
+            tipo: String(p.tipo || ''),
+            metodo_pago: String(p.metodo_pago || ''),
+            observaciones: (p.observaciones as string | null) ?? null,
+            created_at: String(p.created_at || ''),
+          }))
+        : [],
+      totalPagado: Number(data.pagos_total) || Number(data.precio_pagado) || 0,
     },
     notificaciones: [],
     estudiante: {
@@ -216,6 +249,15 @@ function transformProfile(data: any): UserData {
           fechaFin: c.fecha_fin || '',
           estado: c.estado || 'activo',
           dias: Number(c.dias) || 0,
+        }))
+      : [],
+    codigoReferido: data.codigo_referido || null,
+    saldoBonos: Number(data.saldo_bonos) || 0,
+    referidos: Array.isArray(data.referidos)
+      ? data.referidos.map((r: any) => ({
+          nombre: r.nombre_alumno || r.nombre || '',
+          fecha: r.created_at || r.fecha || '',
+          canjeado: !!r.canjeado,
         }))
       : [],
   };

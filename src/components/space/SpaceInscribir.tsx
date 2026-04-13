@@ -152,6 +152,9 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
   const [codigoInput, setCodigoInput] = useState('');
   const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
 
+  // Referido
+  const [codigoReferido, setCodigoReferido] = useState('');
+
   // Admin overrides
   const [admin, setAdmin] = useState<AdminOverrides>(initialAdmin());
   const [adminOpen, setAdminOpen] = useState(false);
@@ -179,6 +182,7 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
     setDetallesFechaFin(null);
     setCodigoInput('');
     setCodigoAplicado(null);
+    setCodigoReferido('');
     setAdmin(initialAdmin());
   }, []);
 
@@ -467,6 +471,9 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
         fechaRegistro: new Date().toISOString(),
         origen: 'space',
         frecuenciaSemanal,
+
+        // ── Referido ──
+        codigoReferido: codigoReferido.trim().toUpperCase() || null,
 
         // ── Admin overrides ──
         estadoPago: admin.estadoPago,
@@ -1028,6 +1035,20 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
             <span className="text-[#FCA929] text-2xl font-bold">S/ {total}</span>
           </div>
         </div>
+      </section>
+
+      {/* Codigo de referido */}
+      <section className={cx.card + ' p-5'}>
+        <label className={cx.label}>Codigo de referido (opcional)</label>
+        <input
+          type="text"
+          value={codigoReferido}
+          onChange={(e) => setCodigoReferido(e.target.value.toUpperCase())}
+          placeholder="Ej: AMAS-KXVF"
+          maxLength={9}
+          className={cx.input + ' uppercase tracking-wider'}
+        />
+        <p className="text-zinc-500 text-xs mt-1.5">Si el padre trae un codigo de referido, el referidor recibira un bono de S/60</p>
       </section>
 
       {/* Ajustes admin (colapsable) */}
