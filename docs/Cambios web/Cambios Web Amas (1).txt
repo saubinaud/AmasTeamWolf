@@ -1,0 +1,19 @@
+(Transcrito por TurboScribe. Actualizar a Ilimitado para eliminar este mensaje.)
+
+¿Cómo imaginamos el módulo de registro de clases de pruebas? ¿Qué quieres que haga? ¿Cómo sería? Bueno, que esté registrado diariamente, por día, la hora, y que también haya un resumen por día cuántas clases se tuvo en ese mismo día. Y de ser posible también que haya una automatización que diga cuántas clases hay por semana, o por mes, o por el momento, a la fecha digamos. ¿Y cuáles se inscriben? Y si puede haber también de la totalidad, cuántos se han inscrito, cuántos quedan pendientes, y cuántos han dicho que no.
+
+Ok, entonces tú vas a entrar a la plataforma, vas a darle al más, añadir una nueva clase de prueba, vas a anotar los datos del cliente, vas a anotar la fecha de la clase de prueba, la hora, y la profesora que va a dar la clase de prueba. Ok, y después de eso vamos a poner la forma de que aparezca pendiente, ¿no? Como que, por asistir. Una vez que asistió, o sea, pasó la hora dice, tú marcas si asistió o no, y también marcas si se inscribió o no se inscribió.
+
+Sí, si dejó en confirmación, o si dijo que no. Ok. ¿O separación? O si es que dejó una separación, ya bueno, separación se considera como inscripción.
+
+Perfecto. Entonces, además tenemos que hacer un módulo donde tengamos, por ejemplo, así como tenemos en ajustes, un módulo que sea profesores. Así que tengamos los datos de los profesores.
+
+Para sus asistencias. Exacto, y además vamos a añadir un módulo de asistencias para profesores, un módulo de asistencias para profesores, donde ellos van a tener que insertar su DNI y automáticamente nosotros en el módulo de profesores ver cuándo asisten para tener su registro, si han asistido al día que les toca, al horario que les toca acordado, y tener datos de los profesores, contacto de emergencia, determinadas cosas. Si se puede, no sé de qué tanto se pueda, no sé, es muy complicado, tener un resumen mensual de cuántas clases asistió este profesor.
+
+Ok, ¿a clases cómo lo referimos? A horario. No, no, cuántas asistencias por día. O sea, cuántos días asistió.
+
+Ah, claro. Ah, ok, pero en días, en total. Sí, en total.
+
+Ok, total de días. O sea, de 30 en 30, ¿cuántos días asistió? 26, 15. 15 días, o sea, va variando, ¿no? Ok, perfecto.
+
+(Transcrito por TurboScribe. Actualizar a Ilimitado para eliminar este mensaje.)
