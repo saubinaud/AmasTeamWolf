@@ -1236,13 +1236,22 @@ function HorarioFormFields({
         </div>
       </div>
       <div>
-        <label className={cx.label}>Nombre de la clase</label>
-        <input
-          className={cx.input}
+        <label className={cx.label}>Programa / Clase</label>
+        <select
+          className={cx.select}
           value={form.nombre_clase}
           onChange={e => setForm(f => ({ ...f, nombre_clase: e.target.value }))}
-          placeholder="Ej: Taekwondo Infantil"
-        />
+        >
+          <option value="">Seleccionar programa</option>
+          <option value="Mega Súper Baby Wolf">Mega Súper Baby Wolf</option>
+          <option value="Súper Baby Wolf">Súper Baby Wolf</option>
+          <option value="Baby Wolf">Baby Wolf</option>
+          <option value="Little Wolf">Little Wolf</option>
+          <option value="Junior Wolf">Junior Wolf</option>
+          <option value="Adolescentes Wolf">Adolescentes Wolf</option>
+          <option value="Leadership Wolf">Leadership Wolf</option>
+          <option value="Fighter Wolf">Fighter Wolf</option>
+        </select>
       </div>
       <div>
         <label className={cx.label}>Capacidad</label>
