@@ -121,6 +121,16 @@ interface TorneoData {
   precio: number;
 }
 
+interface ImplementoData {
+  id: number;
+  categoria: string;
+  tipo: string;
+  talla: string;
+  precio: number;
+  fechaAdquisicion: string;
+  observaciones: string | null;
+}
+
 interface ReferidoData {
   nombre: string;
   fecha: string;
@@ -145,6 +155,7 @@ interface UserData {
   elegibleFighter: boolean;
   referidos: ReferidoData[];
   torneos: TorneoData[];
+  implementos: ImplementoData[];
 }
 
 interface LoginResult {
@@ -288,6 +299,17 @@ function transformProfile(data: any): UserData {
           fecha: t.fecha ?? '',
           lugar: t.lugar ?? '',
           precio: Number(t.precio) || 0,
+        }))
+      : [],
+    implementos: Array.isArray(data.implementos)
+      ? data.implementos.map((imp: any) => ({
+          id: Number(imp.id),
+          categoria: imp.categoria ?? '',
+          tipo: imp.tipo ?? '',
+          talla: imp.talla ?? '',
+          precio: Number(imp.precio) || 0,
+          fechaAdquisicion: imp.fecha_adquisicion ?? '',
+          observaciones: (imp.observaciones as string | null) ?? null,
         }))
       : [],
   };

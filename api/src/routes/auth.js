@@ -215,6 +215,17 @@ async function cargarPerfil(alumnoId) {
     `, [alumnoId]);
   } catch (_) { /* table may not exist yet */ }
 
+  // Implementos del alumno
+  let implementos_list = [];
+  try {
+    implementos_list = await query(
+      `SELECT id, categoria, tipo, talla, precio, fecha_adquisicion, observaciones
+       FROM implementos WHERE alumno_id = $1
+       ORDER BY created_at DESC`,
+      [alumnoId]
+    );
+  } catch (_) { /* table may not exist yet */ }
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -240,6 +251,7 @@ async function cargarPerfil(alumnoId) {
     elegible_leadership,
     elegible_fighter,
     torneos: torneos_list,
+    implementos: implementos_list,
   };
 }
 
