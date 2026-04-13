@@ -36,7 +36,7 @@ router.post('/', async (req, res) => {
     // 1. Buscar o crear alumno (normalizar DNI para mejor match)
     const dniNorm = String(d.dniAlumno || '').replace(/[\s\-\.]/g, '').trim();
     let alumno = await client.query(
-      `SELECT id FROM alumnos WHERE REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') = $1`,
+      `SELECT id FROM alumnos WHERE dni_alumno_norm = $1`,
       [dniNorm]
     ).then(r => r.rows[0]);
 
