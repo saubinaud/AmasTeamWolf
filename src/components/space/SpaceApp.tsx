@@ -17,6 +17,7 @@ import { SpaceCompras } from './SpaceCompras';
 import { AsistenciaPanelPage } from '../AsistenciaPanelPage';
 import { SpaceProfesores } from './SpaceProfesores';
 import { SpaceClasesPrueba } from './SpaceClasesPrueba';
+import { SpaceAsistenciaProfesores } from './SpaceAsistenciaProfesores';
 
 export type SpacePage =
   | 'dashboard'
@@ -32,6 +33,7 @@ export type SpacePage =
   | 'mensajes'
   | 'compras'
   | 'profesores'
+  | 'asistencia-profesores'
   | 'clases-prueba'
   | 'config';
 
@@ -152,6 +154,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'mensajes' && <SpaceMensajes token={token} />}
       {currentPage === 'compras' && <SpaceCompras token={token} />}
       {currentPage === 'profesores' && <SpaceProfesores token={token} />}
+      {currentPage === 'asistencia-profesores' && <SpaceAsistenciaProfesores token={token} />}
       {currentPage === 'clases-prueba' && <SpaceClasesPrueba token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>

@@ -98,9 +98,11 @@ interface InscripcionActiva {
 interface FormState {
   alumno_id: number | null;
   nombreAlumno: string;
+  tipoDocumento: string;
   dniAlumno: string;
   fechaNacimiento: string;
   nombrePadre: string;
+  tipoDocumentoPadre: string;
   dniPadre: string;
   telefono: string;
   direccion: string;
@@ -111,9 +113,11 @@ interface FormState {
 const INITIAL_FORM: FormState = {
   alumno_id: null,
   nombreAlumno: '',
+  tipoDocumento: 'DNI',
   dniAlumno: '',
   fechaNacimiento: '',
   nombrePadre: '',
+  tipoDocumentoPadre: 'DNI',
   dniPadre: '',
   telefono: '',
   direccion: '',
@@ -513,6 +517,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
         clasesTotales: clasesTotalesFinal,
 
         nombreAlumno: form.nombreAlumno,
+        tipoDocumento: form.tipoDocumento,
         dniAlumno: form.dniAlumno,
         fechaNacimiento: form.fechaNacimiento,
         categoriaAlumno: categoriaAlumno || 'No especificada',
@@ -531,6 +536,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
         tallasPolos: needsPoloSize ? tallasPolos : [],
 
         nombrePadre: form.nombrePadre,
+        tipoDocumentoPadre: form.tipoDocumentoPadre,
         dniPadre: form.dniPadre,
         telefono: form.telefono,
         direccion: form.direccion,
@@ -716,14 +722,33 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
       <section className={cx.card + ' p-5'}>
         <h3 className="text-white text-sm font-semibold mb-4">3. Datos del alumno</h3>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className={cx.label}>Nombre completo *</label>
               <input type="text" value={form.nombreAlumno} onChange={(e) => handleInputChange('nombreAlumno', e.target.value)} className={cx.input} />
             </div>
             <div>
-              <label className={cx.label}>DNI *</label>
-              <input type="text" inputMode="numeric" maxLength={8} value={form.dniAlumno} onChange={(e) => handleInputChange('dniAlumno', e.target.value)} className={cx.input} />
+              <label className={cx.label}>Tipo documento</label>
+              <select
+                value={form.tipoDocumento}
+                onChange={(e) => handleInputChange('tipoDocumento', e.target.value)}
+                className={cx.select}
+              >
+                <option value="DNI">DNI</option>
+                <option value="CE">CE (Carné Extranjería)</option>
+                <option value="Pasaporte">Pasaporte</option>
+              </select>
+            </div>
+            <div>
+              <label className={cx.label}>N° documento alumno *</label>
+              <input
+                type="text"
+                inputMode={form.tipoDocumento === 'DNI' ? 'numeric' : 'text'}
+                value={form.dniAlumno}
+                onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
+                placeholder={form.tipoDocumento === 'DNI' ? '12345678' : 'Número de documento'}
+                className={cx.input}
+              />
             </div>
           </div>
           <div>
@@ -777,8 +802,27 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
               <input type="text" value={form.nombrePadre} onChange={(e) => handleInputChange('nombrePadre', e.target.value)} className={cx.input} />
             </div>
             <div>
-              <label className={cx.label}>DNI *</label>
-              <input type="text" inputMode="numeric" maxLength={8} value={form.dniPadre} onChange={(e) => handleInputChange('dniPadre', e.target.value)} className={cx.input} />
+              <label className={cx.label}>Tipo documento</label>
+              <select
+                value={form.tipoDocumentoPadre}
+                onChange={(e) => handleInputChange('tipoDocumentoPadre', e.target.value)}
+                className={cx.select}
+              >
+                <option value="DNI">DNI</option>
+                <option value="CE">CE (Carné Extranjería)</option>
+                <option value="Pasaporte">Pasaporte</option>
+              </select>
+            </div>
+            <div>
+              <label className={cx.label}>N° documento apoderado *</label>
+              <input
+                type="text"
+                inputMode={form.tipoDocumentoPadre === 'DNI' ? 'numeric' : 'text'}
+                value={form.dniPadre}
+                onChange={(e) => handleInputChange('dniPadre', e.target.value)}
+                placeholder={form.tipoDocumentoPadre === 'DNI' ? '12345678' : 'Número de documento'}
+                className={cx.input}
+              />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

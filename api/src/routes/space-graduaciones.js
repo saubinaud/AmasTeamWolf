@@ -71,6 +71,7 @@ router.get('/alumnos/buscar', async (req, res) => {
               dni_alumno AS dni
        FROM alumnos
        WHERE nombre_alumno ILIKE $1
+          OR nombre_apoderado ILIKE $1
           OR REPLACE(REPLACE(REPLACE(dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $2
           OR REPLACE(REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $2
        ORDER BY nombre_alumno ASC
@@ -110,8 +111,9 @@ router.get('/', async (req, res) => {
       params.push(estado);
     }
     if (search) {
+      const normalizedSearch = `%${String(search).replace(/[\s\-\.]/g, '')}%`;
       conditions.push(`(g.nombre_alumno ILIKE $${paramIndex} OR g.apellido_alumno ILIKE $${paramIndex})`);
-      params.push(`%${search}%`);
+      params.push(normalizedSearch);
       paramIndex++;
     }
 

@@ -17,6 +17,12 @@ interface Stats {
   ultimasAsistencias?: Array<{ nombre_alumno: string; hora: string; turno: string }>;
 }
 
+interface HeatmapEntry {
+  dia_semana: number; // 0=Sun, 1=Mon, ..., 6=Sat
+  clase: string;
+  total: number;
+}
+
 interface Props {
   token: string;
   userName?: string;
@@ -42,19 +48,41 @@ function AnimatedNumber({ value }: { value: number }) {
   return <>{display}</>;
 }
 
+// ---------------------------------------------------------------------------
+// Heatmap constants
+// ---------------------------------------------------------------------------
+
+const HEATMAP_CLASES_DISPLAY = ['Super Baby Wolf', 'Baby Wolf', 'Little Wolf', 'Junior Wolf', 'Adolescentes Wolf'];
+// Patterns to match turno field values — order matters (Super Baby before Baby)
+const HEATMAP_CLASES_PATTERNS = ['super baby', 'baby wolf', 'little', 'junior', 'adolescente'];
+const HEATMAP_DIAS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+// Map column index (0=Lun..5=Sab) to PostgreSQL DOW (1=Mon..6=Sat)
+const COL_TO_DOW = [1, 2, 3, 4, 5, 6];
+
+function heatColor(count: number): string {
+  if (count === 0) return 'bg-zinc-800 text-zinc-600';
+  if (count <= 5) return 'bg-emerald-900 text-emerald-300';
+  if (count <= 15) return 'bg-emerald-700 text-emerald-100';
+  if (count <= 30) return 'bg-emerald-500 text-white';
+  return 'bg-emerald-400 text-white';
+}
+
 export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [heatmap, setHeatmap] = useState<HeatmapEntry[]>([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/space/dashboard/stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(r => r.json())
-      .then(d => {
-        if (d.success && d.stats) setStats(d.stats);
+    const headers = { Authorization: `Bearer ${token}` };
+    Promise.all([
+      fetch(`${API_BASE}/space/dashboard/stats`, { headers }).then(r => r.json()),
+      fetch(`${API_BASE}/space/dashboard/heatmap`, { headers }).then(r => r.json()).catch(() => ({ success: false })),
+    ])
+      .then(([statsData, heatmapData]) => {
+        if (statsData.success && statsData.stats) setStats(statsData.stats);
         else setError('No se pudieron cargar las estadisticas');
+        if (heatmapData.success) setHeatmap(heatmapData.heatmap || []);
       })
       .catch(() => setError('Error de conexion'))
       .finally(() => setLoading(false));
@@ -127,6 +155,62 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Heatmap de asistencias */}
+      {heatmap.length > 0 && (
+        <div>
+          <h3 className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium mb-3">Asistencias ultimos 30 dias</h3>
+          <div className={`${cx.card} p-4 sm:p-5 overflow-x-auto`}>
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr>
+                  <th className="py-2 pr-3 text-zinc-500 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap">Clase</th>
+                  {HEATMAP_DIAS.map((d) => (
+                    <th key={d} className="py-2 px-1 text-center text-zinc-500 text-[10px] font-semibold uppercase tracking-wider">{d}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {HEATMAP_CLASES_DISPLAY.map((clase, claseIdx) => (
+                  <tr key={clase}>
+                    <td className="py-1.5 pr-3 text-zinc-400 text-xs whitespace-nowrap">{clase}</td>
+                    {COL_TO_DOW.map((dow, ci) => {
+                      const pattern = HEATMAP_CLASES_PATTERNS[claseIdx];
+                      const matches = heatmap.filter(
+                        (h) => h.dia_semana === dow && h.clase.toLowerCase().includes(pattern)
+                      );
+                      const count = matches.reduce((sum, m) => sum + m.total, 0);
+                      return (
+                        <td key={ci} className="py-1.5 px-1">
+                          <div className={`w-full min-w-[36px] h-9 flex items-center justify-center rounded-lg text-xs font-medium ${heatColor(count)}`}>
+                            {count}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {/* Legend */}
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-zinc-800">
+              <span className="text-zinc-600 text-[10px]">Intensidad:</span>
+              {[
+                { label: '0', cls: 'bg-zinc-800' },
+                { label: '1-5', cls: 'bg-emerald-900' },
+                { label: '6-15', cls: 'bg-emerald-700' },
+                { label: '16-30', cls: 'bg-emerald-500' },
+                { label: '30+', cls: 'bg-emerald-400' },
+              ].map((l) => (
+                <div key={l.label} className="flex items-center gap-1">
+                  <div className={`w-3 h-3 rounded ${l.cls}`} />
+                  <span className="text-zinc-500 text-[10px]">{l.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Alert: inscripciones por vencer */}
       {stats?.inscripcionesPorVencer != null && stats.inscripcionesPorVencer > 0 && (

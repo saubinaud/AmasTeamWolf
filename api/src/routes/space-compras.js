@@ -175,7 +175,7 @@ router.get('/', async (req, res) => {
       conditions.push(`i.entregado = FALSE`);
     }
     if (search) {
-      conditions.push(`(a.nombre_alumno ILIKE $${idx} OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx})`);
+      conditions.push(`(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx} OR REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $${idx})`);
       params.push(`%${String(search).replace(/[\s\-\.]/g, '')}%`);
       idx++;
     }
@@ -246,7 +246,7 @@ router.get('/pendientes-entrega', async (req, res) => {
       params.push(categoria);
     }
     if (search) {
-      conditions.push(`(a.nombre_alumno ILIKE $${idx} OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx})`);
+      conditions.push(`(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} OR REPLACE(REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', ''), '.', '') ILIKE $${idx} OR REPLACE(REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', ''), '.', '') ILIKE $${idx})`);
       params.push(`%${String(search).replace(/[\s\-\.]/g, '')}%`);
       idx++;
     }
