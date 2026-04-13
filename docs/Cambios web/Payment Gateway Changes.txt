@@ -1,0 +1,5 @@
+(Transcrito por TurboScribe. Actualizar a Ilimitado para eliminar este mensaje.)
+
+Vamos a añadir el tema de poder pagar con tarjeta dentro de la web con la pasarela de pago de Kulki pero vamos a poner el precio actualizado ya incluyendo el precio de tarjeta y si quieren pagar con yap de transferencia poner un precio menor. A este precio menor vamos a estar solo al retirarle el adicional del 3% que cobra Kulki por usar su pasarela de pago.
+
+(Transcrito por TurboScribe. Actualizar a Ilimitado para eliminar este mensaje.)
