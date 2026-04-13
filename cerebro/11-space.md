@@ -1,111 +1,75 @@
 # 11 — SPACE (Portal Administrativo)
 
-## Qué es
-Portal web protegido en `/space` para gestionar la academia sin depender de Sheets o acceso directo a BD. Panel completo con 9 módulos.
+## Estado: Operativo (2026-04-13)
 
-## Estado: Operativo (2026-04-07)
-
-## Fases
-
-| Fase | Nombre | Estado |
-|------|--------|--------|
-| S1 | Auth + Layout + Dashboard | ✅ Completa |
-| S2 | Graduaciones CRUD + Historial | ✅ Completa |
-| S3 | Alumnos + Inscripciones | ✅ Completa |
-| S4 | Asistencia reportes + Leads | ✅ Completa |
-| S5 | Configuración (usuarios, sedes, horarios) | ✅ Completa |
-| S6 | Mensajes (Space ↔ Perfil) | ✅ Completa |
-| S7 | Compras (registro implementos) | ✅ Completa |
-
-## Arquitectura
-
-**Auth:**
-- Tabla `space_usuarios` (bcrypt + JWT)
-- Middleware `spaceAuth` en `/api/space/*` (excepto `/auth`)
-- Middleware `requireAdmin` en `/api/space/config/*`
-- `spaceRequestLogger` loggea todas las requests
-
-**Frontend:**
-- `src/components/space/SpaceApp.tsx` — router con `currentPage` state
-- `src/components/space/SpaceLayout.tsx` — sidebar 9 ítems
-- `src/components/space/tokens.ts` — **SÓLIDOS** (`bg-zinc-900 border border-zinc-800`), SIN transparencia
-- `src/components/space/Modal.tsx` — React `createPortal` a `document.body`, z-index 99999
-
-**Backend:**
-- 10 archivos `api/src/routes/space-*.js`
-- Todos usan `queryOne`/`query` de `db.js`
+Panel web completo en `/space` con 17+ módulos organizados en sidebar con grupos desplegables.
 
 ## Módulos
 
-### Dashboard (`/space/dashboard`)
-Stats: alumnos activos, inscripciones activas, asistencias hoy, leads nuevos, inscripciones por vencer, últimas asistencias, último login Space.
+### Dashboard
+Stats: alumnos activos, inscripciones activas, asistencias hoy, leads nuevos, inscripciones por vencer.
+**Heatmap** de asistencias últimos 30 días (clases × días de semana).
+Acciones rápidas.
 
-### Alumnos (`/space/alumnos`)
-- Lista paginada con LATERAL JOIN (muestra programa, clases, cinturón actual)
-- Filtros: búsqueda, programa, estado
-- Detalle: datos alumno + inscripciones + asistencias + **implementos comprados**
-- Modal edición completo
+### Alumnos
+Lista paginada con LATERAL JOIN (programa, clases, cinturón). Filtros: búsqueda unificada (nombre alumno/apoderado + DNI normalizado), estado. Detalle con inscripciones + asistencias + implementos + referidos.
 
-### Inscripciones (`/space/inscripciones`)
-- Lista con filtros (programa, estado, estado_pago)
-- Vista vencimientos (próximos 7 días)
-- Detalle: alumno + pagos + contratos
-- Edición con allowedFields limitados (no campos fantasma)
+### Inscripciones (grupo desplegable)
+- **Inscritos**: lista + edición + filtros (programa, estado_pago, activa, **por vencer** con selector 5/7/15/30 días). Badge frecuencia solo si ≠ default. Pagos: registrar pago manual + timeline.
+- **Inscribir**: formulario completo (horarios por edad, fechas inteligentes con feriados Perú, promo codes 30+, tallas, ContratoFirma, **admin overrides** precio/estado_pago/skip firma). Tipo documento alumno Y apoderado (DNI/CE/Pasaporte).
+- **Renovar**: mismo pero con búsqueda de alumno + pre-fill + inscripción activa como referencia.
 
-### Graduaciones (`/space/graduaciones`)
-- CRUD graduaciones
-- Aprobar → actualiza `cinturon_actual` + inserta `historial_cinturones`
-- Modal creación muestra armas del alumno (integración con compras)
-- Tabla `graduacion_correcciones` para ajustes
+### Graduaciones
+CRUD + aprobar (actualiza cinturón + historial). **Carga masiva**: table-builder con autocomplete alumno + select cinturón + fecha (hasta 100 por lote).
 
-### Asistencia (`/space/asistencia`)
-- Stats: hoy, semana, mes
-- Vista hoy con paginación + date range
-- Por fecha específica
-- Historial por alumno
-- Exportar CSV
-- Resumen semanal
-- **Botón "Tomar asistencia"** → redirige a panel profesora
-- Usa `asistio = 'Sí'` (VARCHAR)
+### Asistencia (grupo desplegable)
+- **Reportes**: stats + lista + exportar CSV + resumen semanal
+- **Tomar asistencia**: QR panel embebido (sin PIN, sin logout)
+- **Registrar pasadas**: 3 modos (individual, lote texto, por rango + días semana)
+- **Asistencia profesores**: registro por DNI + badges hoy + calendario mensual
 
-### Leads (`/space/leads`)
-- Stats (nuevos, contactados, convertidos, descartados)
-- Lista con filtros
-- Embudo de conversión
-- Exportar CSV
-- Campo `observaciones` editable
+### Leads
+Stats + lista + embudo conversión + exportar CSV.
 
-### Compras (`/space/compras`)
-- Registro de implementos por alumno
-- Categorías: arma, uniforme, protector, polo
-- Stats + filtros
-- Endpoint `armas-alumno/:id` para modal graduación
+### Compras
+CRUD implementos + **catálogo con precios automáticos** (select dropdown auto-llena precio) + gestión catálogo (admin). Estado entrega: **select dropdown profesional** (Pendiente/Entregado) con **fecha editable**. Pendientes de entrega filtrable.
 
-### Mensajes (`/space/mensajes`)
-- Enviar: difusión / por programa / individual
-- Tracking: quién leyó cada mensaje
-- Tabla `mensajes` + `mensajes_leidos`
-- **Integración bidireccional**: perfil apoderado ve los mensajes y marca como leídos
+### Profesores
+CRUD profesores (nombre, DNI, teléfono, email, contacto emergencia). Columna `space_usuario_id` para vincular con cuenta Space.
 
-### Configuración (`/space/config`) — solo admin
-- Tab Usuarios: CRUD `space_usuarios` + cambiar password
-- Tab Sedes: CRUD `sedes`
-- Tab Horarios: CRUD `horarios` (antes hardcodeados en frontend)
+### Clases de prueba
+Registro de clases de prueba (prospectos). Estados: por_asistir → asistió/no_asistió. Resultado: inscrito/en_confirmación/separación/no_interesado. Embudo visual + resumen diario + stats mes.
 
-## Tablas nuevas creadas para Space
+### Mensajes
+Enviar: difusión / por programa / individual. Tracking: quién leyó. Integración bidireccional con perfil apoderado.
 
-| Tabla | Uso |
-|-------|-----|
-| `space_usuarios` | Login Space |
-| `graduacion_correcciones` | Reemplaza hack de leads |
-| `historial_cinturones` | Registro inmutable de avances |
-| `implementos` (schema nuevo) | Compras por alumno |
-| `mensajes` | Mensajes Space → padres |
-| `mensajes_leidos` | Tracking lectura |
+### Ajustes (solo admin)
+- Usuarios: CRUD space_usuarios + cambiar password + **permisos por módulo** (checkboxes de 15+ páginas). Admin = acceso total, profesor = limitado.
+- Sedes: CRUD
+- Horarios: CRUD
 
-## Convenciones críticas Space
-1. **No transparencia en modals** — tokens sólidos, React Portal
-2. **`asistio = 'Sí'`** — VARCHAR, no boolean
-3. **`LOWER(estado) = 'activo'`** en alumnos
-4. **`nombre_alumno`/`dni_alumno`** — no `nombre`/`dni`
-5. **Response shape backend**: `{success: true, data: [...]}` o `{success: true, stats: {...}}` — revisar cada ruta antes de consumir en frontend
+### Modo claro/oscuro
+Toggle sol/luna en header + sidebar footer. CSS overrides via clase `.space-light` en `document.body`.
+
+## Sidebar
+
+```
+Dashboard
+Alumnos
+Inscripciones ▸
+  ├─ Inscritos
+  ├─ Inscribir
+  └─ Renovar
+Graduaciones
+Asistencia ▸
+  ├─ Reportes
+  ├─ Tomar asistencia (QR)
+  ├─ Registrar pasadas
+  └─ Asistencia profesores
+Leads
+Compras
+Profesores
+Clases prueba
+Mensajes
+Ajustes
+```
