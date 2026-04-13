@@ -1359,23 +1359,60 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                       {formatFecha(c.fecha_adquisicion)}
                     </td>
                     <td className={cx.td}>
-                      <div className="space-y-1.5">
-                        <select
-                          value={c.entregado ? 'entregado' : 'pendiente'}
-                          onChange={(e) => {
-                            const nuevoEstado = e.target.value === 'entregado';
-                            handleToggleEntrega({ ...c, entregado: !nuevoEstado } as Compra);
-                          }}
-                          disabled={entregandoId === c.id}
-                          className={`w-full px-2.5 py-2 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                            c.entregado
-                              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                              : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                          } disabled:opacity-50`}
-                        >
-                          <option value="pendiente">Pendiente</option>
-                          <option value="entregado">Entregado</option>
-                        </select>
+                      <div className="space-y-2">
+                        {/* Toggle buttons */}
+                        <div className="flex rounded-lg overflow-hidden border border-zinc-700">
+                          <button
+                            onClick={async () => {
+                              if (c.entregado) return; // ya está pendiente → nada
+                              setEntregandoId(c.id);
+                              try {
+                                const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
+                                  method: 'PATCH',
+                                  headers: authHeaders(token),
+                                  body: JSON.stringify({ entregado: false }),
+                                });
+                                if (res.ok) { toast.success('Marcado como pendiente'); fetchStats(); fetchCompras(); }
+                                else toast.error('Error al cambiar estado');
+                              } catch { toast.error('Error de conexión'); }
+                              finally { setEntregandoId(null); }
+                            }}
+                            disabled={entregandoId === c.id || !c.entregado}
+                            className={`flex-1 px-2.5 py-2 text-[11px] font-semibold transition-all ${
+                              !c.entregado
+                                ? 'bg-amber-500/20 text-amber-400'
+                                : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300'
+                            } disabled:opacity-50`}
+                          >
+                            Pendiente
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (!c.entregado) {
+                                setEntregandoId(c.id);
+                                try {
+                                  const res = await fetch(`${API_BASE}/space/compras/${c.id}/entregar`, {
+                                    method: 'PATCH',
+                                    headers: authHeaders(token),
+                                    body: JSON.stringify({ entregado: true }),
+                                  });
+                                  if (res.ok) { toast.success('Marcado como entregado'); fetchStats(); fetchCompras(); }
+                                  else toast.error('Error al cambiar estado');
+                                } catch { toast.error('Error de conexión'); }
+                                finally { setEntregandoId(null); }
+                              }
+                            }}
+                            disabled={entregandoId === c.id || c.entregado}
+                            className={`flex-1 px-2.5 py-2 text-[11px] font-semibold transition-all ${
+                              c.entregado
+                                ? 'bg-emerald-500/20 text-emerald-400'
+                                : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300'
+                            } disabled:opacity-50`}
+                          >
+                            Entregado
+                          </button>
+                        </div>
+                        {/* Fecha entrega (solo si entregado) */}
                         {c.entregado && (
                           <input
                             type="date"
@@ -1389,17 +1426,20 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                                   headers: authHeaders(token),
                                   body: JSON.stringify({ entregado: true, fecha_entrega: fecha }),
                                 });
-                                if (res.ok) {
-                                  toast.success('Fecha de entrega actualizada');
+                                const data = await res.json().catch(() => ({}));
+                                if (res.ok && data?.success !== false) {
+                                  toast.success('Fecha actualizada');
                                   fetchCompras();
+                                } else {
+                                  toast.error(data?.error ?? 'Error actualizando fecha');
                                 }
-                              } catch { toast.error('Error actualizando fecha'); }
+                              } catch { toast.error('Error de conexión'); }
                             }}
-                            className="w-full px-2 py-1 bg-zinc-800 border border-zinc-700 rounded-lg text-[10px] text-zinc-400"
+                            className="w-full px-2.5 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-300 focus:border-[#FA7B21] focus:outline-none transition-colors"
                           />
                         )}
-                        {!c.entregado && (
-                          <span className="text-zinc-600 text-[10px]">Sin entregar</span>
+                        {entregandoId === c.id && (
+                          <Loader2 size={12} className="animate-spin text-zinc-500 mx-auto" />
                         )}
                       </div>
                     </td>
