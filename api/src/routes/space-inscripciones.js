@@ -25,7 +25,7 @@ router.get('/vencimientos', async (_req, res) => {
 // GET /api/space/inscripciones — List inscripciones paginated with filters
 router.get('/', async (req, res) => {
   try {
-    const { programa, estado_pago, activa } = req.query;
+    const { programa, estado_pago, activa, vence_en } = req.query;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
     const offset = (page - 1) * limit;
@@ -45,6 +45,11 @@ router.get('/', async (req, res) => {
     if (activa !== undefined && activa !== '') {
       conditions.push(`i.estado = $${paramIndex++}`);
       params.push(activa === 'si' || activa === 'true' ? 'Activo' : 'Vencido');
+    }
+    // Filtro: inscripciones que vencen en los próximos N días
+    if (vence_en && !isNaN(parseInt(vence_en, 10))) {
+      const dias = parseInt(vence_en, 10);
+      conditions.push(`i.estado = 'Activo' AND i.fecha_fin IS NOT NULL AND i.fecha_fin BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '${dias} days'`);
     }
 
     const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
