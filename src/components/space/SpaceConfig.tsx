@@ -35,6 +35,7 @@ const MODULOS_DISPONIBLES: { key: string; label: string }[] = [
   { key: 'mensajes', label: 'Mensajes' },
   { key: 'profesores', label: 'Profesores' },
   { key: 'clases-prueba', label: 'Clases de prueba' },
+  { key: 'torneos', label: 'Torneos' },
   { key: 'config', label: 'Ajustes (admin)' },
 ];
 

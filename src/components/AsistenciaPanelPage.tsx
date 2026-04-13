@@ -230,6 +230,8 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const [resumenDia, setResumenDia] = useState<ResumenClase[]>([]);
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [mesDashboard, setMesDashboard] = useState(new Date().toISOString().slice(0, 7));
+  const [sesionDiaria, setSesionDiaria] = useState<SesionQR | null>(null);
+  const [generandoDiario, setGenerandoDiario] = useState(false);
   const [, setTick] = useState(0);
 
   const diaHoy = new Date().getDay();
@@ -254,6 +256,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const fetchAsistencias = useCallback(async () => {
     try {
       const r = await fetch(`${API_BASE}/asistencia/hoy`);
+      if (!r.ok) return;
       const d = await r.json();
       if (Array.isArray(d)) setAsistencias(d);
     } catch { /* retry */ }
@@ -262,6 +265,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const fetchAsistenciasClase = useCallback(async (token: string) => {
     try {
       const r = await fetch(`${API_BASE}/asistencia/hoy?token=${token}`);
+      if (!r.ok) return;
       const d = await r.json();
       if (Array.isArray(d)) setAsistenciasClase(d);
     } catch { /* retry */ }
@@ -330,6 +334,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           hora_clase: claseActiva.hora, programa: claseActiva.programa,
         }),
       });
+      if (!r.ok) { toast.error('Error generando QR'); return; }
       const d = await r.json();
       if (d.success) {
         setSesiones(prev => ({
@@ -345,6 +350,32 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
       }
     } catch { toast.error('Error de conexión'); }
     finally { setGenerandoQR(false); }
+  };
+
+  const generarQRDiario = async () => {
+    setGenerandoDiario(true);
+    try {
+      const r = await fetch(`${API_BASE}/qr/generar-diario`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sede_id: 1 }),
+      });
+      if (!r.ok) {
+        toast.error('Error generando QR diario');
+        return;
+      }
+      const d = await r.json();
+      if (d.success) {
+        setSesionDiaria({
+          token: d.token, url: d.url, valido_hasta: d.valido_hasta,
+          hora_clase: '00:00', programa: 'diario',
+        });
+        toast.success('QR del dia generado — valido 12 horas');
+      } else {
+        toast.error('Error generando QR diario');
+      }
+    } catch { toast.error('Error de conexion'); }
+    finally { setGenerandoDiario(false); }
   };
 
   const seleccionarClase = (clase: ClaseHorario) => {
@@ -406,6 +437,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const fetchResumen = async () => {
     try {
       const r = await fetch(`${API_BASE}/asistencia/resumen-dia`);
+      if (!r.ok) { toast.error('Error cargando resumen'); return; }
       const d = await r.json();
       if (Array.isArray(d)) setResumenDia(d);
     } catch { toast.error('Error cargando resumen'); }
@@ -414,6 +446,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const fetchDashboard = async (mes: string) => {
     try {
       const r = await fetch(`${API_BASE}/asistencia/dashboard?mes=${mes}`);
+      if (!r.ok) { toast.error('Error cargando dashboard'); return; }
       const d = await r.json();
       if (d.totales) setDashboard(d);
     } catch { toast.error('Error cargando dashboard'); }
@@ -575,6 +608,59 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           {/* ═══ VISTA: LISTA DE CLASES ═══ */}
           {vista === 'clases' && (
             <>
+              {/* QR del dia — Smart QR */}
+              <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border border-[#FA7B21]/30 rounded-2xl p-5">
+                {!sesionDiaria ? (
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <QrCode className="w-5 h-5 text-[#FCA929]" />
+                      <span className="text-white font-bold text-sm">QR Inteligente del Dia</span>
+                    </div>
+                    <p className="text-white/50 text-xs mb-4">
+                      Un solo QR para todas las clases. Detecta automaticamente la clase de cada alumno.
+                    </p>
+                    <Button onClick={generarQRDiario} disabled={generandoDiario}
+                      className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-bold text-base shadow-lg shadow-[#FA7B21]/20">
+                      {generandoDiario
+                        ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Generando...</>
+                        : <><QrCode className="w-5 h-5 mr-2" /> Generar QR del Dia</>}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <QrCode className="w-4 h-4 text-[#FCA929]" />
+                      <span className="text-white font-bold text-sm">QR del Dia Activo</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1.5 mb-3">
+                      <Timer className="w-3 h-3 text-white/40" />
+                      <span className={`text-xs font-mono ${tiempoRestante(sesionDiaria.valido_hasta) === 'Expirado' ? 'text-red-400' : 'text-white/50'}`}>
+                        Expira en {tiempoRestante(sesionDiaria.valido_hasta)}
+                      </span>
+                    </div>
+                    <div className="bg-white rounded-xl p-3 inline-block mx-auto mb-2">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(sesionDiaria.url)}`}
+                        alt="QR del dia" className="w-48 h-48"
+                        loading="eager"
+                        decoding="async"
+                      />
+                    </div>
+                    <p className="text-white/40 text-[10px] break-all mb-2">{sesionDiaria.url}</p>
+                    <p className="text-white/50 text-xs">
+                      Auto-detecta la clase de cada alumno al escanear
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Separador */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t border-white/10" />
+                <span className="text-white/30 text-xs">o selecciona una clase</span>
+                <div className="flex-1 border-t border-white/10" />
+              </div>
+
               <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-5">
                 <div className="text-center mb-4">
                   <p className="text-white font-semibold text-sm">{NOMBRES_DIA[diaHoy]}</p>
