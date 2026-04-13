@@ -3,6 +3,103 @@ const { query, queryOne, pool } = require('../db');
 
 const router = Router();
 
+// ---------------------------------------------------------------------------
+// Catalogo endpoints
+// ---------------------------------------------------------------------------
+
+// GET /api/space/compras/catalogo — List active catalog items
+router.get('/catalogo', async (_req, res) => {
+  try {
+    const rows = await query(
+      `SELECT * FROM catalogo_implementos WHERE activo = TRUE ORDER BY categoria, nombre`
+    );
+    return res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Error listando catalogo:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// POST /api/space/compras/catalogo — Create catalog item
+router.post('/catalogo', async (req, res) => {
+  try {
+    const { nombre, categoria, precio } = req.body;
+    if (!nombre || !categoria || precio == null) {
+      return res.status(400).json({
+        success: false,
+        error: 'Campos requeridos: nombre, categoria, precio',
+      });
+    }
+    const row = await queryOne(
+      `INSERT INTO catalogo_implementos (nombre, categoria, precio)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [nombre.trim(), categoria, precio]
+    );
+    return res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('Error creando item catalogo:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// PUT /api/space/compras/catalogo/:id — Update catalog item
+router.put('/catalogo/:id', async (req, res) => {
+  try {
+    const fieldMap = { nombre: 'nombre', categoria: 'categoria', precio: 'precio', activo: 'activo' };
+    const updates = [];
+    const params = [];
+    let idx = 1;
+
+    for (const [bodyField, dbField] of Object.entries(fieldMap)) {
+      if (req.body[bodyField] !== undefined) {
+        updates.push(`${dbField} = $${idx++}`);
+        params.push(req.body[bodyField]);
+      }
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, error: 'No hay campos para actualizar' });
+    }
+
+    params.push(req.params.id);
+    const row = await queryOne(
+      `UPDATE catalogo_implementos SET ${updates.join(', ')} WHERE id = $${idx} RETURNING *`,
+      params
+    );
+
+    if (!row) {
+      return res.status(404).json({ success: false, error: 'Item no encontrado' });
+    }
+
+    return res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('Error actualizando item catalogo:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// DELETE /api/space/compras/catalogo/:id — Soft delete (activo=false)
+router.delete('/catalogo/:id', async (req, res) => {
+  try {
+    const row = await queryOne(
+      `UPDATE catalogo_implementos SET activo = FALSE WHERE id = $1 RETURNING id`,
+      [req.params.id]
+    );
+    if (!row) {
+      return res.status(404).json({ success: false, error: 'Item no encontrado' });
+    }
+    return res.json({ success: true, data: { id: row.id } });
+  } catch (err) {
+    console.error('Error desactivando item catalogo:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Compras endpoints
+// ---------------------------------------------------------------------------
+
 // GET /api/space/compras/stats
 router.get('/stats', async (_req, res) => {
   try {

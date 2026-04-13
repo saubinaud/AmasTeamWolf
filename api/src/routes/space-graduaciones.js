@@ -479,4 +479,116 @@ router.put('/:id/aprobar', async (req, res) => {
   }
 });
 
+// ===== CARGA MASIVA DE GRADUACIONES (F9.1) =====
+
+// Belt order for eligibility checks
+const BELT_ORDER = [
+  'Blanco', 'Blanco-Amarillo', 'Amarillo', 'Amarillo Camuflado',
+  'Naranja', 'Naranja Camuflado', 'Verde', 'Verde Camuflado',
+  'Azul', 'Azul Camuflado', 'Rojo', 'Rojo Camuflado', 'Negro',
+];
+
+// POST /api/space/graduaciones/batch — Batch graduation processing
+router.post('/batch', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { graduaciones } = req.body;
+
+    if (!Array.isArray(graduaciones) || graduaciones.length === 0) {
+      return res.status(400).json({ success: false, error: 'Se requiere un array de graduaciones', code: 'GRAD_BATCH_EMPTY' });
+    }
+
+    if (graduaciones.length > 100) {
+      return res.status(400).json({ success: false, error: 'Maximo 100 graduaciones por lote', code: 'GRAD_BATCH_LIMIT' });
+    }
+
+    await client.query('BEGIN');
+
+    const results = [];
+    const errors = [];
+
+    for (let i = 0; i < graduaciones.length; i++) {
+      const g = graduaciones[i];
+      try {
+        if (!g.alumno_id || !g.cinturon_nuevo || !g.fecha_examen) {
+          errors.push({ index: i, error: 'Campos requeridos: alumno_id, cinturon_nuevo, fecha_examen' });
+          continue;
+        }
+
+        // Get current belt for the student
+        const alumno = await client.query(
+          'SELECT id, nombre_alumno, cinturon_actual FROM alumnos WHERE id = $1',
+          [g.alumno_id]
+        ).then(r => r.rows[0]);
+
+        if (!alumno) {
+          errors.push({ index: i, error: `Alumno ${g.alumno_id} no encontrado` });
+          continue;
+        }
+
+        const cinturonAnterior = g.cinturon_anterior || alumno.cinturon_actual || 'Blanco';
+
+        // 1. INSERT into graduaciones
+        const gradRow = await client.query(
+          `INSERT INTO graduaciones
+            (nombre_alumno, apellido_alumno, rango, cinturon_desde, cinturon_hasta,
+             horario, turno, fecha_graduacion, alumno_id, observaciones,
+             estado, aprobado, created_by)
+           VALUES ($1, '', $2, $3, $4, $5, $6, $7, $8, $9, 'completada', TRUE, $10)
+           RETURNING id`,
+          [
+            alumno.nombre_alumno,
+            g.cinturon_nuevo,
+            cinturonAnterior,
+            g.cinturon_nuevo,
+            g.horario || '',
+            g.turno || 'primer',
+            g.fecha_examen,
+            g.alumno_id,
+            g.observaciones || null,
+            req.spaceUser.id,
+          ]
+        ).then(r => r.rows[0]);
+
+        // 2. UPDATE alumnos SET cinturon_actual
+        await client.query(
+          'UPDATE alumnos SET cinturon_actual = $1 WHERE id = $2',
+          [g.cinturon_nuevo, g.alumno_id]
+        );
+
+        // 3. INSERT into historial_cinturones
+        await client.query(
+          'INSERT INTO historial_cinturones (alumno_id, cinturon, fecha_obtencion, graduacion_id) VALUES ($1, $2, $3, $4)',
+          [g.alumno_id, g.cinturon_nuevo, g.fecha_examen, gradRow.id]
+        );
+
+        results.push({ index: i, alumno_id: g.alumno_id, nombre: alumno.nombre_alumno, graduacion_id: gradRow.id });
+      } catch (rowErr) {
+        errors.push({ index: i, error: rowErr.message });
+      }
+    }
+
+    if (errors.length > 0 && results.length === 0) {
+      // All failed — rollback
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, error: 'Todas las graduaciones fallaron', errors });
+    }
+
+    await client.query('COMMIT');
+
+    return res.json({
+      success: true,
+      processed: results.length,
+      errors: errors.length > 0 ? errors : undefined,
+      results,
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Error en batch de graduaciones:', err);
+    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_BATCH_ERROR' });
+  } finally {
+    client.release();
+  }
+});
+
 module.exports = router;

@@ -129,6 +129,8 @@ interface UserData {
   congelaciones: Congelacion[];
   codigoReferido: string | null;
   saldoBonos: number;
+  elegibleLeadership: boolean;
+  elegibleFighter: boolean;
   referidos: ReferidoData[];
 }
 
@@ -253,6 +255,8 @@ function transformProfile(data: any): UserData {
       : [],
     codigoReferido: data.codigo_referido || null,
     saldoBonos: Number(data.saldo_bonos) || 0,
+    elegibleLeadership: Boolean(data.elegible_leadership),
+    elegibleFighter: Boolean(data.elegible_fighter),
     referidos: Array.isArray(data.referidos)
       ? data.referidos.map((r: any) => ({
           nombre: r.nombre_alumno || r.nombre || '',

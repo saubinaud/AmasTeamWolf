@@ -176,6 +176,32 @@ async function cargarPerfil(alumnoId) {
     pagos_total = parseFloat(sumaResult?.total || '0');
   }
 
+  // F9.2 — Program eligibility checks
+  const BELT_ORDER = [
+    'Blanco', 'Blanco-Amarillo', 'Amarillo', 'Amarillo Camuflado',
+    'Naranja', 'Naranja Camuflado', 'Verde', 'Verde Camuflado',
+    'Azul', 'Azul Camuflado', 'Rojo', 'Rojo Camuflado', 'Negro',
+  ];
+  const totalAsistenciasAll = await queryOne(
+    "SELECT COUNT(*) AS total FROM asistencias WHERE alumno_id = $1 AND asistio = 'Sí'",
+    [alumnoId]
+  );
+  const asistenciasCount = parseInt(totalAsistenciasAll?.total || '0');
+  const elegible_leadership = asistenciasCount >= 8;
+
+  const cinturon = cinturonActual?.cinturon_actual || 'Blanco';
+  const beltIndex = BELT_ORDER.indexOf(cinturon);
+  const amarilloCamuIndex = BELT_ORDER.indexOf('Amarillo Camuflado');
+  let edadAnios = 0;
+  if (perfil.fecha_nacimiento) {
+    const nacimiento = new Date(perfil.fecha_nacimiento);
+    const hoy = new Date();
+    edadAnios = hoy.getFullYear() - nacimiento.getFullYear();
+    const m = hoy.getMonth() - nacimiento.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edadAnios--;
+  }
+  const elegible_fighter = asistenciasCount >= 24 && beltIndex >= amarilloCamuIndex && edadAnios >= 3;
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -198,6 +224,8 @@ async function cargarPerfil(alumnoId) {
     referidos: referidos_lista,
     pagos_historial,
     pagos_total,
+    elegible_leadership,
+    elegible_fighter,
   };
 }
 
