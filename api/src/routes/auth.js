@@ -32,6 +32,7 @@ async function cargarPerfil(alumnoId) {
       a.id AS alumno_id,
       a.nombre_alumno,
       a.dni_alumno,
+      a.tipo_documento,
       a.fecha_nacimiento,
       a.categoria,
       a.nombre_apoderado,
@@ -157,10 +158,14 @@ router.post('/login', async (req, res) => {
       return res.status(429).json({ error: 'Demasiados intentos. Espera 15 minutos.' });
     }
 
-    // Buscar alumno por DNI del apoderado
+    // Buscar alumno por DNI (normalizado: sin espacios, guiones, puntos)
+    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
-      'SELECT id, password_hash, nombre_apoderado, correo FROM alumnos WHERE dni_apoderado = $1 OR dni_alumno = $1 LIMIT 1',
-      [dni]
+      `SELECT id, password_hash, nombre_apoderado, correo FROM alumnos
+       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
+          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       LIMIT 1`,
+      [dniNorm]
     );
 
     if (!alumno) {
@@ -195,9 +200,13 @@ router.post('/solicitar-codigo', async (req, res) => {
     const { dni } = req.body;
     if (!dni) return res.status(400).json({ error: 'DNI requerido' });
 
+    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
-      'SELECT id, correo, nombre_apoderado FROM alumnos WHERE (dni_apoderado = $1 OR dni_alumno = $1) LIMIT 1',
-      [dni]
+      `SELECT id, correo, nombre_apoderado FROM alumnos
+       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
+          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       LIMIT 1`,
+      [dniNorm]
     );
 
     if (!alumno) {
@@ -252,9 +261,13 @@ router.post('/verificar-codigo', async (req, res) => {
     const { dni, code } = req.body;
     if (!dni || !code) return res.status(400).json({ error: 'DNI y código requeridos' });
 
+    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
-      'SELECT id FROM alumnos WHERE (dni_apoderado = $1 OR dni_alumno = $1) LIMIT 1',
-      [dni]
+      `SELECT id FROM alumnos
+       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
+          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       LIMIT 1`,
+      [dniNorm]
     );
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
 
@@ -289,9 +302,13 @@ router.post('/crear-password', async (req, res) => {
       return res.status(429).json({ error: 'Demasiados intentos. Espera 15 minutos.' });
     }
 
+    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
     const alumno = await queryOne(
-      'SELECT id, password_hash FROM alumnos WHERE (dni_apoderado = $1 OR dni_alumno = $1) LIMIT 1',
-      [dni]
+      `SELECT id, password_hash FROM alumnos
+       WHERE REPLACE(REPLACE(dni_apoderado, ' ', ''), '-', '') = $1
+          OR REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1
+       LIMIT 1`,
+      [dniNorm]
     );
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
 

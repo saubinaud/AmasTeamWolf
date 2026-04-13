@@ -83,6 +83,7 @@ function initialAdmin(): AdminOverrides {
 interface FormState {
   nombreAlumno: string;
   dniAlumno: string;
+  tipoDocumento: string;
   fechaNacimiento: string;
   tallaUniforme: string;
   nombrePadre: string;
@@ -96,6 +97,7 @@ interface FormState {
 const INITIAL_FORM: FormState = {
   nombreAlumno: '',
   dniAlumno: '',
+  tipoDocumento: 'DNI',
   fechaNacimiento: '',
   tallaUniforme: '',
   nombrePadre: '',
@@ -403,6 +405,7 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
 
         nombreAlumno: form.nombreAlumno,
         dniAlumno: form.dniAlumno,
+        tipoDocumento: form.tipoDocumento,
         fechaNacimiento: form.fechaNacimiento,
         categoriaAlumno: categoriaAlumno || 'No especificada',
 
@@ -560,15 +563,26 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
               />
             </div>
             <div>
-              <label className={cx.label}>DNI *</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                maxLength={8}
-                value={form.dniAlumno}
-                onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
-                className={cx.input}
-              />
+              <label className={cx.label}>Documento *</label>
+              <div className="flex gap-2">
+                <select
+                  value={form.tipoDocumento}
+                  onChange={(e) => handleInputChange('tipoDocumento', e.target.value)}
+                  className={cx.select + ' w-28 shrink-0'}
+                >
+                  <option value="DNI">DNI</option>
+                  <option value="CE">CE</option>
+                  <option value="Pasaporte">Pasaporte</option>
+                </select>
+                <input
+                  type="text"
+                  inputMode={form.tipoDocumento === 'DNI' ? 'numeric' : 'text'}
+                  value={form.dniAlumno}
+                  onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
+                  placeholder={form.tipoDocumento === 'DNI' ? '12345678' : 'Número'}
+                  className={cx.input + ' flex-1'}
+                />
+              </div>
             </div>
           </div>
           <div>

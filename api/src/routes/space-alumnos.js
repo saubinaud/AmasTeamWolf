@@ -3,6 +3,18 @@ const { query, queryOne, pool } = require('../db');
 
 const router = Router();
 
+/**
+ * Normaliza un número de documento para búsqueda.
+ * Quita espacios, guiones, puntos. Para DNI deja solo dígitos.
+ * Para CE/Pasaporte deja alfanuméricos.
+ */
+function normalizeDocumento(val) {
+  if (!val) return '';
+  return String(val).replace(/[\s\-\.]/g, '').trim();
+}
+
+const TIPOS_DOCUMENTO_VALIDOS = ['DNI', 'CE', 'Pasaporte'];
+
 // GET /api/space/alumnos/stats
 router.get('/stats', async (_req, res) => {
   try {
@@ -46,9 +58,15 @@ router.get('/', async (req, res) => {
       params.push(estado.toLowerCase());
     }
     if (search) {
-      conditions.push(`(a.nombre_alumno ILIKE $${idx} OR a.dni_alumno ILIKE $${idx} OR a.dni_apoderado ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx})`);
-      params.push(`%${search}%`);
-      idx++;
+      const normalized = normalizeDocumento(search);
+      // Buscar en nombre (ILIKE) y en documento (normalizado sin espacios/guiones)
+      conditions.push(
+        `(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} ` +
+        `OR REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', '') ILIKE $${idx + 1} ` +
+        `OR REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', '') ILIKE $${idx + 1})`
+      );
+      params.push(`%${search}%`, `%${normalized}%`);
+      idx += 2;
     }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -61,6 +79,7 @@ router.get('/', async (req, res) => {
           a.id,
           a.nombre_alumno AS nombre,
           a.dni_alumno AS dni,
+          a.tipo_documento,
           a.dni_apoderado,
           a.nombre_apoderado,
           a.categoria,
@@ -153,6 +172,7 @@ router.get('/:id', async (req, res) => {
         id: alumno.id,
         nombre: alumno.nombre_alumno,
         dni: alumno.dni_alumno,
+        tipo_documento: alumno.tipo_documento || 'DNI',
         dni_apoderado: alumno.dni_apoderado,
         fecha_nacimiento: alumno.fecha_nacimiento,
         categoria: alumno.categoria,
@@ -201,6 +221,7 @@ router.put('/:id', async (req, res) => {
     const fieldMap = {
       nombre_alumno: 'nombre_alumno',
       dni_alumno: 'dni_alumno',
+      tipo_documento: 'tipo_documento',
       fecha_nacimiento: 'fecha_nacimiento',
       categoria: 'categoria',
       estado: 'estado',
@@ -216,6 +237,10 @@ router.put('/:id', async (req, res) => {
 
     for (const [bodyField, dbField] of Object.entries(fieldMap)) {
       if (req.body[bodyField] !== undefined) {
+        // Validar tipo_documento contra lista permitida
+        if (bodyField === 'tipo_documento' && !TIPOS_DOCUMENTO_VALIDOS.includes(req.body[bodyField])) {
+          return res.status(400).json({ success: false, error: 'Tipo de documento inválido. Debe ser DNI, CE o Pasaporte' });
+        }
         updates.push(`${dbField} = $${idx++}`);
         params.push(req.body[bodyField]);
       }
