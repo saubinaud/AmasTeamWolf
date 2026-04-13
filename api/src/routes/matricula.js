@@ -66,16 +66,17 @@ router.post('/', async (req, res) => {
     }
 
     // 2. Crear inscripción
+    const frecuenciaSemanal = [1, 2].includes(Number(d.frecuenciaSemanal)) ? Number(d.frecuenciaSemanal) : 2;
     const inscResult = await client.query(
       `INSERT INTO inscripciones (alumno_id, programa, fecha_inscripcion, fecha_inicio, fecha_fin,
        clases_totales, turno, dias_tentativos, precio_programa, precio_pagado,
-       descuento, codigo_promocional, tipo_cliente, estado, estado_pago)
-       VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'Activo',$13)
+       descuento, codigo_promocional, tipo_cliente, estado, estado_pago, frecuencia_semanal)
+       VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'Activo',$13,$14)
        RETURNING id`,
       [alumno.id, d.programa, d.fechaInicio || null, d.fechaFin || null,
        d.clasesTotales || 0, d.turnoSeleccionado, d.diasTentativos,
        precioPrograma, precioPagado, descuento,
-       d.codigoPromocional || null, tipoCliente, estadoPago]
+       d.codigoPromocional || null, tipoCliente, estadoPago, frecuenciaSemanal]
     );
 
     const inscripcionId = inscResult.rows[0].id;

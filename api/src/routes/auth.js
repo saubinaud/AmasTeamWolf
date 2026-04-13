@@ -139,6 +139,7 @@ async function cargarPerfil(alumnoId) {
     clases_totales,
     clases_asistidas,
     clases_restantes: Math.max(0, clases_totales - clases_asistidas),
+    progreso_porcentaje: clases_totales > 0 ? Math.min(Math.round((clases_asistidas / clases_totales) * 100), 100) : 0,
     cinturon_actual: cinturonActual?.cinturon_actual || 'Blanco',
     historial_cinturones,
     proxima_graduacion,
@@ -386,6 +387,40 @@ router.post('/mensajes/:id/leido', authMiddleware, async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error('Error marcando mensaje leído:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// PUT /api/auth/perfil — Editar info del apoderado
+router.put('/perfil', authMiddleware, async (req, res) => {
+  try {
+    const { nombre_apoderado, dni_apoderado, correo, telefono, direccion } = req.body;
+    const alumnoId = req.user.alumno_id;
+
+    const sets = [];
+    const values = [];
+    let idx = 1;
+
+    if (nombre_apoderado !== undefined) { sets.push(`nombre_apoderado = $${idx++}`); values.push(nombre_apoderado); }
+    if (dni_apoderado !== undefined) { sets.push(`dni_apoderado = $${idx++}`); values.push(dni_apoderado); }
+    if (correo !== undefined) { sets.push(`correo = $${idx++}`); values.push(correo); }
+    if (telefono !== undefined) { sets.push(`telefono = $${idx++}`); values.push(telefono); }
+    if (direccion !== undefined) { sets.push(`direccion = $${idx++}`); values.push(direccion); }
+
+    if (sets.length === 0) {
+      return res.status(400).json({ error: 'No hay datos para actualizar' });
+    }
+
+    values.push(alumnoId);
+    await pool.query(
+      `UPDATE alumnos SET ${sets.join(', ')} WHERE id = $${idx}`,
+      values
+    );
+
+    const perfil = await cargarPerfil(alumnoId);
+    res.json({ success: true, perfil });
+  } catch (err) {
+    console.error('Error actualizando perfil:', err);
     res.status(500).json({ error: 'Error del servidor' });
   }
 });
