@@ -38,7 +38,9 @@ import {
   MapPin,
   Gift,
   Copy,
-  Users
+  Users,
+  Package,
+  ArrowRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format, addDays, subDays, isSameDay, isToday } from 'date-fns';
@@ -100,54 +102,6 @@ function useIsMobile() {
   return isMobile;
 }
 
-// Custom Date Parser for "DD MMMM" (Spanish)
-const parseSpanishDate = (dateStr: string): Date | null => {
-  const months: { [key: string]: number } = {
-    enero: 0, febrero: 1, marzo: 2, abril: 3, mayo: 4, junio: 5,
-    julio: 6, agosto: 7, septiembre: 8, octubre: 9, noviembre: 10, diciembre: 11
-  };
-
-  try {
-    const parts = dateStr.trim().toLowerCase().split(' ');
-    if (parts.length < 2) return null;
-
-    const day = parseInt(parts[0]);
-    const monthStr = parts[1];
-    const month = months[monthStr];
-
-    if (isNaN(day) || month === undefined) return null;
-
-    const now = new Date();
-    let year = now.getFullYear();
-
-    // Construct date
-    let date = new Date(year, month, day);
-
-    // Heuristic: If date is very old (e.g. today is May, date is January), assume next year.
-    if (date.getTime() < now.getTime() - 30 * 24 * 60 * 60 * 1000) {
-      date.setFullYear(year + 1);
-    }
-    return date;
-  } catch (e) {
-    console.error("Error parsing date:", dateStr, e);
-    return null;
-  }
-};
-
-const BeltDisplay = ({ color, name }: { color: string, name: string }) => (
-  <div className="flex flex-col items-center gap-2">
-    <div className="relative w-40 h-16 flex items-center justify-center filter drop-shadow-lg">
-      <svg viewBox="0 0 200 80" className="w-full h-full">
-        <path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z" fill={color} className="drop-shadow-sm" />
-        <path d="M85,15 L115,15 L125,65 L75,65 Z" fill={color} filter="brightness(0.9)" />
-        <path d="M85,40 L60,95 L80,95 L95,60 Z" fill={color} filter="brightness(0.8)" />
-        <path d="M115,40 L140,95 L120,95 L105,60 Z" fill={color} filter="brightness(0.8)" />
-      </svg>
-    </div>
-    <span className="text-xs font-medium text-white/80 uppercase tracking-widest">{name}</span>
-  </div>
-);
-
 export function PerfilPage({ onNavigate }: PerfilPageProps) {
   const { user, logout, refreshUserData, isAuthenticated } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -176,84 +130,22 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   });
   const [isSavingApoderado, setIsSavingApoderado] = useState(false);
 
-  // Graduation
-  const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
-  const [graduationError, setGraduationError] = useState<string | null>(null);
-  const [userGraduation, setUserGraduation] = useState<any>(null);
-
-  // Fetch Graduation
-  useEffect(() => {
-    if (activeSection === 'graduacion') {
-      setGraduationError(null);
-      fetch((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? '/api/graduacion' : 'https://amas-api.s6hx3x.easypanel.host/api/graduacion')
-        .then(res => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then(data => {
-          let dates: Date[] = [];
-          const items = Array.isArray(data) ? data : (data.records || [data]);
-
-          let foundUserItem = null;
-          const normalize = (s: string) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "";
-          const userFullName = normalize(user.estudiante?.nombre || "");
-
-          // Find user and collect dates
-          items.forEach((item: any) => {
-            // Check for user match
-            if (item.NOMBRE || item.APELLIDO) {
-              const n = normalize(item.NOMBRE || "");
-              const a = normalize(item.APELLIDO || "");
-
-              // Robust Match: Check if user's full name contains the webhook name parts
-              // or vice versa (handling cases where webhook has "Dariel Mathias" and user is "Dariel Mathias Valdez")
-              const nameMatch = n && userFullName.includes(n);
-              const surMatch = a && userFullName.includes(a);
-
-              // If we match at least one significant part (and maybe verify length to avoid short match?)
-              // Assuming unique enough names.
-              if (nameMatch || surMatch) {
-                foundUserItem = item;
-              }
-            }
-
-            // Parse Date
-            let d = item?.date || item?.fecha || item?.graduationDate || item?.start;
-            if (item?.FECHA) {
-              const parsed = parseSpanishDate(item.FECHA);
-              if (parsed) dates.push(parsed);
-              if (foundUserItem === item && parsed) {
-                foundUserItem.parsedDate = parsed;
-              }
-            } else if (d) {
-              const parsed = new Date(d);
-              dates.push(parsed);
-              if (foundUserItem === item) foundUserItem.parsedDate = parsed;
-            }
-          });
-
-          if (foundUserItem) {
-            setUserGraduation(foundUserItem);
-            if (foundUserItem.parsedDate) {
-              setGraduacionDate(foundUserItem.parsedDate.toISOString());
-            }
-          } else {
-            setUserGraduation(null);
-            // General next date logic
-            dates = dates.filter(d => !isNaN(d.getTime())).sort((a, b) => a.getTime() - b.getTime());
-            const now = new Date();
-            const nextDate = dates.find(d => d >= now) || dates[dates.length - 1];
-            if (nextDate) {
-              setGraduacionDate(nextDate.toISOString());
-            }
-          }
-        })
-        .catch(err => {
-          console.error('Error fetching graduation:', err);
-          setGraduationError('Error cargando fecha');
-        });
-    }
-  }, [activeSection, user?.estudiante?.nombre]);
+  // Belt color mapping for visual display
+  const BELT_COLORS: Record<string, string> = {
+    'Blanco': '#FFFFFF',
+    'Blanco-Amarillo': '#FFFFCC',
+    'Amarillo': '#FFD700',
+    'Amarillo Camuflado': '#B8A028',
+    'Naranja': '#FF8C00',
+    'Naranja Camuflado': '#CC7000',
+    'Verde': '#228B22',
+    'Verde Camuflado': '#1A6B1A',
+    'Azul': '#1E90FF',
+    'Azul Camuflado': '#1560B0',
+    'Rojo': '#DC143C',
+    'Rojo Camuflado': '#A0102E',
+    'Negro': '#1A1A1A',
+  };
 
   // Touch handling for calendar swipe
   const touchStartX = useRef(0);
@@ -830,6 +722,38 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               </motion.div>
             </div>
 
+            {/* Mis Implementos */}
+            {user?.implementos && user.implementos.length > 0 && (
+              <motion.div
+                className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.38 }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-violet-500/15 flex items-center justify-center">
+                    <Package className="w-4 h-4 text-violet-400" />
+                  </div>
+                  <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Mis implementos</h4>
+                </div>
+                <div className="space-y-2">
+                  {user.implementos.map((imp) => (
+                    <div key={imp.id} className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2.5 border border-white/5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm text-zinc-300 truncate">{imp.tipo || '—'}</span>
+                        {imp.talla && <span className="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded shrink-0">T: {imp.talla}</span>}
+                      </div>
+                      <span className="text-[10px] text-zinc-600 shrink-0 ml-2">
+                        {imp.fechaAdquisicion
+                          ? new Date(imp.fechaAdquisicion).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', timeZone: 'America/Lima' })
+                          : '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-medium text-base"
@@ -1214,6 +1138,65 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               </motion.div>
             )}
 
+            {/* Congelaciones historial */}
+            {user?.congelaciones && user.congelaciones.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.25 }}
+                className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider flex items-center gap-2">
+                    <Snowflake className="w-3.5 h-3.5 text-blue-400" />
+                    Congelamientos usados
+                  </h4>
+                  <span className="text-sm font-semibold text-blue-300">{user.congelaciones.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {user.congelaciones.map((c, i) => (
+                    <div key={i} className="flex items-center justify-between bg-blue-950/20 border border-blue-500/10 rounded-xl px-4 py-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-blue-200">
+                          {c.fechaInicio
+                            ? new Date(c.fechaInicio).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', timeZone: 'America/Lima' })
+                            : '—'}
+                          {' → '}
+                          {c.fechaFin
+                            ? new Date(c.fechaFin).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', timeZone: 'America/Lima' })
+                            : '—'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0 ml-2">
+                        <span className="text-xs text-blue-300/70">{c.dias || '—'} dias</span>
+                        <Badge className={cn(
+                          "text-[9px] border-0 px-1.5 py-0.5",
+                          c.estado === 'activo' ? "bg-blue-500/20 text-blue-300" : "bg-zinc-700/50 text-zinc-500"
+                        )}>
+                          {c.estado === 'activo' ? 'Activo' : 'Finalizado'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Renovar programa CTA */}
+            {(user?.matricula?.estado === 'Activo' || user?.matricula?.estado === 'activa' || estaPorVencer || estaVencido) && (
+              <motion.div
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+              >
+                <Button
+                  onClick={() => onNavigate('renovacion')}
+                  className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-orange-500 hover:from-[#FCA929] hover:to-orange-400 text-white rounded-2xl font-semibold text-base shadow-lg shadow-[#FA7B21]/20"
+                >
+                  <RefreshCw className="w-5 h-5 mr-2" /> Renovar Programa
+                </Button>
+              </motion.div>
+            )}
+
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 onClick={() => onNavigate('planes')}
@@ -1235,194 +1218,199 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
+            {/* Proxima Graduacion Card */}
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
-              {userGraduation ? (
-                <>
-                  {(() => {
-                    const d = graduacionDate ? new Date(graduacionDate) : new Date();
-                    const now = new Date();
-                    d.setHours(0, 0, 0, 0);
-                    now.setHours(0, 0, 0, 0);
-                    const isPast = d.getTime() < now.getTime();
-                    const isToday = d.getTime() === now.getTime();
+              <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
+                <Award className="w-5 h-5 text-[#FCA929]" />
+                Tu proxima graduacion
+              </h3>
 
-                    return (
-                      <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                        <Award className={cn("w-5 h-5", isPast ? "text-zinc-400" : "text-[#FCA929]")} />
-                        {isPast ? "Última Graduación" : isToday ? "¡Día de la Graduación!" : "Próxima Graduación"}
-                      </h3>
-                    );
-                  })()}
-
-                  <div className="text-center py-4">
-                    {/* Celebration Effect Background */}
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FA7B21]/20 to-orange-600/10 flex items-center justify-center mx-auto mb-4 border border-[#FA7B21]/30 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-[#FA7B21]/5 animate-pulse rounded-full" />
-                      <Calendar className="w-10 h-10 text-[#FA7B21] relative z-10" />
+              {user?.proximaGraduacion ? (
+                <div className="space-y-5">
+                  {/* Belt transition visual */}
+                  <div className="flex items-center justify-center gap-4 py-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <div
+                        className="w-14 h-14 rounded-full border-4 flex items-center justify-center"
+                        style={{ borderColor: BELT_COLORS[user.proximaGraduacion.cinturonDesde] ?? '#555', backgroundColor: `${BELT_COLORS[user.proximaGraduacion.cinturonDesde] ?? '#555'}20` }}
+                      >
+                        <Shield className="w-6 h-6" style={{ color: BELT_COLORS[user.proximaGraduacion.cinturonDesde] ?? '#555' }} />
+                      </div>
+                      <span className="text-xs text-zinc-400 text-center max-w-[80px] leading-tight">{user.proximaGraduacion.cinturonDesde || '—'}</span>
                     </div>
-
-                    <div className="space-y-1 mb-6">
-                      <p className="text-white/60 uppercase tracking-widest text-[10px]">Fecha Confirmada</p>
-                      <p className="text-3xl font-bold text-white">
-                        {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : '-'}
-                      </p>
-                      <p className="text-[#FCA929] font-medium capitalize">
-                        {graduacionDate ? format(new Date(graduacionDate), "EEEE", { locale: es }) : ''}
-                      </p>
+                    <ArrowRight className="w-6 h-6 text-[#FCA929] flex-shrink-0" />
+                    <div className="flex flex-col items-center gap-2">
+                      <div
+                        className="w-14 h-14 rounded-full border-4 flex items-center justify-center"
+                        style={{ borderColor: BELT_COLORS[user.proximaGraduacion.cinturonHasta] ?? '#FCA929', backgroundColor: `${BELT_COLORS[user.proximaGraduacion.cinturonHasta] ?? '#FCA929'}20` }}
+                      >
+                        <Award className="w-6 h-6" style={{ color: BELT_COLORS[user.proximaGraduacion.cinturonHasta] ?? '#FCA929' }} />
+                      </div>
+                      <span className="text-xs text-[#FCA929] font-medium text-center max-w-[80px] leading-tight">{user.proximaGraduacion.cinturonHasta || '—'}</span>
                     </div>
+                  </div>
 
-                    <div className="grid grid-cols-2 gap-3 mt-6">
+                  {/* Fecha */}
+                  <div className="text-center">
+                    <p className="text-white/60 uppercase tracking-widest text-[10px] mb-1">Fecha del examen</p>
+                    <p className="text-2xl font-bold text-white">
+                      {user.proximaGraduacion.fecha
+                        ? new Date(user.proximaGraduacion.fecha).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Lima' })
+                        : '—'}
+                    </p>
+                    {user.proximaGraduacion.fecha && (
+                      <p className="text-[#FCA929] font-medium capitalize text-sm mt-0.5">
+                        {new Date(user.proximaGraduacion.fecha).toLocaleDateString('es-PE', { weekday: 'long', timeZone: 'America/Lima' })}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Info grid */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {user.proximaGraduacion.horario && (
                       <div className="bg-white/5 rounded-xl p-3 border border-white/5">
                         <p className="text-zinc-500 text-[10px] uppercase mb-1">Horario</p>
-                        <div className="flex items-center justify-center gap-1.5 text-white font-semibold">
+                        <div className="flex items-center justify-center gap-1.5 text-white font-semibold text-sm">
                           <Clock className="w-3.5 h-3.5 text-[#FCA929]" />
-                          {userGraduation.HORARIO || '-'}
+                          {user.proximaGraduacion.horario}
                         </div>
                       </div>
+                    )}
+                    {user.proximaGraduacion.turno && (
                       <div className="bg-white/5 rounded-xl p-3 border border-white/5">
                         <p className="text-zinc-500 text-[10px] uppercase mb-1">Turno</p>
-                        <div className="text-white font-semibold flex items-center justify-center gap-1.5 text-center leading-tight text-xs">
-                          <Zap className="w-3.5 h-3.5 text-[#FCA929] flex-shrink-0" />
-                          {userGraduation.TURNO || '-'}
+                        <div className="text-white font-semibold flex items-center justify-center gap-1.5 text-sm">
+                          <Zap className="w-3.5 h-3.5 text-[#FCA929]" />
+                          {user.proximaGraduacion.turno}
                         </div>
-                      </div>
-                    </div>
-
-                    {userGraduation.RANGO && (
-                      <div className="mt-4 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-xl p-3 flex items-center justify-center gap-2">
-                        <Award className="w-4 h-4 text-[#FA7B21]" />
-                        <p className="text-[#FA7B21] text-xs font-medium">
-                          {userGraduation.RANGO}
-                        </p>
                       </div>
                     )}
                   </div>
-                </>
+                </div>
               ) : (
-                <>
-                  <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
-                    <Award className="w-5 h-5 text-zinc-400" />
-                    Próxima Graduación
-                  </h3>
-
-                  {graduacionDate ? (
-                    <div className="text-center py-8">
-                      <div className="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-4 border border-white/5">
-                        <Calendar className="w-10 h-10 text-zinc-600" />
-                      </div>
-                      <p className="text-white/60 uppercase tracking-widest text-sm mb-2">Próxima Fecha General</p>
-                      <p className="text-3xl font-bold text-zinc-300 mb-2">
-                        {format(new Date(graduacionDate), "d 'de' MMMM", { locale: es })}
-                      </p>
-                      <div className="inline-block px-4 py-1.5 rounded-full bg-zinc-800 text-zinc-500 text-xs mt-4 border border-white/5">
-                        No se encontró tu inscripción
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-8">
-                      <p className="text-white/40">
-                        {graduationError ? "No pudimos cargar la fecha" : "Buscando próxima fecha..."}
-                      </p>
-                    </div>
-                  )}
-                </>
+                <div className="text-center py-8">
+                  <div className="w-20 h-20 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-4 border border-white/5">
+                    <Calendar className="w-10 h-10 text-zinc-600" />
+                  </div>
+                  <p className="text-zinc-400 text-sm">No tienes graduaciones programadas</p>
+                  <p className="text-zinc-600 text-xs mt-1">Se mostrara aqui cuando tu profesora te programe</p>
+                </div>
               )}
             </div>
 
+            {/* Mi Cinturon + Historial Timeline */}
             <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#FCA929]" />
-                Mi Cinturón
+                Mi Cinturon
               </h3>
 
-              {/* Cinturón actual */}
+              {/* Cinturon actual */}
               <div className="text-center mb-6">
-                <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#FA7B21]/20 to-orange-600/10 flex items-center justify-center border border-[#FA7B21]/30 mb-3">
-                  <Award className="w-10 h-10 text-[#FA7B21]" />
+                <div
+                  className="w-20 h-20 mx-auto rounded-full flex items-center justify-center border-4 mb-3"
+                  style={{
+                    borderColor: BELT_COLORS[user?.estudiante?.cinturonActual ?? 'Blanco'] ?? '#555',
+                    backgroundColor: `${BELT_COLORS[user?.estudiante?.cinturonActual ?? 'Blanco'] ?? '#555'}15`,
+                  }}
+                >
+                  <Award className="w-10 h-10" style={{ color: BELT_COLORS[user?.estudiante?.cinturonActual ?? 'Blanco'] ?? '#FA7B21' }} />
                 </div>
-                <p className="text-2xl font-bold text-white">{user.estudiante?.cinturonActual || 'Blanco'}</p>
-                <p className="text-xs text-zinc-500 mt-1">Cinturón Actual</p>
+                <p className="text-2xl font-bold text-white">{user?.estudiante?.cinturonActual ?? 'Blanco'}</p>
+                <p className="text-xs text-zinc-500 mt-1">Cinturon Actual</p>
               </div>
 
-              {/* Historial */}
-              {user.historialCinturones && user.historialCinturones.length > 0 ? (
-                <div className="space-y-2 mt-4">
+              {/* Historial Timeline */}
+              {user?.historialCinturones && user.historialCinturones.length > 0 ? (
+                <div className="mt-4">
                   <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Camino recorrido</p>
-                  {user.historialCinturones.map((c, i) => (
-                    <div key={i} className="flex items-center gap-3 bg-white/5 rounded-xl px-4 py-3 border border-white/5">
-                      <div className="w-3 h-3 rounded-full bg-[#FA7B21]" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-white">{c.cinturon}</p>
-                      </div>
-                      <span className="text-xs text-zinc-500">{c.fecha ? formatDate(c.fecha) : ''}</span>
+                  <div className="relative pl-6">
+                    {/* Vertical line */}
+                    <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-white/20 via-[#FA7B21]/40 to-[#FA7B21]" />
+                    <div className="space-y-3">
+                      {user.historialCinturones.map((c, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.08 }}
+                          className="relative flex items-center gap-3"
+                        >
+                          {/* Dot on timeline */}
+                          <div
+                            className="absolute -left-6 w-3.5 h-3.5 rounded-full border-2 border-black"
+                            style={{ backgroundColor: BELT_COLORS[c.cinturon] ?? '#888' }}
+                          />
+                          <div className="flex-1 bg-white/5 rounded-xl px-4 py-3 border border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full flex-shrink-0"
+                                style={{ backgroundColor: BELT_COLORS[c.cinturon] ?? '#888' }}
+                              />
+                              <p className="text-sm font-medium text-white">{c.cinturon}</p>
+                            </div>
+                            <span className="text-xs text-zinc-500">{c.fecha ? formatDate(c.fecha) : '—'}</span>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-zinc-500 text-sm">Tu primer cinturón se registrará en tu próxima graduación</p>
+                  <p className="text-zinc-500 text-sm">Tu primer cinturon se registrara en tu proxima graduacion</p>
                 </div>
               )}
+            </div>
 
-              {/* Próxima graduación */}
-              {user.proximaGraduacion && (
-                <div className="mt-6 p-4 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-xl">
-                  <p className="text-xs text-[#FA7B21] uppercase tracking-wider mb-2">Próxima graduación</p>
-                  <p className="text-white font-medium">{formatDate(user.proximaGraduacion.fecha)}</p>
-                  {user.proximaGraduacion.cinturonHasta && (
-                    <p className="text-sm text-zinc-400 mt-1">
-                      {user.proximaGraduacion.cinturonDesde} → <span className="text-[#FCA929] font-medium">{user.proximaGraduacion.cinturonHasta}</span>
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Torneos */}
-              <div className="mt-6">
-                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Torneos</p>
-                {user.torneos && user.torneos.length > 0 ? (
-                  <div className="space-y-3">
-                    {user.torneos.map((t) => {
-                      const tipoBadge: Record<string, string> = {
-                        regional: 'bg-sky-500/15 text-sky-400',
-                        nacional: 'bg-amber-500/15 text-amber-400',
-                        interescuelas: 'bg-emerald-500/15 text-emerald-400',
-                        panamericano: 'bg-violet-500/15 text-violet-400',
-                        mundial: 'bg-red-500/15 text-red-400',
-                      };
-                      const pagoBadge: Record<string, string> = {
-                        Pendiente: 'bg-amber-500/15 text-amber-400',
-                        Pagado: 'bg-emerald-500/15 text-emerald-400',
-                        Parcial: 'bg-[#FA7B21]/15 text-[#FA7B21]',
-                      };
-                      return (
-                        <div key={t.id} className="bg-white/5 border border-white/5 rounded-xl p-4">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-white font-medium text-sm">{t.torneoNombre || '—'}</p>
-                              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${tipoBadge[t.tipo] ?? 'bg-zinc-800 text-zinc-400'}`}>
-                                  {t.tipo || '—'}
-                                </span>
-                                {t.fecha && <span className="text-zinc-500 text-xs">{formatDate(t.fecha)}</span>}
-                                {t.lugar && <span className="text-zinc-600 text-xs">{t.lugar}</span>}
-                              </div>
+            {/* Torneos */}
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <Zap className="w-5 h-5 text-[#FCA929]" />
+                Torneos
+              </h3>
+              {user?.torneos && user.torneos.length > 0 ? (
+                <div className="space-y-3">
+                  {user.torneos.map((t) => {
+                    const tipoBadge: Record<string, string> = {
+                      regional: 'bg-sky-500/15 text-sky-400',
+                      nacional: 'bg-amber-500/15 text-amber-400',
+                      interescuelas: 'bg-emerald-500/15 text-emerald-400',
+                      panamericano: 'bg-violet-500/15 text-violet-400',
+                      mundial: 'bg-red-500/15 text-red-400',
+                    };
+                    const pagoBadge: Record<string, string> = {
+                      Pendiente: 'bg-amber-500/15 text-amber-400',
+                      Pagado: 'bg-emerald-500/15 text-emerald-400',
+                      Parcial: 'bg-[#FA7B21]/15 text-[#FA7B21]',
+                    };
+                    return (
+                      <div key={t.id} className="bg-white/5 border border-white/5 rounded-xl p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white font-medium text-sm">{t.torneoNombre || '—'}</p>
+                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${tipoBadge[t.tipo] ?? 'bg-zinc-800 text-zinc-400'}`}>
+                                {t.tipo || '—'}
+                              </span>
+                              {t.fecha && <span className="text-zinc-500 text-xs">{formatDate(t.fecha)}</span>}
+                              {t.lugar && <span className="text-zinc-600 text-xs">{t.lugar}</span>}
                             </div>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase shrink-0 ${pagoBadge[t.estadoPago] ?? 'bg-zinc-800 text-zinc-400'}`}>
-                              {t.estadoPago || '—'}
-                            </span>
                           </div>
-                          {t.modalidad && (
-                            <p className="text-zinc-400 text-xs mt-2">Modalidad: {t.modalidad}</p>
-                          )}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase shrink-0 ${pagoBadge[t.estadoPago] ?? 'bg-zinc-800 text-zinc-400'}`}>
+                            {t.estadoPago || '—'}
+                          </span>
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-zinc-500 text-sm">No has sido seleccionado para torneos activos</p>
-                )}
-              </div>
+                        {t.modalidad && (
+                          <p className="text-zinc-400 text-xs mt-2">Modalidad: {t.modalidad}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-zinc-500 text-sm">No has sido seleccionado para torneos activos</p>
+              )}
             </div>
           </motion.div>
         );
