@@ -202,6 +202,19 @@ async function cargarPerfil(alumnoId) {
   }
   const elegible_fighter = asistenciasCount >= 24 && beltIndex >= amarilloCamuIndex && edadAnios >= 3;
 
+  // Torneos donde el alumno está seleccionado
+  let torneos_list = [];
+  try {
+    torneos_list = await query(`
+      SELECT ts.id, ts.modalidad, ts.estado, ts.estado_pago,
+             tc.nombre AS torneo_nombre, tc.tipo, tc.fecha, tc.lugar, tc.precio
+      FROM torneo_selecciones ts
+      JOIN torneos_config tc ON tc.id = ts.torneo_id
+      WHERE ts.alumno_id = $1 AND tc.activo = TRUE
+      ORDER BY tc.fecha DESC
+    `, [alumnoId]);
+  } catch (_) { /* table may not exist yet */ }
+
   return {
     ...perfil,
     talla_uniforme: talla?.talla_uniforme || null,
@@ -226,6 +239,7 @@ async function cargarPerfil(alumnoId) {
     pagos_total,
     elegible_leadership,
     elegible_fighter,
+    torneos: torneos_list,
   };
 }
 

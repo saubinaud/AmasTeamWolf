@@ -18,6 +18,7 @@ import { AsistenciaPanelPage } from '../AsistenciaPanelPage';
 import { SpaceProfesores } from './SpaceProfesores';
 import { SpaceClasesPrueba } from './SpaceClasesPrueba';
 import { SpaceAsistenciaProfesores } from './SpaceAsistenciaProfesores';
+import { SpaceTorneos } from './SpaceTorneos';
 
 export type SpacePage =
   | 'dashboard'
@@ -35,6 +36,7 @@ export type SpacePage =
   | 'profesores'
   | 'asistencia-profesores'
   | 'clases-prueba'
+  | 'torneos'
   | 'config';
 
 export interface SpaceUser {
@@ -159,6 +161,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'profesores' && <SpaceProfesores token={token} />}
       {currentPage === 'asistencia-profesores' && <SpaceAsistenciaProfesores token={token} />}
       {currentPage === 'clases-prueba' && <SpaceClasesPrueba token={token} />}
+      {currentPage === 'torneos' && <SpaceTorneos token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
   );

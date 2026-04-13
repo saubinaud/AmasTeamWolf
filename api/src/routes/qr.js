@@ -53,6 +53,54 @@ router.post('/generar', async (req, res) => {
   }
 });
 
+// POST /api/qr/generar-diario — Generar sesión QR única para todo el día
+// Body: { sede_id }
+router.post('/generar-diario', async (req, res) => {
+  try {
+    const { sede_id } = req.body;
+
+    if (!sede_id) {
+      return res.status(400).json({ error: 'sede_id requerido' });
+    }
+
+    const token = crypto.randomUUID();
+    const ahora = new Date();
+    const cierre = new Date(ahora.getTime() + 12 * 60 * 60 * 1000); // 12 horas
+
+    let sesion;
+    try {
+      const result = await pool.query(
+        `INSERT INTO qr_sesiones (sede_id, horario_id, token, fecha, hora_apertura, hora_cierre, activa, hora_clase, programa)
+         VALUES ($1, NULL, $2, CURRENT_DATE, $3, $4, true, $5, $6)
+         RETURNING id, token, fecha, hora_apertura, hora_cierre, hora_clase, programa`,
+        [sede_id, token, ahora.toISOString(), cierre.toISOString(), '00:00', 'diario']
+      );
+      sesion = result.rows[0];
+    } catch (colErr) {
+      // Fallback si las columnas hora_clase/programa no existen aún
+      const result = await pool.query(
+        `INSERT INTO qr_sesiones (sede_id, horario_id, token, fecha, hora_apertura, hora_cierre, activa)
+         VALUES ($1, NULL, $2, CURRENT_DATE, $3, $4, true)
+         RETURNING id, token, fecha, hora_apertura, hora_cierre`,
+        [sede_id, token, ahora.toISOString(), cierre.toISOString()]
+      );
+      sesion = result.rows[0];
+    }
+
+    res.json({
+      success: true,
+      token: sesion.token,
+      url: `https://amasteamwolf.com/asistencia?token=${sesion.token}`,
+      valido_hasta: sesion.hora_cierre,
+      hora_clase: '00:00',
+      programa: 'diario',
+    });
+  } catch (err) {
+    console.error('Error generando QR diario:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 // GET /api/qr/validar/:token — Verificar si un QR es válido
 router.get('/validar/:token', async (req, res) => {
   try {

@@ -1376,6 +1376,53 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   )}
                 </div>
               )}
+
+              {/* Torneos */}
+              <div className="mt-6">
+                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">Torneos</p>
+                {user.torneos && user.torneos.length > 0 ? (
+                  <div className="space-y-3">
+                    {user.torneos.map((t) => {
+                      const tipoBadge: Record<string, string> = {
+                        regional: 'bg-sky-500/15 text-sky-400',
+                        nacional: 'bg-amber-500/15 text-amber-400',
+                        interescuelas: 'bg-emerald-500/15 text-emerald-400',
+                        panamericano: 'bg-violet-500/15 text-violet-400',
+                        mundial: 'bg-red-500/15 text-red-400',
+                      };
+                      const pagoBadge: Record<string, string> = {
+                        Pendiente: 'bg-amber-500/15 text-amber-400',
+                        Pagado: 'bg-emerald-500/15 text-emerald-400',
+                        Parcial: 'bg-[#FA7B21]/15 text-[#FA7B21]',
+                      };
+                      return (
+                        <div key={t.id} className="bg-white/5 border border-white/5 rounded-xl p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="text-white font-medium text-sm">{t.torneoNombre || '—'}</p>
+                              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase ${tipoBadge[t.tipo] ?? 'bg-zinc-800 text-zinc-400'}`}>
+                                  {t.tipo || '—'}
+                                </span>
+                                {t.fecha && <span className="text-zinc-500 text-xs">{formatDate(t.fecha)}</span>}
+                                {t.lugar && <span className="text-zinc-600 text-xs">{t.lugar}</span>}
+                              </div>
+                            </div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase shrink-0 ${pagoBadge[t.estadoPago] ?? 'bg-zinc-800 text-zinc-400'}`}>
+                              {t.estadoPago || '—'}
+                            </span>
+                          </div>
+                          {t.modalidad && (
+                            <p className="text-zinc-400 text-xs mt-2">Modalidad: {t.modalidad}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-zinc-500 text-sm">No has sido seleccionado para torneos activos</p>
+                )}
+              </div>
             </div>
           </motion.div>
         );
