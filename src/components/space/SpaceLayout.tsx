@@ -74,6 +74,7 @@ const NAV: NavEntry[] = [
   { page: 'leads', label: 'Leads', icon: UserPlus },
   { page: 'compras', label: 'Compras', icon: ShoppingBag },
   { page: 'profesores', label: 'Profesores', icon: UserCheck },
+  { page: 'clases-prueba', label: 'Clases prueba', icon: Sparkles },
   { page: 'mensajes', label: 'Mensajes', icon: MessageSquare },
   { page: 'config', label: 'Ajustes', icon: Settings },
 ];
@@ -85,7 +86,7 @@ const TITLES: Record<SpacePage, string> = {
   'tomar-asistencia': 'Asistencia — Tomar asistencia',
   'asistencia-historica': 'Asistencia — Registrar pasadas',
   leads: 'Leads',
-  compras: 'Compras', profesores: 'Profesores', mensajes: 'Mensajes', config: 'Ajustes',
+  compras: 'Compras', profesores: 'Profesores', 'clases-prueba': 'Clases de prueba', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme }: Props) {

@@ -565,6 +565,36 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               </div>
             </div>
 
+            {/* Program Eligibility Badges (F9) */}
+            {(user.elegibleLeadership || user.elegibleFighter) && (
+              <div className="space-y-3">
+                {user.elegibleLeadership && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}
+                    className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                      <Award className="w-5 h-5 text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-amber-300">Leadership Wolf</p>
+                      <p className="text-xs text-amber-400/70">Ya puedes inscribirte al programa Leadership Wolf</p>
+                    </div>
+                  </motion.div>
+                )}
+                {user.elegibleFighter && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}
+                    className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                      <Zap className="w-5 h-5 text-red-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-red-300">Fighter Wolf</p>
+                      <p className="text-xs text-red-400/70">Ya puedes acceder al programa Fighter Wolf</p>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
               <motion.button
