@@ -33,19 +33,21 @@ router.post('/', async (req, res) => {
     const precioPagado = Number(d.total ?? d.precioPagado) || 0;
     const descuento = Number(d.descuentoDinero ?? d.descuento) || 0;
 
-    // 1. Buscar o crear alumno
+    // 1. Buscar o crear alumno (normalizar DNI para mejor match)
+    const dniNorm = String(d.dniAlumno || '').replace(/[\s\-\.]/g, '').trim();
     let alumno = await client.query(
-      'SELECT id FROM alumnos WHERE dni_alumno = $1',
-      [d.dniAlumno]
+      `SELECT id FROM alumnos WHERE REPLACE(REPLACE(dni_alumno, ' ', ''), '-', '') = $1`,
+      [dniNorm]
     ).then(r => r.rows[0]);
 
     if (!alumno) {
+      const tipoDoc = ['DNI', 'CE', 'Pasaporte'].includes(d.tipoDocumento) ? d.tipoDocumento : 'DNI';
       const result = await client.query(
-        `INSERT INTO alumnos (nombre_alumno, dni_alumno, fecha_nacimiento, categoria,
+        `INSERT INTO alumnos (nombre_alumno, dni_alumno, tipo_documento, fecha_nacimiento, categoria,
          nombre_apoderado, dni_apoderado, correo, telefono, direccion, estado)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'Activo')
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'Activo')
          RETURNING id`,
-        [d.nombreAlumno, d.dniAlumno, d.fechaNacimiento || null, d.categoriaAlumno,
+        [d.nombreAlumno, dniNorm, tipoDoc, d.fechaNacimiento || null, d.categoriaAlumno,
          d.nombrePadre, d.dniPadre, d.email, d.telefono, d.direccion]
       );
       alumno = result.rows[0];

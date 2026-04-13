@@ -18,23 +18,25 @@ router.post('/', async (req, res) => {
 
       let result;
       if (dni_alumno) {
+        const dniNorm = String(dni_alumno).replace(/[\s\-\.]/g, '').trim();
         result = await queryOne(`
           SELECT a.id, a.id AS apoderado_id, a.nombre_alumno AS alumno_nombre,
                  a.nombre_apoderado AS apoderado_nombre, i.programa
           FROM alumnos a
           LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-          WHERE a.dni_alumno = $1
+          WHERE REPLACE(REPLACE(a.dni_alumno, ' ', ''), '-', '') = $1
           LIMIT 1
-        `, [dni_alumno]);
+        `, [dniNorm]);
       } else {
+        const dniNorm = String(dni_padre).replace(/[\s\-\.]/g, '').trim();
         result = await queryOne(`
           SELECT a.id, a.id AS apoderado_id, a.nombre_alumno AS alumno_nombre,
                  a.nombre_apoderado AS apoderado_nombre, i.programa
           FROM alumnos a
           LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-          WHERE a.dni_apoderado = $1
+          WHERE REPLACE(REPLACE(a.dni_apoderado, ' ', ''), '-', '') = $1
           LIMIT 1
-        `, [dni_padre]);
+        `, [dniNorm]);
       }
 
       if (!result) {
