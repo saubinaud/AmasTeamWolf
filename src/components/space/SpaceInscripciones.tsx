@@ -350,7 +350,18 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   const [filterPrograma, setFilterPrograma] = useState('');
   const [filterEstadoPago, setFilterEstadoPago] = useState('');
   const [filterActiva, setFilterActiva] = useState('');
+  const [filterVencimiento, setFilterVencimiento] = useState<'' | '5' | '7' | '15' | '30'>('');
   const [vencimientos, setVencimientos] = useState(0);
+
+  // Check if dashboard sent us here with por_vencer filter
+  useEffect(() => {
+    const saved = sessionStorage.getItem('space_insc_filter');
+    if (saved === 'por_vencer') {
+      setFilterVencimiento('7');
+      setFilterActiva('si');
+      sessionStorage.removeItem('space_insc_filter');
+    }
+  }, []);
 
   // Edit modal
   const [editingInscripcion, setEditingInscripcion] = useState<Inscripcion | null>(null);
@@ -377,6 +388,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
       if (filterPrograma) params.set('programa', filterPrograma);
       if (filterEstadoPago) params.set('estado_pago', filterEstadoPago);
       if (filterActiva) params.set('activa', filterActiva);
+      if (filterVencimiento) params.set('vence_en', filterVencimiento);
       const qs = params.toString();
       const res = await fetch(`${API_BASE}/space/inscripciones?${qs}`, { headers: authHeaders(token) });
       const data = await res.json();
@@ -390,7 +402,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
     } finally {
       setLoading(false);
     }
-  }, [token, search, filterPrograma, filterEstadoPago, filterActiva, page]);
+  }, [token, search, filterPrograma, filterEstadoPago, filterActiva, filterVencimiento, page]);
 
   const fetchVencimientos = useCallback(async () => {
     try {
@@ -571,6 +583,25 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
               {opt.label}
             </button>
           ))}
+
+          <div className="w-px bg-zinc-700 mx-1" />
+
+          {/* Por vencer filter */}
+          <select
+            value={filterVencimiento}
+            onChange={(e) => {
+              setFilterVencimiento(e.target.value as '' | '5' | '7' | '15' | '30');
+              if (e.target.value) setFilterActiva('si');
+              setPage(1);
+            }}
+            className="px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-800 hover:bg-zinc-700 transition-all appearance-none"
+          >
+            <option value="">Por vencer...</option>
+            <option value="5">Próximos 5 días</option>
+            <option value="7">Próximos 7 días</option>
+            <option value="15">Próximos 15 días</option>
+            <option value="30">Próximos 30 días</option>
+          </select>
         </div>
       </div>
 
@@ -614,9 +645,13 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                     </td>
                     <td className={cx.td + ' text-white/60'}>{ins.programa}</td>
                     <td className={cx.td + ' hidden sm:table-cell'}>
-                      <span className={cx.badge(ins.frecuencia_semanal === 1 ? badgeColors.orange : badgeColors.blue)}>
-                        {ins.frecuencia_semanal === 1 ? '1x/sem' : '2x/sem'}
-                      </span>
+                      {ins.frecuencia_semanal != null && ins.frecuencia_semanal !== 2 ? (
+                        <span className={cx.badge(ins.frecuencia_semanal === 1 ? badgeColors.orange : badgeColors.blue)}>
+                          {ins.frecuencia_semanal === 1 ? '1x/sem' : `${ins.frecuencia_semanal}x/sem`}
+                        </span>
+                      ) : (
+                        <span className="text-zinc-600 text-xs">—</span>
+                      )}
                     </td>
                     <td className={cx.td + ' text-white/60 hidden sm:table-cell'}>{formatFecha(ins.fecha_inicio)}</td>
                     <td className={cx.td + ' text-white/60 hidden md:table-cell'}>{formatFecha(ins.fecha_fin)}</td>
