@@ -1,77 +1,56 @@
 # Prompt para nueva sesión de Claude Code
 
-> Copia y pega esto al inicio de una nueva terminal de Claude Code en este proyecto. Actualizado: 2026-04-07 tras la migración auth + panel Space completo.
+> Actualizado: 2026-04-13
 
 ---
 
 ## Contexto rápido
 
-Estás trabajando en **AMAS Team Wolf**, la web + panel administrativo de una academia de taekwondo en Lima, Perú. Propietario: Sebastien Aubinaud (GitHub: `saubinaud`). Tiene 2 academias hermanas (AMAS + Dragon Knight) que comparten estructura.
+**AMAS Team Wolf** — web + panel administrativo de academia de taekwondo en Lima, Perú. Propietario: Sebastien Aubinaud (GitHub: `saubinaud`). Monorepo React + Express + PostgreSQL en Contabo VPS (Docker Swarm + Easypanel).
 
-Es un monorepo con frontend React + backend Express + PostgreSQL, desplegado en Contabo VPS vía Easypanel (Docker Swarm).
+## **LEER PRIMERO** (obligatorio)
 
-## Estado actual (2026-04-07)
+1. `CLAUDE.md` — reglas del proyecto (ya cargado)
+2. `cerebro/14-reglas-arquitectura.md` — **REGLAS CRÍTICAS** de BD, migraciones, optional chaining, timezone, deploy
+3. `cerebro/04-base-datos.md` — tablas, columnas generadas, índices
+4. `cerebro/11-space.md` — 17+ módulos del panel admin
 
-### Lo que está operativo
-- **Landing pública** con matrícula, renovación, tienda, torneo, leadership, showroom
-- **Perfil del apoderado** con asistencias, inscripciones, pagos, contratos, mensajes (lista + marcar leído)
-- **Asistencia QR** (registro por alumno + panel profesora con "Tomar asistencia")
-- **Space Panel Administrativo** (`/space`) con 9 módulos: dashboard, alumnos, inscripciones, graduaciones, asistencia, leads, compras, mensajes, configuración
+## Estado actual (2026-04-13)
 
-### Cambios grandes recientes
-1. **Auth: Logto → JWT propio** (bcrypt + jsonwebtoken). Ya NO existe LogtoProvider. El login es DNI + password.
-2. **Tailwind v4 dinámico** con `@tailwindcss/vite`. Antes `src/index.css` era archivo pre-compilado estático de 6640 líneas → ahora se genera al vuelo. Cualquier clase de Tailwind funciona.
-3. **PDFs contratos: Cloudinary → bytea + disco** (`/opt/amas-contratos/`). Cloudinary tenía restricción 401 en downloads.
-4. **Space panel completo S1-S7** con auth propia (tabla `space_usuarios`, middleware `spaceAuth` + `requireAdmin`).
-5. **Mensajes bidireccionales Space ↔ Perfil** con tracking de lectura.
-6. **Sistema de compras** con `implementos` conectado a detalle de alumno y modal graduación.
+### Operativo
+- **Landing pública** con matrícula, renovación, tienda, torneo
+- **Auth propio JWT** (DNI+password, bcrypt, tipos documento DNI/CE/Pasaporte)
+- **Perfil apoderado**: asistencias, progreso, pagos timeline, contrato, mensajes, código referido, elegibilidad Leadership/Fighter, info apoderado editable
+- **Consulta pública** `/consulta-asistencia` (sin login, por DNI)
+- **Space Panel** con 17+ módulos: dashboard (heatmap), alumnos, inscripciones (inscritos/inscribir/renovar), graduaciones (batch), asistencia (reportes/QR/pasadas/profesores), leads, compras (catálogo), profesores, clases prueba, mensajes, config (usuarios+permisos/sedes/horarios), modo claro/oscuro
 
-## Cómo orientarte — lee en este orden
+### Stack
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React 18 + TypeScript + Tailwind CSS v4 (@tailwindcss/vite) |
+| Backend | Express.js (Node.js) |
+| BD | PostgreSQL 17 (timezone America/Lima) |
+| Auth | JWT propio (bcrypt + jsonwebtoken) |
+| Email | Notifuse |
+| Archivos | bytea + disco (/opt/amas-contratos/) |
+| Deploy FE | Push main → Easypanel auto-build |
+| Deploy BE | SSH + scp + docker restart |
 
-1. `CLAUDE.md` — reglas proyecto (ya cargado)
-2. `cerebro/01-proyecto.md` — qué es, stack
-3. `cerebro/02-arquitectura.md` — estructura archivos
-4. `cerebro/03-rutas-endpoints.md` — todas las rutas API (incluye Space)
-5. `cerebro/04-base-datos.md` — tablas + convenciones críticas
-6. `cerebro/11-space.md` — módulos Space detallados
-7. `cerebro/07-mejoras-realizadas.md` — qué ya se hizo
-8. `cerebro/08-problemas-conocidos.md` — qué falta y ideas
+### Performance
+- Columnas generadas `dni_alumno_norm` + `dni_apoderado_norm` con índices
+- 5 índices adicionales (vencimiento, alumno+fecha, nombre)
+- Timezone forzado con dateUtils.ts (America/Lima)
 
-**Para tareas específicas:**
-- Asistencia/QR: `cerebro/05-horarios-asistencia.md`
-- Deploy: `cerebro/09-deploy.md`
-- Accesos servidor: `cerebro/10-accesos.md` + `src/Accesos Servidor Pallium - Contabo VPS.md`
+## Convenciones críticas
 
-## Convenciones críticas (no olvidar)
-
-### Base de datos
-- Tabla `alumnos` usa `nombre_alumno` y `dni_alumno` (NO `nombre`/`dni`)
-- `alumnos.estado` es VARCHAR → siempre `LOWER(estado) = 'activo'`
-- `inscripciones.estado` es `'Activo'`/`'Vencido'` (case-sensitive)
-- **NO existen** `inscripciones.monto`, `.horario`, `.sede_id`, `.activa` (boolean)
-- `asistencias.asistio` es VARCHAR `'Sí'`/`'No'`/`'Tardanza'` (NO boolean — fue bug histórico)
-- `leads.observaciones` existe (se agregó este sesión)
-- Contratos: PDF en `contratos.pdf_bytea`, NO en Cloudinary
-
-### Frontend
-- Tokens Space SÓLIDOS: `bg-zinc-900 border border-zinc-800 rounded-2xl` — **sin** `/60`, **sin** `backdrop-blur`
-- Modales Space usan `createPortal` a `document.body`, z-index 99999
-- `src/index.css` SOLO tiene 2 imports — nunca regresar a CSS pre-compilado
-- `AuthContext` expone `user.mensajes[]` (array, no singular)
-
-### Backend
-- Space routes: siempre bajo `/api/space/*` con middleware `spaceAuth`
-- Responses: `{success: true, data: [...]}` o `{success: true, stats: {...}}` — checar cada ruta antes de consumir
-
-## Reglas del proyecto (del CLAUDE.md)
-
-- **No crear archivos innecesarios** — editar existentes siempre que sea posible
-- **No crear docs/README** a menos que se pida explícitamente
-- **No guardar archivos de trabajo/tests en root** — usar `/src`, `/tests`, `/docs`, `/scripts`
-- **Leer archivo antes de editar** — siempre
-- Padres usan **Android gama baja** — priorizar performance mobile
-- **Commit + push** solo cuando el usuario lo pida
-- Usar `gh auth switch --user saubinaud` si hay problema de cuenta
+- **`nombre_alumno`/`dni_alumno`** no `nombre`/`dni`
+- **`asistio = 'Sí'`** VARCHAR no boolean
+- **`turno`** = nombre clase (Súper Baby Wolf, Baby Wolf, Little Wolf, Junior Wolf, Adolescentes Wolf)
+- **DNI buscar**: `WHERE dni_alumno_norm = $1` (columna generada, index scan)
+- **Timezone**: `timeZone: 'America/Lima'` obligatorio en frontend
+- **Migraciones**: SIEMPRE verificar con SELECT después de ALTER TABLE
+- **No inventar datos**: si NULL → mostrar "—"
+- **Optional chaining**: obligatorio para campos anidados (`user?.pagos?.precioPrograma ?? 0`)
 
 ## Deploy
 
@@ -79,11 +58,12 @@ Es un monorepo con frontend React + backend Express + PostgreSQL, desplegado en 
 Push a `main` → Easypanel auto-build (1-2 min).
 
 ### Backend
-Manual vía SSH:
 ```bash
-# Un archivo
 cat api/src/routes/ARCHIVO.js | sshpass -p 'Aubinaud919' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@95.111.254.27 "docker exec -i amas-api tee /app/src/routes/ARCHIVO.js > /dev/null"
 sshpass -p 'Aubinaud919' ssh root@95.111.254.27 "docker restart amas-api"
+# VERIFICAR después:
+curl -s https://amas-api.s6hx3x.easypanel.host/health
+curl -s -X POST https://amas-api.s6hx3x.easypanel.host/api/auth/login -H 'Content-Type: application/json' -d '{"dni":"47702188","password":"test"}'
 ```
 
 ### BD
@@ -91,30 +71,21 @@ sshpass -p 'Aubinaud919' ssh root@95.111.254.27 "docker restart amas-api"
 sshpass -p 'Aubinaud919' ssh root@95.111.254.27 "docker exec pallium_amas-db.1.\$(docker service ps pallium_amas-db -q --no-trunc | head -1) psql -U amas_user -d amas_database -c \"SQL_AQUI\""
 ```
 
-### Verificar
-- Frontend: https://amasteamwolf.com
-- API health: `curl https://amas-api.s6hx3x.easypanel.host/health`
-- Logs: `docker logs amas-api --tail 20`
+## Fases pendientes (3 de 14)
 
-## Ideas para próximas sesiones (del 08)
+- **F11**: Pasarela Culqi (requiere cuenta)
+- **F12**: Torneos desde perfil
+- **F13**: QR único inteligente
+- **F14**: Pendiente info David (Wolf Instructor, Fighter, contrato, cartillas)
 
-- WhatsApp notificaciones (Evolution API ya instalada)
-- Reportes PDF desde Space
-- Gráficos en Dashboard (recharts ya en stack)
-- Multi-sede real con selector
-- Calendario editorial de mensajes (programar envíos)
-- Integración pagos online (Culqi/Izipay)
-- CI/CD backend con GitHub Actions
+## Plan maestro de cambios
+
+Ver `cerebro/12-plan-cambios.md` (50 items organizados en 9 áreas).
 
 ## Si algo no funciona
 
-1. **Clase Tailwind no aplica** → Verificar que `@tailwindcss/vite` esté en `vite.config.ts`. Si `index.css` tiene más de 10 líneas, algo está mal.
-2. **Space endpoint 500** → Revisar convenciones BD arriba. Muchos bugs históricos eran por `nombre`/`dni` vs `nombre_alumno`/`dni_alumno`, o `asistio = true` vs `'Sí'`.
-3. **Modal invisible** → Verificar tokens sólidos + `createPortal`.
-4. **Login falla** → Ya no usa Logto. Ver `api/src/routes/auth.js`.
-5. **PDF corrupto** → Ya no es Cloudinary. Ver `contratos.pdf_bytea` + endpoints `/api/auth/contrato/:id/ver`.
-
-## Último commit
-`ee25450 fix: UX/UI overhaul — fixed header/footer, smooth scroll, mobile-first layout`
-
-Branch: `main`. El repo tiene `.claude/`, `.claude-flow/`, `CLAUDE.md`, `.mcp.json` sin trackear — ignorar.
+1. **Login 500** → verificar columnas generadas: `SELECT column_name FROM information_schema.columns WHERE table_name='alumnos' AND column_name LIKE '%norm%'`
+2. **Búsqueda lenta** → verificar índices: `SELECT indexname FROM pg_indexes WHERE tablename='alumnos'`
+3. **Clase Tailwind no aplica** → verificar `@tailwindcss/vite` en `vite.config.ts`
+4. **Modal invisible** → verificar tokens sólidos + `createPortal`
+5. **Datos inventados** → campo sin dato debe mostrar "—", no un valor default visible
