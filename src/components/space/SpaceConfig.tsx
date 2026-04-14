@@ -55,6 +55,8 @@ interface Horario {
   nombre_clase: string;
   capacidad: number;
   instructor: string;
+  edad_min_meses?: number | null;
+  edad_max_meses?: number | null;
   sede_nombre?: string;
   activo: boolean;
 }
@@ -88,6 +90,8 @@ interface HorarioForm {
   nombre_clase: string;
   capacidad: number | '';
   instructor: string;
+  edad_min_meses: number | '';
+  edad_max_meses: number | '';
 }
 
 interface SpaceConfigProps {
@@ -188,6 +192,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
   const [horarioForm, setHorarioForm] = useState<HorarioForm>({
     sede_id: '', dia_semana: '', hora_inicio: '', hora_fin: '',
     nombre_clase: '', capacidad: '', instructor: '',
+    edad_min_meses: '', edad_max_meses: '',
   });
 
   // ── Fetch functions ──
@@ -426,6 +431,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           sede_id: Number(horarioForm.sede_id),
           dia_semana: Number(horarioForm.dia_semana),
           capacidad: horarioForm.capacidad ? Number(horarioForm.capacidad) : 0,
+          edad_min_meses: horarioForm.edad_min_meses !== '' ? Number(horarioForm.edad_min_meses) : null,
+          edad_max_meses: horarioForm.edad_max_meses !== '' ? Number(horarioForm.edad_max_meses) : null,
         }),
       });
       if (!res.ok) {
@@ -455,6 +462,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           sede_id: Number(horarioForm.sede_id),
           dia_semana: Number(horarioForm.dia_semana),
           capacidad: horarioForm.capacidad ? Number(horarioForm.capacidad) : 0,
+          edad_min_meses: horarioForm.edad_min_meses !== '' ? Number(horarioForm.edad_min_meses) : null,
+          edad_max_meses: horarioForm.edad_max_meses !== '' ? Number(horarioForm.edad_max_meses) : null,
         }),
       });
       if (!res.ok) {
@@ -495,6 +504,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
     setHorarioForm({
       sede_id: '', dia_semana: '', hora_inicio: '', hora_fin: '',
       nombre_clase: '', capacidad: '', instructor: '',
+      edad_min_meses: '', edad_max_meses: '',
     });
   }
 
@@ -525,6 +535,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
       nombre_clase: h.nombre_clase,
       capacidad: h.capacidad,
       instructor: h.instructor,
+      edad_min_meses: h.edad_min_meses ?? '',
+      edad_max_meses: h.edad_max_meses ?? '',
     });
     setModalHorarioEdit(h);
   }
@@ -730,6 +742,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                   <th className={cx.th}>Hora inicio</th>
                   <th className={cx.th}>Hora fin</th>
                   <th className={cx.th}>Clase</th>
+                  <th className={cx.th}>Edad (meses)</th>
                   <th className={cx.th}>Capacidad</th>
                   <th className={cx.th}>Instructor</th>
                   <th className={cx.th}>Sede</th>
@@ -738,9 +751,9 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
               </thead>
               <tbody>
                 {loadingHorarios ? (
-                  <SkeletonRow cols={8} />
+                  <SkeletonRow cols={9} />
                 ) : horarios.length === 0 ? (
-                  <tr><td colSpan={8} className={`${cx.td} text-center text-zinc-500`}>Sin horarios</td></tr>
+                  <tr><td colSpan={9} className={`${cx.td} text-center text-zinc-500`}>Sin horarios</td></tr>
                 ) : (
                   horarios.map(h => {
                     const sedeName = h.sede_nombre || sedes.find(s => s.id === h.sede_id)?.nombre || '\u2014';
@@ -752,6 +765,11 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                         <td className={`${cx.td} text-white`}>{h.hora_inicio}</td>
                         <td className={`${cx.td} text-white`}>{h.hora_fin}</td>
                         <td className={`${cx.td} text-white font-medium`}>{h.nombre_clase}</td>
+                        <td className={`${cx.td} text-zinc-400`}>
+                          {h.edad_min_meses != null && h.edad_max_meses != null
+                            ? `${h.edad_min_meses}–${h.edad_max_meses}`
+                            : '\u2014'}
+                        </td>
                         <td className={`${cx.td} text-zinc-400`}>{h.capacidad}</td>
                         <td className={`${cx.td} text-zinc-400`}>{h.instructor || '\u2014'}</td>
                         <td className={cx.td}>
@@ -1178,6 +1196,15 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
 // Horario Form Fields (shared between create / edit)
 // ---------------------------------------------------------------------------
 
+const EDAD_DEFAULTS: Record<string, { min: number; max: number }> = {
+  'Mega Súper Baby Wolf': { min: 11, max: 15 },
+  'Súper Baby Wolf': { min: 16, max: 26 },
+  'Baby Wolf': { min: 27, max: 48 },
+  'Little Wolf': { min: 49, max: 71 },
+  'Junior Wolf': { min: 72, max: 143 },
+  'Adolescentes Wolf': { min: 144, max: 215 },
+};
+
 function HorarioFormFields({
   form,
   setForm,
@@ -1187,6 +1214,17 @@ function HorarioFormFields({
   setForm: React.Dispatch<React.SetStateAction<HorarioForm>>;
   sedes: Sede[];
 }) {
+  const handleClaseChange = (nombre: string) => {
+    const defaults = EDAD_DEFAULTS[nombre];
+    setForm(f => ({
+      ...f,
+      nombre_clase: nombre,
+      // Auto-fill age range only if currently empty
+      edad_min_meses: f.edad_min_meses === '' && defaults ? defaults.min : f.edad_min_meses,
+      edad_max_meses: f.edad_max_meses === '' && defaults ? defaults.max : f.edad_max_meses,
+    }));
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -1240,7 +1278,7 @@ function HorarioFormFields({
         <select
           className={cx.select}
           value={form.nombre_clase}
-          onChange={e => setForm(f => ({ ...f, nombre_clase: e.target.value }))}
+          onChange={e => handleClaseChange(e.target.value)}
         >
           <option value="">Seleccionar programa</option>
           <option value="Mega Súper Baby Wolf">Mega Súper Baby Wolf</option>
@@ -1252,6 +1290,30 @@ function HorarioFormFields({
           <option value="Leadership Wolf">Leadership Wolf</option>
           <option value="Fighter Wolf">Fighter Wolf</option>
         </select>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={cx.label}>Edad min (meses)</label>
+          <input
+            className={cx.input}
+            type="number"
+            min={0}
+            value={form.edad_min_meses}
+            onChange={e => setForm(f => ({ ...f, edad_min_meses: e.target.value ? Number(e.target.value) : '' }))}
+            placeholder={EDAD_DEFAULTS[form.nombre_clase]?.min?.toString() ?? ''}
+          />
+        </div>
+        <div>
+          <label className={cx.label}>Edad max (meses)</label>
+          <input
+            className={cx.input}
+            type="number"
+            min={0}
+            value={form.edad_max_meses}
+            onChange={e => setForm(f => ({ ...f, edad_max_meses: e.target.value ? Number(e.target.value) : '' }))}
+            placeholder={EDAD_DEFAULTS[form.nombre_clase]?.max?.toString() ?? ''}
+          />
+        </div>
       </div>
       <div>
         <label className={cx.label}>Capacidad</label>

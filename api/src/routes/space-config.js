@@ -252,6 +252,7 @@ router.get('/horarios', async (req, res) => {
       SELECT h.id, h.sede_id, s.nombre AS sede_nombre,
              h.dia_semana, h.hora_inicio, h.hora_fin,
              h.nombre_clase, h.capacidad, h.instructor,
+             h.edad_min_meses, h.edad_max_meses,
              h.activo, h.created_at
       FROM horarios h
       JOIN sedes s ON s.id = h.sede_id
@@ -279,7 +280,8 @@ router.get('/horarios/por-sede/:sedeId', async (req, res) => {
     const { sedeId } = req.params;
     const rows = await query(
       `SELECT h.id, h.dia_semana, h.hora_inicio, h.hora_fin,
-              h.nombre_clase, h.capacidad, h.instructor, h.activo
+              h.nombre_clase, h.capacidad, h.instructor,
+              h.edad_min_meses, h.edad_max_meses, h.activo
        FROM horarios h
        WHERE h.sede_id = $1
        ORDER BY h.dia_semana, h.hora_inicio`,
@@ -304,7 +306,7 @@ router.get('/horarios/por-sede/:sedeId', async (req, res) => {
 // POST /horarios — create
 router.post('/horarios', async (req, res) => {
   try {
-    const { sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor } = req.body;
+    const { sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, edad_min_meses, edad_max_meses } = req.body;
 
     if (!sede_id || dia_semana === undefined || !hora_inicio || !hora_fin || !nombre_clase) {
       return res.status(400).json({
@@ -323,10 +325,11 @@ router.post('/horarios', async (req, res) => {
     }
 
     const row = await queryOne(
-      `INSERT INTO horarios (sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
-       RETURNING id, sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, activo, created_at`,
-      [sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad || null, instructor || null]
+      `INSERT INTO horarios (sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, edad_min_meses, edad_max_meses)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, edad_min_meses, edad_max_meses, activo, created_at`,
+      [sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad || null, instructor || null,
+       edad_min_meses != null ? edad_min_meses : null, edad_max_meses != null ? edad_max_meses : null]
     );
     res.status(201).json({ success: true, data: row });
   } catch (err) {
@@ -339,7 +342,7 @@ router.post('/horarios', async (req, res) => {
 router.put('/horarios/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, activo } = req.body;
+    const { sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, activo, edad_min_meses, edad_max_meses } = req.body;
 
     if (dia_semana !== undefined && (dia_semana < 0 || dia_semana > 6)) {
       return res.status(400).json({ success: false, error: 'dia_semana debe estar entre 0 y 6' });
@@ -354,16 +357,18 @@ router.put('/horarios/:id', async (req, res) => {
 
     const row = await queryOne(
       `UPDATE horarios
-       SET sede_id      = COALESCE($1, sede_id),
-           dia_semana   = COALESCE($2, dia_semana),
-           hora_inicio  = COALESCE($3, hora_inicio),
-           hora_fin     = COALESCE($4, hora_fin),
-           nombre_clase = COALESCE($5, nombre_clase),
-           capacidad    = COALESCE($6, capacidad),
-           instructor   = COALESCE($7, instructor),
-           activo       = COALESCE($8, activo)
-       WHERE id = $9
-       RETURNING id, sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, activo, created_at`,
+       SET sede_id         = COALESCE($1, sede_id),
+           dia_semana      = COALESCE($2, dia_semana),
+           hora_inicio     = COALESCE($3, hora_inicio),
+           hora_fin        = COALESCE($4, hora_fin),
+           nombre_clase    = COALESCE($5, nombre_clase),
+           capacidad       = COALESCE($6, capacidad),
+           instructor      = COALESCE($7, instructor),
+           activo          = COALESCE($8, activo),
+           edad_min_meses  = COALESCE($9, edad_min_meses),
+           edad_max_meses  = COALESCE($10, edad_max_meses)
+       WHERE id = $11
+       RETURNING id, sede_id, dia_semana, hora_inicio, hora_fin, nombre_clase, capacidad, instructor, edad_min_meses, edad_max_meses, activo, created_at`,
       [
         sede_id || null,
         dia_semana !== undefined ? dia_semana : null,
@@ -373,6 +378,8 @@ router.put('/horarios/:id', async (req, res) => {
         capacidad !== undefined ? capacidad : null,
         instructor || null,
         activo !== undefined ? activo : null,
+        edad_min_meses != null ? edad_min_meses : null,
+        edad_max_meses != null ? edad_max_meses : null,
         id
       ]
     );

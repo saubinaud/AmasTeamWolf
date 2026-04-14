@@ -352,4 +352,118 @@ function detectarTurno() {
   return 'General';
 }
 
+// ── Helper: detectar turno por edad usando horarios configurados ──
+async function detectarTurnoPorEdad(fechaNacimiento) {
+  if (!fechaNacimiento) return null;
+  const hoy = new Date();
+  const nacimiento = new Date(fechaNacimiento);
+  const edadMeses = Math.floor((hoy - nacimiento) / (1000 * 60 * 60 * 24 * 30.44));
+
+  // Primero intentar con horarios configurados (edad_min_meses / edad_max_meses)
+  try {
+    const horario = await queryOne(`
+      SELECT nombre_clase FROM horarios
+      WHERE activo = true AND edad_min_meses IS NOT NULL
+        AND $1 >= edad_min_meses AND $1 <= edad_max_meses
+      LIMIT 1
+    `, [edadMeses]);
+    if (horario?.nombre_clase) return horario.nombre_clase;
+  } catch (_err) {
+    // Si falla (columnas no existen aún), fallback
+  }
+
+  // Fallback a detección hardcoded
+  return detectarClase(fechaNacimiento);
+}
+
+// POST /api/asistencia/por-nombre — Registrar asistencia por alumno_id
+// Body: { alumno_id, token?, turno? }
+router.post('/por-nombre', async (req, res) => {
+  try {
+    const { alumno_id, token, turno } = req.body;
+
+    if (!alumno_id) {
+      return res.status(400).json({ success: false, error: 'alumno_id es requerido' });
+    }
+
+    // Buscar alumno
+    const alumno = await queryOne(
+      'SELECT id, dni_alumno, nombre_alumno, fecha_nacimiento, categoria FROM alumnos WHERE id = $1',
+      [alumno_id]
+    );
+    if (!alumno) {
+      return res.status(404).json({ success: false, error: 'Alumno no encontrado' });
+    }
+
+    // Detectar turno
+    let turnoFinal = turno || null;
+    if (!turnoFinal) {
+      turnoFinal = await detectarTurnoPorEdad(alumno.fecha_nacimiento);
+      if (!turnoFinal) {
+        const fromCategoria = mapearCategoria(alumno.categoria);
+        turnoFinal = fromCategoria || 'General';
+      }
+    }
+
+    if (token) {
+      // Con token QR: usar registrar_asistencia
+      const result = await queryOne(
+        'SELECT registrar_asistencia($1, $2, $3) AS resultado',
+        [alumno.dni_alumno, token, turnoFinal]
+      );
+      const data = typeof result?.resultado === 'string'
+        ? JSON.parse(result.resultado)
+        : result?.resultado;
+
+      const entry = Array.isArray(data) ? data[0] : data;
+      if (entry) {
+        entry.clase_detectada = turnoFinal;
+      }
+      res.json(data);
+    } else {
+      // Sin token: registro manual directo
+      // Buscar inscripcion activa
+      const inscripcion = await queryOne(`
+        SELECT id, sede_id FROM inscripciones
+        WHERE alumno_id = $1 AND estado = 'activa'
+        ORDER BY fecha_inicio DESC LIMIT 1
+      `, [alumno_id]);
+
+      // Verificar si ya marcó hoy
+      const yaRegistro = await queryOne(`
+        SELECT id FROM asistencias
+        WHERE alumno_id = $1 AND fecha = CURRENT_DATE AND turno = $2
+      `, [alumno_id, turnoFinal]);
+
+      if (yaRegistro) {
+        return res.json({
+          success: false,
+          error: `${alumno.nombre_alumno} ya tiene asistencia registrada hoy para ${turnoFinal}`,
+          alumno: alumno.nombre_alumno,
+          clase_detectada: turnoFinal,
+        });
+      }
+
+      await query(`
+        INSERT INTO asistencias (alumno_id, inscripcion_id, sede_id, fecha, hora, turno, asistio)
+        VALUES ($1, $2, $3, CURRENT_DATE, NOW()::time, $4, 'Sí')
+      `, [
+        alumno_id,
+        inscripcion?.id || null,
+        inscripcion?.sede_id || 1,
+        turnoFinal,
+      ]);
+
+      res.json({
+        success: true,
+        alumno: alumno.nombre_alumno,
+        clase_detectada: turnoFinal,
+      });
+    }
+  } catch (err) {
+    console.error('Error registrando asistencia por nombre:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
 module.exports = router;
