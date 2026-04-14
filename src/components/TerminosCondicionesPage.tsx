@@ -24,7 +24,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                 </button>
 
                 {/* Content Card */}
-                <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 sm:p-10 md:p-12 shadow-2xl">
+                <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 sm:p-10 md:p-12 shadow-2xl">
                     {/* Header */}
                     <div className="text-center mb-10 pb-8 border-b border-white/10">
                         <div className="w-16 h-16 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30">

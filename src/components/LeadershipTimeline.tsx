@@ -63,7 +63,7 @@ export function LeadershipTimeline() {
                 >
                   {/* Card - Padding reducido pero texto legible */}
                   <div className={`w-full md:w-[calc(50%-2rem)] ${isEven ? 'md:text-right' : 'md:text-left'} text-left pl-12 md:pl-0`}>
-                    <div className="bg-zinc-900/60 backdrop-blur border border-[#FA7B21]/30 rounded-lg md:rounded-2xl px-3 py-3 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-300 group relative overflow-hidden">
+                    <div className="bg-zinc-900/60 border border-[#FA7B21]/30 rounded-lg md:rounded-2xl px-3 py-3 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-300 group relative overflow-hidden">
                       {/* Glow effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/5 to-[#FCA929]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       

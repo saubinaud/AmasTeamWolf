@@ -197,7 +197,7 @@ export function LeadershipRoadmap() {
                 </div>
 
                 {/* Contenido de la etapa */}
-                <Card className="flex-1 bg-zinc-800/50 backdrop-blur border-white/10 hover:border-[#FA7B21]/50 transition-all">
+                <Card className="flex-1 bg-zinc-800/50 border-white/10 hover:border-[#FA7B21]/50 transition-all">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4 mb-4 md:hidden">
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FA7B21] to-[#E65C0F] flex items-center justify-center flex-shrink-0 border-2 border-white">
@@ -236,7 +236,7 @@ export function LeadershipRoadmap() {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-16 bg-gradient-to-r from-[#431C28]/50 to-zinc-900/50 backdrop-blur border border-[#FA7B21]/30 rounded-lg p-8 text-center"
+            className="mt-16 bg-gradient-to-r from-[#431C28]/50 to-zinc-900/50 border border-[#FA7B21]/30 rounded-lg p-8 text-center"
           >
             <div className="grid md:grid-cols-2 gap-8 mb-6">
               <div>

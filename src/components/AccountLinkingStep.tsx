@@ -117,7 +117,7 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl"
+                    className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 shadow-2xl"
                 >
                     {/* Header */}
                     <div className="text-center mb-8">

@@ -135,7 +135,7 @@ export function VincularCuentaPage({ onNavigate }: VincularCuentaPageProps) {
 
             <div className="relative max-w-lg md:max-w-xl mx-auto">
                 {/* Card */}
-                <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
+                <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 md:p-10 shadow-2xl">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <div className="w-20 h-20 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30">

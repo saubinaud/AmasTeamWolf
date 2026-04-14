@@ -36,7 +36,7 @@ interface SectionProps {
 // --- COMPONENTES UI (In-line para evitar dependencias externas) ---
 const Card = ({ children, className, isWarning = false }: { children: React.ReactNode; className?: string; isWarning?: boolean }) => (
   <div className={cn(
-    "relative overflow-hidden rounded-xl border bg-zinc-900/50 p-6 backdrop-blur-md transition-all hover:bg-zinc-900/80",
+    "relative overflow-hidden rounded-xl border bg-zinc-900/50 p-6 transition-all hover:bg-zinc-900/80",
     isWarning 
       ? "border-orange-500/30 shadow-[0_0_15px_rgba(250,123,33,0.1)]" 
       : "border-white/10 hover:border-white/20",

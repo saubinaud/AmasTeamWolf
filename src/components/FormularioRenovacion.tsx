@@ -823,21 +823,21 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
               {/* Stats emocionales - en fila */}
               <div className="flex flex-wrap justify-center gap-6 lg:gap-12 mb-12">
-                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-6 py-3">
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-6 py-3">
                   <Trophy className="w-8 h-8 text-[#FCA929]" />
                   <div className="text-left">
                     <p className="text-white font-bold text-2xl">+300</p>
                     <p className="text-white/60 text-xs">Alumnos Renovados</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-6 py-3">
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-6 py-3">
                   <Award className="w-8 h-8 text-[#FCA929]" />
                   <div className="text-left">
                     <p className="text-white font-bold text-2xl">10+</p>
                     <p className="text-white/60 text-xs">Años Formando</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-6 py-3">
+                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-6 py-3">
                   <Sparkles className="w-8 h-8 text-[#FCA929]" />
                   <div className="text-left">
                     <p className="text-white font-bold text-2xl">100%</p>
@@ -894,7 +894,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 {/* 1. Plan 3 meses (Ahora Primero) */}
                 <div
                   onClick={() => handleSelectPlan('full')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
                 >
                   <div className="text-center mb-6">
                     <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
@@ -924,7 +924,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 {/* 2. Plan 6 meses - Popular (Ahora Segundo) */}
                 <div
                   onClick={() => handleSelectPlan('6meses')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/30"
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/30"
                 >
                   {/* Badge Popular */}
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
@@ -964,7 +964,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 {/* 3. Plan 12 meses - Sin Implementos (Ahora Tercero) */}
                 <div
                   onClick={() => handleSelectPlan('12meses_sin')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-sm border-2 border-emerald-500/50 rounded-2xl p-6 sm:p-8 hover:border-emerald-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/30"
+                  className="relative bg-gradient-to-b from-white/10 to-white/5 border-2 border-emerald-500/50 rounded-2xl p-6 sm:p-8 hover:border-emerald-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/30"
                 >
                   <div className="text-center mb-6">
                     <div className="text-5xl mb-4">{PLANES_INFO["12meses_sin"].icon}</div>
@@ -1000,7 +1000,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
 
                 <div
                   onClick={() => handleSelectPlan('12meses_con')}
-                  className="relative overflow-hidden bg-gradient-to-b from-zinc-900 to-black backdrop-blur-xl border-2 border-[#FA7B21] rounded-3xl p-8 sm:p-12 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#FA7B21]/40"
+                  className="relative overflow-hidden bg-gradient-to-b from-zinc-900 to-black border-2 border-[#FA7B21] rounded-3xl p-8 sm:p-12 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#FA7B21]/40"
                 >
                   {/* Background effects */}
                   <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay"></div>
@@ -1099,7 +1099,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
               {/* Plan 1 mes - Solo visible con código */}
               {mostrar1Mes && (
                 <div className="mt-8 max-w-lg mx-auto">
-                  <div className="relative bg-gradient-to-b from-green-500/10 to-green-500/5 backdrop-blur-sm border-2 border-green-500/50 rounded-2xl p-6 sm:p-8">
+                  <div className="relative bg-gradient-to-b from-green-500/10 to-green-500/5 border-2 border-green-500/50 rounded-2xl p-6 sm:p-8">
                     {/* Badge Código Desbloqueado */}
                     <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
                       🔓 CÓDIGO DESBLOQUEADO
@@ -1152,7 +1152,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                 </button>
 
                 {codigoExpanded && (
-                  <div className="mt-4 bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="mt-4 bg-white/5 border border-white/10 rounded-xl p-6 animate-in fade-in slide-in-from-top-2 duration-300">
                     <div className="flex gap-3">
                       <Input
                         type="text"
@@ -1231,7 +1231,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
         {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-6 md:space-y-7">
           {/* Datos del Alumno */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 md:p-7">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-7">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Datos del Alumno
             </h3>
@@ -1349,7 +1349,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Datos del Padre */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 md:p-7">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-7">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Datos del Padre de Familia
             </h3>
@@ -1412,7 +1412,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Polos Adicionales */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 md:p-7">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-7">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Adicionales (Opcional)
             </h3>
@@ -1476,7 +1476,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Fechas del Programa */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Fechas del Programa
             </h3>
@@ -1707,7 +1707,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Código Promocional */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
               Código Promocional (Opcional)
             </h3>
@@ -1750,7 +1750,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
           </div>
 
           {/* Contrato Firmado */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
             <button
               type="button"
               onClick={() => setContratoExpanded(!contratoExpanded)}

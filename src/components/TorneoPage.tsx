@@ -112,7 +112,7 @@ const Label = ({ children, className = "" }: { children: React.ReactNode; classN
 
 const Input = ({ className = "", ...props }: any) => (
     <input
-        className={`w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
+        className={`w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
         {...props}
     />
 );
@@ -497,7 +497,7 @@ export function TorneoPage({
                         ].map((item, i) => (
                             <div
                                 key={i}
-                                className="flex items-center gap-3 bg-black/60 backdrop-blur-md px-5 py-3 rounded-2xl border-2 border-[#FA7B21]/30 shadow-xl"
+                                className="flex items-center gap-3 bg-zinc-950/85 px-5 py-3 rounded-2xl border-2 border-[#FA7B21]/30 shadow-xl"
                             >
                                 <item.Icon className="w-5 h-5 text-[#FA7B21] flex-shrink-0" />
                                 <div className="text-left">
@@ -828,7 +828,7 @@ export function TorneoPage({
                                                             className="relative"
                                                         >
                                                             <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-20" />
-                                                            <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 md:p-6 backdrop-blur-sm">
+                                                            <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 md:p-6">
                                                                 <div className="flex items-center gap-2 mb-4">
                                                                     <Shield className="w-5 h-5 text-[#FA7B21]" />
                                                                     <p className="text-white font-bold text-sm md:text-base">Resumen de inscripción</p>
@@ -947,7 +947,7 @@ export function TorneoPage({
                                         {/* Monto */}
                                         <div className="relative mb-8">
                                             <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-20" />
-                                            <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 text-center backdrop-blur-sm">
+                                            <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 text-center">
                                                 <p className="text-white/60 text-xs uppercase tracking-wider mb-1">Monto a pagar</p>
                                                 {hasDiscount && subtotal !== total ? (
                                                     <>

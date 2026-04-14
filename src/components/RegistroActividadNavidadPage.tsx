@@ -245,7 +245,7 @@ export function RegistroActividadNavidadPage({
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white/95 backdrop-blur-xl border-4 border-[#FF6700] rounded-3xl p-6 md:p-10 text-center shadow-2xl"
+              className="bg-white/95 border-4 border-[#FF6700] rounded-3xl p-6 md:p-10 text-center shadow-2xl"
             >
               <div className="mb-6 flex justify-center">
                 <div className="w-24 h-24 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center shadow-2xl animate-bounce">
@@ -275,7 +275,7 @@ export function RegistroActividadNavidadPage({
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4 }}
-              className="bg-[#0a1510]/98 backdrop-blur-2xl border-4 border-[#FF6700] rounded-3xl p-6 md:p-8 lg:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.9)] relative overflow-hidden"
+              className="bg-[#0a1510]/98-2xl border-4 border-[#FF6700] rounded-3xl p-6 md:p-8 lg:p-10 shadow-[0_20px_80px_rgba(0,0,0,0.9)] relative overflow-hidden"
             >
               {/* Decoración superior brillante */}
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#FF6700] via-[#ff8533] to-[#FF6700] shadow-[0_0_20px_rgba(255,103,0,0.8)]" />
@@ -399,7 +399,7 @@ export function RegistroActividadNavidadPage({
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden relative z-10"
                   >
-                    <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 text-center mx-1">
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8 text-center mx-1">
                       <p className="text-gray-200 text-sm md:text-base leading-relaxed font-light">
                         ¡Qué pena que no puedan asistir! Nos hubiera encantado verlos ahí.
                         <span className="text-[#FF6700] font-bold block mt-3 text-lg md:text-xl drop-shadow-md font-serif">
@@ -420,7 +420,7 @@ export function RegistroActividadNavidadPage({
                     className="overflow-hidden relative z-10"
                   >
                     {/* Info del intercambio */}
-                    <div className="bg-gradient-to-r from-[#FF6700]/20 to-[#FF6700]/5 border-l-4 border-[#FF6700] p-5 mb-6 rounded-r-xl backdrop-blur-sm">
+                    <div className="bg-gradient-to-r from-[#FF6700]/20 to-[#FF6700]/5 border-l-4 border-[#FF6700] p-5 mb-6 rounded-r-xl">
                       <h4 className="text-[#FF6700] font-bold text-sm md:text-base uppercase flex items-center gap-2 mb-2">
                         <Gift className="w-5 h-5" /> Intercambio de Regalos
                       </h4>

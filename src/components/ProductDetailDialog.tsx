@@ -43,7 +43,7 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
           {product.longDescription || product.description || `Detalles del producto ${product.name}`}
         </DialogDescription>
         
-        <DialogClose className="absolute right-3 top-3 sm:right-4 sm:top-4 z-50 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors backdrop-blur-sm">
+        <DialogClose className="absolute right-3 top-3 sm:right-4 sm:top-4 z-50 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors">
           <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
         </DialogClose>
 

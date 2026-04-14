@@ -64,7 +64,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
             <div className="w-2 h-2 bg-[#FCA929] rounded-full" />
             <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Programas Disponibles</span>
           </div>
@@ -128,7 +128,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                 </div>
 
                 {/* Oferta especial */}
-                <div className="bg-gradient-to-r from-[#FA7B21]/15 to-[#FCA929]/15 border border-[#FA7B21]/40 rounded-xl p-5 mb-6 backdrop-blur-sm">
+                <div className="bg-gradient-to-r from-[#FA7B21]/15 to-[#FCA929]/15 border border-[#FA7B21]/40 rounded-xl p-5 mb-6">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 w-10 h-10 bg-[#FA7B21]/20 rounded-full flex items-center justify-center pointer-events-none select-none">
                       <span className="text-xl">✨</span>
@@ -146,7 +146,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
 
                 {/* Precio */}
                 <div className="mt-auto">
-                <div className="bg-gradient-to-br from-black/50 to-zinc-900/50 rounded-xl p-5 sm:p-7 mb-6 border border-white/5 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-black/50 to-zinc-900/50 rounded-xl p-5 sm:p-7 mb-6 border border-white/5">
                   <div className="flex items-baseline justify-center gap-3 mb-3">
                     <span className="text-white/40 line-through text-base sm:text-lg">
                       S/ <span id="precioAnteriorFull">{precioAnteriorFull}</span>
@@ -239,7 +239,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
 
                 {/* Precio */}
                 <div className="mt-auto">
-                <div className="bg-gradient-to-br from-black/50 to-zinc-900/50 rounded-xl p-5 sm:p-7 mb-6 border border-white/5 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-black/50 to-zinc-900/50 rounded-xl p-5 sm:p-7 mb-6 border border-white/5">
                   <div className="flex items-baseline justify-center gap-2 mb-2">
                     <span className="text-white text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
                       S/ {precio6Meses}
@@ -279,7 +279,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
 
           {/* Programa 1 Mes */}
           <div className="flex sm:col-span-2 sm:max-w-md sm:mx-auto lg:col-span-1 lg:max-w-none">
-            <Card className="w-full bg-gradient-to-br from-zinc-900/70 via-zinc-900/60 to-zinc-900/70 border border-white/20 hover:border-[#FA7B21]/50 transition-all duration-500 h-full backdrop-blur-sm group hover:shadow-xl hover:shadow-[#FA7B21]/10 flex flex-col">
+            <Card className="w-full bg-gradient-to-br from-zinc-900/70 via-zinc-900/60 to-zinc-900/70 border border-white/20 hover:border-[#FA7B21]/50 transition-all duration-500 h-full group hover:shadow-xl hover:shadow-[#FA7B21]/10 flex flex-col">
               {/* Subtle glow */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#FCA929]/0 via-[#FCA929]/5 to-[#FCA929]/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg pointer-events-none" />
               
@@ -315,7 +315,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
 
                 {/* Precio */}
                 <div className="mt-auto">
-                <div className="bg-gradient-to-br from-black/40 to-zinc-900/40 rounded-xl p-5 sm:p-7 mb-6 border border-white/10 backdrop-blur-sm">
+                <div className="bg-gradient-to-br from-black/40 to-zinc-900/40 rounded-xl p-5 sm:p-7 mb-6 border border-white/10">
                   <div className="flex items-baseline justify-center gap-2 mb-2">
                     <span className="text-white text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
                       S/ {precio1Mes}
@@ -337,7 +337,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                   data-umami-event="Click Matricularme"
                   data-umami-event-programa="Programa 1 Mes"
                   data-umami-event-valor="330"
-                  className="w-full bg-transparent border-2 border-[#FA7B21]/40 text-white hover:bg-[#FA7B21]/15 hover:border-[#FA7B21]/60 py-6 sm:py-7 text-sm sm:text-base transition-colors duration-200 backdrop-blur-sm rounded-lg active:scale-[0.98]"
+                  className="w-full bg-transparent border-2 border-[#FA7B21]/40 text-white hover:bg-[#FA7B21]/15 hover:border-[#FA7B21]/60 py-6 sm:py-7 text-sm sm:text-base transition-colors duration-200 rounded-lg active:scale-[0.98]"
                   style={{
                     touchAction: 'manipulation',
                     WebkitTapHighlightColor: 'transparent'

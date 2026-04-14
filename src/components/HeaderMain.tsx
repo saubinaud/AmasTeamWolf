@@ -72,7 +72,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 transition-all duration-500 backdrop-blur-xl"
+      className="fixed top-0 left-0 right-0 transition-all duration-500"
       style={{
         zIndex: 9999,
         background: isScrolled
@@ -126,7 +126,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               </button>
 
               {isProgramasDesktopOpen && (
-                <div className="absolute left-0 top-full mt-2 w-56 bg-black/95 backdrop-blur-xl rounded-lg border border-[#FA7B21]/30 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute left-0 top-full mt-2 w-56 bg-black/95 rounded-lg border border-[#FA7B21]/30 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="py-2">
                     <button
                       onClick={() => handleNavigateToSection('programas')}
@@ -242,7 +242,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
       {/* ========================================== */}
       {isMobileMenuOpen && (
         <div
-          className="md:hidden backdrop-blur-xl border-t border-[#FA7B21]/30 animate-in slide-in-from-top-4 duration-300"
+          className="md:hidden border-t border-[#FA7B21]/30 animate-in slide-in-from-top-4 duration-300"
           style={{
             background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.98))',
             boxShadow: '0 20px 50px rgba(250, 123, 33, 0.2), inset 0 1px 0 rgba(250, 123, 33, 0.1)'
