@@ -49,7 +49,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
       <div className="relative z-10 container mx-auto px-4 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20">
         <div className="max-w-4xl md:max-w-5xl lg:max-w-6xl mx-auto text-center">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FCA929]" />
             <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Academia AMAS Team Wolf</span>
           </div>
@@ -113,7 +113,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
               size="lg"
               data-umami-event="Click Matricular Ahora"
               data-umami-event-ubicacion="hero"
-              className="bg-transparent border border-[#FA7B21]/30 text-white hover:bg-[#FA7B21]/10 hover:border-[#FA7B21]/50 px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto transition-all duration-300 backdrop-blur-sm active:scale-95"
+              className="bg-transparent border border-[#FA7B21]/30 text-white hover:bg-[#FA7B21]/10 hover:border-[#FA7B21]/50 px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto transition-all duration-300 active:scale-95"
               style={{
                 touchAction: 'manipulation',
                 WebkitTapHighlightColor: 'transparent'

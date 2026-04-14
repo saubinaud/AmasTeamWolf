@@ -176,7 +176,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
         {isSubmitted ? (
           // Confirmation Section
           <div className="min-h-screen flex items-center justify-center px-4 py-20">
-            <div className="max-w-2xl w-full bg-zinc-900/80 backdrop-blur-sm border border-green-500/30 rounded-2xl p-8 sm:p-12 text-center">
+            <div className="max-w-2xl w-full bg-zinc-900/80 border border-green-500/30 rounded-2xl p-8 sm:p-12 text-center">
               <div className="mb-6">
                 <CheckCircle className="w-20 h-20 text-green-500 mx-auto" />
               </div>
@@ -273,7 +273,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Block 1 */}
-                  <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Calendar className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -286,7 +286,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </div>
 
                   {/* Block 2 */}
-                  <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Gift className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -299,7 +299,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </div>
 
                   {/* Block 3 */}
-                  <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Rocket className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -312,7 +312,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </div>
 
                   {/* Block 4 */}
-                  <div className="bg-zinc-900/80 backdrop-blur-sm border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
                     <div className="mb-4">
                       <Dumbbell className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -357,7 +357,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="bg-zinc-900/95 backdrop-blur-sm border-2 border-[#FA7B21]/50 rounded-xl p-6 sm:p-8 shadow-2xl shadow-red-900/30">
+                <form onSubmit={handleSubmit} className="bg-zinc-900/95 border-2 border-[#FA7B21]/50 rounded-xl p-6 sm:p-8 shadow-2xl shadow-red-900/30">
                   <div className="space-y-8">
                     {/* Datos del Tutor */}
                     <div className="space-y-6">

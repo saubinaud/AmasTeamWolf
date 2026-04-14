@@ -133,7 +133,7 @@ export function HeroLeadershipFinal() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 backdrop-blur-sm"
+            className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FCA929]" />
             <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Programa Avanzado</span>
@@ -237,7 +237,7 @@ export function HeroLeadershipFinal() {
                   whileTap={!shouldDisableHeavyAnimations ? { scale: 0.98 } : {}}
                 >
                   <Button
-                    className="w-full bg-zinc-900/60 backdrop-blur-md border border-[#FA7B21]/30 text-white hover:bg-zinc-900/80 hover:border-[#FA7B21]/50 transition-all duration-300 py-5 sm:py-6 group"
+                    className="w-full bg-zinc-900/60 border border-[#FA7B21]/30 text-white hover:bg-zinc-900/80 hover:border-[#FA7B21]/50 transition-all duration-300 py-5 sm:py-6 group"
                   >
                     <Info className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-[#FCA929]" />
                     <span className="text-sm sm:text-base">¿Qué es el Programa Leadership?</span>
@@ -261,7 +261,7 @@ export function HeroLeadershipFinal() {
                       transition={{ duration: 0.4, ease: 'easeOut' }}
                       className="overflow-hidden"
                     >
-                      <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/60 backdrop-blur-md border border-[#FA7B21]/20 rounded-xl p-6 sm:p-8 mt-4 shadow-2xl">
+                      <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/60 border border-[#FA7B21]/20 rounded-xl p-6 sm:p-8 mt-4 shadow-2xl">
                         <div className="space-y-5 text-left">
                           <div>
                             <h3 className="text-white mb-3 text-base sm:text-lg">Programa Integral de Desarrollo Marcial Avanzado</h3>

@@ -287,7 +287,7 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           <div className="shrink-0 shadow-2xl shadow-black/80">
             {sidebarContent}
           </div>
-          <div className="flex-1 bg-black/80" onClick={close} />
+          <div className="flex-1 bg-zinc-950/95" onClick={close} />
         </div>
       )}
 

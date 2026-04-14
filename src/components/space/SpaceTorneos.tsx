@@ -383,7 +383,7 @@ export function SpaceTorneos({ token }: { token: string }) {
 
         {/* Add alumno modal */}
         {showAddAlumno && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4" onClick={() => setShowAddAlumno(false)}>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 p-4" onClick={() => setShowAddAlumno(false)}>
             <div className={`${cx.card} p-6 w-full max-w-md space-y-4`} onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between">
                 <h3 className="text-white font-semibold">Seleccionar alumno</h3>
@@ -432,7 +432,7 @@ export function SpaceTorneos({ token }: { token: string }) {
 
         {/* Edit selection modal */}
         {editingSel && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4" onClick={() => setEditingSel(null)}>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 p-4" onClick={() => setEditingSel(null)}>
             <div className={`${cx.card} p-6 w-full max-w-md space-y-4`} onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between">
                 <h3 className="text-white font-semibold">Editar seleccion</h3>
@@ -478,7 +478,7 @@ export function SpaceTorneos({ token }: { token: string }) {
   // ── LIST VIEW ──
   function renderTorneoModal() {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4" onClick={() => setShowModal(false)}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 p-4" onClick={() => setShowModal(false)}>
         <div className={`${cx.card} p-6 w-full max-w-md space-y-4`} onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between">
             <h3 className="text-white font-semibold">{editingTorneo ? 'Editar torneo' : 'Nuevo torneo'}</h3>

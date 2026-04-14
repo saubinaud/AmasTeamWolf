@@ -35,7 +35,7 @@ export function NetworkStatusIndicator() {
           transition={{ duration: 0.3 }}
           className="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
         >
-          <div className="bg-zinc-900/95 backdrop-blur-md border border-[#FA7B21]/30 rounded-full px-4 py-2 shadow-2xl flex items-center gap-2">
+          <div className="bg-zinc-900/95 border border-[#FA7B21]/30 rounded-full px-4 py-2 shadow-2xl flex items-center gap-2">
             <WifiOff className="w-4 h-4 text-[#FCA929]" />
             <span className="text-white text-sm">
               Modo ahorro de datos activado

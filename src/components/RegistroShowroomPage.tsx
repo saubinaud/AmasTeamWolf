@@ -35,7 +35,7 @@ const Label = ({ children, className = "" }: any) => (
 
 const Input = ({ className = "", ...props }: any) => (
   <input
-    className={`w-full bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
+    className={`w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
     {...props}
   />
 );
@@ -558,7 +558,7 @@ export function RegistroShowroomPage({
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-8"
           >
-            <div className="inline-flex items-center gap-3 bg-black/60 backdrop-blur-md px-8 py-4 rounded-2xl border-2 border-[#FA7B21]/50 shadow-xl">
+            <div className="inline-flex items-center gap-3 bg-zinc-950/85 px-8 py-4 rounded-2xl border-2 border-[#FA7B21]/50 shadow-xl">
               <Calendar className="w-6 h-6 md:w-8 md:h-8 text-[#FA7B21]" />
               <span className="text-white font-bold text-xl md:text-3xl">
                 11 de Enero
@@ -593,7 +593,7 @@ export function RegistroShowroomPage({
             ].map((item, i) => (
               <div
                 key={i}
-                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20"
+                className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full border border-white/20"
               >
                 <item.icon className="w-4 h-4 md:w-5 md:h-5 text-[#FA7B21]" />
                 <span className="text-white text-xs md:text-sm font-semibold">
@@ -796,7 +796,7 @@ export function RegistroShowroomPage({
                             className="relative"
                           >
                             <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-30" />
-                            <div className="relative bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 border-2 border-[#FA7B21]/50 rounded-2xl p-4 backdrop-blur-sm">
+                            <div className="relative bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 border-2 border-[#FA7B21]/50 rounded-2xl p-4">
                               <div className="flex items-center gap-3">
                                 <div className="flex-shrink-0">
                                   <Calendar className="w-6 h-6 text-[#FA7B21]" />

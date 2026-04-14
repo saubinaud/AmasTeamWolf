@@ -402,7 +402,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             className="space-y-6"
           >
             {/* Progress Card */}
-            <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 rounded-3xl p-6 border border-white/5 backdrop-blur-sm">
+            <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 rounded-3xl p-6 border border-white/5">
               <div className={cn("flex gap-6", isMobile ? "flex-col items-center" : "items-center")}>
                 {/* Progress Ring */}
                 <div className="relative w-28 h-28 flex-shrink-0">
@@ -1221,7 +1221,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             className="space-y-6"
           >
             {/* Proxima Graduacion Card */}
-            <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+            <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
               <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                 <Award className="w-5 h-5 text-[#FCA929]" />
                 Tu proxima graduacion
@@ -1301,7 +1301,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             </div>
 
             {/* Mi Cinturon + Historial Timeline */}
-            <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+            <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
               <h3 className="text-lg font-semibold text-white mb-6 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-[#FCA929]" />
                 Mi Cinturon
@@ -1366,7 +1366,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             </div>
 
             {/* Torneos */}
-            <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+            <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <Zap className="w-5 h-5 text-[#FCA929]" />
                 Torneos
@@ -1618,7 +1618,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-50">
-        <div className="bg-black/90 backdrop-blur-xl border-t border-white/5">
+        <div className="bg-black/90 border-t border-white/5">
           <div className={cn("mx-auto", isMobile ? "max-w-md px-4" : "max-w-2xl px-8")}>
             <div className="flex items-center justify-around py-2">
               {[
