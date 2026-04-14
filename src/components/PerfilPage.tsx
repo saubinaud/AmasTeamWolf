@@ -722,20 +722,20 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               </motion.div>
             </div>
 
-            {/* Mis Implementos */}
-            {user?.implementos && user.implementos.length > 0 && (
-              <motion.div
-                className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.38 }}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-xl bg-violet-500/15 flex items-center justify-center">
-                    <Package className="w-4 h-4 text-violet-400" />
-                  </div>
-                  <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Mis implementos</h4>
+            {/* Mis Implementos — siempre visible */}
+            <motion.div
+              className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.38 }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-xl bg-violet-500/15 flex items-center justify-center">
+                  <Package className="w-4 h-4 text-violet-400" />
                 </div>
+                <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Mis implementos</h4>
+              </div>
+              {user?.implementos && user.implementos.length > 0 ? (
                 <div className="space-y-2">
                   {user.implementos.map((imp) => (
                     <div key={imp.id} className="flex items-center justify-between bg-white/[0.03] rounded-xl px-3 py-2.5 border border-white/5">
@@ -751,8 +751,13 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     </div>
                   ))}
                 </div>
-              </motion.div>
-            )}
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-zinc-500 text-sm">Aún no tienes implementos registrados</p>
+                  <p className="text-zinc-600 text-xs mt-1">Consulta con tu academia para adquirir uniformes, protectores y más</p>
+                </div>
+              )}
+            </motion.div>
 
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
@@ -1138,21 +1143,21 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               </motion.div>
             )}
 
-            {/* Congelaciones historial */}
-            {user?.congelaciones && user.congelaciones.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider flex items-center gap-2">
-                    <Snowflake className="w-3.5 h-3.5 text-blue-400" />
-                    Congelamientos usados
-                  </h4>
-                  <span className="text-sm font-semibold text-blue-300">{user.congelaciones.length}</span>
-                </div>
+            {/* Congelaciones historial — siempre visible */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider flex items-center gap-2">
+                  <Snowflake className="w-3.5 h-3.5 text-blue-400" />
+                  Congelamientos
+                </h4>
+                <span className="text-sm font-semibold text-blue-300">{user?.congelaciones?.length ?? 0} usados</span>
+              </div>
+              {user?.congelaciones && user.congelaciones.length > 0 ? (
                 <div className="space-y-2">
                   {user.congelaciones.map((c, i) => (
                     <div key={i} className="flex items-center justify-between bg-blue-950/20 border border-blue-500/10 rounded-xl px-4 py-3">
@@ -1179,23 +1184,20 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     </div>
                   ))}
                 </div>
-              </motion.div>
-            )}
+              ) : (
+                <p className="text-zinc-600 text-sm text-center py-2">No has usado congelamientos</p>
+              )}
+            </motion.div>
 
-            {/* Renovar programa CTA */}
-            {(user?.matricula?.estado === 'Activo' || user?.matricula?.estado === 'activa' || estaPorVencer || estaVencido) && (
-              <motion.div
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+            {/* Renovar programa CTA — siempre visible */}
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+              <Button
+                onClick={() => onNavigate('renovacion')}
+                className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-orange-500 hover:from-[#FCA929] hover:to-orange-400 text-white rounded-2xl font-semibold text-base shadow-lg shadow-[#FA7B21]/20"
               >
-                <Button
-                  onClick={() => onNavigate('renovacion')}
-                  className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-orange-500 hover:from-[#FCA929] hover:to-orange-400 text-white rounded-2xl font-semibold text-base shadow-lg shadow-[#FA7B21]/20"
-                >
-                  <RefreshCw className="w-5 h-5 mr-2" /> Renovar Programa
-                </Button>
-              </motion.div>
-            )}
+                <RefreshCw className="w-5 h-5 mr-2" /> Renovar Programa
+              </Button>
+            </motion.div>
 
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
