@@ -145,7 +145,7 @@ export function CartDrawerHome({
               </div>
             </ScrollArea>
 
-            <div className="border-t border-white/10 px-6 py-4 space-y-4 bg-zinc-900/95 backdrop-blur-sm">
+            <div className="border-t border-white/10 px-6 py-4 space-y-4 bg-zinc-900/95">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-white/70 text-sm">
                   <span>Subtotal:</span>

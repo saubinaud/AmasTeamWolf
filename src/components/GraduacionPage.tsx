@@ -296,7 +296,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
 
   // Skeleton loader component
   const SkeletonCard = () => (
-    <div className="relative bg-black/40 backdrop-blur-sm rounded-2xl border-2 border-white/10 overflow-hidden animate-pulse">
+    <div className="relative bg-black/40 rounded-2xl border-2 border-white/10 overflow-hidden animate-pulse">
       <div className="p-6">
         <div className="flex items-start gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-white/10" />
@@ -390,7 +390,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
         {!isLoading && graduados.length > 0 && graduados[0].FECHA && (
           <section className="py-8 px-4">
             <div className="container mx-auto max-w-4xl">
-              <div className="relative bg-gradient-to-br from-[#FA7B21]/10 to-[#FCA929]/10 backdrop-blur-sm rounded-2xl border-2 border-[#FA7B21]/30 p-6 sm:p-8 overflow-hidden group hover:border-[#FA7B21]/50 transition-all duration-300">
+              <div className="relative bg-gradient-to-br from-[#FA7B21]/10 to-[#FCA929]/10 rounded-2xl border-2 border-[#FA7B21]/30 p-6 sm:p-8 overflow-hidden group hover:border-[#FA7B21]/50 transition-all duration-300">
                 {/* Decorative gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
@@ -448,7 +448,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                       return (
                         <div
                           key={cardIndex}
-                          className={`relative bg-black/40 ${!isMobileDevice ? 'backdrop-blur-md' : 'backdrop-blur-sm'} rounded-xl sm:rounded-2xl shadow-lg transition-all overflow-hidden group cursor-pointer border-2 border-[#FA7B21]/40 hover:border-[#FA7B21] ${
+                          className={`relative bg-black/40  rounded-xl sm:rounded-2xl shadow-lg transition-all overflow-hidden group cursor-pointer border-2 border-[#FA7B21]/40 hover:border-[#FA7B21] ${
                             !reduceMotion && !isMobileDevice ? 'hover:shadow-2xl hover:-translate-y-2 duration-500' : 'duration-300'
                           }`}
                           onClick={() => setExpandedCard(isExpanded ? null : parseInt(cardIndex.replace(/\D/g, '') + index))}
@@ -515,7 +515,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                                 !reduceMotion ? 'animate-in fade-in slide-in-from-top-4 duration-500' : ''
                               }`}>
                                 {/* Turno info */}
-                                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/5 backdrop-blur-sm rounded-lg sm:rounded-xl border border-white/10">
+                                <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white/5 rounded-lg sm:rounded-xl border border-white/10">
                                   <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/20 flex items-center justify-center border border-[#FA7B21]/30 flex-shrink-0">
                                     <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-[#FCA929]" />
                                   </div>
@@ -549,7 +549,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               </p>
             </div>
 
-            <form onSubmit={handleSubmitComment} className={`bg-white/5 ${!isMobileDevice ? 'backdrop-blur-sm' : ''} border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8`}>
+            <form onSubmit={handleSubmitComment} className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8`}>
               <div className="space-y-4 sm:space-y-6">
                 {/* Nombre */}
                 <div>
@@ -666,7 +666,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
 
             <div className="space-y-4 sm:space-y-6">
               {/* Pregunta 1 */}
-              <div className={`bg-white/5 ${!isMobileDevice ? 'backdrop-blur-sm' : ''} border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
+              <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <span className="text-2xl sm:text-3xl flex-shrink-0">📋</span>
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
@@ -687,7 +687,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               </div>
 
               {/* Pregunta 2 */}
-              <div className={`bg-white/5 ${!isMobileDevice ? 'backdrop-blur-sm' : ''} border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
+              <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <span className="text-2xl sm:text-3xl flex-shrink-0">🕐</span>
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
@@ -705,7 +705,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               </div>
 
               {/* Pregunta 3 */}
-              <div className={`bg-white/5 ${!isMobileDevice ? 'backdrop-blur-sm' : ''} border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
+              <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <span className="text-2xl sm:text-3xl flex-shrink-0">🥋</span>
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
@@ -723,7 +723,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               </div>
 
               {/* Pregunta 4 */}
-              <div className={`bg-white/5 ${!isMobileDevice ? 'backdrop-blur-sm' : ''} border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
+              <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
                   <span className="text-2xl sm:text-3xl flex-shrink-0">⏰</span>
                   <h3 className="text-base sm:text-lg md:text-xl text-white">

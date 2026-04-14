@@ -44,7 +44,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
     <div className="fixed inset-0" style={{ zIndex: 99999 }}>
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-black/80"
+        className="absolute inset-0 bg-zinc-950/95"
         onClick={onClose}
       />
 

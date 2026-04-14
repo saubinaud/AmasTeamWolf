@@ -573,7 +573,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           <div className="absolute -top-40 -right-40 w-[400px] h-[400px] bg-[#FA7B21]/10 rounded-full blur-3xl" />
         </div>
         <div className="relative w-full max-w-xs">
-          <div className="bg-zinc-900/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-2xl">
+          <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 shadow-2xl">
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Shield className="w-8 h-8 text-white" />

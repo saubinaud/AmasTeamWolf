@@ -51,7 +51,7 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
 
   return (
     <div 
-      className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex items-center justify-center"
+      className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center"
       onClick={onClose}
     >
       {/* Close Button */}
@@ -105,14 +105,14 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
         />
         
         {/* Image Counter */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-sm px-4 py-2 rounded-full">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-zinc-950/90 px-4 py-2 rounded-full">
           <p className="text-white text-sm">
             {index + 1} / {images.length}
           </p>
         </div>
 
         {/* Caption */}
-        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/70 backdrop-blur-sm px-6 py-3 rounded-full max-w-md">
+        <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-zinc-950/90 px-6 py-3 rounded-full max-w-md">
           <p className="text-white text-center text-sm">
             {images[index].alt}
           </p>

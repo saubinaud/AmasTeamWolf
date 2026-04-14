@@ -228,7 +228,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         <div className="relative z-10 text-center px-4 max-w-6xl mx-auto py-12 md:py-0">
           <ScrollReveal>
             <div className="mb-4 md:mb-6">
-              <span className="inline-block bg-white/10 backdrop-blur-sm border border-white/20 text-white px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold">
+              <span className="inline-block bg-white/10 border border-white/20 text-white px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold">
                 20 años transformando vidas
               </span>
             </div>
@@ -308,7 +308,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         <div className="max-w-7xl mx-auto relative z-10">
           <ScrollReveal>
             <div className="text-center mb-12 md:mb-20">
-              <span className="inline-block bg-white/5 backdrop-blur-sm border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
+              <span className="inline-block bg-white/5 border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
                 Situaciones reales de padres
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-6xl text-white mb-4 md:mb-6 font-bold px-2">
@@ -346,7 +346,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
                   {/* Glow effect */}
                   <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient} rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
 
-                  <div className="relative h-full bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-500 hover:transform hover:scale-105">
+                  <div className="relative h-full bg-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-500 hover:transform hover:scale-105">
                     <div className="text-5xl md:text-7xl mb-4 md:mb-6">{item.emoji}</div>
                     <h3 className="text-xl md:text-2xl text-white font-bold mb-3 md:mb-4">{item.title}</h3>
                     <p className="text-white/70 leading-relaxed text-base md:text-lg">
@@ -397,7 +397,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
             <ScrollReveal delay={100}>
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#FCA929]/30 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10 hover:border-[#FA7B21]/50 transition-all duration-500">
+                <div className="relative bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10 hover:border-[#FA7B21]/50 transition-all duration-500">
                   <div className="flex flex-col sm:flex-row items-start gap-4 md:gap-6">
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-2xl">
@@ -436,7 +436,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
             <ScrollReveal delay={200}>
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#FCA929]/30 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10 hover:border-[#FA7B21]/50 transition-all duration-500">
+                <div className="relative bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10 hover:border-[#FA7B21]/50 transition-all duration-500">
                   <div className="flex flex-col sm:flex-row items-start gap-4 md:gap-6">
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-2xl">
@@ -475,7 +475,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
             <ScrollReveal delay={300}>
               <div className="relative group lg:col-span-2">
                 <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#FCA929]/30 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10 hover:border-[#FA7B21]/50 transition-all duration-500">
+                <div className="relative bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-2xl md:rounded-3xl p-6 md:p-10 hover:border-[#FA7B21]/50 transition-all duration-500">
                   <div className="flex flex-col sm:flex-row items-start gap-4 md:gap-6">
                     <div className="flex-shrink-0">
                       <div className="w-16 h-16 md:w-20 md:h-20 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-2xl">
@@ -547,7 +547,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         <div className="max-w-7xl mx-auto relative z-10">
           <ScrollReveal>
             <div className="text-center mb-12 md:mb-20">
-              <span className="inline-block bg-white/5 backdrop-blur-sm border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
+              <span className="inline-block bg-white/5 border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
                 Historias reales
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-6xl text-white mb-4 md:mb-6 font-bold px-2">
@@ -583,7 +583,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
               <ScrollReveal key={i} delay={i * 100}>
                 <div className="group relative h-full">
                   <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500" />
-                  <div className="relative h-full bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-500">
+                  <div className="relative h-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-2xl md:rounded-3xl p-6 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-500">
                     <img
                       src={testimonial.img}
                       alt={testimonial.author}
@@ -702,7 +702,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         <div className="max-w-5xl mx-auto relative z-10">
           <ScrollReveal>
             <div className="text-center mb-12 md:mb-20">
-              <span className="inline-block bg-white/5 backdrop-blur-sm border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
+              <span className="inline-block bg-white/5 border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
                 La diferencia AMAS
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-6xl text-white mb-4 md:mb-6 font-bold px-2">
@@ -712,7 +712,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
           </ScrollReveal>
 
           <ScrollReveal delay={100}>
-            <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-lg border border-white/20 rounded-2xl md:rounded-3xl overflow-hidden">
+            <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-2xl md:rounded-3xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[600px]">
                   <thead>
@@ -819,7 +819,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         <div className="max-w-4xl mx-auto">
           <ScrollReveal>
             <div className="text-center mb-12 md:mb-16">
-              <span className="inline-block bg-white/5 backdrop-blur-sm border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
+              <span className="inline-block bg-white/5 border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
                 Todo lo que necesitas saber
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-6xl text-white mb-4 md:mb-6 font-bold px-2">
@@ -856,7 +856,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
                   a: 'S/40, que se descuentan al 100% si decides inscribir a tu hijo. Es decir, si te matriculas la clase de prueba fue completamente GRATIS.'
                 }
               ].map((faq, i) => (
-                <AccordionItem key={i} value={`item-${i}`} className="bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-lg border border-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 overflow-hidden hover:border-[#FA7B21]/50 transition-all duration-300">
+                <AccordionItem key={i} value={`item-${i}`} className="bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-xl md:rounded-2xl px-4 md:px-8 overflow-hidden hover:border-[#FA7B21]/50 transition-all duration-300">
                   <AccordionTrigger className="text-white hover:text-[#FA7B21] text-left text-base md:text-lg py-4 md:py-6 hover:no-underline">
                     {faq.q}
                   </AccordionTrigger>
@@ -1018,7 +1018,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
                 { icon: '⏰', text: 'Medio mes GRATIS en Programa Full' },
                 { icon: '📋', text: 'Válido hasta agotar stock de uniformes' }
               ].map((badge, i) => (
-                <div key={i} className="bg-white/20 backdrop-blur-md border-2 border-white/40 px-6 py-3 rounded-full text-white font-bold shadow-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105">
+                <div key={i} className="bg-white/20 border-2 border-white/40 px-6 py-3 rounded-full text-white font-bold shadow-2xl hover:bg-white/30 transition-all duration-300 hover:scale-105">
                   <span className="mr-2">{badge.icon}</span>
                   {badge.text}
                 </div>
@@ -1040,7 +1040,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
           </ScrollReveal>
 
           <ScrollReveal delay={400}>
-            <div className="bg-black/30 backdrop-blur-md border border-white/30 inline-block px-8 py-4 rounded-full">
+            <div className="bg-black/30 border border-white/30 inline-block px-8 py-4 rounded-full">
               <p className="text-white/90 text-lg">
                 <span className="font-bold">📞 Respondemos en menos de 1 hora</span>
                 <br />
@@ -1065,7 +1065,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
         </div>
         {/* Tooltip - solo desktop */}
         <div className="hidden md:block absolute bottom-full right-0 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="bg-black/90 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">
+          <div className="bg-black/90 text-white px-4 py-2 rounded-lg text-sm whitespace-nowrap">
             ¡Contáctanos ahora!
           </div>
         </div>

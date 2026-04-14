@@ -77,7 +77,7 @@ const DialogOverlay = React.forwardRef<
       ref={ref}
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-[9997] bg-black/90 backdrop-blur-sm",
+        "fixed inset-0 z-[9997] bg-black/90",
         className,
       )}
       style={{

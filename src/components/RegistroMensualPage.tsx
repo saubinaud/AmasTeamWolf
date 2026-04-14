@@ -29,7 +29,7 @@ export function RegistroMensualPage({ onNavigateHome, onSuccess }: RegistroMensu
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
       <header
-        className="border-b border-white/10 bg-black/95 backdrop-blur-sm sticky top-0"
+        className="border-b border-white/10 bg-black/95 sticky top-0"
         style={{ zIndex: 9999 }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

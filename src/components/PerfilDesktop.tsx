@@ -576,7 +576,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                             >
                                 {/* Stats Cards */}
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
                                     whileHover={{ scale: 1.02 }}
                                 >
                                     <div className="flex items-center justify-between mb-4">
@@ -591,7 +591,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 </motion.div>
 
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
                                     whileHover={{ scale: 1.02 }}
                                 >
                                     <div className="flex items-center justify-between mb-4">
@@ -620,7 +620,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 </motion.div>
 
                                 <motion.div
-                                    className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
+                                    className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
                                     whileHover={{ scale: 1.02 }}
                                 >
                                     <div className="flex items-center justify-between mb-4">
@@ -645,7 +645,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                 {/* Info Section */}
                                 <motion.div
-                                    className="col-span-2 lg:col-span-2 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
+                                    className="col-span-2 lg:col-span-2 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
                                     whileHover={{}}
                                 >
                                     <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
@@ -686,7 +686,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                 {/* Mi informacion (Apoderado) */}
                                 <motion.div
-                                    className="col-span-2 lg:col-span-3 bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
+                                    className="col-span-2 lg:col-span-3 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
                                 >
                                     <div className="flex items-center justify-between mb-6">
                                         <h3 className="text-xl font-semibold text-white flex items-center gap-2">
@@ -793,7 +793,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 exit={{ opacity: 0, y: -20 }}
                                 className="space-y-6"
                             >
-                                <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8">
+                                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8">
                                     <h3 className="text-2xl font-semibold text-white flex items-center gap-3 mb-6">
                                         <Award className="w-6 h-6 text-[#FCA929]" />
                                         Tu Progreso
@@ -928,7 +928,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 className="space-y-6"
                             >
                                 {/* Google Calendar Style Header */}
-                                <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-6">
+                                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
                                     <div className="flex items-center justify-between mb-6">
                                         <div className="flex items-center gap-4">
                                             <h3 className="text-2xl font-semibold text-white flex items-center gap-3">
@@ -1028,7 +1028,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 {/* Stats Row - Horizontal - Now clearly inside the calendar motion div */}
                                 <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {/* Total Asistencias */}
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5 flex items-center gap-4">
+                                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5 flex items-center gap-4">
                                         <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
                                             <CheckCircle2 className="w-6 h-6 text-emerald-400" />
                                         </div>
@@ -1039,7 +1039,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     </div>
 
                                     {/* Tardanzas */}
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5 flex items-center gap-4">
+                                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5 flex items-center gap-4">
                                         <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center">
                                             <AlertTriangle className="w-6 h-6 text-amber-400" />
                                         </div>
@@ -1052,7 +1052,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     </div>
 
                                     {/* Legend */}
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-2xl p-5">
+                                    <div className="bg-zinc-900/50 border border-white/5 rounded-2xl p-5">
                                         <p className="text-white/50 text-sm mb-3">Leyenda</p>
                                         <div className="flex flex-wrap gap-4">
                                             <div className="flex items-center gap-2">
@@ -1083,7 +1083,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     className="grid grid-cols-1 md:grid-cols-2 gap-6"
                                 >
                                     {/* Plan Details */}
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8">
+                                    <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8">
                                         <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
                                             <CreditCard className="w-6 h-6 text-[#FCA929]" />
                                             Mi Plan
@@ -1157,7 +1157,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     <div className="space-y-6">
                                         {/* Freeze Card */}
                                         {maxDiasCongelar > 0 && (
-                                            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur-sm border border-cyan-500/20 rounded-3xl p-6">
+                                            <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-3xl p-6">
                                                 <div className="flex items-center gap-3 mb-4">
                                                     <Snowflake className="w-6 h-6 text-cyan-400" />
                                                     <h4 className="text-lg font-semibold text-white">Congelar Programa</h4>
@@ -1206,7 +1206,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                         </div>
 
                                                         {/* Right: Summary & Legend */}
-                                                        <div className="w-[340px] bg-zinc-900/80 backdrop-blur-md p-8 flex flex-col justify-between border-l border-white/5 shadow-2xl">
+                                                        <div className="w-[340px] bg-zinc-900/80 p-8 flex flex-col justify-between border-l border-white/5 shadow-2xl">
                                                             <div className="space-y-8">
                                                                 <div>
                                                                     <div className="flex items-center gap-2 mb-6">
@@ -1339,7 +1339,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                         {/* Renewal CTA - Only when 15 days or less remaining */}
                                         {(estaPorVencer || estaVencido) && (
-                                            <div className="bg-gradient-to-br from-[#FA7B21]/20 via-[#431C28]/30 to-[#FCA929]/10 backdrop-blur-sm border border-[#FA7B21]/30 rounded-3xl p-6">
+                                            <div className="bg-gradient-to-br from-[#FA7B21]/20 via-[#431C28]/30 to-[#FCA929]/10 border border-[#FA7B21]/30 rounded-3xl p-6">
                                                 <div className="flex items-center gap-3 mb-4">
                                                     <div className="w-12 h-12 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-xl flex items-center justify-center shadow-lg shadow-[#FA7B21]/30">
                                                         <Sparkles className="w-6 h-6 text-white" />
@@ -1373,7 +1373,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     exit={{ opacity: 0, y: -20 }}
                                     className="max-w-3xl"
                                 >
-                                    <div className="bg-zinc-900/50 backdrop-blur-sm border border-white/5 rounded-3xl p-8">
+                                    <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8">
                                         <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
                                             <MessageCircle className="w-6 h-6 text-[#FCA929]" />
                                             Mensajes
