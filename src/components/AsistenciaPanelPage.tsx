@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Loader2, QrCode, Users, Clock, Shield, LogOut, RefreshCw,
   CheckCircle, UserCheck, KeyRound, ArrowLeft, X, Download,
-  Maximize2, AlertTriangle, BarChart3, Timer,
+  Maximize2, AlertTriangle, BarChart3, Timer, Search, RotateCcw,
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -50,6 +50,13 @@ interface ResumenClase {
   programa: string;
   token: string;
   presentes: number;
+}
+
+interface AlumnoBusqueda {
+  id: number;
+  nombre_alumno: string;
+  dni_alumno: string;
+  categoria?: string;
 }
 
 interface DashboardData {
@@ -232,6 +239,11 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const [mesDashboard, setMesDashboard] = useState(new Date().toISOString().slice(0, 7));
   const [sesionDiaria, setSesionDiaria] = useState<SesionQR | null>(null);
   const [generandoDiario, setGenerandoDiario] = useState(false);
+  const [reiniciandoDiario, setReiniciandoDiario] = useState(false);
+  const [busquedaNombre, setBusquedaNombre] = useState('');
+  const [resultadosBusqueda, setResultadosBusqueda] = useState<AlumnoBusqueda[]>([]);
+  const [buscando, setBuscando] = useState(false);
+  const [registrandoPorNombre, setRegistrandoPorNombre] = useState(false);
   const [, setTick] = useState(0);
 
   const diaHoy = new Date().getDay();
@@ -299,6 +311,48 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     }
     if (sessionStorage.getItem('amas_panel_auth') === 'true') setAutenticada(true);
   }, [skipAuth]);
+
+  // Fetch daily QR on mount — persistent across page reloads
+  useEffect(() => {
+    if (!autenticada) return;
+    const fetchDiarioActivo = async () => {
+      try {
+        const r = await fetch(`${API_BASE}/qr/diario-activo`);
+        if (!r.ok) return;
+        const d = await r.json();
+        if (d?.success && d.activo) {
+          setSesionDiaria({
+            token: d.token,
+            url: d.url,
+            valido_hasta: d.valido_hasta,
+            hora_clase: d.hora_clase || '00:00',
+            programa: 'diario',
+          });
+        }
+      } catch { /* ignore */ }
+    };
+    fetchDiarioActivo();
+  }, [autenticada]);
+
+  // Search alumnos by name/DNI (debounced)
+  useEffect(() => {
+    if (busquedaNombre.length < 2) {
+      setResultadosBusqueda([]);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      setBuscando(true);
+      try {
+        const r = await fetch(`${API_BASE}/space/alumnos?search=${encodeURIComponent(busquedaNombre)}&limit=8`);
+        if (!r.ok) return;
+        const d = await r.json();
+        const list = Array.isArray(d) ? d : d?.data ?? [];
+        setResultadosBusqueda(list);
+      } catch { /* ignore */ }
+      finally { setBuscando(false); }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [busquedaNombre]);
 
   // Handlers
   const handlePin = (e: React.FormEvent) => {
@@ -376,6 +430,52 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
       }
     } catch { toast.error('Error de conexion'); }
     finally { setGenerandoDiario(false); }
+  };
+
+  const reiniciarQRDiario = async () => {
+    setReiniciandoDiario(true);
+    try {
+      const r = await fetch(`${API_BASE}/qr/reiniciar-diario`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!r.ok) { toast.error('Error reiniciando QR'); return; }
+      const d = await r.json();
+      if (d?.success) {
+        setSesionDiaria(null);
+        toast.success('QR diario reiniciado');
+      }
+    } catch { toast.error('Error de conexion'); }
+    finally { setReiniciandoDiario(false); }
+  };
+
+  const registrarPorNombre = async (alumno: AlumnoBusqueda) => {
+    setRegistrandoPorNombre(true);
+    try {
+      const r = await fetch(`${API_BASE}/asistencia/por-nombre`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alumno_id: alumno.id,
+          token: sesionDiaria?.token || undefined,
+        }),
+      });
+      if (!r.ok) {
+        toast.error('Error registrando asistencia');
+        return;
+      }
+      const data = await r.json();
+      const result = Array.isArray(data) && data.length > 0 ? data[0] : data;
+      if (result?.success) {
+        toast.success(`${result.alumno ?? alumno.nombre_alumno} - ${result.clase_detectada ?? 'Registrado'}`);
+        setBusquedaNombre('');
+        setResultadosBusqueda([]);
+        fetchAsistencias();
+      } else {
+        toast.error(result?.error || 'No se pudo registrar');
+      }
+    } catch { toast.error('Error de conexion'); }
+    finally { setRegistrandoPorNombre(false); }
   };
 
   const seleccionarClase = (clase: ClaseHorario) => {
@@ -647,10 +747,59 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
                       />
                     </div>
                     <p className="text-white/40 text-[10px] break-all mb-2">{sesionDiaria.url}</p>
-                    <p className="text-white/50 text-xs">
+                    <p className="text-white/50 text-xs mb-3">
                       Auto-detecta la clase de cada alumno al escanear
                     </p>
+                    <Button onClick={reiniciarQRDiario} disabled={reiniciandoDiario}
+                      className="w-full h-10 bg-zinc-800 hover:bg-zinc-700 text-white/70 hover:text-white text-xs border border-white/10">
+                      {reiniciandoDiario
+                        ? <><Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> Reiniciando...</>
+                        : <><RotateCcw className="w-3 h-3 mr-1.5" /> Reiniciar QR del Dia</>}
+                    </Button>
                   </div>
+                )}
+              </div>
+
+              {/* Buscar alumno por nombre */}
+              <div className="bg-zinc-900/80 border border-white/10 rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Search className="w-4 h-4 text-[#FCA929]" />
+                  <span className="text-white font-semibold text-sm">Registrar por nombre</span>
+                </div>
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+                  <Input
+                    type="text"
+                    value={busquedaNombre}
+                    onChange={(e) => setBusquedaNombre(e.target.value)}
+                    placeholder="Buscar por nombre o DNI..."
+                    autoComplete="off"
+                    className="bg-zinc-800 border-white/20 text-white pl-10 text-sm"
+                  />
+                  {buscando && (
+                    <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 animate-spin" />
+                  )}
+                </div>
+                {resultadosBusqueda.length > 0 && (
+                  <div className="mt-2 bg-zinc-800/80 border border-white/10 rounded-xl overflow-hidden divide-y divide-white/5 max-h-60 overflow-y-auto">
+                    {resultadosBusqueda.map((a) => (
+                      <button
+                        key={a.id}
+                        onClick={() => registrarPorNombre(a)}
+                        disabled={registrandoPorNombre}
+                        className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-white/5 active:bg-white/10 transition-all disabled:opacity-40"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-white text-sm truncate">{a.nombre_alumno}</p>
+                          <p className="text-white/40 text-xs">{a.dni_alumno}{a.categoria ? ` - ${a.categoria}` : ''}</p>
+                        </div>
+                        <CheckCircle className="w-4 h-4 text-[#FCA929] shrink-0 ml-2" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {busquedaNombre.length >= 2 && resultadosBusqueda.length === 0 && !buscando && (
+                  <p className="text-white/40 text-xs mt-2 text-center">No se encontraron alumnos</p>
                 )}
               </div>
 
