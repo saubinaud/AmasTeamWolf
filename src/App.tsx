@@ -1,20 +1,26 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
-import { HomePage } from './components/HomePage';
-import { LandingConversion } from './components/LandingConversion';
-import { InicioSesionPage } from './components/InicioSesionPage';
-import { AuthGuard } from './components/AuthGuard';
-
-import { HeaderMain } from './components/HeaderMain';
-import { HeroLeadershipFinal } from './components/HeroLeadershipFinal';
-import { NetworkStatusIndicator } from './components/NetworkStatusIndicator';
-import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner';
-import { CartDrawerHome, CartItem } from './components/CartDrawerHome';
-import { PopupPago } from './components/PopupPago';
-import { LeadershipProgramCard } from './components/LeadershipProgramCard';
-import { FooterMain } from './components/FooterMain';
-import { SEO, seoConfigs } from './components/SEO';
-import { BreadcrumbSEO, breadcrumbConfigs } from './components/BreadcrumbSEO';
+import { Toaster } from './components/ui/sonner';
+import type { CartItem } from './components/CartDrawerHome';
+import { seoConfigs } from './components/SEO';
+import { breadcrumbConfigs } from './components/BreadcrumbSEO';
+
+// Solo lo MÍNIMO se carga eager — todo lo demás es lazy
+const HomePage = lazy(() => import('./components/HomePage').then(m => ({ default: m.HomePage })));
+const HeaderMain = lazy(() => import('./components/HeaderMain').then(m => ({ default: m.HeaderMain })));
+const FooterMain = lazy(() => import('./components/FooterMain').then(m => ({ default: m.FooterMain })));
+const LandingConversion = lazy(() => import('./components/LandingConversion').then(m => ({ default: m.LandingConversion })));
+const InicioSesionPage = lazy(() => import('./components/InicioSesionPage').then(m => ({ default: m.InicioSesionPage })));
+const AuthGuard = lazy(() => import('./components/AuthGuard').then(m => ({ default: m.AuthGuard })));
+const CartDrawerHome = lazy(() => import('./components/CartDrawerHome').then(m => ({ default: m.CartDrawerHome })));
+const PopupPago = lazy(() => import('./components/PopupPago').then(m => ({ default: m.PopupPago })));
+const HeroLeadershipFinal = lazy(() => import('./components/HeroLeadershipFinal').then(m => ({ default: m.HeroLeadershipFinal })));
+const LeadershipProgramCard = lazy(() => import('./components/LeadershipProgramCard').then(m => ({ default: m.LeadershipProgramCard })));
+const NetworkStatusIndicator = lazy(() => import('./components/NetworkStatusIndicator').then(m => ({ default: m.NetworkStatusIndicator })));
+
+// Lazy: SEO + Breadcrumb (ligeros pero no críticos para primera renderización)
+const SEO = lazy(() => import('./components/SEO').then(m => ({ default: m.SEO })));
+const BreadcrumbSEO = lazy(() => import('./components/BreadcrumbSEO').then(m => ({ default: m.BreadcrumbSEO })));
 
 // Lazy load de componentes pesados (secciones de la landing de leadership)
 const LeadershipTimeline = lazy(() => import('./components/LeadershipTimeline'));
