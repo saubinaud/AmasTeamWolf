@@ -53,7 +53,7 @@ router.post('/generar', async (req, res) => {
   }
 });
 
-// POST /api/qr/generar-diario — Generar sesión QR única para todo el día
+// POST /api/qr/generar-diario — Generar o recuperar sesión QR diaria
 // Body: { sede_id }
 router.post('/generar-diario', async (req, res) => {
   try {
@@ -61,6 +61,28 @@ router.post('/generar-diario', async (req, res) => {
 
     if (!sede_id) {
       return res.status(400).json({ error: 'sede_id requerido' });
+    }
+
+    // Check if there's already an active daily session for today
+    try {
+      const existing = await queryOne(
+        `SELECT token, hora_cierre, hora_clase, programa
+         FROM qr_sesiones
+         WHERE programa = 'diario' AND fecha = CURRENT_DATE AND activa = true
+         LIMIT 1`
+      );
+      if (existing) {
+        return res.json({
+          success: true,
+          token: existing.token,
+          url: `https://amasteamwolf.com/asistencia?token=${existing.token}`,
+          valido_hasta: existing.hora_cierre,
+          hora_clase: existing.hora_clase || '00:00',
+          programa: 'diario',
+        });
+      }
+    } catch (_err) {
+      // programa column might not exist, continue to create
     }
 
     const token = crypto.randomUUID();
@@ -97,6 +119,46 @@ router.post('/generar-diario', async (req, res) => {
     });
   } catch (err) {
     console.error('Error generando QR diario:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// GET /api/qr/diario-activo — Get current active daily QR session
+router.get('/diario-activo', async (_req, res) => {
+  try {
+    const sesion = await queryOne(
+      `SELECT token, hora_cierre, hora_clase, programa
+       FROM qr_sesiones
+       WHERE programa = 'diario' AND fecha = CURRENT_DATE AND activa = true
+       LIMIT 1`
+    );
+    if (!sesion) {
+      return res.json({ success: true, activo: false });
+    }
+    res.json({
+      success: true,
+      activo: true,
+      token: sesion.token,
+      url: `https://amasteamwolf.com/asistencia?token=${sesion.token}`,
+      valido_hasta: sesion.hora_cierre,
+      hora_clase: sesion.hora_clase || '00:00',
+      programa: 'diario',
+    });
+  } catch (err) {
+    console.error('Error obteniendo QR diario activo:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// POST /api/qr/reiniciar-diario — Deactivate all daily sessions for today
+router.post('/reiniciar-diario', async (_req, res) => {
+  try {
+    await query(
+      `UPDATE qr_sesiones SET activa = false WHERE programa = 'diario' AND fecha = CURRENT_DATE`
+    );
+    res.json({ success: true, message: 'QR diario reiniciado' });
+  } catch (err) {
+    console.error('Error reiniciando QR diario:', err);
     res.status(500).json({ error: 'Error del servidor' });
   }
 });
