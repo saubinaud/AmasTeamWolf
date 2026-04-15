@@ -46,7 +46,7 @@ import { toast } from 'sonner';
 import { format, addDays, subDays, isSameDay, isToday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from './ui/utils';
-import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PerfilDesktop } from './PerfilDesktop';
 import { AccountLinkingStep } from './AccountLinkingStep';
 import { HeaderMain } from './HeaderMain';
@@ -346,19 +346,10 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   if (bloqueadoPorVencimiento) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-sm w-full text-center"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring" }}
-            className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center"
-          >
+        <div className="max-w-sm w-full text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
             <XCircle className="w-10 h-10 text-red-500" />
-          </motion.div>
+          </div>
           <h1 className="text-2xl font-bold text-white mb-2">Membresía Vencida</h1>
           <p className="text-zinc-500 mb-8 text-sm">Tu plan venció hace más de 30 días.</p>
           <Button
@@ -370,7 +361,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           <button onClick={handleLogout} className="mt-4 text-xs text-zinc-600 hover:text-zinc-400 transition-colors">
             Cerrar sesión
           </button>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -426,15 +417,12 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     </defs>
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <motion.span
+                    <span
                       className={cn("font-bold", estaVencido ? "text-red-400" : "text-white")}
                       style={{ fontSize: isMobile ? '1.75rem' : '2rem' }}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: 0.5 }}
                     >
                       {user?.matricula?.clasesRestantes ?? Math.abs(diasRestantes)}
-                    </motion.span>
+                    </span>
                     <span className="text-[10px] text-zinc-500 uppercase tracking-wide">
                       {estaVencido ? 'Vencido' : 'Clases'}
                     </span>
@@ -464,8 +452,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             {(user.elegibleLeadership || user.elegibleFighter) && (
               <div className="space-y-3">
                 {user.elegibleLeadership && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.2 }}
-                    className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
+                  <div className="bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
                       <Award className="w-5 h-5 text-amber-400" />
                     </div>
@@ -473,11 +460,10 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       <p className="text-sm font-semibold text-amber-300">Leadership Wolf</p>
                       <p className="text-xs text-amber-400/70">Ya puedes inscribirte al programa Leadership Wolf</p>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
                 {user.elegibleFighter && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}
-                    className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
+                  <div className="bg-gradient-to-r from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
                       <Zap className="w-5 h-5 text-red-400" />
                     </div>
@@ -485,18 +471,16 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       <p className="text-sm font-semibold text-red-300">Fighter Wolf</p>
                       <p className="text-xs text-red-400/70">Ya puedes acceder al programa Fighter Wolf</p>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => setActiveSection('calendar')}
-                className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-left transition-colors hover:bg-emerald-500/15"
+                className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 text-left transition-all duration-200 hover:bg-emerald-500/15 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <div className="flex items-center gap-1.5 mb-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -504,22 +488,20 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 </div>
                 <p className="text-2xl font-bold text-emerald-400">{user.matricula?.clasesAsistidas || totalAsistencias}</p>
                 <p className="text-[10px] text-zinc-500">de {user.matricula?.clasesTotales || '—'}</p>
-              </motion.button>
+              </button>
 
-              <motion.div className="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-4 text-left">
+              <div className="bg-sky-500/10 border border-sky-500/20 rounded-2xl p-4 text-left">
                 <div className="flex items-center gap-1.5 mb-2">
                   <Clock className="w-3.5 h-3.5 text-sky-400" />
                   <span className="text-[10px] text-sky-400/80">Restantes</span>
                 </div>
                 <p className="text-2xl font-bold text-sky-400">{user.matricula?.clasesRestantes ?? '—'}</p>
                 <p className="text-[10px] text-zinc-500">clases</p>
-              </motion.div>
+              </div>
 
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => setActiveSection('plan')}
-                className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl p-4 text-left transition-colors hover:bg-[#FA7B21]/15"
+                className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl p-4 text-left transition-all duration-200 hover:bg-[#FA7B21]/15 hover:scale-[1.02] active:scale-[0.98]"
               >
                 <div className="flex items-center gap-1.5 mb-2">
                   <Award className="w-3.5 h-3.5 text-[#FA7B21]" />
@@ -527,19 +509,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 </div>
                 <p className="text-xs font-semibold text-orange-300 truncate">{user.matricula?.programa}</p>
                 <p className="text-[10px] text-zinc-500">{user.matricula?.clasesTotales} clases</p>
-              </motion.button>
+              </button>
             </div>
 
             {/* Info Cards */}
             <div className="space-y-4">
               <h3 className="text-xs text-zinc-500 font-medium uppercase tracking-wider px-1">Información</h3>
 
-              <motion.div
-                className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <div className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden">
                 {[
                   { icon: User, label: 'Alumno', value: user.estudiante?.nombre, extra: `DNI: ${user.estudiante?.dni}` },
                   { icon: Shield, label: 'Edad', value: `${user.estudiante?.edad} años`, tallas: true },
@@ -564,14 +541,9 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     )}
                   </div>
                 ))}
-              </motion.div>
+              </div>
 
-              <motion.div
-                className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-              >
+              <div className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden">
                 <div className="p-4 flex items-center justify-between border-b border-white/5">
                   <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Mi informacion</h4>
                   {!isEditingApoderado ? (
@@ -638,16 +610,11 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     ))}
                   </>
                 )}
-              </motion.div>
+              </div>
 
               {/* Referido Card */}
               {user?.codigoReferido && (
-                <motion.div
-                  className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.32 }}
-                >
+                <div className="bg-zinc-900/40 rounded-2xl border border-white/5 overflow-hidden">
                   <div className="p-4 border-b border-white/5">
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center">
@@ -693,42 +660,29 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       </div>
                     )}
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Progreso de clases */}
-              <motion.div
-                className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-              >
+              <div className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Progreso de clases</h4>
                   <span className="text-sm font-bold text-[#FA7B21]">{Math.round(progress)}%</span>
                 </div>
                 <div className="h-3 bg-white/5 rounded-full overflow-hidden mb-2">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{ background: 'linear-gradient(to right, #FA7B21, #FCA929)' }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+                  <div
+                    className="h-full rounded-full transition-all duration-1000 ease-out"
+                    style={{ background: 'linear-gradient(to right, #FA7B21, #FCA929)', width: `${progress}%` }}
                   />
                 </div>
                 <p className="text-xs text-zinc-500">
                   {user?.matricula?.clasesAsistidas || 0} de {user?.matricula?.clasesTotales || 0} clases asistidas
                 </p>
-              </motion.div>
+              </div>
             </div>
 
             {/* Mis Implementos — siempre visible */}
-            <motion.div
-              className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.38 }}
-            >
+            <div className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-8 h-8 rounded-xl bg-violet-500/15 flex items-center justify-center">
                   <Package className="w-4 h-4 text-violet-400" />
@@ -757,16 +711,16 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   <p className="text-zinc-600 text-xs mt-1">Consulta con tu academia para adquirir uniformes, protectores y más</p>
                 </div>
               )}
-            </motion.div>
+            </div>
 
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <div>
               <Button
-                className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-medium text-base"
+                className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-medium text-base transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
                 onClick={() => window.open('https://wa.me/51989717412', '_blank')}
               >
                 <Phone className="w-5 h-5 mr-2" /> Soporte WhatsApp
               </Button>
-            </motion.div>
+            </div>
           </motion.div>
         );
 
@@ -782,33 +736,24 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           >
             {/* Month Navigation */}
             <div className="flex items-center justify-between px-2">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => setCalendarCenterDate(subDays(calendarCenterDate, isMobile ? 3 : 7))}
-                className="w-12 h-12 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                className="w-12 h-12 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-90"
               >
                 <ChevronLeft className="w-6 h-6" />
-              </motion.button>
+              </button>
               <div className="text-center">
-                <motion.p
-                  key={calendarCenterDate.toISOString()}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-xl font-semibold capitalize"
-                >
+                <p className="text-xl font-semibold capitalize">
                   {format(calendarCenterDate, 'MMMM', { locale: es })}
-                </motion.p>
+                </p>
                 <p className="text-sm text-zinc-500">{format(calendarCenterDate, 'yyyy')}</p>
               </div>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={() => setCalendarCenterDate(addDays(calendarCenterDate, isMobile ? 3 : 7))}
-                className="w-12 h-12 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                className="w-12 h-12 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all duration-200 hover:scale-110 active:scale-90"
               >
                 <ChevronRight className="w-6 h-6" />
-              </motion.button>
+              </button>
             </div>
 
             {/* Day Strip with swipe */}
@@ -819,30 +764,19 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              <motion.div
-                className="flex justify-center gap-2"
-                key={calendarCenterDate.toISOString()}
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-              >
-                {calendarDays.map((day, index) => {
+              <div className="flex justify-center gap-2">
+                {calendarDays.map((day) => {
                   const attendance = getAttendanceForDay(day);
                   const hasAttendance = attendance?.estado === 'asistio';
                   const isCurrentDay = isToday(day);
                   const isCenterDay = isSameDay(day, calendarCenterDate);
 
                   return (
-                    <motion.button
+                    <button
                       key={day.toISOString()}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.05, duration: 0.3 }}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
                       onClick={() => setCalendarCenterDate(day)}
                       className={cn(
-                        "flex-shrink-0 py-4 rounded-2xl flex flex-col items-center gap-2 transition-all duration-300",
+                        "flex-shrink-0 py-4 rounded-2xl flex flex-col items-center gap-2 transition-all duration-300 hover:scale-105 active:scale-95",
                         isMobile ? "w-16 min-w-16" : "w-20 min-w-20",
                         isCenterDay && "bg-gradient-to-b from-[#FA7B21] to-orange-600 shadow-lg shadow-[#FA7B21]/20",
                         !isCenterDay && isCurrentDay && "bg-white/10 ring-1 ring-[#FA7B21]/30",
@@ -865,20 +799,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                         "w-2 h-2 rounded-full transition-all",
                         hasAttendance ? (isCenterDay ? "bg-white" : "bg-emerald-400") : "bg-transparent"
                       )} />
-                    </motion.button>
+                    </button>
                   );
                 })}
-              </motion.div>
+              </div>
             </div>
 
             {/* Selected Day Detail */}
-            <motion.div
-              className="bg-zinc-900/50 rounded-3xl p-8 border border-white/5"
-              key={calendarCenterDate.toDateString()}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
+            <div className="bg-zinc-900/50 rounded-3xl p-8 border border-white/5">
               <div className="text-center mb-6">
                 <p className="text-sm text-zinc-400 capitalize">{format(calendarCenterDate, 'EEEE', { locale: es })}</p>
                 <p className="text-4xl font-bold mt-2">{format(calendarCenterDate, 'd MMMM', { locale: es })}</p>
@@ -888,14 +816,10 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 const attendance = getAttendanceForDay(calendarCenterDate);
                 if (attendance?.estado === 'asistio') {
                   return (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-center gap-4 py-5 px-6 bg-emerald-500/10 rounded-2xl border border-emerald-500/20"
-                    >
+                    <div className="flex items-center justify-center gap-4 py-5 px-6 bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
                       <CheckCircle2 className="w-7 h-7 text-emerald-400" />
                       <span className="text-emerald-300 font-semibold text-lg">¡Asistencia registrada!</span>
-                    </motion.div>
+                    </div>
                   );
                 }
                 return (
@@ -905,7 +829,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   </div>
                 );
               })()}
-            </motion.div>
+            </div>
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
@@ -928,14 +852,12 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
 
             {/* Jump to Today */}
             {!isToday(calendarCenterDate) && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+              <button
                 onClick={() => setCalendarCenterDate(new Date())}
                 className="w-full py-4 text-sm text-[#FA7B21] hover:text-orange-300 transition-colors font-medium"
               >
                 ← Volver a hoy
-              </motion.button>
+              </button>
             )}
           </motion.div>
         );
@@ -985,12 +907,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             </div>
 
             {/* Historial de pagos (F4) */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5"
-            >
+            <div className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5">
               <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider mb-4">Historial de pagos</h4>
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -1002,18 +919,16 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   </span>
                 </div>
                 <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full bg-emerald-500"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / (user.pagos?.precioPrograma || 1)) * 100)) : 0}%` }}
-                    transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+                  <div
+                    className="h-full rounded-full bg-emerald-500 transition-all duration-700 ease-out"
+                    style={{ width: `${user.pagos?.precioPrograma ? Math.min(100, Math.round(((user.pagos?.totalPagado ?? user.pagos?.precioAPagar ?? 0) / (user.pagos?.precioPrograma || 1)) * 100)) : 0}%` }}
                   />
                 </div>
               </div>
               {user.pagos?.historial && user.pagos.historial.length > 0 ? (
                 <div className="space-y-3">
-                  {user.pagos.historial.map((pago, i) => (
-                    <motion.div key={pago.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 + i * 0.05 }} className="flex items-start gap-3">
+                  {user.pagos.historial.map((pago) => (
+                    <div key={pago.id} className="flex items-start gap-3">
                       <div className="mt-1.5 w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -1027,7 +942,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                           {pago.observaciones && <span className="text-[10px] text-zinc-600 truncate">{pago.observaciones}</span>}
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -1035,16 +950,11 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   <p className="text-sm text-zinc-500">Sin pagos registrados</p>
                 </div>
               )}
-            </motion.div>
+            </div>
 
             {/* Freeze */}
             {puedeCongelar && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-blue-950/30 border border-blue-500/20 rounded-2xl p-6"
-              >
+              <div className="bg-blue-950/30 border border-blue-500/20 rounded-2xl p-6">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
                     <Snowflake className="w-6 h-6 text-blue-400" />
@@ -1140,16 +1050,11 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     </div>
                   </DialogContent>
                 </Dialog>
-              </motion.div>
+              </div>
             )}
 
             {/* Congelaciones historial — siempre visible */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-              className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5"
-            >
+            <div className="bg-zinc-900/40 rounded-2xl border border-white/5 p-5">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="text-xs text-zinc-500 font-medium uppercase tracking-wider flex items-center gap-2">
                   <Snowflake className="w-3.5 h-3.5 text-blue-400" />
@@ -1187,27 +1092,27 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               ) : (
                 <p className="text-zinc-600 text-sm text-center py-2">No has usado congelamientos</p>
               )}
-            </motion.div>
+            </div>
 
             {/* Renovar programa CTA — siempre visible */}
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <div>
               <Button
                 onClick={() => onNavigate('renovacion')}
-                className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-orange-500 hover:from-[#FCA929] hover:to-orange-400 text-white rounded-2xl font-semibold text-base shadow-lg shadow-[#FA7B21]/20"
+                className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-orange-500 hover:from-[#FCA929] hover:to-orange-400 text-white rounded-2xl font-semibold text-base shadow-lg shadow-[#FA7B21]/20 transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
               >
                 <RefreshCw className="w-5 h-5 mr-2" /> Renovar Programa
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <div>
               <Button
                 onClick={() => onNavigate('planes')}
                 variant="outline"
-                className="w-full h-14 border-white/10 bg-white/5 hover:bg-white/10 rounded-2xl font-medium text-base"
+                className="w-full h-14 border-white/10 bg-white/5 hover:bg-white/10 rounded-2xl font-medium text-base transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Zap className="w-5 h-5 mr-2 text-[#FA7B21]" /> Ver Todos los Planes
               </Button>
-            </motion.div>
+            </div>
           </motion.div>
         );
 
@@ -1331,11 +1236,8 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-white/20 via-[#FA7B21]/40 to-[#FA7B21]" />
                     <div className="space-y-3">
                       {user.historialCinturones.map((c, i) => (
-                        <motion.div
+                        <div
                           key={i}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.08 }}
                           className="relative flex items-center gap-3"
                         >
                           {/* Dot on timeline */}
@@ -1353,7 +1255,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                             </div>
                             <span className="text-xs text-zinc-500">{c.fecha ? formatDate(c.fecha) : '—'}</span>
                           </div>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -1451,12 +1353,9 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
 
             {user.mensajes && user.mensajes.length > 0 ? (
               <div className="space-y-3">
-                {user.mensajes.map((msg, i) => (
-                  <motion.button
+                {user.mensajes.map((msg) => (
+                  <button
                     key={msg.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
                     onClick={() => !msg.leido && handleMarkRead(msg.id)}
                     className={cn(
                       "w-full text-left bg-zinc-900/80 rounded-2xl overflow-hidden border transition-all",
@@ -1480,33 +1379,28 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       </p>
                       <p className="text-[10px] text-zinc-600 mt-2">{formatDate(msg.fecha)}</p>
                     </div>
-                  </motion.button>
+                  </button>
                 ))}
               </div>
             ) : (
               <div className="text-center py-20">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring" }}
-                  className="w-20 h-20 mx-auto mb-5 rounded-full bg-zinc-900/50 flex items-center justify-center"
-                >
+                <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-zinc-900/50 flex items-center justify-center">
                   <MessageCircle className="w-9 h-9 text-zinc-700" />
-                </motion.div>
+                </div>
                 <h3 className="text-zinc-400 font-medium text-lg mb-2">Sin mensajes</h3>
                 <p className="text-sm text-zinc-600">Las comunicaciones aparecerán aquí</p>
               </div>
             )}
 
-            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+            <div>
               <Button
                 variant="outline"
-                className="w-full border-zinc-800 bg-zinc-900 hover:bg-zinc-800 h-14 rounded-2xl text-base"
+                className="w-full border-zinc-800 bg-zinc-900 hover:bg-zinc-800 h-14 rounded-2xl text-base transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
                 onClick={() => window.open('https://wa.me/51989717412', '_blank')}
               >
                 <Phone className="w-5 h-5 mr-2" /> Contactar Soporte
               </Button>
-            </motion.div>
+            </div>
           </motion.div>
         );
     }
@@ -1529,13 +1423,11 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#FA7B21]/[0.03] rounded-full blur-[150px]" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isLoaded ? 1 : 0 }}
-        transition={{ duration: 0.5 }}
+      <div
         className={cn(
-          "relative z-10 mx-auto pb-28",
-          isMobile ? "max-w-md px-5" : "max-w-2xl px-8"
+          "relative z-10 mx-auto pb-28 transition-opacity duration-500",
+          isMobile ? "max-w-md px-5" : "max-w-2xl px-8",
+          isLoaded ? "opacity-100" : "opacity-0"
         )}
         style={{ paddingTop: isMobile ? '65px' : '100px' }}
       >
@@ -1572,10 +1464,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         <div className="py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                className="relative"
-              >
+              <div className="relative transition-transform duration-200 hover:scale-105">
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FA7B21] to-orange-600 flex items-center justify-center text-xl font-bold shadow-lg shadow-[#FA7B21]/20">
                   {getIniciales(user.estudiante?.nombre || '')}
                 </div>
@@ -1583,29 +1472,25 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   "absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-black",
                   isPagado ? "bg-emerald-500" : "bg-amber-500"
                 )} />
-              </motion.div>
+              </div>
               <div>
                 <h1 className={cn("font-semibold leading-tight", isMobile ? "text-lg" : "text-xl")}>{user.estudiante?.nombre}</h1>
                 <p className="text-sm text-zinc-500">{user.matricula?.programa}</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={handleRefresh}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-all duration-200 hover:scale-110 active:scale-90"
               >
                 <RefreshCw className={cn("w-5 h-5", isRefreshing && "animate-spin")} />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+              </button>
+              <button
                 onClick={handleLogout}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 hover:scale-110 active:scale-90"
               >
                 <LogOut className="w-5 h-5" />
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
@@ -1614,7 +1499,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         <AnimatePresence mode="wait">
           {renderContent()}
         </AnimatePresence>
-      </motion.div>
+      </div>
 
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-50">
@@ -1628,13 +1513,11 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 { id: 'graduacion', icon: Award, label: 'Graduación' },
                 { id: 'messages', icon: MessageCircle, label: 'Mensajes' },
               ].map(item => (
-                <motion.button
+                <button
                   key={item.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveSection(item.id as any)}
                   className={cn(
-                    "relative flex flex-col items-center gap-1 py-2 px-5 rounded-xl transition-colors",
+                    "relative flex flex-col items-center gap-1 py-2 px-5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95",
                     activeSection === item.id ? "text-[#FA7B21]" : "text-zinc-500 hover:text-zinc-300"
                   )}
                 >
@@ -1647,7 +1530,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
-                </motion.button>
+                </button>
               ))}
             </div>
           </div>
