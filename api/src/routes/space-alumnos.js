@@ -58,16 +58,17 @@ router.get('/', async (req, res) => {
       params.push(estado.toLowerCase());
     }
     if (search) {
-      const searchTerm = `%${search.trim()}%`;
-      const normalizedTerm = `%${normalizeDocumento(search)}%`;
-      // Un solo param para nombres, otro para DNIs normalizados
+      // Normalizar: sin tildes, minúsculas, sin espacios/guiones/puntos para DNI
+      const searchClean = search.trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // quitar tildes
+      const searchParam = `%${searchClean}%`;
+      // Buscar en columnas normalizadas (sin tildes) para nombres Y DNI
       conditions.push(
-        `(a.nombre_alumno ILIKE $${idx} OR a.nombre_apoderado ILIKE $${idx} ` +
+        `(a.nombre_alumno_norm ILIKE $${idx} OR a.nombre_apoderado_norm ILIKE $${idx} ` +
         `OR a.dni_alumno_norm ILIKE $${idx} ` +
         `OR a.dni_apoderado_norm ILIKE $${idx})`
       );
-      // Usar el término normalizado que funciona para nombres Y DNIs
-      params.push(normalizedTerm);
+      params.push(searchParam);
       idx++;
     }
 

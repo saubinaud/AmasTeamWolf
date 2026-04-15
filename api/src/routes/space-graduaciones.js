@@ -70,13 +70,13 @@ router.get('/alumnos/buscar', async (req, res) => {
               '' AS apellido,
               dni_alumno AS dni
        FROM alumnos
-       WHERE nombre_alumno ILIKE $1
-          OR nombre_apoderado ILIKE $1
-          OR dni_alumno_norm ILIKE $2
-          OR dni_apoderado_norm ILIKE $2
+       WHERE nombre_alumno_norm ILIKE $1
+          OR nombre_apoderado_norm ILIKE $1
+          OR dni_alumno_norm ILIKE $1
+          OR dni_apoderado_norm ILIKE $1
        ORDER BY nombre_alumno ASC
        LIMIT 10`,
-      [`%${searchTerm}%`, `%${String(searchTerm).replace(/[\s\-\.]/g, '')}%`]
+      [`%${String(searchTerm).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\s\-\.]/g, '')}%`]
     );
 
     return res.json({ success: true, data: rows });
