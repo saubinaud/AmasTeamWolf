@@ -444,18 +444,11 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                 <div className="max-w-7xl mx-auto px-5 md:px-8">
 
                     {/* Welcome Section */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-12"
-                    >
+                    <div className="mb-12">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-6">
                                 {/* Avatar */}
-                                <motion.div
-                                    className="relative"
-                                    whileHover={{ scale: 1.05 }}
-                                >
+                                <div className="relative transition-transform duration-200 hover:scale-105">
                                     <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center shadow-2xl shadow-[#FA7B21]/30">
                                         <span className="text-3xl font-bold text-white">
                                             {getIniciales(user?.estudiante?.nombre || 'Usuario')}
@@ -466,7 +459,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             <CheckCircle2 className="w-5 h-5 text-white" />
                                         </div>
                                     )}
-                                </motion.div>
+                                </div>
 
                                 <div>
                                     <div className="flex items-center gap-3 mb-2">
@@ -511,14 +504,11 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 </Button>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
 
                     {/* Warning Banner */}
                     {(estaVencido || estaPorVencer) && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={cn(
+                        <div className={cn(
                                 "mb-8 p-4 rounded-2xl flex items-center justify-between",
                                 estaVencido
                                     ? "bg-red-500/10 border border-red-500/30"
@@ -540,27 +530,25 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                             >
                                 Renovar ahora
                             </Button>
-                        </motion.div>
+                        </div>
                     )}
 
                     {/* Navigation Tabs */}
                     <div className="flex items-center gap-2 mb-8 p-1.5 bg-zinc-900/50 rounded-2xl border border-white/5 w-fit">
                         {navItems.map((item) => (
-                            <motion.button
+                            <button
                                 key={item.id}
                                 onClick={() => setActiveSection(item.id as any)}
                                 className={cn(
-                                    "flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all",
+                                    "flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]",
                                     activeSection === item.id
                                         ? "bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white shadow-lg shadow-[#FA7B21]/30"
                                         : "text-white/60 hover:text-white hover:bg-white/5"
                                 )}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
                             >
                                 <item.icon className="w-5 h-5" />
                                 {item.label}
-                            </motion.button>
+                            </button>
                         ))}
                     </div>
 
@@ -575,10 +563,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                 className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
                             >
                                 {/* Stats Cards */}
-                                <motion.div
-                                    className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
-                                    whileHover={{ scale: 1.02 }}
-                                >
+                                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-all duration-200 hover:border-[#FA7B21]/30 hover:scale-[1.02]">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-[#FA7B21]/20 flex items-center justify-center">
                                             <CalendarCheck className="w-6 h-6 text-[#FCA929]" />
@@ -588,12 +573,9 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     <p className="text-white/60 text-sm mb-1">Asistencias</p>
                                     <p className="text-4xl font-bold text-white">{totalAsistencias}</p>
                                     <p className="text-white/40 text-xs mt-2">clases asistidas</p>
-                                </motion.div>
+                                </div>
 
-                                <motion.div
-                                    className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
-                                    whileHover={{ scale: 1.02 }}
-                                >
+                                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-all duration-200 hover:border-[#FA7B21]/30 hover:scale-[1.02]">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-[#FA7B21]/20 flex items-center justify-center">
                                             <Clock className="w-6 h-6 text-[#FCA929]" />
@@ -617,12 +599,9 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     <p className="text-white/40 text-xs mt-2">
                                         hasta {formatDate(user?.matricula?.fechaFin)}
                                     </p>
-                                </motion.div>
+                                </div>
 
-                                <motion.div
-                                    className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-colors hover:border-[#FA7B21]/30"
-                                    whileHover={{ scale: 1.02 }}
-                                >
+                                <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-all duration-200 hover:border-[#FA7B21]/30 hover:scale-[1.02]">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="w-12 h-12 rounded-xl bg-[#FA7B21]/20 flex items-center justify-center">
                                             <TrendingUp className="w-6 h-6 text-[#FCA929]" />
@@ -633,21 +612,16 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                     </div>
                                     <p className="text-white/60 text-sm mb-1">Progreso</p>
                                     <div className="h-3 bg-white/5 rounded-full overflow-hidden mt-4">
-                                        <motion.div
-                                            className="h-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-full"
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${progress}%` }}
-                                            transition={{ duration: 1, ease: "easeOut" }}
+                                        <div
+                                            className="h-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-full transition-all duration-1000 ease-out"
+                                            style={{ width: `${progress}%` }}
                                         />
                                     </div>
                                     <p className="text-white/40 text-xs mt-2">del programa completado</p>
-                                </motion.div>
+                                </div>
 
                                 {/* Info Section */}
-                                <motion.div
-                                    className="col-span-2 lg:col-span-2 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
-                                    whileHover={{}}
-                                >
+                                <div className="col-span-2 lg:col-span-2 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20">
                                     <h3 className="text-xl font-semibold text-white mb-6 flex items-center gap-2">
                                         <User className="w-5 h-5 text-[#FCA929]" />
                                         Información del Estudiante
@@ -682,12 +656,10 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             </div>
                                         </div>
                                     </div>
-                                </motion.div>
+                                </div>
 
                                 {/* Mi informacion (Apoderado) */}
-                                <motion.div
-                                    className="col-span-2 lg:col-span-3 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20"
-                                >
+                                <div className="col-span-2 lg:col-span-3 bg-zinc-900/50 border border-white/5 rounded-3xl p-6 md:p-8 transition-colors hover:border-[#FA7B21]/20">
                                     <div className="flex items-center justify-between mb-6">
                                         <h3 className="text-xl font-semibold text-white flex items-center gap-2">
                                             <User className="w-5 h-5 text-[#FCA929]" />
@@ -767,19 +739,16 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             <span className="text-sm font-bold text-[#FA7B21]">{Math.round(progressClases)}%</span>
                                         </div>
                                         <div className="h-3 bg-white/5 rounded-full overflow-hidden mb-2">
-                                            <motion.div
-                                                className="h-full rounded-full"
-                                                style={{ background: 'linear-gradient(to right, #FA7B21, #FCA929)' }}
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${progressClases}%` }}
-                                                transition={{ duration: 1, ease: "easeOut" }}
+                                            <div
+                                                className="h-full rounded-full transition-all duration-1000 ease-out"
+                                                style={{ background: 'linear-gradient(to right, #FA7B21, #FCA929)', width: `${progressClases}%` }}
                                             />
                                         </div>
                                         <p className="text-xs text-white/40">
                                             {user?.matricula?.clasesAsistidas || 0} de {user?.matricula?.clasesTotales || 0} clases asistidas
                                         </p>
                                     </div>
-                                </motion.div>
+                                </div>
                             </motion.div>
                         )}
 
@@ -1005,10 +974,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                                     {/* Attendance Markers */}
                                                     {asistencia && (
-                                                        <motion.div
-                                                            initial={{ scale: 0 }}
-                                                            animate={{ scale: 1 }}
-                                                            className={cn(
+                                                        <div className={cn(
                                                                 "absolute bottom-2 right-2 p-1.5 rounded-full shadow-lg",
                                                                 asistencia.estado === 'asistio' ? "bg-emerald-500/20" :
                                                                     asistencia.estado === 'falta' ? "bg-red-500/20" : "bg-amber-500/20"
@@ -1017,7 +983,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                             {asistencia.estado === 'asistio' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
                                                             {asistencia.estado === 'falta' && <X className="w-4 h-4 text-red-400" />}
                                                             {asistencia.estado === 'justificada' && <Clock className="w-4 h-4 text-amber-400" />}
-                                                        </motion.div>
+                                                        </div>
                                                     )}
                                                 </div>
                                             );
