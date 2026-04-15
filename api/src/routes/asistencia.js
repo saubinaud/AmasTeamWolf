@@ -466,4 +466,22 @@ router.post('/por-nombre', async (req, res) => {
   }
 });
 
+// GET /api/asistencia/horarios-hoy — Today's schedule (public, no auth needed)
+router.get('/horarios-hoy', async (_req, res) => {
+  try {
+    const dow = new Date().getDay(); // 0=Sun, 1=Mon...
+    const rows = await query(
+      `SELECT hora_inicio, hora_fin, nombre_clase, edad_min_meses, edad_max_meses
+       FROM horarios
+       WHERE activo = true AND dia_semana = $1
+       ORDER BY hora_inicio`,
+      [dow]
+    );
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Error fetching horarios-hoy:', err);
+    res.json({ success: true, data: [] });
+  }
+});
+
 module.exports = router;
