@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Loader2, CheckCircle, XCircle, Clock, UserCheck } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Loader2, CheckCircle, XCircle, Clock, UserCheck, Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -8,6 +8,13 @@ import { API_BASE } from '../config/api';
 
 interface AsistenciaPageProps {
   onNavigate: (page: string) => void;
+}
+
+interface AlumnoBusqueda {
+  id: number;
+  nombre_alumno: string;
+  dni_alumno: string;
+  categoria: string;
 }
 
 function detectarTurno(): string {
@@ -23,6 +30,10 @@ function obtenerTokenDeUrl(): string | null {
 }
 
 export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
+  const [modo, setModo] = useState<'nombre' | 'dni'>('nombre');
+  const [busqueda, setBusqueda] = useState('');
+  const [resultadosBusqueda, setResultadosBusqueda] = useState<AlumnoBusqueda[]>([]);
+  const [buscando, setBuscando] = useState(false);
   const [dni, setDni] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resultado, setResultado] = useState<{
@@ -42,7 +53,70 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
     setTokenQr(obtenerTokenDeUrl());
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Búsqueda por nombre (debounced)
+  const buscarAlumno = useCallback(async (term: string) => {
+    if (term.length < 2) {
+      setResultadosBusqueda([]);
+      return;
+    }
+    setBuscando(true);
+    try {
+      const res = await fetch(`${API_BASE}/asistencia/buscar-alumno?q=${encodeURIComponent(term)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setResultadosBusqueda(data);
+      }
+    } catch {
+      // silenciar errores de búsqueda
+    } finally {
+      setBuscando(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => buscarAlumno(busqueda), 300);
+    return () => clearTimeout(timer);
+  }, [busqueda, buscarAlumno]);
+
+  // Registrar asistencia por alumno_id (búsqueda por nombre)
+  const registrarPorNombre = async (alumno: AlumnoBusqueda) => {
+    if (!tokenQr) {
+      toast.error('QR inválido — escanea el código en la sede');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setResultado(null);
+
+    try {
+      const response = await fetch(`${API_BASE}/asistencia/por-nombre`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          alumno_id: alumno.id,
+          token: tokenQr,
+        }),
+      });
+
+      const data = await response.json();
+      const result = Array.isArray(data) && data.length > 0 ? data[0] : data;
+      setResultado(result);
+
+      if (result.success) {
+        toast.success('Asistencia registrada');
+      } else {
+        toast.error(result.error || 'No se pudo registrar');
+      }
+    } catch {
+      setResultado({ success: false, error: 'Error de conexión. Intenta de nuevo.' });
+      toast.error('Error de conexión');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Registrar asistencia por DNI
+  const handleSubmitDni = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!dni || dni.length < 7) {
@@ -70,10 +144,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
       });
 
       const data = await response.json();
-
-      // Normalizar: API puede devolver array
       const result = Array.isArray(data) && data.length > 0 ? data[0] : data;
-
       setResultado(result);
 
       if (result.success) {
@@ -81,8 +152,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
       } else {
         toast.error(result.error || 'No se pudo registrar');
       }
-    } catch (error) {
-      console.error('Error registrando asistencia:', error);
+    } catch {
       setResultado({ success: false, error: 'Error de conexión. Intenta de nuevo.' });
       toast.error('Error de conexión');
     } finally {
@@ -92,10 +162,12 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
 
   const handleReset = () => {
     setDni('');
+    setBusqueda('');
+    setResultadosBusqueda([]);
     setResultado(null);
   };
 
-  // Sin token QR en la URL
+  // Sin token QR
   if (!tokenQr) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-zinc-950 px-4">
@@ -135,7 +207,6 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
               <span className="text-sm">{resultado.hora} — Turno {turno}</span>
             </div>
 
-            {/* Conteo de clases */}
             {resultado.clases_totales != null && resultado.clases_totales > 0 && (
               <div className={`mt-4 rounded-xl p-4 text-center ${
                 resultado.clases_restantes != null && resultado.clases_restantes <= 3
@@ -183,7 +254,6 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
   // Formulario principal
   return (
     <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
-      {/* Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-[400px] h-[400px] bg-[#FA7B21]/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -right-40 w-[500px] h-[500px] bg-[#FCA929]/10 rounded-full blur-3xl"></div>
@@ -206,71 +276,158 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
             </div>
           </div>
 
-          {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <Label htmlFor="dniAlumno" className="text-white mb-2 block">
-                DNI del Alumno
-              </Label>
-              <Input
-                id="dniAlumno"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={dni}
-                onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
-                placeholder="Ingresa el DNI"
-                maxLength={8}
-                autoFocus
-                autoComplete="off"
-                className="bg-zinc-800 border-white/20 text-white text-center text-lg tracking-widest h-14"
-              />
-            </div>
-
-            {/* Error */}
-            {resultado && !resultado.success && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-red-300 text-sm">{resultado.error}</p>
-                </div>
-                {resultado.clases_totales != null && resultado.clases_totales > 0 && (
-                  <div className="mt-3 pt-3 border-t border-red-500/20 text-center space-y-2">
-                    <span className="text-white/60 text-xs">
-                      Clases: {resultado.clases_usadas}/{resultado.clases_totales} usadas
-                      {resultado.clases_restantes != null && resultado.clases_restantes > 0
-                        ? ` — quedan ${resultado.clases_restantes}`
-                        : ' — programa completado'}
-                    </span>
-                    {resultado.clases_restantes === 0 && (
-                      <button
-                        type="button"
-                        onClick={() => onNavigate('renovacion')}
-                        className="block w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-sm font-semibold hover:from-[#F36A15] hover:to-[#FA7B21] transition-all"
-                      >
-                        Renovar programa
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <Button
-              type="submit"
-              disabled={isSubmitting || dni.length < 7}
-              className="w-full h-14 text-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold disabled:opacity-40"
+          {/* Tabs: Nombre / DNI */}
+          <div className="flex gap-1 bg-zinc-800/60 rounded-lg p-1 mb-6">
+            <button
+              onClick={() => { setModo('nombre'); setResultado(null); }}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+                modo === 'nombre'
+                  ? 'bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white shadow-sm'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Registrando...
-                </>
-              ) : (
-                'Registrar Asistencia'
+              Por Nombre
+            </button>
+            <button
+              onClick={() => { setModo('dni'); setResultado(null); }}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+                modo === 'dni'
+                  ? 'bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white shadow-sm'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              Por DNI
+            </button>
+          </div>
+
+          {/* Modo: Búsqueda por nombre */}
+          {modo === 'nombre' && (
+            <div className="space-y-4">
+              <div className="relative">
+                <Label htmlFor="buscarNombre" className="text-white mb-2 block">
+                  Nombre del Alumno
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                  <Input
+                    id="buscarNombre"
+                    type="text"
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    placeholder="Escribe tu nombre..."
+                    autoFocus
+                    autoComplete="off"
+                    className="bg-zinc-800 border-white/20 text-white pl-9 h-14 text-base"
+                  />
+                  {buscando && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FCA929] animate-spin" />
+                  )}
+                </div>
+              </div>
+
+              {/* Resultados de búsqueda */}
+              {resultadosBusqueda.length > 0 && (
+                <div className="space-y-1.5 max-h-[300px] overflow-y-auto">
+                  {resultadosBusqueda.map((alumno) => (
+                    <button
+                      key={alumno.id}
+                      onClick={() => registrarPorNombre(alumno)}
+                      disabled={isSubmitting}
+                      className="w-full text-left bg-zinc-800/60 hover:bg-zinc-700/60 border border-white/[0.06] hover:border-[#FA7B21]/30 rounded-xl px-4 py-3 transition-all disabled:opacity-50"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-white font-medium text-sm">{alumno.nombre_alumno}</p>
+                          <p className="text-white/40 text-xs mt-0.5">
+                            {alumno.categoria || 'Sin categoría'} · DNI: {alumno.dni_alumno}
+                          </p>
+                        </div>
+                        {isSubmitting ? (
+                          <Loader2 className="w-4 h-4 text-[#FCA929] animate-spin flex-shrink-0" />
+                        ) : (
+                          <UserCheck className="w-4 h-4 text-white/20 flex-shrink-0" />
+                        )}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               )}
-            </Button>
-          </form>
+
+              {busqueda.length >= 2 && !buscando && resultadosBusqueda.length === 0 && (
+                <p className="text-center text-white/40 text-sm py-4">
+                  No se encontraron alumnos con ese nombre
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Modo: DNI */}
+          {modo === 'dni' && (
+            <form onSubmit={handleSubmitDni} className="space-y-6">
+              <div>
+                <Label htmlFor="dniAlumno" className="text-white mb-2 block">
+                  DNI del Alumno
+                </Label>
+                <Input
+                  id="dniAlumno"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={dni}
+                  onChange={(e) => setDni(e.target.value.replace(/\D/g, ''))}
+                  placeholder="Ingresa el DNI"
+                  maxLength={8}
+                  autoFocus
+                  autoComplete="off"
+                  className="bg-zinc-800 border-white/20 text-white text-center text-lg tracking-widest h-14"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting || dni.length < 7}
+                className="w-full h-14 text-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold disabled:opacity-40"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Registrando...
+                  </>
+                ) : (
+                  'Registrar Asistencia'
+                )}
+              </Button>
+            </form>
+          )}
+
+          {/* Error */}
+          {resultado && !resultado.success && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <XCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-red-300 text-sm">{resultado.error}</p>
+              </div>
+              {resultado.clases_totales != null && resultado.clases_totales > 0 && (
+                <div className="mt-3 pt-3 border-t border-red-500/20 text-center space-y-2">
+                  <span className="text-white/60 text-xs">
+                    Clases: {resultado.clases_usadas}/{resultado.clases_totales} usadas
+                    {resultado.clases_restantes != null && resultado.clases_restantes > 0
+                      ? ` — quedan ${resultado.clases_restantes}`
+                      : ' — programa completado'}
+                  </span>
+                  {resultado.clases_restantes === 0 && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigate('renovacion')}
+                      className="block w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-sm font-semibold hover:from-[#F36A15] hover:to-[#FA7B21] transition-all"
+                    >
+                      Renovar programa
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
