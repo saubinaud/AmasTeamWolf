@@ -84,13 +84,19 @@ function generarPDFContrato(datos, firmaBase64) {
 
       'EXCEPCIONES Y CONGELAMIENTOS. AMAS Team Wolf podrá, a su exclusivo criterio y previa solicitud documentada del apoderado, ofrecer congelamiento temporal del programa por razones de salud debidamente acreditadas con certificado médico, o traslado de crédito a un período futuro en casos de fuerza mayor debidamente justificado. Estas excepciones no son automáticas y quedan sujetas a aprobación de la dirección de AMAS Team Wolf.',
 
-      'HORARIOS Y COMUNICACIONES. La academia se reserva el derecho de modificar horarios previa comunicación con al menos 48 horas de anticipación. El apoderado se compromete a respetar los turnos establecidos y comunicar cualquier inasistencia con anticipación.',
+      'HORARIOS Y COMUNICACIONES. La academia se reserva el derecho de modificar horarios, pudiendo comunicar los cambios de forma inmediata o con anticipación según la situación lo requiera. El apoderado se compromete a respetar los turnos establecidos, estar atento a las comunicaciones oficiales de la academia y comunicar cualquier inasistencia con anticipación.',
 
-      'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra en condiciones de salud aptas para la práctica de artes marciales y asume la responsabilidad de informar a la academia cualquier condición médica, lesión o limitación física relevante antes del inicio de las clases o en el momento en que se presente.',
+      'IMPLEMENTOS Y UNIFORMIDAD. Todo el equipamiento e implementos utilizados dentro de la academia (guantes, escudos, paletas, protecciones, etc.) deben ser exclusivamente los proporcionados o autorizados por AMAS Team Wolf. El alumno deberá asistir correctamente uniformado con pantalón, chaqueta y cinturón reglamentario, así como el polo oficial de la academia. No se permitirá el ingreso con vestimenta distinta a la autorizada por la organización.',
+
+      'PROHIBICIÓN DE VENTA. Queda estrictamente prohibido realizar cualquier tipo de actividad comercial o de venta de productos y servicios dentro de las instalaciones de la academia sin autorización expresa de la dirección de AMAS Team Wolf.',
+
+      'CONVIVENCIA Y CONDUCTA. No se permitirá ningún tipo de maltrato físico, verbal o psicológico, ni conflictos entre alumnos, apoderados, instructores o personal de la academia dentro de las instalaciones. Cualquier incidente de esta naturaleza será evaluado por la dirección y podrá resultar en la suspensión o expulsión del alumno sin derecho a reembolso.',
+
+      'ESTADO DE SALUD Y RESPONSABILIDAD POR DAÑOS FÍSICOS. El apoderado declara que el alumno se encuentra en condiciones de salud aptas para la práctica de artes marciales y asume la responsabilidad de informar a la academia cualquier condición médica, lesión o limitación física relevante antes del inicio de las clases o en el momento en que se presente. La academia no se hace responsable por cualquier daño físico o lesión que el alumno pueda sufrir fuera del horario de clases o fuera de las instalaciones de la academia.',
 
       'AUTORIZACIÓN DE IMAGEN. El apoderado autoriza a AMAS Team Wolf a utilizar fotografías y videos del menor tomados durante actividades académicas, competencias o eventos, con fines de comunicación institucional y material promocional, sin que ello genere derecho a compensación económica alguna.',
 
-      'RESPONSABILIDAD. La academia no se responsabiliza por objetos de valor olvidados en las instalaciones. El apoderado asume plena responsabilidad sobre los efectos personales del alumno durante y fuera de las clases.',
+      'RESPONSABILIDAD SOBRE PERTENENCIAS. La academia no se responsabiliza por objetos de valor olvidados en las instalaciones. El apoderado asume plena responsabilidad sobre los efectos personales del alumno durante y fuera de las clases.',
 
       'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología, materiales didácticos ni información interna de AMAS Team Wolf obtenida en el marco de la relación contractual.',
 
