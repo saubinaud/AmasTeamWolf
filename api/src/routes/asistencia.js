@@ -498,7 +498,7 @@ router.get('/buscar-alumno', async (req, res) => {
     const rows = await query(`
       SELECT a.id, a.nombre_alumno, a.dni_alumno, a.categoria
       FROM alumnos a
-      WHERE a.estado = 'activo'
+      WHERE LOWER(a.estado) = 'activo'
         AND (
           nombre_alumno_norm LIKE '%' || $1 || '%'
           OR dni_alumno LIKE '%' || $1 || '%'
