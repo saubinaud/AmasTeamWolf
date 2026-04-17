@@ -66,6 +66,8 @@ router.post('/', async (req, res) => {
     }
 
     // 2. Crear inscripción
+    // Sanitizar fechas: "no-especificado", "Por calcular", strings vacíos → null (evitar error DATE)
+    const sanitizeFecha = (v) => (!v || v === 'no-especificado' || v === 'Por calcular') ? null : v;
     const frecuenciaSemanal = [1, 2].includes(Number(d.frecuenciaSemanal)) ? Number(d.frecuenciaSemanal) : 2;
     const inscResult = await client.query(
       `INSERT INTO inscripciones (alumno_id, programa, fecha_inscripcion, fecha_inicio, fecha_fin,
@@ -73,7 +75,7 @@ router.post('/', async (req, res) => {
        descuento, codigo_promocional, tipo_cliente, estado, estado_pago, frecuencia_semanal)
        VALUES ($1,$2,CURRENT_DATE,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'Activo',$13,$14)
        RETURNING id`,
-      [alumno.id, d.programa, d.fechaInicio || null, d.fechaFin || null,
+      [alumno.id, d.programa, sanitizeFecha(d.fechaInicio), sanitizeFecha(d.fechaFin),
        d.clasesTotales || 0, d.turnoSeleccionado, d.diasTentativos,
        precioPrograma, precioPagado, descuento,
        d.codigoPromocional || null, tipoCliente, estadoPago, frecuenciaSemanal]
