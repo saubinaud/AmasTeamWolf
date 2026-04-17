@@ -484,4 +484,34 @@ router.get('/horarios-hoy', async (_req, res) => {
   }
 });
 
+// ── Búsqueda pública de alumnos (para asistencia por nombre) ──
+// Solo devuelve nombre, DNI y categoría — sin datos sensibles
+router.get('/buscar-alumno', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.json([]);
+    }
+
+    const normalized = q.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+
+    const rows = await query(`
+      SELECT a.id, a.nombre_alumno, a.dni_alumno, a.categoria
+      FROM alumnos a
+      WHERE a.estado = 'activo'
+        AND (
+          nombre_alumno_norm LIKE '%' || $1 || '%'
+          OR dni_alumno LIKE '%' || $1 || '%'
+        )
+      ORDER BY nombre_alumno
+      LIMIT 8
+    `, [normalized]);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Error buscando alumno:', err);
+    res.json([]);
+  }
+});
+
 module.exports = router;
