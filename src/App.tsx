@@ -285,8 +285,16 @@ function App() {
     }
   };
 
-  const handleEnrollProgram = () => {
-    handleNavigate('registro-leadership');
+  const handleEnrollProgram = (programa?: 'full' | '1mes' | '6meses') => {
+    if (programa === 'full') {
+      handleNavigate('registro-3-meses');
+    } else if (programa === '6meses') {
+      handleNavigate('registro-6-meses');
+    } else if (programa === '1mes') {
+      handleNavigate('registro-mensual');
+    } else {
+      handleNavigate('registro-leadership');
+    }
   };
 
   const handleAddToCart = (product: any, variant: string = 'default', quantity: number = 1) => {
