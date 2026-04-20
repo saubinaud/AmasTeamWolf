@@ -97,6 +97,7 @@ router.post('/login', async (req, res) => {
         rol: usuario.rol,
         // Admin: permisos null = acceso total. Profesor: lista de páginas
         permisos: usuario.rol === 'admin' ? null : (usuario.permisos || []),
+        academias: usuario.academias_acceso || ['amas'],
       },
     });
   } catch (err) {
@@ -114,7 +115,7 @@ router.post('/logout', (_req, res) => {
 router.get('/me', spaceAuth, async (req, res) => {
   try {
     const row = await queryOne(
-      'SELECT id, nombre, email, rol, activo, permisos FROM space_usuarios WHERE id = $1',
+      'SELECT id, nombre, email, rol, activo, permisos, academias_acceso FROM space_usuarios WHERE id = $1',
       [req.spaceUser.id]
     );
     if (!row || !row.activo) {
@@ -128,6 +129,7 @@ router.get('/me', spaceAuth, async (req, res) => {
         email: row.email,
         rol: row.rol,
         permisos: row.rol === 'admin' ? null : (row.permisos || []),
+        academias: row.academias_acceso || ['amas'],
       },
     });
   } catch (err) {
