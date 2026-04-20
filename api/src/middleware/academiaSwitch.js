@@ -1,22 +1,23 @@
-const { getPool } = require('../db');
+const { academiaStore } = require('../db');
 
 /**
- * Middleware: lee header X-Academia y asigna el pool correcto a req.
+ * Middleware: lee header X-Academia y establece el contexto de academia.
  *
- * Uso en rutas Space:
- *   app.use('/api/space', academiaSwitch, spaceAuth, ...)
+ * Usa AsyncLocalStorage para que query()/queryOne() del db.js
+ * automáticamente usen el pool correcto — sin modificar los route handlers.
  *
- * Todas las rutas que usen req.academiaPool tendrán la BD correcta.
  * Si no viene header, default = 'amas'.
  */
-function academiaSwitch(req, _res, next) {
+function academiaSwitch(req, res, next) {
   const header = req.headers['x-academia'] || 'amas';
   const academia = header === 'dk' ? 'dk' : 'amas';
 
   req.academia = academia;
-  req.academiaPool = getPool(academia);
 
-  next();
+  // Run the rest of the request inside the AsyncLocalStorage context
+  academiaStore.run({ academia }, () => {
+    next();
+  });
 }
 
 module.exports = { academiaSwitch };

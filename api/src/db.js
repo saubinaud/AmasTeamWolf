@@ -1,4 +1,10 @@
 const { Pool } = require('pg');
+const { AsyncLocalStorage } = require('node:async_hooks');
+
+// ── AsyncLocalStorage for per-request academia context ──
+// This allows query()/queryOne() to automatically use the correct pool
+// without modifying any route handler code.
+const academiaStore = new AsyncLocalStorage();
 
 // ── Academias registradas ──
 const ACADEMIAS = {
@@ -25,7 +31,7 @@ const POOL_CONFIG = {
   statement_timeout: 30000,
 };
 
-// ── Pools ──
+// ── Pools (lazy-initialized) ──
 const pools = {};
 
 function getPool(academia = 'amas') {
@@ -42,17 +48,22 @@ function getPool(academia = 'amas') {
 // Default pool (AMAS) — backward compatible
 const pool = getPool('amas');
 
-// Helper: ejecuta query y retorna rows
-async function query(text, params, academia) {
-  const p = academia ? getPool(academia) : pool;
-  const result = await p.query(text, params);
+// ── Active pool: resolves from AsyncLocalStorage context or defaults to AMAS ──
+function activePool() {
+  const store = academiaStore.getStore();
+  return store?.academia ? getPool(store.academia) : pool;
+}
+
+// Helper: ejecuta query y retorna rows (uses context-aware pool)
+async function query(text, params) {
+  const result = await activePool().query(text, params);
   return result.rows;
 }
 
 // Helper: ejecuta query y retorna primera fila o null
-async function queryOne(text, params, academia) {
-  const rows = await query(text, params, academia);
+async function queryOne(text, params) {
+  const rows = await query(text, params);
   return rows[0] || null;
 }
 
-module.exports = { pool, pools, getPool, query, queryOne, ACADEMIAS };
+module.exports = { pool, pools, getPool, query, queryOne, ACADEMIAS, academiaStore };
