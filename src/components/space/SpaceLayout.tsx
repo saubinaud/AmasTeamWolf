@@ -5,7 +5,8 @@ import {
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
   ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon, History, UserCheck, Trophy,
 } from 'lucide-react';
-import type { SpacePage, SpaceUser, SpaceTheme } from './SpaceApp';
+import type { SpacePage, SpaceUser, SpaceTheme, Academia } from './SpaceApp';
+import { ACADEMIA_LABELS } from './SpaceApp';
 
 interface Props {
   user: SpaceUser;
@@ -16,6 +17,8 @@ interface Props {
   children: ReactNode;
   theme: SpaceTheme;
   onToggleTheme: () => void;
+  academia: Academia;
+  onSwitchAcademia: (a: Academia) => void;
 }
 
 // Dashboard siempre accesible. Si permisos es null (admin) todo visible.
@@ -92,7 +95,7 @@ const TITLES: Record<SpacePage, string> = {
   compras: 'Compras', profesores: 'Profesores', 'clases-prueba': 'Clases de prueba', torneos: 'Torneos', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
-export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme }: Props) {
+export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme, academia, onSwitchAcademia }: Props) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
@@ -313,7 +316,26 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
             </button>
           )}
           <h1 className="text-white font-semibold text-[15px]">{TITLES[currentPage]}</h1>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            {/* Academia switcher */}
+            {user.academias && user.academias.length > 1 && (
+              <div className="flex items-center bg-zinc-800/60 rounded-lg p-0.5 gap-0.5">
+                {user.academias.map((a) => (
+                  <button
+                    key={a}
+                    onClick={() => onSwitchAcademia(a)}
+                    className={`px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all ${
+                      academia === a
+                        ? 'bg-[#FA7B21] text-white shadow-sm'
+                        : 'text-zinc-400 hover:text-white'
+                    }`}
+                    title={ACADEMIA_LABELS[a]}
+                  >
+                    {a === 'amas' ? 'AMAS' : 'DK'}
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               onClick={onToggleTheme}
               className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
