@@ -32,9 +32,9 @@ async function spaceAuth(req, res, next) {
       return next();
     }
 
-    // Verify user is still active in DB
+    // Verify user is still active in DB (include academias_acceso)
     const usuario = await queryOne(
-      'SELECT id, nombre, email, rol FROM space_usuarios WHERE id = $1 AND activo = true',
+      'SELECT id, nombre, email, rol, academias_acceso FROM space_usuarios WHERE id = $1 AND activo = true',
       [decoded.id]
     );
 
@@ -48,6 +48,7 @@ async function spaceAuth(req, res, next) {
       nombre: usuario.nombre,
       email: usuario.email,
       rol: usuario.rol,
+      academias: usuario.academias_acceso || ['amas'],
     };
 
     // Cache the user lookup
@@ -77,7 +78,8 @@ function spaceRequestLogger(req, res, next) {
     const duration = Date.now() - start;
     const userId = req.spaceUser ? req.spaceUser.id : 'anon';
     const status = res.statusCode;
-    console.log(`[SPACE] ${method} ${originalUrl} | user=${userId} | ${status} | ${duration}ms`);
+    const academia = req.academia || 'amas';
+    console.log(`[SPACE] ${method} ${originalUrl} | user=${userId} | ${academia} | ${status} | ${duration}ms`);
   });
 
   next();

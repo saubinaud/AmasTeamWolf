@@ -30,6 +30,7 @@ const spaceProfesoresRoutes = require('./routes/space-profesores');
 const spaceClasesPruebaRoutes = require('./routes/space-clases-prueba');
 const spaceTorneosRoutes = require('./routes/space-torneos');
 const { spaceAuth, spaceRequestLogger, requireAdmin } = require('./middleware/spaceAuth');
+const { academiaSwitch } = require('./middleware/academiaSwitch');
 
 // Validate required environment variables
 const REQUIRED_ENV = ['DB_HOST', 'DB_PASS', 'DB_NAME', 'DB_USER'];
@@ -103,7 +104,7 @@ app.use('/api/qr', qrRoutes);
 app.use('/api/contratos', contratosRoutes);
 app.use('/api/consulta-asistencia', consultaAsistenciaRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/space', spaceRequestLogger);
+app.use('/api/space', academiaSwitch, spaceRequestLogger);
 app.use('/api/space/auth', spaceAuthRoutes);
 app.use('/api/space/dashboard', spaceAuth, spaceDashboardRoutes);
 app.use('/api/space/graduaciones', spaceAuth, spaceGraduacionesRoutes);

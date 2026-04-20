@@ -39,12 +39,20 @@ export type SpacePage =
   | 'torneos'
   | 'config';
 
+export type Academia = 'amas' | 'dk';
+
+export const ACADEMIA_LABELS: Record<Academia, string> = {
+  amas: 'AMAS Team Wolf',
+  dk: 'Dragon Knight',
+};
+
 export interface SpaceUser {
   id: number;
   nombre: string;
   email: string;
   rol: 'admin' | 'profesor';
   permisos?: SpacePage[]; // NULL/undefined = admin con acceso total
+  academias?: Academia[]; // academias a las que tiene acceso
 }
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
@@ -68,6 +76,34 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
   const [theme, setTheme] = useState<SpaceTheme>(
     () => (localStorage.getItem('space_theme') as SpaceTheme | null) ?? 'dark',
   );
+  const [academia, setAcademia] = useState<Academia>(
+    () => (localStorage.getItem('space_academia') as Academia | null) ?? 'amas',
+  );
+
+  // Persist academia selection + inject X-Academia header on all Space API calls
+  useEffect(() => {
+    localStorage.setItem('space_academia', academia);
+
+    const originalFetch = window.fetch;
+    window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
+      const url = typeof input === 'string' ? input : (input instanceof Request ? input.url : String(input));
+      if (url.includes('/api/space/') || url.includes('/api/asistencia') || url.includes('/api/matricula')) {
+        const headers = new Headers(init?.headers);
+        if (!headers.has('X-Academia')) {
+          headers.set('X-Academia', academia);
+        }
+        init = { ...init, headers };
+      }
+      return originalFetch.call(window, input, init);
+    } as typeof fetch;
+    return () => { window.fetch = originalFetch; };
+  }, [academia]);
+
+  // Reset to dashboard when switching academia
+  const handleSwitchAcademia = useCallback((a: Academia) => {
+    setAcademia(a);
+    setCurrentPage('dashboard');
+  }, []);
 
   // Aplicar clase al body para que modales (React Portal) también la hereden.
   // Al desmontar Space (salir al sitio) limpiar la clase para no afectar al site público.
@@ -143,6 +179,8 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       onExit={handleExit}
       theme={theme}
       onToggleTheme={toggleTheme}
+      academia={academia}
+      onSwitchAcademia={handleSwitchAcademia}
     >
       {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} />}
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
