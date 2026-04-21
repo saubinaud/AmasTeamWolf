@@ -14,8 +14,12 @@ function academiaSwitch(req, res, next) {
 
   req.academia = academia;
 
+  // Auth routes always use AMAS pool (space_usuarios is only in AMAS DB)
+  const isAuthRoute = req.path.startsWith('/auth');
+  const effectiveAcademia = isAuthRoute ? 'amas' : academia;
+
   // Run the rest of the request inside the AsyncLocalStorage context
-  academiaStore.run({ academia }, () => {
+  academiaStore.run({ academia: effectiveAcademia }, () => {
     next();
   });
 }
