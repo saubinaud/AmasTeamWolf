@@ -329,18 +329,15 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   // ── PIN SCREEN ──
   if (!autenticada) {
     return (
-      <div className="min-h-dvh bg-zinc-950 flex items-center justify-center px-4">
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-[400px] h-[400px] bg-[#FA7B21]/10 rounded-full blur-3xl" />
-        </div>
+      <div className="min-h-dvh bg-[#f7f7f7] flex items-center justify-center px-4">
         <div className="relative w-full max-w-xs">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl">
+          <div className="bg-white border border-stone-200 rounded-2xl p-8 shadow-sm">
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <div className="w-16 h-16 bg-[#e8590c] rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Shield className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-white">Panel Profesora</h1>
-              <p className="text-white/50 text-xs mt-1">Ingresa tu PIN de acceso</p>
+              <h1 className="text-xl font-bold text-stone-900">Panel Profesora</h1>
+              <p className="text-stone-400 text-xs mt-1">Ingresa tu PIN de acceso</p>
             </div>
             <form onSubmit={handlePin} className="space-y-4">
               <Input
@@ -349,15 +346,15 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
                 onChange={(e) => { setPin(e.target.value.replace(/\D/g, '')); setPinError(false); }}
                 placeholder="••••" autoFocus autoComplete="off"
                 style={{ fontSize: '16px' }}
-                className={`bg-zinc-800 border-zinc-700 text-white text-center text-2xl tracking-[0.5em] h-14 ${pinError ? 'border-red-500 animate-shake' : ''}`}
+                className={`bg-white border-stone-300 text-stone-900 text-center text-2xl tracking-[0.5em] h-14 ${pinError ? 'border-red-500 animate-shake' : ''}`}
               />
               <Button type="submit" disabled={pin.length < 4}
-                className="w-full h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold disabled:opacity-40">
+                className="w-full h-12 bg-[#e8590c] hover:bg-[#c2410c] text-white font-semibold disabled:opacity-40">
                 Ingresar
               </Button>
             </form>
             <button onClick={() => onNavigate('home')}
-              className="block mx-auto mt-4 text-white/40 hover:text-white/60 text-xs transition-colors">
+              className="block mx-auto mt-4 text-stone-400 hover:text-stone-600 text-xs transition-colors">
               Volver al inicio
             </button>
           </div>
@@ -368,26 +365,26 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
 
   // ── MAIN PANEL ──
   return (
-    <div className={`${embedMode ? 'min-h-[80dvh]' : 'h-dvh'} flex flex-col bg-zinc-950 ${embedMode ? 'rounded-2xl -m-4 md:-m-5 lg:-m-6' : ''}`}>
+    <div className={`${embedMode ? 'min-h-[80dvh]' : 'h-dvh'} flex flex-col bg-[#f7f7f7] ${embedMode ? 'rounded-2xl -m-4 md:-m-5 lg:-m-6' : ''}`}>
       {/* ── Header ── */}
-      <div className="shrink-0 bg-zinc-950 border-b border-zinc-800 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+      <div className="shrink-0 bg-white border-b border-stone-200 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="flex items-center justify-between max-w-lg mx-auto">
           <div>
-            <h1 className="text-white font-bold text-sm">Panel de Asistencia</h1>
-            <div className="flex items-center gap-2 text-white/50 text-xs">
+            <h1 className="text-stone-900 font-bold text-sm">Panel de Asistencia</h1>
+            <div className="flex items-center gap-2 text-stone-400 text-xs">
               <Clock className="w-3 h-3" />
               <span>{NOMBRES_DIA[diaHoy]} — {horaActual()}</span>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-[#FCA929] text-xs font-bold mr-1">{asistencias.length} hoy</span>
+            <span className="text-[#e8590c] text-xs font-bold mr-1">{asistencias.length} hoy</span>
             <button onClick={fetchAsistencias} aria-label="Actualizar"
-              className="p-2 text-white/50 hover:text-white active:scale-95 transition-all">
+              className="p-2 text-stone-400 hover:text-stone-800 active:scale-95 transition-all">
               <RefreshCw className="w-4 h-4" />
             </button>
             {!embedMode && (
               <button onClick={handleLogout} aria-label="Cerrar sesión"
-                className="p-2 text-white/50 hover:text-red-400 active:scale-95 transition-all">
+                className="p-2 text-stone-400 hover:text-red-400 active:scale-95 transition-all">
                 <LogOut className="w-4 h-4" />
               </button>
             )}
@@ -403,17 +400,17 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           {alertas.length > 0 && (
             <div className="space-y-2">
               {alertas.map((a, i) => (
-                <div key={i} className="flex items-center justify-between bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-2.5">
+                <div key={i} className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span className="text-amber-300 text-xs">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span className="text-amber-700 text-xs">
                       <strong>{a.alumno}</strong> — {a.clases_restantes === 0
                         ? 'Completó todas sus clases'
                         : `Solo ${a.clases_restantes} clase${a.clases_restantes > 1 ? 's' : ''} restante${a.clases_restantes > 1 ? 's' : ''}`}
                     </span>
                   </div>
                   <button onClick={() => setAlertas(prev => prev.filter((_, j) => j !== i))} aria-label="Cerrar alerta"
-                    className="text-amber-400/60 hover:text-amber-400">
+                    className="text-amber-400 hover:text-amber-600">
                     <X className="w-3 h-3" />
                   </button>
                 </div>
@@ -422,18 +419,18 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           )}
 
           {/* ═══ SECTION 1: Daily QR ═══ */}
-          <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border border-[#FA7B21]/30 rounded-2xl p-5">
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5">
             {!sesionDiaria ? (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <QrCode className="w-5 h-5 text-[#FCA929]" />
-                  <span className="text-white font-bold text-sm">QR Inteligente del Día</span>
+                  <QrCode className="w-5 h-5 text-[#e8590c]" />
+                  <span className="text-stone-900 font-bold text-sm">QR Inteligente del Día</span>
                 </div>
-                <p className="text-white/50 text-xs mb-4">
+                <p className="text-stone-400 text-xs mb-4">
                   Un solo QR para todas las clases. Detecta automáticamente la clase de cada alumno.
                 </p>
                 <Button onClick={generarQRDiario} disabled={generandoDiario}
-                  className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-bold text-base shadow-lg shadow-[#FA7B21]/20">
+                  className="w-full h-14 bg-[#e8590c] hover:bg-[#c2410c] text-white font-bold text-base">
                   {generandoDiario
                     ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Generando...</>
                     : <><QrCode className="w-5 h-5 mr-2" /> Generar QR del Día</>}
@@ -442,12 +439,12 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
             ) : (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-1">
-                  <QrCode className="w-4 h-4 text-[#FCA929]" />
-                  <span className="text-white font-bold text-sm">QR del Día Activo</span>
+                  <QrCode className="w-4 h-4 text-[#e8590c]" />
+                  <span className="text-stone-900 font-bold text-sm">QR del Día Activo</span>
                 </div>
                 <div className="flex items-center justify-center gap-1.5 mb-3">
-                  <Timer className="w-3 h-3 text-white/40" />
-                  <span className={`text-xs font-mono ${tiempoRestante(sesionDiaria.valido_hasta) === 'Expirado' ? 'text-red-400' : 'text-white/50'}`}>
+                  <Timer className="w-3 h-3 text-stone-400" />
+                  <span className={`text-xs font-mono ${tiempoRestante(sesionDiaria.valido_hasta) === 'Expirado' ? 'text-red-400' : 'text-stone-500'}`}>
                     Expira en {tiempoRestante(sesionDiaria.valido_hasta)}
                   </span>
                 </div>
@@ -459,12 +456,12 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
                     decoding="async"
                   />
                 </div>
-                <p className="text-white/40 text-[10px] break-all mb-2">{sesionDiaria.url}</p>
-                <p className="text-white/50 text-xs mb-3">
+                <p className="text-stone-400 text-[10px] break-all mb-2">{sesionDiaria.url}</p>
+                <p className="text-stone-400 text-xs mb-3">
                   Auto-detecta la clase de cada alumno al escanear
                 </p>
                 <Button onClick={reiniciarQRDiario} disabled={reiniciandoDiario}
-                  className="w-full h-10 bg-zinc-800 hover:bg-zinc-700 text-white/70 hover:text-white text-xs border border-zinc-700">
+                  className="w-full h-10 bg-stone-100 hover:bg-stone-200 text-stone-600 hover:text-stone-800 text-xs border border-stone-200">
                   {reiniciandoDiario
                     ? <><Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> Reiniciando...</>
                     : <><RotateCcw className="w-3 h-3 mr-1.5" /> Reiniciar QR del Día</>}
@@ -474,13 +471,13 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           </div>
 
           {/* ═══ SECTION 2: Search by name ═══ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <div className="bg-white border border-stone-200 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Search className="w-4 h-4 text-[#FCA929]" />
-              <span className="text-white font-semibold text-sm">Registrar por nombre</span>
+              <Search className="w-4 h-4 text-[#e8590c]" />
+              <span className="text-stone-900 font-semibold text-sm">Registrar por nombre</span>
             </div>
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-300 pointer-events-none" />
               <Input
                 type="text"
                 value={busquedaNombre}
@@ -488,39 +485,39 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
                 placeholder="Buscar por nombre o DNI..."
                 autoComplete="off"
                 style={{ fontSize: '16px' }}
-                className="bg-zinc-800 border-zinc-700 text-white pl-10 text-sm"
+                className="bg-white border-stone-300 text-stone-900 pl-10 text-sm"
               />
               {buscando && (
-                <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-white/30 animate-spin" />
+                <Loader2 className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-stone-300 animate-spin" />
               )}
             </div>
             {resultadosBusqueda.length > 0 && (
-              <div className="mt-2 bg-zinc-800 border border-zinc-700 rounded-xl overflow-hidden divide-y divide-zinc-700/50 max-h-60 overflow-y-auto">
+              <div className="mt-2 bg-stone-50 border border-stone-200 rounded-xl overflow-hidden divide-y divide-stone-100 max-h-60 overflow-y-auto">
                 {resultadosBusqueda.map((a) => (
                   <button
                     key={a.id}
                     onClick={() => registrarPorNombre(a)}
                     disabled={registrandoPorNombre}
-                    className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-white/5 active:bg-white/10 transition-colors disabled:opacity-40"
+                    className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-stone-50 active:bg-stone-100 transition-colors disabled:opacity-40"
                   >
                     <div className="min-w-0">
-                      <p className="text-white text-sm truncate">{a.nombre_alumno}</p>
-                      <p className="text-white/40 text-xs">{a.dni_alumno}{a.categoria ? ` — ${a.categoria}` : ''}</p>
+                      <p className="text-stone-900 text-sm truncate">{a.nombre_alumno}</p>
+                      <p className="text-stone-400 text-xs">{a.dni_alumno}{a.categoria ? ` — ${a.categoria}` : ''}</p>
                     </div>
-                    <CheckCircle className="w-4 h-4 text-[#FCA929] shrink-0 ml-2" />
+                    <CheckCircle className="w-4 h-4 text-[#e8590c] shrink-0 ml-2" />
                   </button>
                 ))}
               </div>
             )}
             {busquedaNombre.length >= 2 && resultadosBusqueda.length === 0 && !buscando && (
-              <p className="text-white/40 text-xs mt-2 text-center">No se encontraron alumnos</p>
+              <p className="text-stone-400 text-xs mt-2 text-center">No se encontraron alumnos</p>
             )}
 
             {/* DNI manual input */}
-            <div className="mt-4 pt-3 border-t border-zinc-800">
+            <div className="mt-4 pt-3 border-t border-stone-200">
               <div className="flex items-center gap-2 mb-2">
-                <KeyRound className="w-3.5 h-3.5 text-white/40" />
-                <span className="text-white/60 text-xs">O registrar por DNI</span>
+                <KeyRound className="w-3.5 h-3.5 text-stone-400" />
+                <span className="text-stone-500 text-xs">O registrar por DNI</span>
               </div>
               <form onSubmit={registrarManualDni} className="flex gap-2">
                 <Input
@@ -528,18 +525,18 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
                   onChange={(e) => { setDniManual(e.target.value.replace(/\D/g, '')); setResultadoManual(null); }}
                   placeholder="DNI del alumno" maxLength={8} autoComplete="off"
                   style={{ fontSize: '16px' }}
-                  className="bg-zinc-800 border-zinc-700 text-white text-center tracking-wider flex-1"
+                  className="bg-white border-stone-300 text-stone-900 text-center tracking-wider flex-1"
                 />
                 <Button type="submit" disabled={registrandoDni || dniManual.length < 7}
-                  className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold px-4 disabled:opacity-40">
+                  className="bg-[#e8590c] hover:bg-[#c2410c] text-white font-semibold px-4 disabled:opacity-40">
                   {registrandoDni ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                 </Button>
               </form>
               {resultadoManual && (
                 <div className={`mt-2 flex items-center justify-between p-2.5 rounded-lg text-xs ${
                   resultadoManual.success
-                    ? 'bg-green-500/10 border border-green-500/20 text-green-400'
-                    : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+                    : 'bg-rose-50 border border-rose-200 text-rose-600'
                 }`}>
                   <span>{resultadoManual.success ? resultadoManual.alumno : resultadoManual.error}</span>
                   <button onClick={() => setResultadoManual(null)} aria-label="Cerrar resultado" className="ml-2 opacity-60 hover:opacity-100">
@@ -551,25 +548,25 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           </div>
 
           {/* ═══ SECTION 3: Today's schedule (read-only) ═══ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <div className="bg-white border border-stone-200 rounded-2xl p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-4 h-4 text-[#FCA929]" />
-              <span className="text-white font-semibold text-sm">Horario de hoy</span>
-              <span className="text-white/40 text-xs ml-auto">{NOMBRES_DIA[diaHoy]}</span>
+              <Clock className="w-4 h-4 text-[#e8590c]" />
+              <span className="text-stone-900 font-semibold text-sm">Horario de hoy</span>
+              <span className="text-stone-400 text-xs ml-auto">{NOMBRES_DIA[diaHoy]}</span>
             </div>
             {horariosHoy.length === 0 ? (
-              <p className="text-white/40 text-sm text-center py-4">No hay clases programadas hoy</p>
+              <p className="text-stone-400 text-sm text-center py-4">No hay clases programadas hoy</p>
             ) : (
               <div className="space-y-1.5">
                 {horariosHoy.map((h, i) => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-zinc-800/50">
-                    <span className="text-white/60 text-xs font-mono w-20 shrink-0">
+                  <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-50">
+                    <span className="text-stone-500 text-xs font-mono w-20 shrink-0">
                       {formatHora12(h.hora_inicio)}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="text-white text-sm truncate">{h.nombre_clase}</p>
+                      <p className="text-stone-900 text-sm truncate">{h.nombre_clase}</p>
                       {(h.edad_min_meses != null || h.edad_max_meses != null) && (
-                        <p className="text-white/40 text-[10px]">{edadLabel(h.edad_min_meses, h.edad_max_meses)}</p>
+                        <p className="text-stone-400 text-[10px]">{edadLabel(h.edad_min_meses, h.edad_max_meses)}</p>
                       )}
                     </div>
                   </div>
@@ -579,37 +576,37 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           </div>
 
           {/* ═══ SECTION 4: Today's attendances ═══ */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
               <div className="flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#FCA929]" />
-                <span className="text-white font-semibold text-sm">Presentes hoy</span>
+                <Users className="w-4 h-4 text-[#e8590c]" />
+                <span className="text-stone-900 font-semibold text-sm">Presentes hoy</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[#FCA929] text-xs font-bold">{asistencias.length}</span>
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-green-400 text-xs">En vivo</span>
+                <span className="text-[#e8590c] text-xs font-bold">{asistencias.length}</span>
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-emerald-500 text-xs">En vivo</span>
               </div>
             </div>
             {asistencias.length === 0 ? (
               <div className="p-8 text-center">
-                <Users className="w-10 h-10 text-white/20 mx-auto mb-2" />
-                <p className="text-white/40 text-sm">Nadie ha marcado asistencia hoy</p>
+                <Users className="w-10 h-10 text-stone-300 mx-auto mb-2" />
+                <p className="text-stone-400 text-sm">Nadie ha marcado asistencia hoy</p>
               </div>
             ) : (
-              <div className="divide-y divide-zinc-800/50 overflow-y-auto max-h-[50vh]">
+              <div className="divide-y divide-stone-100 overflow-y-auto max-h-[50vh]">
                 {asistencias.map((a, i) => (
                   <div key={i} className="flex items-center justify-between px-4 py-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center shrink-0">
-                        <CheckCircle className="w-4 h-4 text-green-400" />
+                      <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center shrink-0">
+                        <CheckCircle className="w-4 h-4 text-emerald-600" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-white text-sm font-medium truncate">{a.nombre_alumno}</p>
-                        <p className="text-white/40 text-xs truncate">{a.turno || a.programa || ''}</p>
+                        <p className="text-stone-900 text-sm font-medium truncate">{a.nombre_alumno}</p>
+                        <p className="text-stone-400 text-xs truncate">{a.turno || a.programa || ''}</p>
                       </div>
                     </div>
-                    <p className="text-white/60 text-xs shrink-0 ml-2">{a.hora}</p>
+                    <p className="text-stone-500 text-xs shrink-0 ml-2">{a.hora}</p>
                   </div>
                 ))}
               </div>
