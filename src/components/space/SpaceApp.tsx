@@ -160,15 +160,16 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
 
   if (loading) {
     return (
-      <div className="h-dvh bg-[#f7f7f7] flex items-center justify-center">
+      <div className="space-app h-dvh bg-[#f7f7f7] flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#e8590c] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  if (!user || !token) return <SpaceLogin onLogin={handleLogin} />;
+  if (!user || !token) return <div className="space-app"><SpaceLogin onLogin={handleLogin} /></div>;
 
   return (
+    <div className="space-app contents">
     <SpaceLayout
       user={user}
       currentPage={currentPage}
@@ -200,5 +201,6 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'torneos' && <SpaceTorneos token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
+    </div>
   );
 }
