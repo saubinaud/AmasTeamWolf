@@ -39,22 +39,16 @@ export function SpaceLogin({ onLogin }: Props) {
   }, [email, password, onLogin]);
 
   return (
-    <div className="h-dvh bg-zinc-950 flex items-center justify-center px-4">
-      {/* Background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FA7B21]/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-[#FCA929]/5 rounded-full blur-[100px]" />
-      </div>
-
+    <div className="h-dvh bg-[#f7f7f7] flex items-center justify-center px-4">
       <div className="relative w-full max-w-sm">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 shadow-2xl">
+        <div className="bg-white border border-stone-200 rounded-2xl p-8 shadow-sm">
           {/* Brand */}
           <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/25">
+            <div className="w-14 h-14 rounded-2xl bg-[#e8590c] flex items-center justify-center mx-auto mb-4">
               <span className="text-lg font-black text-white">S</span>
             </div>
-            <h1 className="text-white text-2xl font-bold tracking-tight">SPACE</h1>
-            <p className="text-zinc-500 text-sm mt-1">Panel administrativo AMAS</p>
+            <h1 className="text-stone-900 text-2xl font-bold tracking-tight">SPACE</h1>
+            <p className="text-stone-400 text-sm mt-1">Panel administrativo AMAS</p>
           </div>
 
           {/* Form */}
@@ -77,7 +71,7 @@ export function SpaceLogin({ onLogin }: Props) {
                   className={cx.input + ' pr-11'} placeholder="••••••••"
                 />
                 <button type="button" onClick={() => setShow(v => !v)} tabIndex={-1}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-400 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-500 transition-colors"
                   aria-label={show ? 'Ocultar' : 'Mostrar'}>
                   {show ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -85,8 +79,8 @@ export function SpaceLogin({ onLogin }: Props) {
             </div>
 
             {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <p className="text-red-400 text-sm text-center">{error}</p>
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl">
+                <p className="text-rose-600 text-sm text-center">{error}</p>
               </div>
             )}
 
@@ -97,7 +91,7 @@ export function SpaceLogin({ onLogin }: Props) {
           </form>
         </div>
 
-        <p className="text-center text-zinc-700 text-xs mt-6">
+        <p className="text-center text-stone-300 text-xs mt-6">
           AMAS Team Wolf &copy; {new Date().getFullYear()}
         </p>
       </div>

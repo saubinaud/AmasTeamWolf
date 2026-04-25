@@ -157,7 +157,7 @@ function StatsBar({ stats, loading }: { stats: Stats; loading: boolean }) {
           ) : (
             <>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
+                <span className="text-stone-500 text-xs font-medium uppercase tracking-wider">
                   {item.label}
                 </span>
                 <span className={item.gradient.icon}>{item.icon}</span>
@@ -190,15 +190,15 @@ function EmbudoVisual({ embudo, loading }: { embudo: Embudo; loading: boolean })
     { label: 'Por asistir', value: embudo.por_asistir, color: 'bg-amber-500' },
     { label: 'Asistio', value: embudo.asistio, color: 'bg-sky-500' },
     { label: 'Inscrito', value: embudo.inscrito, color: 'bg-emerald-500' },
-    { label: 'En confirmacion', value: embudo.en_confirmacion, color: 'bg-[#FA7B21]' },
-    { label: 'No interesado', value: embudo.no_interesado, color: 'bg-zinc-500' },
+    { label: 'En confirmacion', value: embudo.en_confirmacion, color: 'bg-[var(--accent)]' },
+    { label: 'No interesado', value: embudo.no_interesado, color: 'bg-stone-400' },
   ];
 
   return (
     <div className={cx.card + ' p-4'}>
       <div className="flex items-center gap-2 mb-3">
-        <BarChart3 size={16} className="text-zinc-400" />
-        <span className="text-white text-sm font-semibold">Embudo de conversion</span>
+        <BarChart3 size={16} className="text-stone-500" />
+        <span className="text-stone-900 text-sm font-semibold">Embudo de conversion</span>
       </div>
       <div className="flex gap-1 h-8 rounded-xl overflow-hidden">
         {steps.map((step) => {
@@ -223,7 +223,7 @@ function EmbudoVisual({ embudo, loading }: { embudo: Embudo; loading: boolean })
           step.value > 0 ? (
             <div key={step.label} className="flex items-center gap-1.5">
               <div className={`w-2.5 h-2.5 rounded-sm ${step.color}`} />
-              <span className="text-zinc-400 text-[10px]">
+              <span className="text-stone-500 text-[10px]">
                 {step.label} ({step.value})
               </span>
             </div>
@@ -423,7 +423,7 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           {/* Search */}
           <div className="relative flex-1 w-full sm:max-w-xs">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
               placeholder="Buscar por nombre o telefono..."
@@ -459,7 +459,7 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-zinc-800">
+              <tr className="border-b border-stone-200">
                 <th className={cx.th}>Nombre</th>
                 <th className={cx.th + ' hidden sm:table-cell'}>Telefono</th>
                 <th className={cx.th}>Fecha</th>
@@ -483,7 +483,7 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
                 ))
               ) : clases.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-12 text-zinc-500 text-sm">
+                  <td colSpan={8} className="text-center py-12 text-stone-400 text-sm">
                     No hay clases de prueba registradas
                   </td>
                 </tr>
@@ -495,16 +495,16 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
                     onClick={() => openEdit(c)}
                   >
                     <td className={cx.td}>
-                      <span className="text-white font-medium">{c.nombre_prospecto}</span>
+                      <span className="text-stone-900 font-medium">{c.nombre_prospecto}</span>
                     </td>
-                    <td className={cx.td + ' hidden sm:table-cell text-zinc-400'}>
+                    <td className={cx.td + ' hidden sm:table-cell text-stone-500'}>
                       {c.telefono || '—'}
                     </td>
-                    <td className={cx.td + ' text-zinc-400'}>{formatFecha(c.fecha)}</td>
-                    <td className={cx.td + ' hidden md:table-cell text-zinc-400'}>
+                    <td className={cx.td + ' text-stone-500'}>{formatFecha(c.fecha)}</td>
+                    <td className={cx.td + ' hidden md:table-cell text-stone-500'}>
                       {c.hora || '—'}
                     </td>
-                    <td className={cx.td + ' hidden lg:table-cell text-zinc-400'}>
+                    <td className={cx.td + ' hidden lg:table-cell text-stone-500'}>
                       {c.profesora || '—'}
                     </td>
                     <td className={cx.td}>
@@ -518,7 +518,7 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
                           {RESULTADO_LABEL[c.resultado]}
                         </span>
                       ) : (
-                        <span className="text-zinc-600 text-xs">—</span>
+                        <span className="text-stone-300 text-xs">—</span>
                       )}
                     </td>
                     <td className={cx.td}>
@@ -541,8 +541,8 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800">
-            <span className="text-zinc-500 text-xs">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-stone-200">
+            <span className="text-stone-400 text-xs">
               {total} resultado{total !== 1 ? 's' : ''}
             </span>
             <div className="flex gap-1">
@@ -552,8 +552,8 @@ export function SpaceClasesPrueba({ token }: SpaceClasesPruebaProps) {
                   onClick={() => fetchClases(p)}
                   className={`min-w-[32px] h-8 rounded-lg text-xs font-medium transition-all ${
                     p === page
-                      ? 'bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/30'
-                      : 'text-zinc-500 hover:text-white hover:bg-zinc-800'
+                      ? 'bg-orange-50 text-[var(--accent)] border border-orange-200'
+                      : 'text-stone-400 hover:text-stone-800 hover:bg-stone-50'
                   }`}
                 >
                   {p}

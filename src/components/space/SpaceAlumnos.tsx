@@ -192,7 +192,7 @@ function AlumnoDetailPanel({
     >
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 size={24} className="animate-spin text-[#FA7B21]" />
+          <Loader2 size={24} className="animate-spin text-[var(--accent)]" />
         </div>
       ) : alumno ? (
         <div className="space-y-6">
@@ -205,9 +205,9 @@ function AlumnoDetailPanel({
 
               {/* Plan activo + clases */}
               {alumno.programa_activo && (
-                <div className="bg-zinc-900 rounded-xl p-4 border border-zinc-800 space-y-3">
+                <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#FA7B21] text-sm font-semibold">{alumno.programa_activo}</span>
+                    <span className="text-[var(--accent)] text-sm font-semibold">{alumno.programa_activo}</span>
                     {alumno.estado_pago && (
                       <span className={cx.badge(alumno.estado_pago?.toLowerCase() === 'pagado' ? badgeColors.green : badgeColors.yellow)}>
                         {alumno.estado_pago}
@@ -215,30 +215,30 @@ function AlumnoDetailPanel({
                     )}
                   </div>
                   <div className="flex items-center gap-3">
-                    <div className="flex-1 h-2 bg-zinc-800 rounded-full">
+                    <div className="flex-1 h-2 bg-stone-200 rounded-full">
                       <div
                         className="h-2 bg-emerald-500 rounded-full transition-all"
                         style={{ width: `${alumno.clases_totales ? Math.min(100, ((alumno.clases_asistidas ?? 0) / alumno.clases_totales) * 100) : 0}%` }}
                       />
                     </div>
-                    <span className="text-white text-sm font-bold">{alumno.clases_asistidas}/{alumno.clases_totales}</span>
+                    <span className="text-stone-900 text-sm font-bold">{alumno.clases_asistidas}/{alumno.clases_totales}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-zinc-800 rounded-lg p-2">
-                      <p className="text-emerald-400 text-lg font-bold">{alumno.clases_asistidas}</p>
-                      <p className="text-zinc-500 text-[10px]">Asistidas</p>
+                    <div className="bg-stone-50 rounded-lg p-2">
+                      <p className="text-emerald-600 text-lg font-bold">{alumno.clases_asistidas}</p>
+                      <p className="text-stone-400 text-[10px]">Asistidas</p>
                     </div>
-                    <div className="bg-zinc-800 rounded-lg p-2">
-                      <p className="text-sky-400 text-lg font-bold">{alumno.clases_restantes}</p>
-                      <p className="text-zinc-500 text-[10px]">Restantes</p>
+                    <div className="bg-stone-50 rounded-lg p-2">
+                      <p className="text-sky-600 text-lg font-bold">{alumno.clases_restantes}</p>
+                      <p className="text-stone-400 text-[10px]">Restantes</p>
                     </div>
-                    <div className="bg-zinc-800 rounded-lg p-2">
-                      <p className="text-white text-lg font-bold">{alumno.asistencias_total}</p>
-                      <p className="text-zinc-500 text-[10px]">Total hist.</p>
+                    <div className="bg-stone-50 rounded-lg p-2">
+                      <p className="text-stone-900 text-lg font-bold">{alumno.asistencias_total}</p>
+                      <p className="text-stone-400 text-[10px]">Total hist.</p>
                     </div>
                   </div>
-                  {alumno.turno && <p className="text-zinc-500 text-xs">Turno: {alumno.turno} · {alumno.dias}</p>}
-                  {alumno.fecha_fin_plan && <p className="text-zinc-500 text-xs">Vence: {formatFecha(alumno.fecha_fin_plan)}</p>}
+                  {alumno.turno && <p className="text-stone-400 text-xs">Turno: {alumno.turno} · {alumno.dias}</p>}
+                  {alumno.fecha_fin_plan && <p className="text-stone-400 text-xs">Vence: {formatFecha(alumno.fecha_fin_plan)}</p>}
                 </div>
               )}
             </>
@@ -246,8 +246,8 @@ function AlumnoDetailPanel({
 
           {/* Datos del alumno */}
           <section>
-            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
-            <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+            <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Datos del alumno</h3>
+            <div className="bg-stone-50 rounded-xl p-4 space-y-3 border border-stone-200">
               {editing ? (
                 <>
                   <div><label className={cx.label}>Nombre completo</label><input value={form.nombre_alumno} onChange={e => patch('nombre_alumno', e.target.value)} className={cx.input} /></div>
@@ -272,12 +272,12 @@ function AlumnoDetailPanel({
                     ['Categoria', alumno.categoria],
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between">
-                      <span className="text-zinc-500 text-sm">{label}</span>
-                      <span className="text-white text-sm font-medium">{value || '—'}</span>
+                      <span className="text-stone-400 text-sm">{label}</span>
+                      <span className="text-stone-900 text-sm font-medium">{value || '—'}</span>
                     </div>
                   ))}
                   <div className="flex justify-between items-center">
-                    <span className="text-zinc-500 text-sm">Estado</span>
+                    <span className="text-stone-400 text-sm">Estado</span>
                     <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>{alumno.estado}</span>
                   </div>
                 </>
@@ -287,8 +287,8 @@ function AlumnoDetailPanel({
 
           {/* Apoderado */}
           <section>
-            <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Apoderado</h3>
-            <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+            <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Apoderado</h3>
+            <div className="bg-stone-50 rounded-xl p-4 space-y-3 border border-stone-200">
               {editing ? (
                 <>
                   <div><label className={cx.label}>Nombre apoderado</label><input value={form.nombre_apoderado} onChange={e => patch('nombre_apoderado', e.target.value)} className={cx.input} /></div>
@@ -304,8 +304,8 @@ function AlumnoDetailPanel({
                     ['Correo', alumno.correo_apoderado],
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between">
-                      <span className="text-zinc-500 text-sm">{label}</span>
-                      <span className="text-white text-sm">{value || '—'}</span>
+                      <span className="text-stone-400 text-sm">{label}</span>
+                      <span className="text-stone-900 text-sm">{value || '—'}</span>
                     </div>
                   ))}
                 </>
@@ -317,44 +317,44 @@ function AlumnoDetailPanel({
           {!editing && (
             <>
               <section>
-                <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones</h3>
+                <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Inscripciones</h3>
                 {alumno.inscripciones && alumno.inscripciones.length > 0 ? (
-                  <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+                  <div className="bg-stone-50 rounded-xl overflow-hidden border border-stone-200">
                     <table className="w-full text-left text-sm">
-                      <thead><tr className="border-b border-zinc-800">
+                      <thead><tr className="border-b border-stone-200">
                         <th className={cx.th}>Programa</th><th className={cx.th}>Inicio</th><th className={cx.th}>Fin</th>
                       </tr></thead>
                       <tbody>
                         {alumno.inscripciones.map(ins => (
                           <tr key={ins.id} className={cx.tr}>
-                            <td className={cx.td + ' text-white font-medium'}>{ins.programa}</td>
-                            <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_inicio)}</td>
-                            <td className={cx.td + ' text-zinc-400'}>{formatFecha(ins.fecha_fin)}</td>
+                            <td className={cx.td + ' text-stone-900 font-medium'}>{ins.programa}</td>
+                            <td className={cx.td + ' text-stone-500'}>{formatFecha(ins.fecha_inicio)}</td>
+                            <td className={cx.td + ' text-stone-500'}>{formatFecha(ins.fecha_fin)}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
                 ) : (
-                  <p className="text-zinc-500 text-sm">Sin inscripciones activas</p>
+                  <p className="text-stone-400 text-sm">Sin inscripciones activas</p>
                 )}
               </section>
 
               <section>
-                <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (30 dias)</h3>
-                <div className="bg-zinc-900 rounded-xl p-4 text-center border border-zinc-800">
-                  <span className="text-2xl font-bold text-white">{alumno.asistencias_30d ?? 0}</span>
-                  <span className="text-zinc-500 text-sm ml-2">asistencias</span>
+                <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Asistencias (30 dias)</h3>
+                <div className="bg-stone-50 rounded-xl p-4 text-center border border-stone-200">
+                  <span className="text-2xl font-bold text-stone-900">{alumno.asistencias_30d ?? 0}</span>
+                  <span className="text-stone-400 text-sm ml-2">asistencias</span>
                 </div>
               </section>
 
               {/* Implementos */}
               {alumno.implementos && alumno.implementos.length > 0 && (
                 <section>
-                  <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">
+                  <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">
                     Implementos ({alumno.implementos.length})
                   </h3>
-                  <div className="bg-zinc-900 rounded-xl border border-zinc-800 overflow-hidden">
+                  <div className="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden">
                     {Object.entries(
                       alumno.implementos.reduce<Record<string, Implemento[]>>((acc, imp) => {
                         const cat = imp.categoria || 'otro';
@@ -363,8 +363,8 @@ function AlumnoDetailPanel({
                         return acc;
                       }, {})
                     ).map(([cat, items]) => (
-                      <div key={cat} className="border-b border-zinc-800 last:border-0 p-4">
-                        <p className="text-[10px] text-zinc-500 uppercase font-semibold mb-2">
+                      <div key={cat} className="border-b border-stone-200 last:border-0 p-4">
+                        <p className="text-[10px] text-stone-400 uppercase font-semibold mb-2">
                           {cat === 'arma' ? '⚔️ Armas' :
                            cat === 'uniforme' ? '🥋 Uniformes' :
                            cat === 'protector' ? '🛡️ Protectores' :
@@ -373,9 +373,9 @@ function AlumnoDetailPanel({
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {items.map(imp => (
-                            <div key={imp.id} className="bg-zinc-800 rounded-lg px-3 py-1.5 text-xs">
-                              <span className="text-white font-medium">{imp.tipo}</span>
-                              {imp.talla && <span className="text-zinc-500 ml-1">({imp.talla})</span>}
+                            <div key={imp.id} className="bg-stone-100 rounded-lg px-3 py-1.5 text-xs">
+                              <span className="text-stone-900 font-medium">{imp.tipo}</span>
+                              {imp.talla && <span className="text-stone-400 ml-1">({imp.talla})</span>}
                             </div>
                           ))}
                         </div>
@@ -500,9 +500,9 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
 
   const estadoChipClass = useCallback((value: string) => {
     if (filterEstado !== value) return cx.chip(false);
-    if (value === 'activo') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20';
-    if (value === 'inactivo') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/20';
-    return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-sky-500/15 text-sky-400 border border-sky-500/20';
+    if (value === 'activo') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200';
+    if (value === 'inactivo') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200';
+    return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-sky-50 text-sky-600 border border-sky-200';
   }, [filterEstado]);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total]);
@@ -517,14 +517,14 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-white text-xl font-bold">Alumnos</h1>
-        <p className="text-white/40 text-xs mt-1">{total} alumnos registrados</p>
+        <h1 className="text-stone-900 text-xl font-bold">Alumnos</h1>
+        <p className="text-stone-400 text-xs mt-1">{total} alumnos registrados</p>
       </div>
 
       {/* Search + filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
             type="text"
             placeholder="Buscar por nombre o DNI..."
@@ -546,7 +546,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
         </div>
       </div>
 
-      <p className="text-white/30 text-xs">
+      <p className="text-stone-400 text-xs">
         Mostrando {showingFrom}–{showingTo} de {total} alumnos
       </p>
 
@@ -555,16 +555,16 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
         <AlumnosTableSkeleton />
       ) : alumnos.length === 0 ? (
         <div className={cx.card + ' py-16 text-center'}>
-          <Users size={40} className="mx-auto text-zinc-700 mb-3" />
-          <p className="text-zinc-400 mb-1">Sin alumnos</p>
-          <p className="text-zinc-500 text-sm">No se encontraron alumnos con los filtros actuales</p>
+          <Users size={40} className="mx-auto text-stone-300 mb-3" />
+          <p className="text-stone-500 mb-1">Sin alumnos</p>
+          <p className="text-stone-400 text-sm">No se encontraron alumnos con los filtros actuales</p>
         </div>
       ) : (
         <div className={cx.card + ' overflow-hidden'}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>DNI</th>
                   <th className={cx.th + ' hidden md:table-cell'}>Programa</th>
@@ -582,37 +582,37 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
                   >
                     <td className={cx.td + ' whitespace-nowrap'}>
                       <div>
-                        <p className="text-white font-medium">{a.nombre}</p>
-                        <p className="text-zinc-500 text-xs">{a.nombre_apoderado || ''}</p>
+                        <p className="text-stone-900 font-medium">{a.nombre}</p>
+                        <p className="text-stone-400 text-xs">{a.nombre_apoderado || ''}</p>
                       </div>
                     </td>
-                    <td className={cx.td + ' text-zinc-400 font-mono text-xs'}>{a.dni}</td>
-                    <td className={cx.td + ' text-zinc-400 hidden md:table-cell'}>
+                    <td className={cx.td + ' text-stone-500 font-mono text-xs'}>{a.dni}</td>
+                    <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>
                       {a.programa ? (
                         <span className="text-xs">{a.programa}</span>
                       ) : (
-                        <span className="text-zinc-600 text-xs">Sin plan</span>
+                        <span className="text-stone-300 text-xs">Sin plan</span>
                       )}
                     </td>
                     <td className={cx.td + ' hidden lg:table-cell'}>
                       {a.clases_totales ? (
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 bg-zinc-800 rounded-full max-w-16">
+                          <div className="flex-1 h-1.5 bg-stone-200 rounded-full max-w-16">
                             <div
                               className="h-1.5 bg-emerald-500 rounded-full"
                               style={{ width: `${Math.min(100, ((a.clases_asistidas || 0) / a.clases_totales) * 100)}%` }}
                             />
                           </div>
-                          <span className="text-zinc-400 text-xs whitespace-nowrap">
+                          <span className="text-stone-500 text-xs whitespace-nowrap">
                             {a.clases_asistidas}/{a.clases_totales}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-zinc-600 text-xs">—</span>
+                        <span className="text-stone-300 text-xs">—</span>
                       )}
                     </td>
                     <td className={cx.td + ' hidden sm:table-cell'}>
-                      <span className="text-zinc-400 text-xs">{a.cinturon_actual || 'Blanco'}</span>
+                      <span className="text-stone-500 text-xs">{a.cinturon_actual || 'Blanco'}</span>
                     </td>
                     <td className={cx.td}>
                       <span className={cx.badge(ESTADO_BADGE[a.estado] ?? badgeColors.gray)}>
@@ -637,7 +637,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
           >
             Anterior
           </button>
-          <span className="text-white/40 text-sm">
+          <span className="text-stone-400 text-sm">
             Pagina {page} de {totalPages}
           </span>
           <button
