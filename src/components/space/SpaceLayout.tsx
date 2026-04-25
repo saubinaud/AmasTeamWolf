@@ -3,7 +3,7 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature, BarChart3, QrCode, Sun, Moon, History, UserCheck, Trophy,
+  ChevronRight, FileSignature, BarChart3, QrCode, History, UserCheck, Trophy,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser, SpaceTheme, Academia } from './SpaceApp';
 import { ACADEMIA_LABELS } from './SpaceApp';
@@ -138,20 +138,20 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
   const close = useCallback(() => setOpen(false), []);
 
   const sidebarContent = (
-    <div className="w-64 h-full flex flex-col bg-zinc-950 border-r border-zinc-800">
+    <div className="w-64 h-full flex flex-col bg-white border-r border-stone-100">
       {/* Brand */}
       <div className="h-16 flex items-center justify-between px-5 shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center shrink-0 shadow-lg shadow-[#FA7B21]/20">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#e8590c] to-[#c2410c] flex items-center justify-center shrink-0">
             <span className="text-[11px] font-black text-white">S</span>
           </div>
           <div>
-            <span className="text-white font-bold text-sm tracking-wide">SPACE</span>
-            <span className="text-white/20 text-[10px] block -mt-0.5">Admin Panel</span>
+            <span className="text-stone-900 font-bold text-sm tracking-wide">SPACE</span>
+            <span className="text-stone-300 text-[10px] block -mt-0.5">Admin Panel</span>
           </div>
         </div>
         {isMobile && (
-          <button onClick={close} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all" aria-label="Cerrar">
+          <button onClick={close} className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all" aria-label="Cerrar">
             <X size={18} />
           </button>
         )}
@@ -178,13 +178,13 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
                 onClick={() => go(page)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
                   active
-                    ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
-                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
+                    ? 'bg-orange-50 text-stone-900 font-medium border border-stone-200'
+                    : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50 border border-transparent'
                 }`}
               >
-                <Icon size={16} className={active ? 'text-[#FA7B21]' : 'text-zinc-600'} />
+                <Icon size={16} className={active ? 'text-[var(--accent)]' : 'text-stone-400'} />
                 {label}
-                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
+                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />}
               </button>
             );
           }
@@ -199,23 +199,23 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
                 onClick={() => toggleGroup(entry.key)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] transition-all duration-200 ${
                   containsActive
-                    ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
-                    : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
+                    ? 'bg-orange-50 text-stone-900 font-medium border border-stone-200'
+                    : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50 border border-transparent'
                 }`}
                 aria-expanded={expanded}
               >
-                <Icon size={16} className={containsActive ? 'text-[#FA7B21]' : 'text-zinc-600'} />
+                <Icon size={16} className={containsActive ? 'text-[var(--accent)]' : 'text-stone-400'} />
                 {entry.label}
                 <ChevronRight
                   size={14}
                   className={`ml-auto transition-transform duration-200 ${
                     expanded ? 'rotate-90' : ''
-                  } ${containsActive ? 'text-[#FA7B21]' : 'text-zinc-600'}`}
+                  } ${containsActive ? 'text-[var(--accent)]' : 'text-stone-400'}`}
                 />
               </button>
 
               {expanded && (
-                <div className="mt-1 ml-3 pl-3 border-l border-zinc-800 space-y-1">
+                <div className="mt-1 ml-3 pl-3 border-l border-stone-200 space-y-1">
                   {entry.children.map((child) => {
                     const ChildIcon = child.icon;
                     const childActive = currentPage === child.page;
@@ -225,13 +225,13 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
                         onClick={() => go(child.page)}
                         className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] transition-all duration-200 ${
                           childActive
-                            ? 'bg-[#FA7B21]/10 text-white font-medium border border-[#FA7B21]/15'
-                            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 border border-transparent'
+                            ? 'bg-orange-50 text-stone-900 font-medium border border-stone-200'
+                            : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50 border border-transparent'
                         }`}
                       >
-                        <ChildIcon size={14} className={childActive ? 'text-[#FA7B21]' : 'text-zinc-600'} />
+                        <ChildIcon size={14} className={childActive ? 'text-[var(--accent)]' : 'text-stone-400'} />
                         {child.label}
-                        {childActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#FA7B21]" />}
+                        {childActive && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[var(--accent)]" />}
                       </button>
                     );
                   })}
@@ -243,36 +243,26 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
       </nav>
 
       {/* User + actions */}
-      <div className="px-3 py-4 border-t border-zinc-800 shrink-0">
-        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-zinc-900 rounded-xl border border-zinc-800">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 flex items-center justify-center shrink-0 border border-[#FA7B21]/15">
-            <span className="text-[#FA7B21] text-[11px] font-bold">{initials}</span>
+      <div className="px-3 py-4 border-t border-stone-100 shrink-0">
+        <div className="flex items-center gap-3 px-3 py-2.5 mb-2 bg-stone-50 rounded-xl border border-stone-200">
+          <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center shrink-0 border border-orange-200">
+            <span className="text-[var(--accent)] text-[11px] font-bold">{initials}</span>
           </div>
           <div className="min-w-0">
-            <p className="text-white text-xs font-medium truncate">{user.nombre}</p>
-            <p className="text-zinc-600 text-[10px] truncate">{user.rol === 'admin' ? 'Administrador' : 'Profesor'}</p>
+            <p className="text-stone-900 text-xs font-medium truncate">{user.nombre}</p>
+            <p className="text-stone-400 text-[10px] truncate">{user.rol === 'admin' ? 'Administrador' : 'Profesor'}</p>
           </div>
-        </div>
-        <div className="flex gap-1 mb-1">
-          <button
-            onClick={onToggleTheme}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-zinc-500 hover:text-zinc-400 hover:bg-zinc-800 transition-all"
-            aria-label="Cambiar tema"
-          >
-            {theme === 'dark' ? <Sun size={12} /> : <Moon size={12} />}
-            {theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-          </button>
         </div>
         <div className="flex gap-1">
           <button
             onClick={() => { close(); onExit(); }}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-zinc-500 hover:text-zinc-400 hover:bg-zinc-800 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-stone-400 hover:text-stone-600 hover:bg-stone-50 transition-all"
           >
             <ExternalLink size={12} /> Sitio
           </button>
           <button
             onClick={() => { close(); onLogout(); }}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-red-400/40 hover:text-red-400 hover:bg-red-500/5 transition-all"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[11px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all"
           >
             <LogOut size={12} /> Salir
           </button>
@@ -282,15 +272,15 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
   );
 
   return (
-    <div className="h-dvh flex bg-zinc-950 overflow-hidden">
+    <div className="h-dvh flex bg-[#f7f7f7] overflow-hidden">
 
       {/* MOBILE: Overlay */}
       {isMobile && open && (
         <div className="fixed inset-0 z-[90] flex">
-          <div className="shrink-0 shadow-2xl shadow-black/80">
+          <div className="shrink-0 shadow-2xl">
             {sidebarContent}
           </div>
-          <div className="flex-1 bg-zinc-950/95" onClick={close} />
+          <div className="flex-1 bg-black/30" onClick={close} />
         </div>
       )}
 
@@ -305,29 +295,29 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 flex items-center gap-3 px-4 sm:px-5 border-b border-zinc-800 shrink-0 bg-zinc-950">
+        <header className="h-14 flex items-center gap-3 px-4 sm:px-5 border-b border-stone-200 shrink-0 bg-white">
           {(!open || isMobile) && (
             <button
               onClick={() => setOpen(true)}
-              className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
+              className="p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all"
               aria-label="Menu"
             >
               <PanelLeftOpen size={18} />
             </button>
           )}
-          <h1 className="text-white font-semibold text-[15px]">{TITLES[currentPage]}</h1>
+          <h1 className="text-stone-900 font-semibold text-[15px]">{TITLES[currentPage]}</h1>
           <div className="ml-auto flex items-center gap-2">
             {/* Academia switcher */}
             {user.academias && user.academias.length > 1 && (
-              <div className="flex items-center bg-zinc-800/60 rounded-lg p-0.5 gap-0.5">
+              <div className="flex items-center bg-stone-100 rounded-lg p-0.5 gap-0.5">
                 {user.academias.map((a) => (
                   <button
                     key={a}
                     onClick={() => onSwitchAcademia(a)}
                     className={`px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all ${
                       academia === a
-                        ? 'bg-[#FA7B21] text-white shadow-sm'
-                        : 'text-zinc-400 hover:text-white'
+                        ? 'bg-[var(--accent)] text-white shadow-sm'
+                        : 'text-stone-500 hover:text-stone-800'
                     }`}
                     title={ACADEMIA_LABELS[a]}
                   >
@@ -336,14 +326,6 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
                 ))}
               </div>
             )}
-            <button
-              onClick={onToggleTheme}
-              className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all"
-              aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
-              title={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
-            >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
           </div>
         </header>
 

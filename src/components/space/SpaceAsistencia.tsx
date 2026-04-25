@@ -76,7 +76,7 @@ function StatCard({
   return (
     <div className={`${cx.card} p-4 sm:p-5 bg-gradient-to-br ${gradient.bg} border ${gradient.border}`}>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">{label}</span>
+        <span className="text-stone-500 text-xs font-medium uppercase tracking-wider">{label}</span>
         <Icon size={18} className={gradient.icon} />
       </div>
       <p className={`text-2xl font-bold ${gradient.text}`}>{value}</p>
@@ -280,8 +280,8 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-white text-xl font-bold">Asistencia</h1>
-          <p className="text-zinc-500 text-xs mt-1">Control de asistencia de alumnos</p>
+          <h1 className="text-stone-900 text-xl font-bold">Asistencia</h1>
+          <p className="text-stone-400 text-xs mt-1">Control de asistencia de alumnos</p>
         </div>
         <a
           href="/asistencia/panel"
@@ -352,8 +352,8 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
 
       {/* Today's attendance table */}
       <div>
-        <h2 className="text-white text-sm font-semibold mb-3">Registro de asistencias</h2>
-        <p className="text-zinc-500 text-xs mb-3">
+        <h2 className="text-stone-900 text-sm font-semibold mb-3">Registro de asistencias</h2>
+        <p className="text-stone-400 text-xs mb-3">
           Mostrando {showingFrom}–{showingTo} de {totalHoy} registros
         </p>
 
@@ -361,16 +361,16 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
           <AsistenciaTableSkeleton />
         ) : asistencias.length === 0 ? (
           <div className={cx.card + ' py-16 text-center'}>
-            <CalendarCheck size={40} className="mx-auto text-zinc-700 mb-3" />
-            <p className="text-zinc-400 mb-1">Sin asistencias hoy</p>
-            <p className="text-zinc-500 text-sm">No se registraron asistencias para el dia de hoy</p>
+            <CalendarCheck size={40} className="mx-auto text-stone-300 mb-3" />
+            <p className="text-stone-500 mb-1">Sin asistencias hoy</p>
+            <p className="text-stone-400 text-sm">No se registraron asistencias para el dia de hoy</p>
           </div>
         ) : (
           <div className={cx.card + ' overflow-hidden'}>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800">
+                  <tr className="border-b border-stone-200">
                     <th className={cx.th}>Alumno</th>
                     <th className={cx.th}>Fecha</th>
                     <th className={cx.th}>Hora</th>
@@ -382,16 +382,16 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
                 <tbody>
                   {asistencias.map(a => (
                     <tr key={a.id} className={cx.tr}>
-                      <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>
+                      <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>
                         <div>
                           <p>{a.nombre_alumno || '—'}</p>
-                          {a.dni_alumno && <p className="text-zinc-500 text-xs font-mono">{a.dni_alumno}</p>}
+                          {a.dni_alumno && <p className="text-stone-400 text-xs font-mono">{a.dni_alumno}</p>}
                         </div>
                       </td>
-                      <td className={cx.td + ' text-zinc-400 whitespace-nowrap'}>{formatFechaCorta(a.fecha)}</td>
-                      <td className={cx.td + ' text-zinc-400'}>{formatHora(a.hora)}</td>
-                      <td className={cx.td + ' text-zinc-400 hidden sm:table-cell'}>{a.turno || '—'}</td>
-                      <td className={cx.td + ' text-zinc-400 hidden md:table-cell'}>{a.programa || '—'}</td>
+                      <td className={cx.td + ' text-stone-500 whitespace-nowrap'}>{formatFechaCorta(a.fecha)}</td>
+                      <td className={cx.td + ' text-stone-500'}>{formatHora(a.hora)}</td>
+                      <td className={cx.td + ' text-stone-500 hidden sm:table-cell'}>{a.turno || '—'}</td>
+                      <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>{a.programa || '—'}</td>
                       <td className={cx.td}>
                         <span className={cx.badge(a.asistio === 'Sí' ? badgeColors.green : badgeColors.red)}>
                           {a.asistio || 'No'}
@@ -415,7 +415,7 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
             >
               Anterior
             </button>
-            <span className="text-zinc-500 text-sm">
+            <span className="text-stone-400 text-sm">
               Pagina {pageHoy} de {totalPages}
             </span>
             <button
@@ -431,21 +431,21 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
 
       {/* Daily summary */}
       <div>
-        <h2 className="text-white text-sm font-semibold mb-3">Resumen diario</h2>
+        <h2 className="text-stone-900 text-sm font-semibold mb-3">Resumen diario</h2>
 
         {loadingResumen ? (
           <AsistenciaTableSkeleton />
         ) : resumen.length === 0 ? (
           <div className={cx.card + ' py-12 text-center'}>
-            <Clock size={32} className="mx-auto text-zinc-700 mb-3" />
-            <p className="text-zinc-400 text-sm">Sin datos para el rango seleccionado</p>
+            <Clock size={32} className="mx-auto text-stone-300 mb-3" />
+            <p className="text-stone-500 text-sm">Sin datos para el rango seleccionado</p>
           </div>
         ) : (
           <div className={cx.card + ' overflow-hidden'}>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-zinc-800">
+                  <tr className="border-b border-stone-200">
                     <th className={cx.th}>Fecha</th>
                     <th className={cx.th}>Total</th>
                     <th className={cx.th}>Presentes</th>
@@ -454,8 +454,8 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
                 <tbody>
                   {resumen.map(r => (
                     <tr key={r.fecha} className={cx.tr}>
-                      <td className={cx.td + ' text-white font-medium'}>{formatFecha(r.fecha)}</td>
-                      <td className={cx.td + ' text-zinc-400'}>{r.total}</td>
+                      <td className={cx.td + ' text-stone-900 font-medium'}>{formatFecha(r.fecha)}</td>
+                      <td className={cx.td + ' text-stone-500'}>{r.total}</td>
                       <td className={cx.td}>
                         <span className={cx.badge(badgeColors.green)}>{r.presentes}</span>
                       </td>

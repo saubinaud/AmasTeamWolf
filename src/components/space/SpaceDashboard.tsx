@@ -64,11 +64,11 @@ const HEATMAP_DIAS = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
 const COL_TO_DOW = [1, 2, 3, 4, 5, 6];
 
 function heatColor(count: number): string {
-  if (count === 0) return 'bg-zinc-800 text-zinc-600';
-  if (count <= 5) return 'bg-emerald-900 text-emerald-300';
-  if (count <= 15) return 'bg-emerald-700 text-emerald-100';
-  if (count <= 30) return 'bg-emerald-500 text-white';
-  return 'bg-emerald-400 text-white';
+  if (count === 0) return 'bg-stone-100 text-stone-400';
+  if (count <= 5) return 'bg-emerald-100 text-emerald-700';
+  if (count <= 15) return 'bg-emerald-200 text-emerald-800';
+  if (count <= 30) return 'bg-emerald-400 text-white';
+  return 'bg-emerald-500 text-white';
 }
 
 export function SpaceDashboard({ token, userName, onNavigate }: Props) {
@@ -109,12 +109,12 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-16 bg-zinc-800 rounded-2xl animate-pulse" />
+        <div className="h-16 bg-stone-100 rounded-2xl animate-pulse" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[1,2,3,4].map(k => <div key={k} className="h-28 bg-zinc-800 rounded-2xl animate-pulse" />)}
+          {[1,2,3,4].map(k => <div key={k} className="h-28 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[1,2,3].map(k => <div key={k} className="h-20 bg-zinc-800 rounded-2xl animate-pulse" />)}
+          {[1,2,3].map(k => <div key={k} className="h-20 bg-stone-100 rounded-2xl animate-pulse" />)}
         </div>
       </div>
     );
@@ -132,13 +132,12 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   return (
     <div className="space-y-6">
       {/* Welcome header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#FA7B21]/10 via-zinc-900/80 to-zinc-900/60 border border-[#FA7B21]/10 p-5 sm:p-6">
-        <div className="absolute -top-20 -right-20 w-40 h-40 bg-[#FA7B21]/10 rounded-full blur-3xl" />
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-50 via-white to-white border border-stone-200 p-5 sm:p-6">
         <div className="relative">
-          <h2 className="text-white text-lg sm:text-xl font-bold">
+          <h2 className="text-stone-900 text-lg sm:text-xl font-bold">
             Hola, {userName || 'Admin'} 👋
           </h2>
-          <p className="text-zinc-500 text-sm mt-1 capitalize">{today}</p>
+          <p className="text-stone-400 text-sm mt-1 capitalize">{today}</p>
         </div>
       </div>
 
@@ -147,15 +146,15 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
         {cards.map(({ id, label, value, icon: Icon, gradient }) => (
           <div
             key={id}
-            className={`relative overflow-hidden bg-gradient-to-br ${gradient.bg} border ${gradient.border} rounded-2xl p-4 sm:p-5 transition-all duration-200 hover:scale-[1.02]`}
+            className={`relative overflow-hidden bg-gradient-to-br ${gradient.bg} border ${gradient.border} rounded-2xl p-4 sm:p-5 transition-all duration-200`}
           >
-            <div className={`w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center mb-3`}>
+            <div className={`w-10 h-10 rounded-xl bg-white flex items-center justify-center mb-3`}>
               <Icon size={18} className={gradient.icon} />
             </div>
             <p className={`text-3xl font-bold ${gradient.text} leading-none`}>
               <AnimatedNumber value={value} />
             </p>
-            <p className="text-zinc-500 text-xs mt-1.5">{label}</p>
+            <p className="text-stone-500 text-xs mt-1.5">{label}</p>
           </div>
         ))}
       </div>
@@ -163,21 +162,21 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
       {/* Heatmap de asistencias */}
       {heatmap.length > 0 && (
         <div>
-          <h3 className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium mb-3">Asistencias ultimos 30 dias</h3>
+          <h3 className="text-stone-400 text-[10px] uppercase tracking-widest font-medium mb-3">Asistencias ultimos 30 dias</h3>
           <div className={`${cx.card} p-4 sm:p-5 overflow-x-auto`}>
             <table className="w-full text-left text-xs">
               <thead>
                 <tr>
-                  <th className="py-2 pr-3 text-zinc-500 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap">Clase</th>
+                  <th className="py-2 pr-3 text-stone-400 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap">Clase</th>
                   {HEATMAP_DIAS.map((d) => (
-                    <th key={d} className="py-2 px-1 text-center text-zinc-500 text-[10px] font-semibold uppercase tracking-wider">{d}</th>
+                    <th key={d} className="py-2 px-1 text-center text-stone-400 text-[10px] font-semibold uppercase tracking-wider">{d}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {HEATMAP_CLASES_DISPLAY.map((clase, claseIdx) => (
                   <tr key={clase}>
-                    <td className="py-1.5 pr-3 text-zinc-400 text-xs whitespace-nowrap">{clase}</td>
+                    <td className="py-1.5 pr-3 text-stone-600 text-xs whitespace-nowrap">{clase}</td>
                     {COL_TO_DOW.map((dow, ci) => {
                       const pattern = HEATMAP_CLASES_PATTERNS[claseIdx];
                       const matches = heatmap.filter(
@@ -197,18 +196,18 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
               </tbody>
             </table>
             {/* Legend */}
-            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-zinc-800">
-              <span className="text-zinc-600 text-[10px]">Intensidad:</span>
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-stone-200">
+              <span className="text-stone-400 text-[10px]">Intensidad:</span>
               {[
-                { label: '0', cls: 'bg-zinc-800' },
-                { label: '1-5', cls: 'bg-emerald-900' },
-                { label: '6-15', cls: 'bg-emerald-700' },
-                { label: '16-30', cls: 'bg-emerald-500' },
-                { label: '30+', cls: 'bg-emerald-400' },
+                { label: '0', cls: 'bg-stone-100' },
+                { label: '1-5', cls: 'bg-emerald-100' },
+                { label: '6-15', cls: 'bg-emerald-200' },
+                { label: '16-30', cls: 'bg-emerald-400' },
+                { label: '30+', cls: 'bg-emerald-500' },
               ].map((l) => (
                 <div key={l.label} className="flex items-center gap-1">
                   <div className={`w-3 h-3 rounded ${l.cls}`} />
-                  <span className="text-zinc-500 text-[10px]">{l.label}</span>
+                  <span className="text-stone-400 text-[10px]">{l.label}</span>
                 </div>
               ))}
             </div>
@@ -224,43 +223,43 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
             sessionStorage.setItem('space_insc_filter', 'por_vencer');
             go('inscripciones');
           }}
-          className="w-full flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/15 rounded-2xl text-left hover:bg-amber-500/15 transition-all duration-200 group"
+          className="w-full flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-left hover:bg-amber-100 transition-all duration-200 group"
         >
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
-            <AlertTriangle size={18} className="text-amber-400" />
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <AlertTriangle size={18} className="text-amber-700" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-amber-300 text-sm font-medium">
+            <p className="text-amber-700 text-sm font-medium">
               {stats.inscripcionesPorVencer} inscripciones por vencer esta semana
             </p>
-            <p className="text-amber-400/40 text-xs mt-0.5">Click para ver detalle</p>
+            <p className="text-amber-700/50 text-xs mt-0.5">Click para ver detalle</p>
           </div>
-          <ArrowRight size={16} className="text-amber-400/40 group-hover:text-amber-400 transition-colors shrink-0" />
+          <ArrowRight size={16} className="text-amber-700/40 group-hover:text-amber-700 transition-colors shrink-0" />
         </button>
       )}
 
       {/* Quick actions */}
       <div>
-        <h3 className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium mb-3">Acciones rapidas</h3>
+        <h3 className="text-stone-400 text-[10px] uppercase tracking-widest font-medium mb-3">Acciones rapidas</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { page: 'graduaciones' as SpacePage, icon: GraduationCap, title: 'Graduaciones', sub: 'Gestionar evaluaciones', color: 'text-[#FA7B21]' },
+            { page: 'graduaciones' as SpacePage, icon: GraduationCap, title: 'Graduaciones', sub: 'Gestionar evaluaciones', color: 'text-[#e8590c]' },
             { page: 'asistencia' as SpacePage, icon: ClipboardCheck, title: 'Asistencia', sub: 'Control del dia', color: 'text-emerald-400' },
             { page: 'alumnos' as SpacePage, icon: TrendingUp, title: 'Alumnos', sub: 'Ver listado completo', color: 'text-sky-400' },
           ].map(({ page, icon: Icon, title, sub, color }) => (
             <button
               key={page}
               onClick={() => go(page)}
-              className={`${cx.card} p-4 flex items-center gap-3 text-left hover:bg-zinc-800 hover:border-zinc-800 transition-all duration-200 group`}
+              className={`${cx.card} p-4 flex items-center gap-3 text-left hover:bg-stone-50 transition-all duration-200 group`}
             >
-              <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 group-hover:bg-white/10 transition-colors">
+              <div className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center shrink-0 group-hover:bg-stone-100 transition-colors">
                 <Icon size={18} className={color} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-white text-sm font-medium">{title}</p>
-                <p className="text-white/25 text-xs mt-0.5">{sub}</p>
+                <p className="text-stone-900 text-sm font-medium">{title}</p>
+                <p className="text-stone-400 text-xs mt-0.5">{sub}</p>
               </div>
-              <ArrowRight size={14} className="text-zinc-700 group-hover:text-zinc-500 transition-colors shrink-0" />
+              <ArrowRight size={14} className="text-stone-300 group-hover:text-stone-500 transition-colors shrink-0" />
             </button>
           ))}
         </div>
@@ -269,17 +268,17 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
       {/* Recent attendance */}
       {stats?.ultimasAsistencias && stats.ultimasAsistencias.length > 0 && (
         <div>
-          <h3 className="text-zinc-600 text-[10px] uppercase tracking-widest font-medium mb-3">Ultimas asistencias</h3>
-          <div className={`${cx.card} divide-y divide-zinc-800`}>
+          <h3 className="text-stone-400 text-[10px] uppercase tracking-widest font-medium mb-3">Ultimas asistencias</h3>
+          <div className={`${cx.card} divide-y divide-stone-100`}>
             {stats.ultimasAsistencias.slice(0, 5).map((a, i) => (
               <div key={i} className="flex items-center gap-3 px-4 py-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
                   <Clock size={14} className="text-emerald-400" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm truncate">{a.nombre_alumno}</p>
+                  <p className="text-stone-900 text-sm truncate">{a.nombre_alumno}</p>
                 </div>
-                <span className="text-zinc-500 text-xs shrink-0">{a.hora?.slice(0, 5)} · {a.turno}</span>
+                <span className="text-stone-400 text-xs shrink-0">{a.hora?.slice(0, 5)} · {a.turno}</span>
               </div>
             ))}
           </div>

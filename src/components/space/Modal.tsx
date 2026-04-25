@@ -44,19 +44,16 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
     <div className="fixed inset-0" style={{ zIndex: 99999 }}>
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-zinc-950/95"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal container */}
       <div className={`relative flex ${isSlidePanel ? 'justify-end h-full' : 'items-center justify-center p-4 min-h-full'}`}>
-        <div className={`relative bg-zinc-950 border border-zinc-800 shadow-2xl shadow-black/80 w-full ${sizeClass} ${isSlidePanel ? '' : 'rounded-2xl max-h-[90dvh]'} flex flex-col`}>
-          {/* Orange top bar */}
-          <div className="h-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] shrink-0 rounded-t-2xl" />
-
+        <div className={`relative bg-white border border-stone-200 shadow-2xl w-full ${sizeClass} ${isSlidePanel ? '' : 'rounded-2xl max-h-[90dvh]'} flex flex-col`}>
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 shrink-0 bg-zinc-950 rounded-t-2xl">
-            <h2 className="text-white text-lg font-bold">{title}</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 shrink-0 bg-white rounded-t-2xl">
+            <h2 className="text-stone-900 text-lg font-bold">{title}</h2>
             <button onClick={onClose} className={cx.btnIcon}>
               <X size={18} />
             </button>
@@ -69,7 +66,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
 
           {/* Footer */}
           {footer && (
-            <div className="flex justify-end gap-3 px-6 py-4 border-t border-zinc-800 shrink-0 bg-zinc-950">
+            <div className="flex justify-end gap-3 px-6 py-4 border-t border-stone-200 shrink-0 bg-white">
               {footer}
             </div>
           )}

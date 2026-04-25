@@ -59,8 +59,8 @@ function PlaceholderPage({ title, description }: { title: string; description: s
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
-        <h2 className="text-white text-2xl font-bold mb-2">{title}</h2>
-        <p className="text-white/50">{description}</p>
+        <h2 className="text-stone-900 text-2xl font-bold mb-2">{title}</h2>
+        <p className="text-stone-400">{description}</p>
       </div>
     </div>
   );
@@ -73,9 +73,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
   const [user, setUser] = useState<SpaceUser | null>(null);
   const [currentPage, setCurrentPage] = useState<SpacePage>('dashboard');
   const [loading, setLoading] = useState(true);
-  const [theme, setTheme] = useState<SpaceTheme>(
-    () => (localStorage.getItem('space_theme') as SpaceTheme | null) ?? 'dark',
-  );
+  const theme: SpaceTheme = 'light';
   const [academia, setAcademia] = useState<Academia>(
     () => (localStorage.getItem('space_academia') as Academia | null) ?? 'amas',
   );
@@ -105,23 +103,23 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
     setCurrentPage('dashboard');
   }, []);
 
-  // Aplicar clase al body para que modales (React Portal) también la hereden.
-  // Al desmontar Space (salir al sitio) limpiar la clase para no afectar al site público.
+  // Inject NODUM light-theme CSS custom properties on mount
   useEffect(() => {
-    const body = document.body;
-    if (theme === 'light') {
-      body.classList.add('space-light');
-    } else {
-      body.classList.remove('space-light');
-    }
-    localStorage.setItem('space_theme', theme);
+    const root = document.documentElement;
+    root.style.setProperty('--accent', '#e8590c');
+    root.style.setProperty('--accent-hover', '#c2410c');
+    root.style.setProperty('--accent-light', '#fff7ed');
+    root.style.setProperty('--success', '#0f766e');
     return () => {
-      body.classList.remove('space-light');
+      root.style.removeProperty('--accent');
+      root.style.removeProperty('--accent-hover');
+      root.style.removeProperty('--accent-light');
+      root.style.removeProperty('--success');
     };
-  }, [theme]);
+  }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === 'dark' ? 'light' : 'dark'));
+    // noop — always light theme
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -162,8 +160,8 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
 
   if (loading) {
     return (
-      <div className="h-dvh bg-zinc-950 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#FA7B21] border-t-transparent rounded-full animate-spin" />
+      <div className="h-dvh bg-[#f7f7f7] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#e8590c] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }

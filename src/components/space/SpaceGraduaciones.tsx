@@ -152,12 +152,12 @@ function GraduacionesTable({
 }) {
   if (loading) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
         {SKELETON_KEYS.map(sk => (
-          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-zinc-800 last:border-0">
-            <div className="h-4 w-32 bg-zinc-800 rounded animate-pulse" />
-            <div className="h-4 w-20 bg-zinc-800 rounded animate-pulse" />
-            <div className="h-4 w-16 bg-zinc-800 rounded animate-pulse hidden sm:block" />
+          <div key={sk} className="flex gap-4 px-5 py-4 border-b border-stone-200 last:border-0">
+            <div className="h-4 w-32 bg-stone-50 rounded animate-pulse" />
+            <div className="h-4 w-20 bg-stone-50 rounded animate-pulse" />
+            <div className="h-4 w-16 bg-stone-50 rounded animate-pulse hidden sm:block" />
           </div>
         ))}
       </div>
@@ -166,10 +166,10 @@ function GraduacionesTable({
 
   if (graduaciones.length === 0) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl py-16 text-center">
-        <GraduationCap size={40} className="mx-auto text-zinc-700 mb-3" />
-        <p className="text-zinc-400 mb-1">Sin graduaciones</p>
-        <p className="text-white/30 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
+      <div className="bg-white border border-stone-200 rounded-2xl py-16 text-center">
+        <GraduationCap size={40} className="mx-auto text-stone-300 mb-3" />
+        <p className="text-stone-500 mb-1">Sin graduaciones</p>
+        <p className="text-stone-400 text-sm mb-5">Programa la primera graduacion para tus alumnos</p>
         <button
           onClick={onOpenCreate}
           className={cx.btnPrimary + ' inline-flex items-center gap-2'}
@@ -182,34 +182,34 @@ function GraduacionesTable({
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Alumno</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Rango</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
+            <tr className="border-b border-stone-200">
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Alumno</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Rango</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Estado</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {graduaciones.map(g => (
-              <tr key={g.id} className="border-b border-zinc-800 last:border-0">
-                <td className="px-5 py-3.5 text-white font-medium whitespace-nowrap">
+              <tr key={g.id} className="border-b border-stone-200 last:border-0">
+                <td className="px-5 py-3.5 text-stone-900 font-medium whitespace-nowrap">
                   {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
                 </td>
                 <td className="px-5 py-3.5">
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-[#FA7B21]/10 text-[#FA7B21]">
+                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-[var(--accent)]">
                     {g.rango}
                   </span>
                 </td>
-                <td className="px-5 py-3.5 text-white/60 hidden md:table-cell">{turnoLabel(g.turno)}</td>
-                <td className="px-5 py-3.5 text-white/60 hidden sm:table-cell">{formatFecha(g.fecha_graduacion || g.fecha)}</td>
+                <td className="px-5 py-3.5 text-stone-600 hidden md:table-cell">{turnoLabel(g.turno)}</td>
+                <td className="px-5 py-3.5 text-stone-600 hidden sm:table-cell">{formatFecha(g.fecha_graduacion || g.fecha)}</td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-zinc-400'}`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-stone-500'}`}>
                     {g.estado}
                   </span>
                 </td>
@@ -241,32 +241,32 @@ function CorreccionesTable({
 }) {
   if (correcciones.length === 0) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-2xl py-16 text-center">
-        <Check size={40} className="mx-auto text-zinc-700 mb-3" />
-        <p className="text-zinc-400 text-sm">No hay correcciones pendientes</p>
+      <div className="bg-white border border-stone-200 rounded-2xl py-16 text-center">
+        <Check size={40} className="mx-auto text-stone-300 mb-3" />
+        <p className="text-stone-500 text-sm">No hay correcciones pendientes</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800">
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Nombre</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Comentario</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider">Estado</th>
-              <th className="px-5 py-3 text-white/40 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
+            <tr className="border-b border-stone-200">
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Nombre</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Comentario</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Estado</th>
+              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
             </tr>
           </thead>
           <tbody>
             {correcciones.map(c => (
-              <tr key={c.id} className="border-b border-zinc-800 last:border-0">
-                <td className="px-5 py-3.5 text-white font-medium">{c.nombre}</td>
-                <td className="px-5 py-3.5 text-white/60 max-w-xs truncate">{c.comentario}</td>
+              <tr key={c.id} className="border-b border-stone-200 last:border-0">
+                <td className="px-5 py-3.5 text-stone-900 font-medium">{c.nombre}</td>
+                <td className="px-5 py-3.5 text-stone-600 max-w-xs truncate">{c.comentario}</td>
                 <td className="px-5 py-3.5">
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CORRECCION_PILL[c.estado] ?? 'text-zinc-400'}`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CORRECCION_PILL[c.estado] ?? 'text-stone-500'}`}>
                     {c.estado}
                   </span>
                 </td>
@@ -275,13 +275,13 @@ function CorreccionesTable({
                     <div className="inline-flex gap-2">
                       <button
                         onClick={() => onResolve(c.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-50 transition-colors"
                       >
                         Resolver
                       </button>
                       <button
                         onClick={() => onReject(c.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-rose-50 transition-colors"
                       >
                         Rechazar
                       </button>
@@ -344,9 +344,9 @@ function GraduacionModal({
           <label className={labelClass}>Alumno</label>
           <input type="text" placeholder="Buscar alumno..." value={alumnoQuery} onChange={e => onAlumnoSearch(e.target.value)} className={inputClass} />
           {showAutocomplete && alumnoResults.length > 0 && (
-            <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl shadow-black/50">
+            <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xl">
               {alumnoResults.map(a => (
-                <button key={a.id} onClick={() => onSelectAlumno(a)} className="w-full text-left px-4 py-3 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0">
+                <button key={a.id} onClick={() => onSelectAlumno(a)} className="w-full text-left px-4 py-3 text-stone-900 text-sm hover:bg-stone-50 transition-colors border-b border-stone-200 last:border-0">
                   {a.nombre} {a.apellido}
                 </button>
               ))}
@@ -360,19 +360,19 @@ function GraduacionModal({
 
         {/* Armas del alumno (modalidades disponibles) */}
         {form.alumno_id && (
-          <div className="bg-[#FA7B21]/5 border border-[#FA7B21]/20 rounded-xl p-4">
-            <label className={labelClass + ' text-[#FA7B21]'}>⚔️ Modalidades / Armas disponibles</label>
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+            <label className={labelClass + ' text-[var(--accent)]'}>⚔️ Modalidades / Armas disponibles</label>
             {alumnoArmas.length > 0 ? (
               <div className="flex flex-wrap gap-2 mt-2">
                 {alumnoArmas.map(arma => (
-                  <span key={arma.id} className="inline-flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs">
-                    <span className="text-[#FCA929]">⚔</span>
-                    <span className="text-white font-medium">{arma.tipo}</span>
+                  <span key={arma.id} className="inline-flex items-center gap-1.5 bg-stone-50 border border-stone-200 rounded-lg px-3 py-1.5 text-xs">
+                    <span className="text-[var(--accent)]">⚔</span>
+                    <span className="text-stone-900 font-medium">{arma.tipo}</span>
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-zinc-500 text-xs mt-2">
+              <p className="text-stone-400 text-xs mt-2">
                 Este alumno no tiene armas registradas. Puedes agregarlas en el módulo de Compras.
               </p>
             )}
@@ -517,11 +517,11 @@ function BatchGraduacionModal({
     >
       {results ? (
         <div className="space-y-3">
-          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-emerald-400 text-sm">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-400 text-sm">
             {results.processed} graduacion{results.processed !== 1 ? 'es' : ''} registrada{results.processed !== 1 ? 's' : ''} correctamente.
           </div>
           {results.errors && results.errors.length > 0 && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-red-400 text-sm space-y-1">
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-red-400 text-sm space-y-1">
               <p className="font-medium">Errores:</p>
               {results.errors.map((e, i) => (
                 <p key={i}>Fila {e.index + 1}: {e.error}</p>
@@ -534,16 +534,16 @@ function BatchGraduacionModal({
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
-                  <th className="px-2 py-2 text-left text-white/40 text-xs font-medium">Alumno</th>
-                  <th className="px-2 py-2 text-left text-white/40 text-xs font-medium">Cinturon nuevo</th>
-                  <th className="px-2 py-2 text-left text-white/40 text-xs font-medium">Fecha examen</th>
+                <tr className="border-b border-stone-200">
+                  <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Alumno</th>
+                  <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Cinturon nuevo</th>
+                  <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Fecha examen</th>
                   <th className="px-2 py-2 w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, idx) => (
-                  <tr key={idx} className="border-b border-zinc-800/50">
+                  <tr key={idx} className="border-b border-stone-100">
                     <td className="px-2 py-2 relative">
                       <input
                         type="text"
@@ -551,15 +551,15 @@ function BatchGraduacionModal({
                         value={row.query}
                         onChange={e => searchAlumno(idx, e.target.value)}
                         onFocus={() => row.results.length > 0 && updateRow(idx, { showResults: true })}
-                        className={cx.input + (row.alumno_id ? ' border-emerald-500/30' : '')}
+                        className={cx.input + (row.alumno_id ? ' border-emerald-200' : '')}
                       />
                       {row.showResults && row.results.length > 0 && (
-                        <div className="absolute z-30 top-full left-2 right-2 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-xl shadow-black/50 max-h-40 overflow-y-auto">
+                        <div className="absolute z-30 top-full left-2 right-2 mt-1 bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xl max-h-40 overflow-y-auto">
                           {row.results.map(a => (
                             <button
                               key={a.id}
                               onClick={() => selectAlumno(idx, a)}
-                              className="w-full text-left px-3 py-2 text-white text-sm hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-0"
+                              className="w-full text-left px-3 py-2 text-stone-900 text-sm hover:bg-stone-50 transition-colors border-b border-stone-200 last:border-0"
                             >
                               {a.nombre} {a.apellido}
                             </button>
@@ -607,7 +607,7 @@ function BatchGraduacionModal({
           </button>
 
           {validRows.length > 0 && (
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-stone-400">
               {validRows.length} de {rows.length} filas listas para registrar
             </p>
           )}
@@ -867,14 +867,14 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   const turnoChipClass = useCallback((value: string) => {
     return filterTurno === value
-      ? 'px-3 py-1.5 rounded-xl text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/20'
-      : 'px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-800 hover:bg-zinc-700 hover:text-zinc-300 transition-all duration-200';
+      ? 'px-3 py-1.5 rounded-xl text-xs font-medium bg-orange-50 text-[var(--accent)] border border-orange-200'
+      : 'px-3 py-1.5 rounded-xl text-xs font-medium bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100 hover:text-stone-700 transition-all duration-200';
   }, [filterTurno]);
 
   const estadoChipClass = useCallback((value: string) => {
-    if (filterEstado !== value) return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-800 hover:bg-zinc-700 hover:text-zinc-300 transition-all duration-200';
-    if (value === 'programada') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-500/15 text-amber-400 border border-amber-500/20';
-    return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/20';
+    if (filterEstado !== value) return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100 hover:text-stone-700 transition-all duration-200';
+    if (value === 'programada') return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-amber-50 text-amber-400 border border-amber-200';
+    return 'px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-50 text-emerald-400 border border-emerald-200';
   }, [filterEstado]);
 
   // -----------------------------------------------------------------------
@@ -886,8 +886,8 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-white text-xl font-bold">Graduaciones</h1>
-          <div className="flex gap-3 mt-1 text-xs text-white/40">
+          <h1 className="text-stone-900 text-xl font-bold">Graduaciones</h1>
+          <div className="flex gap-3 mt-1 text-xs text-stone-400">
             <span>{stats.programadas} programadas</span>
             <span>{stats.completadas} completadas</span>
             <span>{stats.canceladas} canceladas</span>
@@ -912,11 +912,11 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-zinc-800 rounded-xl p-1 w-fit border border-zinc-800">
+      <div className="flex gap-1 bg-stone-100 rounded-xl p-1 w-fit border border-stone-200">
         <button
           onClick={() => setTab('graduaciones')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'graduaciones' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'
+            tab === 'graduaciones' ? 'bg-white text-stone-900' : 'text-stone-500 hover:text-stone-800'
           }`}
         >
           Graduaciones
@@ -924,7 +924,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         <button
           onClick={() => setTab('correcciones')}
           className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            tab === 'correcciones' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white'
+            tab === 'correcciones' ? 'bg-white text-stone-900' : 'text-stone-500 hover:text-stone-800'
           }`}
         >
           Correcciones
@@ -936,7 +936,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
           {/* Search + filters */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-sm">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
                 type="text"
                 placeholder="Buscar por nombre..."
@@ -970,7 +970,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
             </div>
           </div>
 
-          <p className="text-white/30 text-xs">
+          <p className="text-stone-400 text-xs">
             Mostrando {graduaciones.length} de {totalCount} graduaciones
           </p>
 

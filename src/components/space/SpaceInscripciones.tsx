@@ -204,8 +204,8 @@ function EditModal({
     >
       <div className="space-y-5">
         <div>
-          <p className="text-white font-medium text-sm">{inscripcion.alumno_nombre} {inscripcion.alumno_apellido}</p>
-          <p className="text-zinc-500 text-xs mt-0.5">{inscripcion.programa}</p>
+          <p className="text-stone-900 font-medium text-sm">{inscripcion.alumno_nombre} {inscripcion.alumno_apellido}</p>
+          <p className="text-stone-400 text-xs mt-0.5">{inscripcion.programa}</p>
         </div>
 
         {/* Edit fields */}
@@ -228,9 +228,9 @@ function EditModal({
         </div>
 
         {/* Pagos section */}
-        <div className="border-t border-zinc-800 pt-4">
+        <div className="border-t border-stone-200 pt-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Pagos</h4>
+            <h4 className="text-stone-500 text-xs font-semibold uppercase tracking-wider">Pagos</h4>
             <button
               onClick={() => setShowPagoForm(!showPagoForm)}
               className={cx.btnGhost + ' flex items-center gap-1 text-xs'}
@@ -243,14 +243,14 @@ function EditModal({
           {!loadingDetail && inscDetail && (
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="text-zinc-400">S/ {precioPagado} de S/ {precioPrograma}</span>
+                <span className="text-stone-500">S/ {precioPagado} de S/ {precioPrograma}</span>
                 <span className={cx.badge(porcentajePagado >= 100 ? badgeColors.green : porcentajePagado > 0 ? badgeColors.orange : badgeColors.yellow)}>
                   {porcentajePagado}%
                 </span>
               </div>
-              <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${porcentajePagado >= 100 ? 'bg-emerald-500' : 'bg-[#FA7B21]'}`}
+                  className={`h-full rounded-full transition-all duration-500 ${porcentajePagado >= 100 ? 'bg-emerald-500' : 'bg-[var(--accent)]'}`}
                   style={{ width: `${porcentajePagado}%` }}
                 />
               </div>
@@ -259,7 +259,7 @@ function EditModal({
 
           {/* Inline pago form */}
           {showPagoForm && (
-            <div className="bg-zinc-800/50 rounded-xl p-3 mb-3 space-y-2.5 border border-zinc-800">
+            <div className="bg-stone-50 rounded-xl p-3 mb-3 space-y-2.5 border border-stone-200">
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className={cx.label}>Monto (S/)</label>
@@ -308,18 +308,18 @@ function EditModal({
           ) : pagos.length > 0 ? (
             <div className="space-y-2 max-h-48 overflow-y-auto">
               {pagos.map(p => (
-                <div key={p.id} className="flex items-start gap-2.5 py-2 border-b border-zinc-800/50 last:border-0">
-                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                <div key={p.id} className="flex items-start gap-2.5 py-2 border-b border-stone-100 last:border-0">
+                  <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <span className="text-white text-sm font-medium">S/ {Number(p.monto).toFixed(2)}</span>
-                      <span className="text-zinc-500 text-[10px]">
+                      <span className="text-stone-900 text-sm font-medium">S/ {Number(p.monto).toFixed(2)}</span>
+                      <span className="text-stone-400 text-[10px]">
                         {p.fecha ? new Date(p.fecha).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Lima' }) : ''}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className={cx.badge(badgeColors.gray) + ' text-[9px] py-0.5 px-1.5'}>{p.metodo_pago || p.tipo}</span>
-                      {p.observaciones && <span className="text-zinc-600 text-[10px] truncate">{p.observaciones}</span>}
+                      {p.observaciones && <span className="text-stone-300 text-[10px] truncate">{p.observaciones}</span>}
                     </div>
                   </div>
                 </div>
@@ -327,8 +327,8 @@ function EditModal({
             </div>
           ) : (
             <div className="text-center py-6">
-              <CreditCard size={24} className="mx-auto text-zinc-700 mb-2" />
-              <p className="text-zinc-500 text-xs">Sin pagos registrados</p>
+              <CreditCard size={24} className="mx-auto text-stone-300 mb-2" />
+              <p className="text-stone-400 text-xs">Sin pagos registrados</p>
             </div>
           )}
         </div>
@@ -493,7 +493,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   const chipClass = useCallback((active: boolean, color?: string) => {
     if (!active) return cx.chip(false);
     if (color) return `${color} text-white`;
-    return 'bg-[#FA7B21] text-white';
+    return 'bg-[var(--accent)] text-white';
   }, []);
 
   const estadoPagoChipColor = useCallback((value: string) => {
@@ -503,7 +503,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
       pagado: 'bg-emerald-500',
       vencido: 'bg-red-500',
     };
-    return map[value] ?? 'bg-zinc-600';
+    return map[value] ?? 'bg-stone-400';
   }, []);
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total]);
@@ -518,15 +518,15 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-white text-xl font-bold">Inscritos</h1>
-        <p className="text-zinc-500 text-xs mt-1">{total} inscripciones registradas</p>
+        <h1 className="text-stone-900 text-xl font-bold">Inscritos</h1>
+        <p className="text-stone-400 text-xs mt-1">{total} inscripciones registradas</p>
       </div>
 
       {/* Vencimientos alert */}
       {vencimientos > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20">
-          <AlertTriangle size={18} className="text-yellow-400 shrink-0" />
-          <p className="text-yellow-400 text-sm">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200">
+          <AlertTriangle size={18} className="text-amber-500 shrink-0" />
+          <p className="text-amber-600 text-sm">
             <span className="font-semibold">{vencimientos}</span> inscripciones vencen esta semana
           </p>
         </div>
@@ -535,7 +535,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
       {/* Search + filters */}
       <div className="flex flex-col gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
             type="text"
             placeholder="Buscar por alumno..."
@@ -558,7 +558,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           ))}
 
           {/* Separator if both exist */}
-          {programas.length > 0 && <div className="w-px bg-zinc-700 mx-1" />}
+          {programas.length > 0 && <div className="w-px bg-stone-300 mx-1" />}
 
           {/* Estado pago chips */}
           {ESTADO_PAGO_OPTIONS.map(ep => (
@@ -571,20 +571,20 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
             </button>
           ))}
 
-          <div className="w-px bg-zinc-700 mx-1" />
+          <div className="w-px bg-stone-300 mx-1" />
 
           {/* Activa chips */}
           {ACTIVA_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => handleActivaFilter(opt.value)}
-              className={`transition-all duration-200 ${chipClass(filterActiva === opt.value, opt.value === 'si' ? 'bg-emerald-500' : 'bg-zinc-600')}`}
+              className={`transition-all duration-200 ${chipClass(filterActiva === opt.value, opt.value === 'si' ? 'bg-emerald-500' : 'bg-stone-400')}`}
             >
               {opt.label}
             </button>
           ))}
 
-          <div className="w-px bg-zinc-700 mx-1" />
+          <div className="w-px bg-stone-300 mx-1" />
 
           {/* Por vencer filter */}
           <select
@@ -594,7 +594,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
               if (e.target.value) setFilterActiva('si');
               setPage(1);
             }}
-            className="px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-800 hover:bg-zinc-700 transition-all appearance-none"
+            className="px-3 py-1.5 rounded-xl text-xs font-medium bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100 transition-all appearance-none"
           >
             <option value="">Por vencer...</option>
             <option value="5">Próximos 5 días</option>
@@ -605,7 +605,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
         </div>
       </div>
 
-      <p className="text-zinc-500 text-xs">
+      <p className="text-stone-400 text-xs">
         Mostrando {showingFrom}–{showingTo} de {total} inscripciones
       </p>
 
@@ -614,16 +614,16 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
         <InscripcionesTableSkeleton />
       ) : inscripciones.length === 0 ? (
         <div className={cx.card + ' py-16 text-center'}>
-          <FileText size={40} className="mx-auto text-zinc-700 mb-3" />
-          <p className="text-zinc-400 mb-1">Sin inscripciones</p>
-          <p className="text-zinc-500 text-sm">No se encontraron inscripciones con los filtros actuales</p>
+          <FileText size={40} className="mx-auto text-stone-300 mb-3" />
+          <p className="text-stone-500 mb-1">Sin inscripciones</p>
+          <p className="text-stone-400 text-sm">No se encontraron inscripciones con los filtros actuales</p>
         </div>
       ) : (
         <div className={cx.card + ' overflow-hidden'}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>Programa</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Freq.</th>
@@ -638,30 +638,30 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                   <tr
                     key={ins.id}
                     onClick={() => handleRowClick(ins)}
-                    className={cx.tr + ' hover:bg-zinc-800/50 cursor-pointer transition-colors'}
+                    className={cx.tr + ' hover:bg-stone-50/50 cursor-pointer transition-colors'}
                   >
-                    <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>
+                    <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>
                       {ins.alumno_nombre} {ins.alumno_apellido}
                     </td>
-                    <td className={cx.td + ' text-white/60'}>{ins.programa}</td>
+                    <td className={cx.td + ' text-stone-600'}>{ins.programa}</td>
                     <td className={cx.td + ' hidden sm:table-cell'}>
                       {ins.frecuencia_semanal != null && ins.frecuencia_semanal !== 2 ? (
                         <span className={cx.badge(ins.frecuencia_semanal === 1 ? badgeColors.orange : badgeColors.blue)}>
                           {ins.frecuencia_semanal === 1 ? '1x/sem' : `${ins.frecuencia_semanal}x/sem`}
                         </span>
                       ) : (
-                        <span className="text-zinc-600 text-xs">—</span>
+                        <span className="text-stone-300 text-xs">—</span>
                       )}
                     </td>
-                    <td className={cx.td + ' text-white/60 hidden sm:table-cell'}>{formatFecha(ins.fecha_inicio)}</td>
-                    <td className={cx.td + ' text-white/60 hidden md:table-cell'}>{formatFecha(ins.fecha_fin)}</td>
+                    <td className={cx.td + ' text-stone-600 hidden sm:table-cell'}>{formatFecha(ins.fecha_inicio)}</td>
+                    <td className={cx.td + ' text-stone-600 hidden md:table-cell'}>{formatFecha(ins.fecha_fin)}</td>
                     <td className={cx.td}>
                       <span className={cx.badge(PAGO_BADGE[ins.estado_pago] ?? badgeColors.gray)}>
                         {ins.estado_pago}
                       </span>
                     </td>
                     <td className={cx.td}>
-                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${ins.activa ? 'bg-emerald-400' : 'bg-zinc-600'}`} />
+                      <span className={`inline-block w-2.5 h-2.5 rounded-full ${ins.activa ? 'bg-emerald-400' : 'bg-stone-300'}`} />
                     </td>
                   </tr>
                 ))}
@@ -681,7 +681,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
           >
             Anterior
           </button>
-          <span className="text-zinc-500 text-sm">
+          <span className="text-stone-400 text-sm">
             Pagina {page} de {totalPages}
           </span>
           <button

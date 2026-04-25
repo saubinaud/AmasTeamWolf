@@ -1,38 +1,38 @@
-// ── SPACE Design Tokens v3 ──
-// SOLID, OPAQUE, PROFESSIONAL — no transparency tricks.
-// Every bg is fully opaque. Every border is visible.
+// ── SPACE Design Tokens v4 — NODUM Light ──
+// Apple purposeful minimalism + Airbnb clean spacing + Seiko Presage deep colors.
+// Body: #f7f7f7 | Cards: white | Text: stone | Accent: coral via CSS var.
 
 export const colors = {
   bg: {
-    base: 'bg-zinc-950',
-    raised: 'bg-zinc-900',
-    elevated: 'bg-zinc-800',
-    overlay: 'bg-black/80',
+    base: 'bg-[#f7f7f7]',
+    raised: 'bg-white',
+    elevated: 'bg-stone-50',
+    overlay: 'bg-black/40',
   },
   border: {
-    subtle: 'border-zinc-800',
-    default: 'border-zinc-800',
-    active: 'border-[#FA7B21]',
+    subtle: 'border-stone-100',
+    default: 'border-stone-200',
+    active: 'border-[var(--accent)]',
   },
   text: {
-    primary: 'text-white',
-    secondary: 'text-zinc-400',
-    muted: 'text-zinc-500',
-    disabled: 'text-zinc-600',
-    accent: 'text-[#FA7B21]',
-    error: 'text-red-400',
-    success: 'text-emerald-400',
+    primary: 'text-stone-900',
+    secondary: 'text-stone-500',
+    muted: 'text-stone-400',
+    disabled: 'text-stone-300',
+    accent: 'text-[var(--accent)]',
+    error: 'text-rose-600',
+    success: 'text-teal-700',
   },
-  accent: '#FA7B21',
-  accentHover: '#E56D15',
-  accentBg: 'bg-[#FA7B21]',
-  accentBgHover: 'hover:bg-[#E56D15]',
-  accentBgLight: 'bg-[#FA7B21]/10',
+  accent: 'var(--accent)',
+  accentHover: 'var(--accent-hover)',
+  accentBg: 'bg-[var(--accent)]',
+  accentBgHover: 'hover:bg-[var(--accent-hover)]',
+  accentBgLight: 'bg-[var(--accent-light)]',
 } as const;
 
 export const spacing = {
-  page: 'p-4 sm:p-5 lg:p-6',
-  card: 'p-4 sm:p-5',
+  page: 'p-5 lg:p-8',
+  card: 'p-5 sm:p-6',
   section: 'space-y-4',
   sectionLg: 'space-y-6',
 } as const;
@@ -44,53 +44,53 @@ export const radius = {
 } as const;
 
 export const cx = {
-  // Buttons
-  btnPrimary: 'px-4 py-2.5 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#E56D15] hover:to-[#FA7B21] text-white text-sm font-medium rounded-xl transition-all duration-200 shadow-lg shadow-[#FA7B21]/20 active:scale-[0.98] disabled:opacity-50',
-  btnSecondary: 'px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-800 text-white text-sm font-medium rounded-xl transition-all duration-200 active:scale-[0.98]',
-  btnGhost: 'px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 text-sm rounded-xl transition-all duration-200',
-  btnDanger: 'px-3 py-2 text-red-400/70 hover:text-red-400 hover:bg-red-500/10 text-sm rounded-xl transition-all duration-200',
-  btnIcon: 'p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-xl transition-all duration-200',
+  // Buttons — no shadows, no gradients, solid accent
+  btnPrimary: 'px-5 py-2.5 bg-[var(--accent)] hover:bg-[var(--accent-hover)] text-white text-sm font-semibold rounded-lg transition-colors active:scale-[0.98] disabled:opacity-50',
+  btnSecondary: 'px-5 py-2.5 bg-white hover:bg-stone-50 border border-stone-300 text-stone-700 text-sm font-semibold rounded-lg transition-colors active:scale-[0.98]',
+  btnGhost: 'px-3 py-2 text-stone-500 hover:text-stone-800 hover:bg-stone-100 text-sm font-medium rounded-lg transition-colors',
+  btnDanger: 'px-3 py-2 text-rose-600 hover:bg-rose-50 text-sm font-medium rounded-lg transition-colors',
+  btnIcon: 'p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-lg transition-colors',
 
-  // Inputs — SOLID backgrounds
-  input: 'w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-800 rounded-xl text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/30 transition-all duration-200',
-  select: 'w-full px-3.5 py-2.5 bg-zinc-800 border border-zinc-800 rounded-xl text-white text-sm focus:outline-none focus:border-[#FA7B21] focus:ring-1 focus:ring-[#FA7B21]/30 transition-all duration-200 appearance-none',
-  label: 'block text-zinc-400 text-xs font-medium mb-1.5 uppercase tracking-wider',
+  // Inputs — white bg, stone borders, darken on focus (no color ring)
+  input: 'w-full px-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-800 text-sm placeholder:text-stone-400 focus:outline-none focus:border-stone-500 transition-colors',
+  select: 'w-full px-4 py-2.5 bg-white border border-stone-300 rounded-lg text-stone-800 text-sm focus:outline-none focus:border-stone-500 transition-colors appearance-none',
+  label: 'block text-stone-500 text-xs font-semibold mb-1.5 tracking-wide',
 
-  // Cards — SOLID backgrounds
-  card: 'bg-zinc-900 border border-zinc-800 rounded-2xl',
-  cardHover: 'bg-zinc-900 border border-zinc-800 rounded-2xl hover:bg-zinc-800 hover:border-zinc-800 transition-all duration-200 cursor-pointer',
-  cardGlow: 'bg-zinc-900 border border-[#FA7B21]/20 rounded-2xl shadow-lg shadow-[#FA7B21]/5',
+  // Cards — white, subtle border, no shadow (shadow on hover only)
+  card: 'bg-white border border-stone-200 rounded-xl',
+  cardHover: 'bg-white border border-stone-200 rounded-xl hover:shadow-md transition-shadow cursor-pointer',
+  cardGlow: 'bg-white border border-[var(--accent)]/20 rounded-xl',
 
-  // Table — visible borders, proper spacing
-  th: 'px-4 py-3 text-left text-zinc-500 text-[10px] font-semibold uppercase tracking-widest',
+  // Table — thin borders, stone tones
+  th: 'px-4 py-3 text-left text-stone-400 text-[11px] font-semibold uppercase tracking-wider',
   td: 'px-4 py-3.5 text-sm',
-  tr: 'border-b border-zinc-800 last:border-0 hover:bg-zinc-800/50 transition-colors',
+  tr: 'border-b border-stone-100 last:border-0 hover:bg-stone-50/50 transition-colors',
 
   // Badge / Pill
-  badge: (color: string) => `inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider ${color}`,
+  badge: (color: string) => `inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-semibold ${color}`,
 
-  // Skeleton — visible
-  skeleton: 'bg-zinc-800 rounded-2xl animate-pulse',
+  // Skeleton
+  skeleton: 'bg-stone-100 rounded-xl animate-pulse',
 
-  // Chip filter — SOLID backgrounds
+  // Chip filter
   chip: (active: boolean) => active
-    ? 'px-3 py-1.5 rounded-xl text-xs font-medium bg-[#FA7B21]/15 text-[#FA7B21] border border-[#FA7B21]/30 transition-all duration-200'
-    : 'px-3 py-1.5 rounded-xl text-xs font-medium bg-zinc-800 text-zinc-400 border border-zinc-800 hover:bg-zinc-700 hover:text-zinc-300 transition-all duration-200',
+    ? 'px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-light)] text-[var(--accent)] border border-[var(--accent)]/20 transition-colors'
+    : 'px-3 py-1.5 rounded-lg text-xs font-medium bg-white text-stone-500 border border-stone-300 hover:bg-stone-50 hover:text-stone-700 transition-colors',
 } as const;
 
 export const badgeColors = {
-  orange: 'bg-[#FA7B21]/15 text-[#FA7B21]',
-  yellow: 'bg-amber-500/15 text-amber-400',
-  green: 'bg-emerald-500/15 text-emerald-400',
-  blue: 'bg-sky-500/15 text-sky-400',
-  violet: 'bg-violet-500/15 text-violet-400',
-  red: 'bg-red-500/15 text-red-400',
-  gray: 'bg-zinc-800 text-zinc-400',
+  orange: 'bg-orange-50 text-orange-600',
+  yellow: 'bg-amber-50 text-amber-600',
+  green: 'bg-emerald-50 text-emerald-700',
+  blue: 'bg-sky-50 text-sky-600',
+  violet: 'bg-violet-50 text-violet-600',
+  red: 'bg-rose-50 text-rose-600',
+  gray: 'bg-stone-100 text-stone-500',
 } as const;
 
 export const statGradients = {
-  blue: { bg: 'from-sky-500/15 to-sky-500/5', border: 'border-sky-500/20', text: 'text-sky-400', icon: 'text-sky-400' },
-  green: { bg: 'from-emerald-500/15 to-emerald-500/5', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: 'text-emerald-400' },
-  orange: { bg: 'from-[#FA7B21]/15 to-[#FA7B21]/5', border: 'border-[#FA7B21]/20', text: 'text-[#FA7B21]', icon: 'text-[#FA7B21]' },
-  violet: { bg: 'from-violet-500/15 to-violet-500/5', border: 'border-violet-500/20', text: 'text-violet-400', icon: 'text-violet-400' },
+  blue: { bg: 'from-sky-50 to-white', border: 'border-sky-100', text: 'text-sky-700', icon: 'text-sky-500' },
+  green: { bg: 'from-emerald-50 to-white', border: 'border-emerald-100', text: 'text-emerald-700', icon: 'text-emerald-500' },
+  orange: { bg: 'from-orange-50 to-white', border: 'border-orange-100', text: 'text-orange-700', icon: 'text-orange-500' },
+  violet: { bg: 'from-violet-50 to-white', border: 'border-violet-100', text: 'text-violet-700', icon: 'text-violet-500' },
 } as const;

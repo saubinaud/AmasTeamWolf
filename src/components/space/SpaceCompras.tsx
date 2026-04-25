@@ -190,7 +190,7 @@ function StatsBar({ stats, loading, onPendientesClick }: { stats: ComprasStats; 
         ) : (
           <>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
+              <span className="text-stone-500 text-xs font-medium uppercase tracking-wider">
                 {item.label}
               </span>
               <span className={item.gradient.icon}>{item.icon}</span>
@@ -236,9 +236,9 @@ function TableSkeleton() {
 function EmptyState() {
   return (
     <div className={cx.card + ' py-16 text-center'}>
-      <Package size={40} className="mx-auto text-zinc-700 mb-3" />
-      <p className="text-zinc-400 mb-1">Sin compras</p>
-      <p className="text-zinc-500 text-sm">
+      <Package size={40} className="mx-auto text-stone-300 mb-3" />
+      <p className="text-stone-500 mb-1">Sin compras</p>
+      <p className="text-stone-400 text-sm">
         No se encontraron compras con los filtros actuales
       </p>
     </div>
@@ -502,7 +502,7 @@ function CompraFormModal({
             {searching && (
               <Loader2
                 size={14}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 animate-spin"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 animate-spin"
               />
             )}
           </div>
@@ -512,22 +512,22 @@ function CompraFormModal({
             </p>
           )}
           {showResults && searchResults.length > 0 && (
-            <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl max-h-48 overflow-y-auto shadow-xl">
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl max-h-48 overflow-y-auto shadow-xl">
               {searchResults.map((a) => (
                 <button
                   key={a.id}
                   onClick={() => handleSelectAlumno(a)}
-                  className="w-full text-left px-3.5 py-2.5 text-sm text-white hover:bg-zinc-700 transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center gap-2"
+                  className="w-full text-left px-3.5 py-2.5 text-sm text-stone-900 hover:bg-stone-100 transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center gap-2"
                 >
-                  <User size={14} className="text-zinc-500 shrink-0" />
+                  <User size={14} className="text-stone-400 shrink-0" />
                   <span>{a.nombre}</span>
-                  {a.dni && <span className="text-zinc-500 text-xs ml-auto">{a.dni}</span>}
+                  {a.dni && <span className="text-stone-400 text-xs ml-auto">{a.dni}</span>}
                 </button>
               ))}
             </div>
           )}
           {showResults && searchResults.length === 0 && searchQuery.length >= 2 && !searching && (
-            <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-sm text-zinc-500">
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-3 text-sm text-stone-400">
               Sin resultados
             </div>
           )}
@@ -691,16 +691,16 @@ function CompraFormModal({
 
         {/* Entrega (solo al crear) */}
         {!editing && (
-          <label className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-3 cursor-pointer hover:bg-zinc-800/50 transition-colors">
+          <label className="flex items-center gap-3 bg-white border border-stone-200 rounded-xl px-3.5 py-3 cursor-pointer hover:bg-stone-50 transition-colors">
             <input
               type="checkbox"
               checked={form.entregado}
               onChange={(e) => setForm((f) => ({ ...f, entregado: e.target.checked }))}
-              className="w-4 h-4 accent-[#FA7B21]"
+              className="w-4 h-4 accent-[var(--accent)]"
             />
             <div className="flex-1">
-              <div className="text-white text-sm font-medium">Entregar ahora</div>
-              <div className="text-zinc-500 text-xs">
+              <div className="text-stone-900 text-sm font-medium">Entregar ahora</div>
+              <div className="text-stone-400 text-xs">
                 Marcar como entregado en el momento del registro. Si no, quedará pendiente.
               </div>
             </div>
@@ -841,8 +841,8 @@ function CatalogoModal({
       <div className="space-y-4">
         {/* Add new item */}
         {adding ? (
-          <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4 space-y-3">
-            <p className="text-white text-sm font-medium">Nuevo item</p>
+          <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 space-y-3">
+            <p className="text-stone-900 text-sm font-medium">Nuevo item</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <input
                 type="text"
@@ -899,14 +899,14 @@ function CatalogoModal({
         {/* Items grouped by categoria */}
         {Object.entries(grouped).map(([cat, items]) => (
           <div key={cat}>
-            <p className="text-zinc-500 text-[10px] font-semibold uppercase tracking-widest mb-2">
+            <p className="text-stone-400 text-[10px] font-semibold uppercase tracking-widest mb-2">
               {CATEGORIA_LABEL[cat as Categoria] ?? cat}
             </p>
             <div className="space-y-1">
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5"
+                  className="flex items-center gap-3 bg-white border border-stone-200 rounded-xl px-3.5 py-2.5"
                 >
                   {editingId === item.id ? (
                     <>
@@ -927,33 +927,33 @@ function CatalogoModal({
                       <button
                         onClick={saveEdit}
                         disabled={saving}
-                        className="p-1.5 text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                        className="p-1.5 text-emerald-400 hover:bg-emerald-50 rounded-lg transition-colors"
                       >
                         {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
                       </button>
                       <button
                         onClick={cancelEdit}
-                        className="p-1.5 text-zinc-400 hover:bg-zinc-700 rounded-lg transition-colors"
+                        className="p-1.5 text-stone-500 hover:bg-stone-100 rounded-lg transition-colors"
                       >
                         <X size={14} />
                       </button>
                     </>
                   ) : (
                     <>
-                      <span className="text-white text-sm flex-1">{item.nombre}</span>
-                      <span className="text-zinc-400 text-sm font-medium">
+                      <span className="text-stone-900 text-sm flex-1">{item.nombre}</span>
+                      <span className="text-stone-500 text-sm font-medium">
                         S/ {Number(item.precio).toFixed(2)}
                       </span>
                       <button
                         onClick={() => startEdit(item)}
-                        className="p-1.5 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                        className="p-1.5 text-stone-500 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-colors"
                         title="Editar"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
                         onClick={() => handleDeactivate(item.id)}
-                        className="p-1.5 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        className="p-1.5 text-stone-500 hover:text-red-400 hover:bg-rose-50 rounded-lg transition-colors"
                         title="Desactivar"
                       >
                         <ToggleLeft size={14} />
@@ -967,7 +967,7 @@ function CatalogoModal({
         ))}
 
         {catalogo.length === 0 && (
-          <p className="text-zinc-500 text-sm text-center py-6">
+          <p className="text-stone-400 text-sm text-center py-6">
             No hay items en el catalogo
           </p>
         )}
@@ -1215,8 +1215,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-xl font-bold">Registro de Compras</h1>
-          <p className="text-zinc-500 text-sm mt-0.5">
+          <h1 className="text-stone-900 text-xl font-bold">Registro de Compras</h1>
+          <p className="text-stone-400 text-sm mt-0.5">
             Control de equipamiento, armas y uniformes de alumnos
           </p>
         </div>
@@ -1256,7 +1256,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
 
       {/* Filter chips entrega */}
       <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-zinc-500 text-xs uppercase tracking-wider mr-1">Entrega:</span>
+        <span className="text-stone-400 text-xs uppercase tracking-wider mr-1">Entrega:</span>
         <button onClick={() => setEntregaFilter('all')} className={cx.chip(entregaFilter === 'all')}>
           Todas
         </button>
@@ -1272,7 +1272,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       <div className="relative max-w-md">
         <Search
           size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
         />
         <input
           type="text"
@@ -1293,7 +1293,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Categoria</th>
                   <th className={cx.th}>Tipo</th>
@@ -1309,11 +1309,11 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                   <tr key={c.id} className={cx.tr}>
                     <td className={cx.td}>
                       <div className="flex flex-col">
-                        <span className="text-white text-sm truncate max-w-[180px]">
+                        <span className="text-stone-900 text-sm truncate max-w-[180px]">
                           {c.alumno_nombre}
                         </span>
                         {c.alumno_dni && (
-                          <span className="text-zinc-500 text-xs">{c.alumno_dni}</span>
+                          <span className="text-stone-400 text-xs">{c.alumno_dni}</span>
                         )}
                       </div>
                     </td>
@@ -1328,20 +1328,20 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                     </td>
                     <td className={cx.td}>
                       <div className="flex flex-col">
-                        <span className="text-white text-sm truncate max-w-[180px]">
+                        <span className="text-stone-900 text-sm truncate max-w-[180px]">
                           {c.tipo}
                         </span>
                         {c.talla && (
-                          <span className="text-zinc-500 text-xs">Talla: {c.talla}</span>
+                          <span className="text-stone-400 text-xs">Talla: {c.talla}</span>
                         )}
                       </div>
                     </td>
                     <td className={cx.td}>
-                      <span className="text-white font-medium text-sm">
+                      <span className="text-stone-900 font-medium text-sm">
                         {formatPrecio(c.precio)}
                       </span>
                       {c.origen === 'compra' && c.metodo_pago && (
-                        <div className="text-zinc-500 text-xs">
+                        <div className="text-stone-400 text-xs">
                           {METODO_LABEL[c.metodo_pago]}
                         </div>
                       )}
@@ -1355,13 +1355,13 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                         {ORIGEN_LABEL[c.origen] ?? c.origen}
                       </span>
                     </td>
-                    <td className={cx.td + ' hidden lg:table-cell text-zinc-500 text-xs'}>
+                    <td className={cx.td + ' hidden lg:table-cell text-stone-400 text-xs'}>
                       {formatFecha(c.fecha_adquisicion)}
                     </td>
                     <td className={cx.td}>
                       <div className="space-y-2">
                         {/* Toggle buttons */}
-                        <div className="flex rounded-lg overflow-hidden border border-zinc-700">
+                        <div className="flex rounded-lg overflow-hidden border border-stone-200">
                           <button
                             onClick={async () => {
                               if (!c.entregado) return; // ya pendiente → nada
@@ -1380,8 +1380,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                             disabled={entregandoId === c.id || !c.entregado}
                             className={`flex-1 px-2.5 py-2 text-[11px] font-semibold transition-all ${
                               !c.entregado
-                                ? 'bg-amber-500/20 text-amber-400'
-                                : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300'
+                                ? 'bg-amber-50 text-amber-400'
+                                : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-700'
                             } disabled:opacity-50`}
                           >
                             Pendiente
@@ -1404,8 +1404,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                             disabled={entregandoId === c.id || c.entregado}
                             className={`flex-1 px-2.5 py-2 text-[11px] font-semibold transition-all ${
                               c.entregado
-                                ? 'bg-emerald-500/20 text-emerald-400'
-                                : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700 hover:text-zinc-300'
+                                ? 'bg-emerald-50 text-emerald-400'
+                                : 'bg-stone-50 text-stone-400 hover:bg-stone-100 hover:text-stone-700'
                             } disabled:opacity-50`}
                           >
                             Entregado
@@ -1434,11 +1434,11 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                                 }
                               } catch { toast.error('Error de conexión'); }
                             }}
-                            className="w-full px-2.5 py-1.5 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-300 focus:border-[#FA7B21] focus:outline-none transition-colors"
+                            className="w-full px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded-lg text-xs text-stone-500 focus:border-[var(--accent)] focus:outline-none transition-colors"
                           />
                         )}
                         {entregandoId === c.id && (
-                          <Loader2 size={12} className="animate-spin text-zinc-500 mx-auto" />
+                          <Loader2 size={12} className="animate-spin text-stone-400 mx-auto" />
                         )}
                       </div>
                     </td>
@@ -1446,7 +1446,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => handleEdit(c)}
-                          className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors"
+                          className="p-2 text-stone-500 hover:text-stone-800 hover:bg-stone-50 rounded-lg transition-colors"
                           title="Editar"
                         >
                           <Pencil size={14} />
@@ -1454,7 +1454,7 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
                         <button
                           onClick={() => handleDelete(c)}
                           disabled={deletingId === c.id}
-                          className="p-2 text-zinc-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-2 text-stone-500 hover:text-red-400 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50"
                           title="Eliminar"
                         >
                           {deletingId === c.id ? (
@@ -1473,8 +1473,8 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800">
-              <span className="text-zinc-500 text-xs">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-stone-200">
+              <span className="text-stone-400 text-xs">
                 Pagina {page} de {totalPages} ({total} compras)
               </span>
               <div className="flex gap-1.5">

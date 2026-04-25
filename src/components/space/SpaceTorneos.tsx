@@ -293,16 +293,16 @@ export function SpaceTorneos({ token }: { token: string }) {
         <div className={`${cx.card} p-5`}>
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h2 className="text-white text-lg font-semibold">{selectedTorneo.nombre ?? '—'}</h2>
+              <h2 className="text-stone-900 text-lg font-semibold">{selectedTorneo.nombre ?? '—'}</h2>
               <div className="flex items-center gap-3 mt-2 flex-wrap">
                 <span className={cx.badge(TIPO_BADGE[selectedTorneo.tipo ?? ''] ?? badgeColors.gray)}>
                   {selectedTorneo.tipo ?? '—'}
                 </span>
                 {selectedTorneo.fecha && (
-                  <span className="text-zinc-400 text-sm">{formatFecha(selectedTorneo.fecha)}</span>
+                  <span className="text-stone-500 text-sm">{formatFecha(selectedTorneo.fecha)}</span>
                 )}
                 {selectedTorneo.lugar && (
-                  <span className="text-zinc-500 text-sm">{selectedTorneo.lugar}</span>
+                  <span className="text-stone-400 text-sm">{selectedTorneo.lugar}</span>
                 )}
                 {(selectedTorneo.precio ?? 0) > 0 && (
                   <span className="text-emerald-400 text-sm font-medium">S/ {Number(selectedTorneo.precio).toFixed(2)}</span>
@@ -325,15 +325,15 @@ export function SpaceTorneos({ token }: { token: string }) {
           <div className={`${cx.skeleton} h-32`} />
         ) : selecciones.length === 0 ? (
           <div className={`${cx.card} p-8 text-center`}>
-            <Users size={32} className="mx-auto text-zinc-600 mb-3" />
-            <p className="text-zinc-400 text-sm">No hay alumnos seleccionados para este torneo</p>
+            <Users size={32} className="mx-auto text-stone-300 mb-3" />
+            <p className="text-stone-500 text-sm">No hay alumnos seleccionados para este torneo</p>
           </div>
         ) : (
           <div className={`${cx.card} overflow-hidden`}>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
+                  <tr className="border-b border-stone-200">
                     <th className={cx.th}>Alumno</th>
                     <th className={cx.th}>Modalidad</th>
                     <th className={cx.th}>Estado</th>
@@ -346,10 +346,10 @@ export function SpaceTorneos({ token }: { token: string }) {
                   {selecciones.map(s => (
                     <tr key={s.id} className={cx.tr}>
                       <td className={cx.td}>
-                        <p className="text-white font-medium">{s.nombre_alumno ?? '—'}</p>
-                        <p className="text-zinc-500 text-xs">{s.dni_alumno ?? '—'} {s.categoria ? `/ ${s.categoria}` : ''}</p>
+                        <p className="text-stone-900 font-medium">{s.nombre_alumno ?? '—'}</p>
+                        <p className="text-stone-400 text-xs">{s.dni_alumno ?? '—'} {s.categoria ? `/ ${s.categoria}` : ''}</p>
                       </td>
-                      <td className={`${cx.td} text-zinc-300`}>{s.modalidad ?? '—'}</td>
+                      <td className={`${cx.td} text-stone-500`}>{s.modalidad ?? '—'}</td>
                       <td className={cx.td}>
                         <span className={cx.badge(ESTADO_BADGE[s.estado ?? ''] ?? badgeColors.gray)}>
                           {s.estado ?? '—'}
@@ -360,7 +360,7 @@ export function SpaceTorneos({ token }: { token: string }) {
                           {s.estado_pago ?? '—'}
                         </span>
                       </td>
-                      <td className={`${cx.td} text-zinc-500 text-xs max-w-[150px] truncate`}>
+                      <td className={`${cx.td} text-stone-400 text-xs max-w-[150px] truncate`}>
                         {s.observaciones ?? '—'}
                       </td>
                       <td className={cx.td}>
@@ -383,17 +383,17 @@ export function SpaceTorneos({ token }: { token: string }) {
 
         {/* Add alumno modal */}
         {showAddAlumno && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 p-4" onClick={() => setShowAddAlumno(false)}>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowAddAlumno(false)}>
             <div className={`${cx.card} p-6 w-full max-w-md space-y-4`} onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold">Seleccionar alumno</h3>
+                <h3 className="text-stone-900 font-semibold">Seleccionar alumno</h3>
                 <button onClick={() => setShowAddAlumno(false)} className={cx.btnIcon}><X size={18} /></button>
               </div>
 
               <div>
                 <label className={cx.label}>Buscar alumno</label>
                 <div className="relative">
-                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                   <input
                     className={`${cx.input} pl-9`}
                     placeholder="Nombre o DNI..."
@@ -401,17 +401,17 @@ export function SpaceTorneos({ token }: { token: string }) {
                     onChange={e => { setAlumnoSearch(e.target.value); searchAlumnos(e.target.value); }}
                   />
                 </div>
-                {searchingAlumnos && <p className="text-zinc-500 text-xs mt-1">Buscando...</p>}
+                {searchingAlumnos && <p className="text-stone-400 text-xs mt-1">Buscando...</p>}
                 {alumnoResults.length > 0 && (
                   <div className="mt-2 max-h-48 overflow-y-auto space-y-1">
                     {alumnoResults.map(a => (
                       <button
                         key={a.id}
                         onClick={() => handleAddAlumno(a.id)}
-                        className="w-full text-left px-3 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 transition-all"
+                        className="w-full text-left px-3 py-2.5 rounded-xl bg-stone-50 hover:bg-stone-100 transition-all"
                       >
-                        <p className="text-white text-sm">{a.nombre_alumno ?? '—'}</p>
-                        <p className="text-zinc-500 text-xs">{a.dni_alumno ?? '—'} {a.categoria ? `/ ${a.categoria}` : ''}</p>
+                        <p className="text-stone-900 text-sm">{a.nombre_alumno ?? '—'}</p>
+                        <p className="text-stone-400 text-xs">{a.dni_alumno ?? '—'} {a.categoria ? `/ ${a.categoria}` : ''}</p>
                       </button>
                     ))}
                   </div>
@@ -432,13 +432,13 @@ export function SpaceTorneos({ token }: { token: string }) {
 
         {/* Edit selection modal */}
         {editingSel && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 p-4" onClick={() => setEditingSel(null)}>
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setEditingSel(null)}>
             <div className={`${cx.card} p-6 w-full max-w-md space-y-4`} onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold">Editar seleccion</h3>
+                <h3 className="text-stone-900 font-semibold">Editar seleccion</h3>
                 <button onClick={() => setEditingSel(null)} className={cx.btnIcon}><X size={18} /></button>
               </div>
-              <p className="text-zinc-400 text-sm">{editingSel.nombre_alumno ?? '—'}</p>
+              <p className="text-stone-500 text-sm">{editingSel.nombre_alumno ?? '—'}</p>
 
               <div>
                 <label className={cx.label}>Estado</label>
@@ -478,10 +478,10 @@ export function SpaceTorneos({ token }: { token: string }) {
   // ── LIST VIEW ──
   function renderTorneoModal() {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/90 p-4" onClick={() => setShowModal(false)}>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowModal(false)}>
         <div className={`${cx.card} p-6 w-full max-w-md space-y-4`} onClick={e => e.stopPropagation()}>
           <div className="flex items-center justify-between">
-            <h3 className="text-white font-semibold">{editingTorneo ? 'Editar torneo' : 'Nuevo torneo'}</h3>
+            <h3 className="text-stone-900 font-semibold">{editingTorneo ? 'Editar torneo' : 'Nuevo torneo'}</h3>
             <button onClick={() => setShowModal(false)} className={cx.btnIcon}><X size={18} /></button>
           </div>
           <div>
@@ -526,7 +526,7 @@ export function SpaceTorneos({ token }: { token: string }) {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: 'Torneos activos', value: stats.torneos_activos ?? 0, icon: Trophy, color: 'text-[#FA7B21]' },
+            { label: 'Torneos activos', value: stats.torneos_activos ?? 0, icon: Trophy, color: 'text-[var(--accent)]' },
             { label: 'Selecciones', value: stats.total_selecciones ?? 0, icon: Users, color: 'text-sky-400' },
             { label: 'Confirmados', value: stats.confirmados ?? 0, icon: CheckCircle, color: 'text-emerald-400' },
             { label: 'Pago pendiente', value: stats.pago_pendiente ?? 0, icon: Clock, color: 'text-amber-400' },
@@ -534,9 +534,9 @@ export function SpaceTorneos({ token }: { token: string }) {
             <div key={s.label} className={`${cx.card} p-4`}>
               <div className="flex items-center gap-2 mb-2">
                 <s.icon size={16} className={s.color} />
-                <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-semibold">{s.label}</span>
+                <span className="text-stone-400 text-[10px] uppercase tracking-wider font-semibold">{s.label}</span>
               </div>
-              <p className="text-white text-2xl font-bold">{s.value}</p>
+              <p className="text-stone-900 text-2xl font-bold">{s.value}</p>
             </div>
           ))}
         </div>
@@ -544,7 +544,7 @@ export function SpaceTorneos({ token }: { token: string }) {
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-white font-semibold text-lg">Torneos</h2>
+        <h2 className="text-stone-900 font-semibold text-lg">Torneos</h2>
         <button onClick={openCreateModal} className={cx.btnPrimary}>
           <Plus size={14} className="inline mr-1.5" /> Nuevo torneo
         </button>
@@ -553,8 +553,8 @@ export function SpaceTorneos({ token }: { token: string }) {
       {/* Tournament cards */}
       {torneos.length === 0 ? (
         <div className={`${cx.card} p-12 text-center`}>
-          <Trophy size={40} className="mx-auto text-zinc-600 mb-4" />
-          <p className="text-zinc-400">No hay torneos activos</p>
+          <Trophy size={40} className="mx-auto text-stone-300 mb-4" />
+          <p className="text-stone-500">No hay torneos activos</p>
           <button onClick={openCreateModal} className={`${cx.btnPrimary} mt-4`}>
             <Plus size={14} className="inline mr-1.5" /> Crear primer torneo
           </button>
@@ -570,12 +570,12 @@ export function SpaceTorneos({ token }: { token: string }) {
               <div className="p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-white font-semibold truncate">{t.nombre ?? '—'}</h3>
+                    <h3 className="text-stone-900 font-semibold truncate">{t.nombre ?? '—'}</h3>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       <span className={cx.badge(TIPO_BADGE[t.tipo ?? ''] ?? badgeColors.gray)}>
                         {t.tipo ?? '—'}
                       </span>
-                      {t.fecha && <span className="text-zinc-500 text-xs">{formatFecha(t.fecha)}</span>}
+                      {t.fecha && <span className="text-stone-400 text-xs">{formatFecha(t.fecha)}</span>}
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0" onClick={e => e.stopPropagation()}>
@@ -588,7 +588,7 @@ export function SpaceTorneos({ token }: { token: string }) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 mt-3 text-sm text-zinc-400">
+                <div className="flex items-center gap-4 mt-3 text-sm text-stone-500">
                   {t.lugar && <span className="truncate">{t.lugar}</span>}
                   {(t.precio ?? 0) > 0 && (
                     <span className="flex items-center gap-1 text-emerald-400">

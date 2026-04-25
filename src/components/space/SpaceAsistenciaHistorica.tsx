@@ -477,8 +477,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
     <div className="space-y-5 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-white text-xl font-bold">Registrar asistencias pasadas</h1>
-        <p className="text-zinc-500 text-xs mt-1">
+        <h1 className="text-stone-900 text-xl font-bold">Registrar asistencias pasadas</h1>
+        <p className="text-stone-400 text-xs mt-1">
           Busca un alumno y agrega fechas de asistencia pasadas. Útil para migrar datos históricos
           o corregir asistencias no registradas por QR.
         </p>
@@ -486,7 +486,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
 
       {/* Success banner */}
       {lastResult && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200">
           <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
           <div className="flex-1">
             <p className="text-emerald-400 text-sm font-semibold">
@@ -504,9 +504,9 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
 
       {/* Buscar alumno */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">1. Buscar alumno</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">1. Buscar alumno</h3>
         <div className="relative" ref={resultsRef}>
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
@@ -521,10 +521,10 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
             className={cx.input + ' pl-9'}
           />
           {searching && (
-            <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 animate-spin" />
+            <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 animate-spin" />
           )}
           {showResults && searchResults.length > 0 && (
-            <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl max-h-48 overflow-y-auto shadow-xl">
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl max-h-48 overflow-y-auto shadow-xl">
               {searchResults.map((a) => {
                 const nombre = a.nombre_alumno ?? a.nombre ?? '';
                 const dni = a.dni_alumno ?? a.dni ?? '';
@@ -532,11 +532,11 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                   <button
                     key={a.id}
                     onClick={() => handleSelectAlumno(a)}
-                    className="w-full text-left px-3.5 py-2.5 text-sm text-white hover:bg-zinc-700 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 text-sm text-stone-900 hover:bg-stone-100 transition-colors flex items-center gap-2"
                   >
-                    <User size={14} className="text-zinc-500 shrink-0" />
+                    <User size={14} className="text-stone-400 shrink-0" />
                     <span className="flex-1">{nombre}</span>
-                    {dni && <span className="text-zinc-500 text-xs">{dni}</span>}
+                    {dni && <span className="text-stone-400 text-xs">{dni}</span>}
                     {a.estado === 'Inactivo' && (
                       <span className={cx.badge(badgeColors.gray)}>Inactivo</span>
                     )}
@@ -546,28 +546,28 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
             </div>
           )}
           {showResults && searchResults.length === 0 && searchQuery.length >= 2 && !searching && (
-            <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-sm text-zinc-500">
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-3 text-sm text-stone-400">
               Sin resultados
             </div>
           )}
         </div>
 
         {alumnoSel && (
-          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-zinc-800 border border-zinc-800">
-            <div className="w-10 h-10 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center shrink-0">
-              <User size={18} className="text-[#FA7B21]" />
+          <div className="mt-4 flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200">
+            <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+              <User size={18} className="text-[var(--accent)]" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold">{alumnoSel.nombre_alumno ?? alumnoSel.nombre}</p>
-              <p className="text-zinc-500 text-xs">
+              <p className="text-stone-900 text-sm font-semibold">{alumnoSel.nombre_alumno ?? alumnoSel.nombre}</p>
+              <p className="text-stone-400 text-xs">
                 ID #{alumnoSel.id}
                 {alumnoSel.dni_alumno && ` · DNI ${alumnoSel.dni_alumno}`}
                 {alumnoSel.estado && ` · ${alumnoSel.estado}`}
               </p>
               {loadingExistentes ? (
-                <p className="text-zinc-500 text-xs mt-1">Cargando asistencias...</p>
+                <p className="text-stone-400 text-xs mt-1">Cargando asistencias...</p>
               ) : (
-                <p className="text-zinc-500 text-xs mt-1">
+                <p className="text-stone-400 text-xs mt-1">
                   {asistenciasExistentes.length} asistencias ya registradas en BD
                 </p>
               )}
@@ -583,7 +583,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
       {alumnoSel && (
         <>
           <section className={cx.card + ' p-5'}>
-            <h3 className="text-white text-sm font-semibold mb-4">2. Agregar fechas de asistencia</h3>
+            <h3 className="text-stone-900 text-sm font-semibold mb-4">2. Agregar fechas de asistencia</h3>
 
             {/* Tabs de modo */}
             <div className="grid grid-cols-3 gap-2 mb-5">
@@ -591,8 +591,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                 onClick={() => setModo('individual')}
                 className={
                   modo === 'individual'
-                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-[#FA7B21] text-xs font-semibold'
-                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[var(--accent)] text-xs font-semibold'
+                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                 }
               >
                 <Plus size={14} /> Individual
@@ -601,8 +601,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                 onClick={() => setModo('lote')}
                 className={
                   modo === 'lote'
-                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-[#FA7B21] text-xs font-semibold'
-                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[var(--accent)] text-xs font-semibold'
+                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                 }
               >
                 <ClipboardPaste size={14} /> Pegar lote
@@ -611,8 +611,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                 onClick={() => setModo('rango')}
                 className={
                   modo === 'rango'
-                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-[#FA7B21] text-xs font-semibold'
-                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                    ? 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[var(--accent)] text-xs font-semibold'
+                    : 'flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-stone-50 border border-stone-200 text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                 }
               >
                 <Calendar size={14} /> Por rango
@@ -700,11 +700,11 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                     rows={8}
                     className={cx.input + ' resize-y font-mono text-xs'}
                   />
-                  <p className="text-zinc-500 text-xs mt-1">
-                    Acepta formatos: <code className="text-zinc-400">YYYY-MM-DD</code>,{' '}
-                    <code className="text-zinc-400">DD/MM/YYYY</code>,{' '}
-                    <code className="text-zinc-400">DD-MM-YYYY</code>,{' '}
-                    <code className="text-zinc-400">DD.MM.YY</code>. Separa con salto de línea, coma o punto y coma.
+                  <p className="text-stone-400 text-xs mt-1">
+                    Acepta formatos: <code className="text-stone-500">YYYY-MM-DD</code>,{' '}
+                    <code className="text-stone-500">DD/MM/YYYY</code>,{' '}
+                    <code className="text-stone-500">DD-MM-YYYY</code>,{' '}
+                    <code className="text-stone-500">DD.MM.YY</code>. Separa con salto de línea, coma o punto y coma.
                   </p>
                 </div>
 
@@ -769,7 +769,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                 {loteParsed && (
                   <div className="space-y-2">
                     {loteParsed.ok.length > 0 && (
-                      <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
                         <p className="text-emerald-400 text-xs font-semibold mb-2">
                           ✓ {loteParsed.ok.length} fecha{loteParsed.ok.length > 1 ? 's' : ''} válida
                           {loteParsed.ok.length > 1 ? 's' : ''}
@@ -782,8 +782,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                                 key={f}
                                 className={
                                   existe
-                                    ? 'inline-flex px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 line-through'
-                                    : 'inline-flex px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300'
+                                    ? 'inline-flex px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-400 line-through'
+                                    : 'inline-flex px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-300'
                                 }
                                 title={existe ? 'Ya existe — se saltará' : 'Nueva'}
                               >
@@ -792,25 +792,25 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                             );
                           })}
                           {loteParsed.ok.length > 50 && (
-                            <span className="text-zinc-500 text-[10px]">+{loteParsed.ok.length - 50} más</span>
+                            <span className="text-stone-400 text-[10px]">+{loteParsed.ok.length - 50} más</span>
                           )}
                         </div>
                       </div>
                     )}
                     {loteParsed.invalid.length > 0 && (
-                      <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                      <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
                         <p className="text-red-400 text-xs font-semibold mb-2">
                           ✗ {loteParsed.invalid.length} línea{loteParsed.invalid.length > 1 ? 's' : ''} inválida
                           {loteParsed.invalid.length > 1 ? 's' : ''}
                         </p>
                         <div className="flex flex-wrap gap-1">
                           {loteParsed.invalid.slice(0, 20).map((l, i) => (
-                            <span key={i} className="inline-flex px-2 py-0.5 rounded text-[10px] bg-red-500/20 text-red-300">
+                            <span key={i} className="inline-flex px-2 py-0.5 rounded text-[10px] bg-rose-50 text-red-300">
                               {l}
                             </span>
                           ))}
                           {loteParsed.invalid.length > 20 && (
-                            <span className="text-zinc-500 text-[10px]">+{loteParsed.invalid.length - 20} más</span>
+                            <span className="text-stone-400 text-[10px]">+{loteParsed.invalid.length - 20} más</span>
                           )}
                         </div>
                       </div>
@@ -823,7 +823,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
             {/* ========== MODO RANGO ========== */}
             {modo === 'rango' && (
               <div className="space-y-4">
-                <p className="text-zinc-500 text-xs">
+                <p className="text-stone-400 text-xs">
                   Genera automáticamente las fechas entre dos días filtrando por días de la semana.
                   Útil para cargar "todos los martes y jueves del 1 de marzo al 30 de abril".
                 </p>
@@ -863,8 +863,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                           title={d.nombre}
                           className={
                             active
-                              ? 'px-2 py-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] font-bold text-sm'
-                              : 'px-2 py-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 font-bold text-sm hover:border-[#FA7B21]/30 transition-all'
+                              ? 'px-2 py-3 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] font-bold text-sm'
+                              : 'px-2 py-3 rounded-xl border-2 border-stone-200 bg-stone-50 text-stone-500 font-bold text-sm hover:border-orange-200 transition-all'
                           }
                         >
                           {d.label}
@@ -915,7 +915,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
 
                 {/* Preview */}
                 {rangoFechasGeneradas.length > 0 && (
-                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
                     <p className="text-emerald-400 text-xs font-semibold mb-2">
                       ✓ Se generarán {rangoFechasGeneradas.length} fecha
                       {rangoFechasGeneradas.length > 1 ? 's' : ''}
@@ -928,8 +928,8 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                             key={f}
                             className={
                               existe
-                                ? 'inline-flex px-2 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 line-through'
-                                : 'inline-flex px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300'
+                                ? 'inline-flex px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-400 line-through'
+                                : 'inline-flex px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-300'
                             }
                             title={existe ? 'Ya existe — se saltará' : 'Nueva'}
                           >
@@ -938,7 +938,7 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                         );
                       })}
                       {rangoFechasGeneradas.length > 50 && (
-                        <span className="text-zinc-500 text-[10px]">+{rangoFechasGeneradas.length - 50} más</span>
+                        <span className="text-stone-400 text-[10px]">+{rangoFechasGeneradas.length - 50} más</span>
                       )}
                     </div>
                   </div>
@@ -958,17 +958,17 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
           {/* Lista pendientes */}
           {fechasPendientes.length > 0 && (
             <section className={cx.card + ' p-5'}>
-              <h3 className="text-white text-sm font-semibold mb-4">
+              <h3 className="text-stone-900 text-sm font-semibold mb-4">
                 3. Revisar y guardar ({fechasPendientes.length} fechas)
               </h3>
               <div className="space-y-2 mb-4">
                 {fechasPendientes.map((p) => (
                   <div
                     key={p.fecha}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-800 border border-zinc-800"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-stone-50 border border-stone-200"
                   >
-                    <CalendarCheck size={14} className="text-[#FA7B21] shrink-0" />
-                    <span className="text-white text-sm font-medium">{formatFecha(p.fecha)}</span>
+                    <CalendarCheck size={14} className="text-[var(--accent)] shrink-0" />
+                    <span className="text-stone-900 text-sm font-medium">{formatFecha(p.fecha)}</span>
                     <span className={cx.badge(badgeColors.blue)}>{p.turno}</span>
                     <span
                       className={cx.badge(
@@ -982,11 +982,11 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
                       {p.asistio === 'Sí' ? 'Asistió' : p.asistio}
                     </span>
                     {p.observaciones && (
-                      <span className="text-zinc-500 text-xs truncate flex-1">{p.observaciones}</span>
+                      <span className="text-stone-400 text-xs truncate flex-1">{p.observaciones}</span>
                     )}
                     <button
                       onClick={() => handleRemovePendiente(p.fecha)}
-                      className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors ml-auto"
+                      className="p-1.5 text-stone-400 hover:text-red-400 hover:bg-rose-50 rounded-lg transition-colors ml-auto"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -1016,24 +1016,24 @@ export function SpaceAsistenciaHistorica({ token }: Props) {
           {/* Asistencias existentes */}
           {asistenciasExistentes.length > 0 && (
             <section className={cx.card + ' p-5'}>
-              <h3 className="text-white text-sm font-semibold mb-3">
+              <h3 className="text-stone-900 text-sm font-semibold mb-3">
                 Asistencias ya registradas ({asistenciasExistentes.length})
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
                 {asistenciasExistentes.slice(0, 60).map((a) => (
                   <div
                     key={a.id}
-                    className="px-2 py-1.5 rounded-lg bg-zinc-800/50 border border-zinc-800 text-xs"
+                    className="px-2 py-1.5 rounded-lg bg-stone-50 border border-stone-200 text-xs"
                   >
-                    <div className="text-white">{formatFecha(a.fecha)}</div>
-                    <div className="text-zinc-500 text-[10px]">
+                    <div className="text-stone-900">{formatFecha(a.fecha)}</div>
+                    <div className="text-stone-400 text-[10px]">
                       {a.turno} · {a.metodo_registro}
                     </div>
                   </div>
                 ))}
               </div>
               {asistenciasExistentes.length > 60 && (
-                <p className="text-zinc-500 text-xs mt-2">
+                <p className="text-stone-400 text-xs mt-2">
                   + {asistenciasExistentes.length - 60} más
                 </p>
               )}

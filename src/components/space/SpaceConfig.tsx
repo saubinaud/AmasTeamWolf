@@ -567,8 +567,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Settings className="text-[#FA7B21]" size={22} />
-        <h1 className="text-white text-xl font-bold">Configuracion</h1>
+        <Settings className="text-[var(--accent)]" size={22} />
+        <h1 className="text-stone-900 text-xl font-bold">Configuracion</h1>
       </div>
 
       {/* Tabs */}
@@ -592,8 +592,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
       {/* ─── Tab: Usuarios ─── */}
       {tab === 'usuarios' && (
         <div className={`${cx.card} overflow-hidden`}>
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-            <h2 className="text-white text-sm font-semibold">Usuarios del sistema</h2>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
+            <h2 className="text-stone-900 text-sm font-semibold">Usuarios del sistema</h2>
             <button onClick={() => setModalUsuarioCreate(true)} className={cx.btnPrimary + ' flex items-center gap-1.5 text-xs'}>
               <Plus size={14} /> Nuevo usuario
             </button>
@@ -602,7 +602,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Nombre</th>
                   <th className={cx.th}>Email</th>
                   <th className={cx.th}>Rol</th>
@@ -615,12 +615,12 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                 {loadingUsuarios ? (
                   <SkeletonRow cols={6} />
                 ) : usuarios.length === 0 ? (
-                  <tr><td colSpan={6} className={`${cx.td} text-center text-zinc-500`}>Sin usuarios</td></tr>
+                  <tr><td colSpan={6} className={`${cx.td} text-center text-stone-400`}>Sin usuarios</td></tr>
                 ) : (
                   usuarios.map(u => (
                     <tr key={u.id} className={cx.tr}>
-                      <td className={`${cx.td} text-white font-medium`}>{u.nombre}</td>
-                      <td className={`${cx.td} text-zinc-400`}>{u.email}</td>
+                      <td className={`${cx.td} text-stone-900 font-medium`}>{u.nombre}</td>
+                      <td className={`${cx.td} text-stone-500`}>{u.email}</td>
                       <td className={cx.td}>
                         <span className={cx.badge(u.rol === 'admin' ? badgeColors.violet : badgeColors.blue)}>
                           {u.rol}
@@ -631,7 +631,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                           {u.activo ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
-                      <td className={`${cx.td} text-zinc-400`}>{formatFecha(u.ultimo_login)}</td>
+                      <td className={`${cx.td} text-stone-500`}>{formatFecha(u.ultimo_login)}</td>
                       <td className={cx.td}>
                         <div className="flex items-center gap-1">
                           <button onClick={() => openEditUsuario(u)} className={cx.btnIcon} title="Editar">
@@ -659,8 +659,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
       {/* ─── Tab: Sedes ─── */}
       {tab === 'sedes' && (
         <div className={`${cx.card} overflow-hidden`}>
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-            <h2 className="text-white text-sm font-semibold">Sedes</h2>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
+            <h2 className="text-stone-900 text-sm font-semibold">Sedes</h2>
             <button onClick={() => { setSedeForm({ nombre: '', direccion: '' }); setModalSedeCreate(true); }} className={cx.btnPrimary + ' flex items-center gap-1.5 text-xs'}>
               <Plus size={14} /> Nueva sede
             </button>
@@ -669,7 +669,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Nombre</th>
                   <th className={cx.th}>Direccion</th>
                   <th className={cx.th}>Estado</th>
@@ -680,12 +680,12 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                 {loadingSedes ? (
                   <SkeletonRow cols={4} />
                 ) : sedes.length === 0 ? (
-                  <tr><td colSpan={4} className={`${cx.td} text-center text-zinc-500`}>Sin sedes</td></tr>
+                  <tr><td colSpan={4} className={`${cx.td} text-center text-stone-400`}>Sin sedes</td></tr>
                 ) : (
                   sedes.map(s => (
                     <tr key={s.id} className={cx.tr}>
-                      <td className={`${cx.td} text-white font-medium`}>{s.nombre}</td>
-                      <td className={`${cx.td} text-zinc-400`}>{s.direccion || '\u2014'}</td>
+                      <td className={`${cx.td} text-stone-900 font-medium`}>{s.nombre}</td>
+                      <td className={`${cx.td} text-stone-500`}>{s.direccion || '\u2014'}</td>
                       <td className={cx.td}>
                         <span className={cx.badge(s.activa ? badgeColors.green : badgeColors.red)}>
                           {s.activa ? 'Activa' : 'Inactiva'}
@@ -715,9 +715,9 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
       {/* ─── Tab: Horarios ─── */}
       {tab === 'horarios' && (
         <div className={`${cx.card} overflow-hidden`}>
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 flex-wrap gap-2">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 flex-wrap gap-2">
             <div className="flex items-center gap-3">
-              <h2 className="text-white text-sm font-semibold">Horarios</h2>
+              <h2 className="text-stone-900 text-sm font-semibold">Horarios</h2>
               <select
                 value={filtroSede}
                 onChange={e => setFiltroSede(e.target.value ? Number(e.target.value) : '')}
@@ -737,7 +737,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Dia</th>
                   <th className={cx.th}>Hora inicio</th>
                   <th className={cx.th}>Hora fin</th>
@@ -753,7 +753,7 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                 {loadingHorarios ? (
                   <SkeletonRow cols={9} />
                 ) : horarios.length === 0 ? (
-                  <tr><td colSpan={9} className={`${cx.td} text-center text-zinc-500`}>Sin horarios</td></tr>
+                  <tr><td colSpan={9} className={`${cx.td} text-center text-stone-400`}>Sin horarios</td></tr>
                 ) : (
                   horarios.map(h => {
                     const sedeName = h.sede_nombre || sedes.find(s => s.id === h.sede_id)?.nombre || '\u2014';
@@ -762,16 +762,16 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                         <td className={cx.td}>
                           <span className={cx.badge(badgeColors.orange)}>{DIAS[h.dia_semana] ?? h.dia_semana}</span>
                         </td>
-                        <td className={`${cx.td} text-white`}>{h.hora_inicio}</td>
-                        <td className={`${cx.td} text-white`}>{h.hora_fin}</td>
-                        <td className={`${cx.td} text-white font-medium`}>{h.nombre_clase}</td>
-                        <td className={`${cx.td} text-zinc-400`}>
+                        <td className={`${cx.td} text-stone-900`}>{h.hora_inicio}</td>
+                        <td className={`${cx.td} text-stone-900`}>{h.hora_fin}</td>
+                        <td className={`${cx.td} text-stone-900 font-medium`}>{h.nombre_clase}</td>
+                        <td className={`${cx.td} text-stone-500`}>
                           {h.edad_min_meses != null && h.edad_max_meses != null
                             ? `${h.edad_min_meses}–${h.edad_max_meses}`
                             : '\u2014'}
                         </td>
-                        <td className={`${cx.td} text-zinc-400`}>{h.capacidad}</td>
-                        <td className={`${cx.td} text-zinc-400`}>{h.instructor || '\u2014'}</td>
+                        <td className={`${cx.td} text-stone-500`}>{h.capacidad}</td>
+                        <td className={`${cx.td} text-stone-500`}>{h.instructor || '\u2014'}</td>
                         <td className={cx.td}>
                           <span className={cx.badge(badgeColors.blue)}>{sedeName}</span>
                         </td>
@@ -861,14 +861,14 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           {createUsuarioForm.rol === 'profesor' && (
             <div>
               <label className={cx.label}>Módulos a los que tiene acceso</label>
-              <p className="text-zinc-500 text-xs mb-2">
+              <p className="text-stone-400 text-xs mb-2">
                 El Dashboard siempre está disponible. Selecciona qué otros módulos puede ver este profesor.
               </p>
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {MODULOS_DISPONIBLES.map((m) => {
                   const checked = createUsuarioForm.permisos.includes(m.key);
                   return (
-                    <label key={m.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+                    <label key={m.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-stone-50 border border-stone-200 cursor-pointer hover:border-orange-200 transition-all">
                       <input
                         type="checkbox"
                         checked={checked}
@@ -880,9 +880,9 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                               : f.permisos.filter((p) => p !== m.key),
                           }));
                         }}
-                        className="w-4 h-4 accent-[#FA7B21]"
+                        className="w-4 h-4 accent-[var(--accent)]"
                       />
-                      <span className="text-white text-sm">{m.label}</span>
+                      <span className="text-stone-900 text-sm">{m.label}</span>
                     </label>
                   );
                 })}
@@ -941,24 +941,24 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
             <button
               type="button"
               onClick={() => setEditUsuarioForm(f => ({ ...f, activo: !f.activo }))}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editUsuarioForm.activo ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editUsuarioForm.activo ? 'bg-emerald-500' : 'bg-stone-100'}`}
             >
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editUsuarioForm.activo ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
-            <span className="ml-2 text-sm text-zinc-400">{editUsuarioForm.activo ? 'Activo' : 'Inactivo'}</span>
+            <span className="ml-2 text-sm text-stone-500">{editUsuarioForm.activo ? 'Activo' : 'Inactivo'}</span>
           </div>
 
           {editUsuarioForm.rol === 'profesor' && (
             <div>
               <label className={cx.label}>Módulos a los que tiene acceso</label>
-              <p className="text-zinc-500 text-xs mb-2">
+              <p className="text-stone-400 text-xs mb-2">
                 El Dashboard siempre está disponible. Admin tiene acceso total y no usa esta lista.
               </p>
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {MODULOS_DISPONIBLES.map((m) => {
                   const checked = editUsuarioForm.permisos.includes(m.key);
                   return (
-                    <label key={m.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+                    <label key={m.key} className="flex items-center gap-3 p-2.5 rounded-xl bg-stone-50 border border-stone-200 cursor-pointer hover:border-orange-200 transition-all">
                       <input
                         type="checkbox"
                         checked={checked}
@@ -970,9 +970,9 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
                               : f.permisos.filter((p) => p !== m.key),
                           }));
                         }}
-                        className="w-4 h-4 accent-[#FA7B21]"
+                        className="w-4 h-4 accent-[var(--accent)]"
                       />
-                      <span className="text-white text-sm">{m.label}</span>
+                      <span className="text-stone-900 text-sm">{m.label}</span>
                     </label>
                   );
                 })}
@@ -1026,8 +1026,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           </>
         }
       >
-        <p className="text-zinc-300 text-sm">
-          ¿Estas seguro de desactivar al usuario <strong className="text-white">{confirmDeactivateUsuario?.nombre}</strong>? No podra iniciar sesion.
+        <p className="text-stone-500 text-sm">
+          ¿Estas seguro de desactivar al usuario <strong className="text-stone-900">{confirmDeactivateUsuario?.nombre}</strong>? No podra iniciar sesion.
         </p>
       </Modal>
 
@@ -1119,8 +1119,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           </>
         }
       >
-        <p className="text-zinc-300 text-sm">
-          ¿Estas seguro de desactivar la sede <strong className="text-white">{confirmDeactivateSede?.nombre}</strong>?
+        <p className="text-stone-500 text-sm">
+          ¿Estas seguro de desactivar la sede <strong className="text-stone-900">{confirmDeactivateSede?.nombre}</strong>?
         </p>
       </Modal>
 
@@ -1184,8 +1184,8 @@ export function SpaceConfig({ token }: SpaceConfigProps) {
           </>
         }
       >
-        <p className="text-zinc-300 text-sm">
-          ¿Estas seguro de desactivar el horario <strong className="text-white">{confirmDeactivateHorario?.nombre_clase}</strong> ({DIAS[confirmDeactivateHorario?.dia_semana ?? 0]} {confirmDeactivateHorario?.hora_inicio})?
+        <p className="text-stone-500 text-sm">
+          ¿Estas seguro de desactivar el horario <strong className="text-stone-900">{confirmDeactivateHorario?.nombre_clase}</strong> ({DIAS[confirmDeactivateHorario?.dia_semana ?? 0]} {confirmDeactivateHorario?.hora_inicio})?
         </p>
       </Modal>
     </div>

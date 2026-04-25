@@ -119,7 +119,7 @@ function StatsBar({ stats, loading }: { stats: ProfesorStats; loading: boolean }
         ) : (
           <>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
+              <span className="text-stone-500 text-xs font-medium uppercase tracking-wider">
                 {item.label}
               </span>
               <span className={item.gradient.icon}>{item.icon}</span>
@@ -398,8 +398,8 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-xl font-bold">Profesores</h1>
-          <p className="text-white/40 text-xs mt-1">{profesores.length} profesores registrados</p>
+          <h1 className="text-stone-900 text-xl font-bold">Profesores</h1>
+          <p className="text-stone-400 text-xs mt-1">{profesores.length} profesores registrados</p>
         </div>
         <button onClick={handleOpenCreate} className={cx.btnPrimary + ' flex items-center gap-2'}>
           <Plus size={16} /> Nuevo
@@ -411,8 +411,8 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
 
       {/* Quick attendance */}
       <div className={cx.card + ' p-4 space-y-3'}>
-        <h2 className="text-white text-sm font-semibold flex items-center gap-2">
-          <ClipboardCheck size={16} className="text-[#FA7B21]" />
+        <h2 className="text-stone-900 text-sm font-semibold flex items-center gap-2">
+          <ClipboardCheck size={16} className="text-[var(--accent)]" />
           Registrar asistencia rapida
         </h2>
         <div className="flex gap-2">
@@ -434,7 +434,7 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
           </button>
         </div>
         {attendanceResult && (
-          <div className={`text-sm p-3 rounded-xl border ${attendanceResult.ya_registrado ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+          <div className={`text-sm p-3 rounded-xl border ${attendanceResult.ya_registrado ? 'bg-amber-50 border-amber-200 text-amber-400' : 'bg-emerald-50 border-emerald-200 text-emerald-400'}`}>
             {attendanceResult.ya_registrado
               ? `${attendanceResult.nombre} ya tiene asistencia registrada hoy`
               : `Asistencia registrada para ${attendanceResult.nombre}`}
@@ -442,7 +442,7 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
         )}
         {asistenciasHoy.length > 0 && (
           <div className="mt-2">
-            <p className="text-zinc-500 text-xs mb-2">Asistencias hoy ({asistenciasHoy.length}):</p>
+            <p className="text-stone-400 text-xs mb-2">Asistencias hoy ({asistenciasHoy.length}):</p>
             <div className="flex flex-wrap gap-2">
               {asistenciasHoy.map((a) => (
                 <span key={a.id} className={cx.badge(badgeColors.green)}>
@@ -456,7 +456,7 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
 
       {/* Search */}
       <div className="relative max-w-sm">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
         <input
           type="text"
           placeholder="Buscar por nombre o DNI..."
@@ -471,16 +471,16 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
         <TableSkeleton />
       ) : filtered.length === 0 ? (
         <div className={cx.card + ' py-16 text-center'}>
-          <Users size={40} className="mx-auto text-zinc-700 mb-3" />
-          <p className="text-zinc-400 mb-1">Sin profesores</p>
-          <p className="text-zinc-500 text-sm">No se encontraron profesores con los filtros actuales</p>
+          <Users size={40} className="mx-auto text-stone-300 mb-3" />
+          <p className="text-stone-500 mb-1">Sin profesores</p>
+          <p className="text-stone-400 text-sm">No se encontraron profesores con los filtros actuales</p>
         </div>
       ) : (
         <div className={cx.card + ' overflow-hidden'}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Nombre</th>
                   <th className={cx.th}>DNI</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Telefono</th>
@@ -497,16 +497,16 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
                     onClick={() => handleRowClick(p)}
                     className={cx.tr + ' cursor-pointer'}
                   >
-                    <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>{p.nombre}</td>
-                    <td className={cx.td + ' text-zinc-400 font-mono text-xs'}>{p.dni || '—'}</td>
-                    <td className={cx.td + ' text-zinc-400 hidden sm:table-cell'}>{p.telefono || '—'}</td>
-                    <td className={cx.td + ' text-zinc-400 hidden md:table-cell text-xs'}>{p.email || '—'}</td>
+                    <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>{p.nombre}</td>
+                    <td className={cx.td + ' text-stone-500 font-mono text-xs'}>{p.dni || '—'}</td>
+                    <td className={cx.td + ' text-stone-500 hidden sm:table-cell'}>{p.telefono || '—'}</td>
+                    <td className={cx.td + ' text-stone-500 hidden md:table-cell text-xs'}>{p.email || '—'}</td>
                     <td className={cx.td}>
                       <span className={cx.badge(ESTADO_BADGE[p.activo ? 'activo' : 'inactivo'])}>
                         {p.activo ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
-                    <td className={cx.td + ' text-zinc-400 text-xs hidden lg:table-cell'}>
+                    <td className={cx.td + ' text-stone-500 text-xs hidden lg:table-cell'}>
                       {formatFecha(p.ultima_asistencia)}
                     </td>
                     <td className={cx.td + ' text-right'}>
@@ -587,8 +587,8 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
           <div className="space-y-6">
             {/* Info */}
             <section>
-              <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Datos del profesor</h3>
-              <div className="bg-zinc-900 rounded-xl p-4 space-y-3 border border-zinc-800">
+              <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Datos del profesor</h3>
+              <div className="bg-white rounded-xl p-4 space-y-3 border border-stone-200">
                 {[
                   ['Nombre', selectedProfesor.nombre],
                   ['DNI', selectedProfesor.dni],
@@ -597,12 +597,12 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
                   ['Contacto emergencia', selectedProfesor.contacto_emergencia],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between">
-                    <span className="text-zinc-500 text-sm">{label}</span>
-                    <span className="text-white text-sm font-medium">{value || '—'}</span>
+                    <span className="text-stone-400 text-sm">{label}</span>
+                    <span className="text-stone-900 text-sm font-medium">{value || '—'}</span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center">
-                  <span className="text-zinc-500 text-sm">Estado</span>
+                  <span className="text-stone-400 text-sm">Estado</span>
                   <span className={cx.badge(ESTADO_BADGE[selectedProfesor.activo ? 'activo' : 'inactivo'])}>
                     {selectedProfesor.activo ? 'Activo' : 'Inactivo'}
                   </span>
@@ -612,18 +612,18 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
 
             {/* Resumen asistencia mensual */}
             <section>
-              <h3 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">Asistencia mensual</h3>
+              <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Asistencia mensual</h3>
               {resumenLoading ? (
                 <div className="flex items-center justify-center py-10">
-                  <Loader2 size={24} className="animate-spin text-[#FA7B21]" />
+                  <Loader2 size={24} className="animate-spin text-[var(--accent)]" />
                 </div>
               ) : resumen.length === 0 ? (
-                <p className="text-zinc-500 text-sm">Sin registros de asistencia</p>
+                <p className="text-stone-400 text-sm">Sin registros de asistencia</p>
               ) : (
-                <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
+                <div className="bg-white rounded-xl overflow-hidden border border-stone-200">
                   <table className="w-full text-left text-sm">
                     <thead>
-                      <tr className="border-b border-zinc-800">
+                      <tr className="border-b border-stone-200">
                         <th className={cx.th}>Mes</th>
                         <th className={cx.th}>Dias asistidos</th>
                         <th className={cx.th}>Dias esperados</th>
@@ -633,9 +633,9 @@ export function SpaceProfesores({ token }: SpaceProfesoresProps) {
                     <tbody>
                       {resumen.map((r) => (
                         <tr key={r.mes} className={cx.tr}>
-                          <td className={cx.td + ' text-white font-medium'}>{mesLabel(r.mes)}</td>
-                          <td className={cx.td + ' text-zinc-400'}>{r.dias_asistidos}</td>
-                          <td className={cx.td + ' text-zinc-400'}>{r.dias_esperados}</td>
+                          <td className={cx.td + ' text-stone-900 font-medium'}>{mesLabel(r.mes)}</td>
+                          <td className={cx.td + ' text-stone-500'}>{r.dias_asistidos}</td>
+                          <td className={cx.td + ' text-stone-500'}>{r.dias_esperados}</td>
                           <td className={cx.td}>
                             <span className={cx.badge(
                               r.porcentaje >= 80 ? badgeColors.green

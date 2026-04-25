@@ -234,17 +234,17 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-white text-xl font-bold flex items-center gap-2">
-          <UserCheck size={22} className="text-[#FA7B21]" />
+        <h1 className="text-stone-900 text-xl font-bold flex items-center gap-2">
+          <UserCheck size={22} className="text-[var(--accent)]" />
           Asistencia de profesores
         </h1>
-        <p className="text-zinc-500 text-xs mt-1">Registrar y consultar asistencia diaria</p>
+        <p className="text-stone-400 text-xs mt-1">Registrar y consultar asistencia diaria</p>
       </div>
 
       {/* Quick DNI input */}
       <div className={cx.card + ' p-4 space-y-3'}>
-        <h2 className="text-white text-sm font-semibold flex items-center gap-2">
-          <ClipboardCheck size={16} className="text-[#FA7B21]" />
+        <h2 className="text-stone-900 text-sm font-semibold flex items-center gap-2">
+          <ClipboardCheck size={16} className="text-[var(--accent)]" />
           Registrar asistencia
         </h2>
         <div className="flex gap-2">
@@ -266,7 +266,7 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
           </button>
         </div>
         {attendanceResult && (
-          <div className={`text-sm p-3 rounded-xl border ${attendanceResult.ya_registrado ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'}`}>
+          <div className={`text-sm p-3 rounded-xl border ${attendanceResult.ya_registrado ? 'bg-amber-50 border-amber-200 text-amber-400' : 'bg-emerald-50 border-emerald-200 text-emerald-400'}`}>
             {attendanceResult.ya_registrado
               ? `${attendanceResult.nombre} ya tiene asistencia registrada hoy`
               : `Asistencia registrada para ${attendanceResult.nombre}`}
@@ -276,13 +276,13 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
 
       {/* Today section */}
       <div className={cx.card + ' p-4'}>
-        <h2 className="text-white text-sm font-semibold mb-3">Hoy</h2>
+        <h2 className="text-stone-900 text-sm font-semibold mb-3">Hoy</h2>
         {hoyLoading ? (
           <div className="flex items-center justify-center py-6">
-            <Loader2 size={20} className="animate-spin text-[#FA7B21]" />
+            <Loader2 size={20} className="animate-spin text-[var(--accent)]" />
           </div>
         ) : asistenciasHoy.length === 0 ? (
-          <p className="text-zinc-500 text-sm">Ningun profesor ha registrado asistencia hoy</p>
+          <p className="text-stone-400 text-sm">Ningun profesor ha registrado asistencia hoy</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {asistenciasHoy.map((a) => (
@@ -296,7 +296,7 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
 
       {/* Monthly calendar view */}
       <div className={cx.card + ' p-4 space-y-4'}>
-        <h2 className="text-white text-sm font-semibold">Vista mensual</h2>
+        <h2 className="text-stone-900 text-sm font-semibold">Vista mensual</h2>
 
         {/* Professor selector */}
         <select
@@ -317,7 +317,7 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
               <button onClick={handlePrevMonth} className={cx.btnIcon}>
                 <ChevronLeft size={18} />
               </button>
-              <span className="text-white text-sm font-medium min-w-[140px] text-center">
+              <span className="text-stone-900 text-sm font-medium min-w-[140px] text-center">
                 {MONTH_NAMES[calMonth]} {calYear}
               </span>
               <button onClick={handleNextMonth} className={cx.btnIcon}>
@@ -328,14 +328,14 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
             {/* Calendar grid */}
             {calendarLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 size={20} className="animate-spin text-[#FA7B21]" />
+                <Loader2 size={20} className="animate-spin text-[var(--accent)]" />
               </div>
             ) : (
               <div>
                 {/* Day headers */}
                 <div className="grid grid-cols-7 gap-1 mb-1">
                   {['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'].map((d) => (
-                    <div key={d} className="text-center text-zinc-600 text-[10px] font-medium uppercase tracking-wider py-1">
+                    <div key={d} className="text-center text-stone-300 text-[10px] font-medium uppercase tracking-wider py-1">
                       {d}
                     </div>
                   ))}
@@ -357,9 +357,9 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
                         key={dateStr}
                         className={`h-9 flex items-center justify-center rounded-lg text-xs font-medium transition-colors ${
                           attended
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-zinc-800 text-zinc-500 border border-zinc-800'
-                        } ${isToday ? 'ring-1 ring-[#FA7B21]/40' : ''}`}
+                            ? 'bg-emerald-50 text-emerald-400 border border-emerald-200'
+                            : 'bg-stone-50 text-stone-400 border border-stone-200'
+                        } ${isToday ? 'ring-1 ring-[var(--accent)]/40' : ''}`}
                         title={attended ? 'Asistio' : 'No asistio'}
                       >
                         {day}
@@ -370,12 +370,12 @@ export function SpaceAsistenciaProfesores({ token }: SpaceAsistenciaProfesoresPr
                 {/* Legend */}
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500/30" />
-                    <span className="text-zinc-500 text-[10px]">Asistio</span>
+                    <div className="w-3 h-3 rounded bg-emerald-50 border border-emerald-200" />
+                    <span className="text-stone-400 text-[10px]">Asistio</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded bg-zinc-800 border border-zinc-800" />
-                    <span className="text-zinc-500 text-[10px]">No asistio</span>
+                    <div className="w-3 h-3 rounded bg-stone-50 border border-stone-200" />
+                    <span className="text-stone-400 text-[10px]">No asistio</span>
                   </div>
                 </div>
               </div>
