@@ -281,7 +281,7 @@
   }
 }
 
-/* Select dropdowns — dark theme for options */
+/* Select dropdowns — dark theme por defecto (sitio público) */
 select {
   background-color: #27272a;
   color: #fff;
@@ -297,6 +297,20 @@ select option:checked {
 }
 select option:hover {
   background-color: #3f3f46;
+}
+
+/* Space admin — override selects a modo claro */
+.space-app select {
+  background-color: #ffffff;
+  color: #1c1917;
+}
+.space-app select option {
+  background-color: #ffffff;
+  color: #1c1917;
+}
+.space-app select option:checked {
+  background-color: #e8590c;
+  color: #fff;
 }
 
 /* SPACE admin portal animations */
