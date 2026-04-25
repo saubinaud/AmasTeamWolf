@@ -121,7 +121,7 @@ function StatsBar({ stats, loading }: { stats: LeadStats; loading: boolean }) {
           ) : (
             <>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
+                <span className="text-stone-500 text-xs font-medium uppercase tracking-wider">
                   {item.label}
                 </span>
                 <span className={item.gradient.icon}>{item.icon}</span>
@@ -157,9 +157,9 @@ function TableSkeleton() {
 function EmptyState() {
   return (
     <div className={cx.card + ' py-16 text-center'}>
-      <UserPlus size={40} className="mx-auto text-zinc-700 mb-3" />
-      <p className="text-zinc-400 mb-1">Sin leads</p>
-      <p className="text-zinc-500 text-sm">
+      <UserPlus size={40} className="mx-auto text-stone-300 mb-3" />
+      <p className="text-stone-500 mb-1">Sin leads</p>
+      <p className="text-stone-400 text-sm">
         No se encontraron leads con los filtros actuales
       </p>
     </div>
@@ -251,21 +251,21 @@ function EditLeadModal({
       {lead && (
         <div className="space-y-5">
           {/* Read-only info */}
-          <div className="bg-zinc-900 rounded-xl p-4 space-y-2 border border-zinc-800">
+          <div className="bg-white rounded-xl p-4 space-y-2 border border-stone-200">
             <div className="flex justify-between">
-              <span className="text-zinc-500 text-sm">Alumno</span>
-              <span className="text-white text-sm font-medium">{lead.nombre_alumno}</span>
+              <span className="text-stone-400 text-sm">Alumno</span>
+              <span className="text-stone-900 text-sm font-medium">{lead.nombre_alumno}</span>
             </div>
             {lead.nombre_apoderado && (
               <div className="flex justify-between">
-                <span className="text-zinc-500 text-sm">Apoderado</span>
-                <span className="text-white text-sm">{lead.nombre_apoderado}</span>
+                <span className="text-stone-400 text-sm">Apoderado</span>
+                <span className="text-stone-900 text-sm">{lead.nombre_apoderado}</span>
               </div>
             )}
             {lead.plataforma && (
               <div className="flex justify-between">
-                <span className="text-zinc-500 text-sm">Plataforma</span>
-                <span className="text-white text-sm">{lead.plataforma}</span>
+                <span className="text-stone-400 text-sm">Plataforma</span>
+                <span className="text-stone-900 text-sm">{lead.plataforma}</span>
               </div>
             )}
           </div>
@@ -529,8 +529,8 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-xl font-bold">Leads</h1>
-          <p className="text-white/40 text-xs mt-1">{total} leads registrados</p>
+          <h1 className="text-stone-900 text-xl font-bold">Leads</h1>
+          <p className="text-stone-400 text-xs mt-1">{total} leads registrados</p>
         </div>
         <button onClick={handleExport} className={cx.btnSecondary + ' flex items-center gap-2'}>
           <Download size={14} />
@@ -557,7 +557,7 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
       {/* Search */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
             type="text"
             placeholder="Buscar por nombre..."
@@ -566,7 +566,7 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
             className={cx.input + ' pl-9'}
           />
         </div>
-        <p className="text-white/30 text-xs">
+        <p className="text-stone-400 text-xs">
           Mostrando {showingFrom}\u2013{showingTo} de {total} leads
         </p>
       </div>
@@ -581,7 +581,7 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Nombre Alumno</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Apoderado</th>
                   <th className={cx.th}>Estado</th>
@@ -597,10 +597,10 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
                     onClick={() => handleRowClick(l)}
                     className={cx.tr + ' cursor-pointer'}
                   >
-                    <td className={cx.td + ' text-white font-medium whitespace-nowrap'}>
+                    <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>
                       {l.nombre_alumno}
                     </td>
-                    <td className={cx.td + ' text-zinc-400 hidden sm:table-cell'}>
+                    <td className={cx.td + ' text-stone-500 hidden sm:table-cell'}>
                       {l.nombre_apoderado || '\u2014'}
                     </td>
                     <td className={cx.td}>
@@ -608,13 +608,13 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
                         {l.estado}
                       </span>
                     </td>
-                    <td className={cx.td + ' text-zinc-400 hidden md:table-cell'}>
+                    <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>
                       {l.plataforma || '\u2014'}
                     </td>
-                    <td className={cx.td + ' text-zinc-400 hidden lg:table-cell'}>
+                    <td className={cx.td + ' text-stone-500 hidden lg:table-cell'}>
                       {l.campana || '\u2014'}
                     </td>
-                    <td className={cx.td + ' text-zinc-400 hidden lg:table-cell'}>
+                    <td className={cx.td + ' text-stone-500 hidden lg:table-cell'}>
                       {formatFecha(l.fecha)}
                     </td>
                   </tr>
@@ -635,7 +635,7 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
           >
             Anterior
           </button>
-          <span className="text-white/40 text-sm">
+          <span className="text-stone-400 text-sm">
             Pagina {page} de {totalPages}
           </span>
           <button

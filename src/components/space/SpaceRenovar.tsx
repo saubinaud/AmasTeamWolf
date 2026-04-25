@@ -605,15 +605,15 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
     <div className="space-y-5 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-white text-xl font-bold">Renovar inscripción</h1>
-        <p className="text-zinc-500 text-xs mt-1">
+        <h1 className="text-stone-900 text-xl font-bold">Renovar inscripción</h1>
+        <p className="text-stone-400 text-xs mt-1">
           Busca al alumno para pre-llenar sus datos, selecciona programa, códigos, fechas y firma el contrato.
         </p>
       </div>
 
       {/* Success banner */}
       {lastCreated && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200">
           <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
           <div className="flex-1">
             <p className="text-emerald-400 text-sm font-semibold">Renovación registrada: {lastCreated.nombre}</p>
@@ -632,9 +632,9 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Búsqueda alumno */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">1. Buscar alumno</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">1. Buscar alumno</h3>
         <div className="relative" ref={resultsRef}>
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
@@ -649,10 +649,10 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
             className={cx.input + ' pl-9'}
           />
           {searching && (
-            <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 animate-spin" />
+            <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 animate-spin" />
           )}
           {showResults && searchResults.length > 0 && (
-            <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl max-h-48 overflow-y-auto shadow-xl">
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl max-h-48 overflow-y-auto shadow-xl">
               {searchResults.map((a) => {
                 const nombre = a.nombre_alumno ?? a.nombre ?? '';
                 const dni = a.dni_alumno ?? a.dni ?? '';
@@ -660,25 +660,25 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                   <button
                     key={a.id}
                     onClick={() => handleSelectAlumno(a)}
-                    className="w-full text-left px-3.5 py-2.5 text-sm text-white hover:bg-zinc-700 transition-colors flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 text-sm text-stone-900 hover:bg-stone-100 transition-colors flex items-center gap-2"
                   >
-                    <User size={14} className="text-zinc-500 shrink-0" />
+                    <User size={14} className="text-stone-400 shrink-0" />
                     <span>{nombre}</span>
-                    {dni && <span className="text-zinc-500 text-xs ml-auto">{dni}</span>}
+                    {dni && <span className="text-stone-400 text-xs ml-auto">{dni}</span>}
                   </button>
                 );
               })}
             </div>
           )}
           {showResults && searchResults.length === 0 && searchQuery.length >= 2 && !searching && (
-            <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-sm text-zinc-500">
+            <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-3 text-sm text-stone-400">
               Sin resultados — puedes llenar los datos manualmente
             </div>
           )}
         </div>
 
         {inscripcionActiva && (
-          <div className="mt-3 flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <div className="mt-3 flex items-start gap-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
             <AlertCircle size={16} className="text-amber-400 shrink-0 mt-0.5" />
             <div className="flex-1 text-xs">
               <p className="text-amber-400 font-semibold">Inscripción activa actual</p>
@@ -693,7 +693,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Programa */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-3">2. Programa a renovar</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-3">2. Programa a renovar</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {PROGRAMAS_RENOVACION.map((k) => {
             const lbl = PROGRAMA_LABELS[k];
@@ -704,14 +704,14 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                 onClick={() => setPrograma(k)}
                 className={
                   active
-                    ? 'px-3 py-3 rounded-xl bg-[#FA7B21]/15 border border-[#FA7B21]/30 text-left'
-                    : 'px-3 py-3 rounded-xl bg-zinc-800 border border-zinc-800 hover:bg-zinc-700 text-left transition-all'
+                    ? 'px-3 py-3 rounded-xl bg-orange-50 border border-orange-200 text-left'
+                    : 'px-3 py-3 rounded-xl bg-white border border-stone-200 hover:bg-stone-50 text-left transition-all'
                 }
               >
-                <div className={active ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                <div className={active ? 'text-[var(--accent)] text-sm font-semibold' : 'text-stone-900 text-sm font-semibold'}>
                   {lbl.titulo}
                 </div>
-                <div className="text-zinc-500 text-xs mt-0.5">{lbl.sub}</div>
+                <div className="text-stone-400 text-xs mt-0.5">{lbl.sub}</div>
               </button>
             );
           })}
@@ -720,7 +720,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Datos alumno */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">3. Datos del alumno</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">3. Datos del alumno</h3>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
@@ -757,34 +757,34 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
           </div>
 
           {horariosInfo && horariosInfo.horarioSemana && (
-            <div className="mt-2 p-4 rounded-xl bg-zinc-800 border border-[#FA7B21]/20">
-              <p className="text-white text-sm font-semibold mb-3">Turno preferido</p>
+            <div className="mt-2 p-4 rounded-xl bg-stone-50 border border-orange-200">
+              <p className="text-stone-900 text-sm font-semibold mb-3">Turno preferido</p>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => setTurnoSeleccionado('manana')}
                   className={
                     turnoSeleccionado === 'manana'
-                      ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-center'
-                      : 'p-3 rounded-xl border-2 border-zinc-700 bg-zinc-900 hover:border-[#FA7B21]/50 text-center transition-all'
+                      ? 'p-3 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-center'
+                      : 'p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-orange-200 text-center transition-all'
                   }
                 >
-                  <div className={turnoSeleccionado === 'manana' ? 'text-[#FA7B21] font-semibold text-sm' : 'text-white font-semibold text-sm'}>Mañana</div>
-                  <div className="text-zinc-500 text-xs mt-1">{horariosInfo.horarioManana}</div>
+                  <div className={turnoSeleccionado === 'manana' ? 'text-[var(--accent)] font-semibold text-sm' : 'text-stone-900 font-semibold text-sm'}>Mañana</div>
+                  <div className="text-stone-400 text-xs mt-1">{horariosInfo.horarioManana}</div>
                 </button>
                 <button
                   onClick={() => setTurnoSeleccionado('tarde')}
                   className={
                     turnoSeleccionado === 'tarde'
-                      ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-center'
-                      : 'p-3 rounded-xl border-2 border-zinc-700 bg-zinc-900 hover:border-[#FA7B21]/50 text-center transition-all'
+                      ? 'p-3 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-center'
+                      : 'p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-orange-200 text-center transition-all'
                   }
                 >
-                  <div className={turnoSeleccionado === 'tarde' ? 'text-[#FA7B21] font-semibold text-sm' : 'text-white font-semibold text-sm'}>Tarde</div>
-                  <div className="text-zinc-500 text-xs mt-1">{horariosInfo.horarioSemana}</div>
+                  <div className={turnoSeleccionado === 'tarde' ? 'text-[var(--accent)] font-semibold text-sm' : 'text-stone-900 font-semibold text-sm'}>Tarde</div>
+                  <div className="text-stone-400 text-xs mt-1">{horariosInfo.horarioSemana}</div>
                 </button>
               </div>
-              {horariosInfo.categoria && <p className="text-zinc-500 text-xs mt-3">Categoría: {horariosInfo.categoria}</p>}
-              <p className="text-zinc-500 text-xs mt-1">
+              {horariosInfo.categoria && <p className="text-stone-400 text-xs mt-3">Categoría: {horariosInfo.categoria}</p>}
+              <p className="text-stone-400 text-xs mt-1">
                 Días disponibles: {turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana}
               </p>
             </div>
@@ -794,7 +794,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Datos apoderado */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">4. Datos del apoderado</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">4. Datos del apoderado</h3>
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -844,7 +844,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Polos */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">5. Polos adicionales</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">5. Polos adicionales</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
             { v: '0' as PolosOption, label: 'Ninguno' },
@@ -857,8 +857,8 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
               onClick={() => handlePolosChange(o.v)}
               className={
                 polosOption === o.v
-                  ? 'px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
-                  : 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                  ? 'px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
+                  : 'px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
               }
             >
               {o.label}
@@ -870,7 +870,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
             <label className={cx.label}>Tallas de polos *</label>
             {Array.from({ length: parseInt(polosOption, 10) }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
-                <span className="text-zinc-500 text-xs w-16">Polo {i + 1}:</span>
+                <span className="text-stone-400 text-xs w-16">Polo {i + 1}:</span>
                 <select
                   value={tallasPolos[i] ?? ''}
                   onChange={(e) => handleTallaPoloChange(i, e.target.value)}
@@ -891,7 +891,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Fechas */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">6. Fechas del programa</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">6. Fechas del programa</h3>
         <div className="space-y-4">
           {/* Frecuencia semanal */}
           <div>
@@ -901,8 +901,8 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                 onClick={() => setFrecuenciaSemanal(2)}
                 className={
                   frecuenciaSemanal === 2
-                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
-                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
+                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                 }
               >
                 2x por semana
@@ -911,8 +911,8 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                 onClick={() => setFrecuenciaSemanal(1)}
                 className={
                   frecuenciaSemanal === 1
-                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
-                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
+                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                 }
               >
                 1x por semana
@@ -939,19 +939,19 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                   }}
                   className={
                     isSelected
-                      ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-left'
-                      : 'p-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 hover:border-[#FA7B21]/30 text-left transition-all'
+                      ? 'p-3 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-left'
+                      : 'p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-orange-200 text-left transition-all'
                   }
                 >
                   <div className="flex items-center gap-2">
-                    <div className={isSelected ? 'w-10 h-10 rounded-full bg-[#FA7B21] flex items-center justify-center font-bold text-white' : 'w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-white/80'}>
+                    <div className={isSelected ? 'w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center font-bold text-white' : 'w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center font-bold text-stone-600'}>
                       {f.getDate()}
                     </div>
                     <div className="flex-1">
-                      <div className={isSelected ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                      <div className={isSelected ? 'text-[var(--accent)] text-sm font-semibold' : 'text-stone-900 text-sm font-semibold'}>
                         {obtenerNombreDia(f)}
                       </div>
-                      <div className="text-zinc-500 text-xs capitalize">
+                      <div className="text-stone-400 text-xs capitalize">
                         {f.toLocaleDateString('es-PE', { month: 'long', timeZone: 'America/Lima' })}
                       </div>
                     </div>
@@ -967,19 +967,19 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
               }}
               className={
                 opcionFecha === 'no-especificado'
-                  ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-left'
-                  : 'p-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 hover:border-[#FA7B21]/30 text-left transition-all'
+                  ? 'p-3 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-left'
+                  : 'p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-orange-200 text-left transition-all'
               }
             >
               <div className="flex items-center gap-2">
-                <div className={opcionFecha === 'no-especificado' ? 'w-10 h-10 rounded-full bg-[#FA7B21] flex items-center justify-center text-white' : 'w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center text-white/80'}>
+                <div className={opcionFecha === 'no-especificado' ? 'w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center text-white' : 'w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600'}>
                   ?
                 </div>
                 <div className="flex-1">
-                  <div className={opcionFecha === 'no-especificado' ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                  <div className={opcionFecha === 'no-especificado' ? 'text-[var(--accent)] text-sm font-semibold' : 'text-stone-900 text-sm font-semibold'}>
                     Sin definir
                   </div>
-                  <div className="text-zinc-500 text-xs">Lo decidiré después</div>
+                  <div className="text-stone-400 text-xs">Lo decidiré después</div>
                 </div>
               </div>
             </button>
@@ -988,19 +988,19 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
               onClick={() => setOpcionFecha('otra')}
               className={
                 opcionFecha === 'otra'
-                  ? 'p-3 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-left'
-                  : 'p-3 rounded-xl border-2 border-zinc-800 bg-zinc-800 hover:border-[#FA7B21]/30 text-left transition-all'
+                  ? 'p-3 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-left'
+                  : 'p-3 rounded-xl border-2 border-stone-200 bg-white hover:border-orange-200 text-left transition-all'
               }
             >
               <div className="flex items-center gap-2">
-                <div className={opcionFecha === 'otra' ? 'w-10 h-10 rounded-full bg-[#FA7B21] flex items-center justify-center text-white' : 'w-10 h-10 rounded-full bg-zinc-700 flex items-center justify-center text-white/80'}>
+                <div className={opcionFecha === 'otra' ? 'w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center text-white' : 'w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center text-stone-600'}>
                   +
                 </div>
                 <div className="flex-1">
-                  <div className={opcionFecha === 'otra' ? 'text-[#FA7B21] text-sm font-semibold' : 'text-white text-sm font-semibold'}>
+                  <div className={opcionFecha === 'otra' ? 'text-[var(--accent)] text-sm font-semibold' : 'text-stone-900 text-sm font-semibold'}>
                     Otra fecha
                   </div>
-                  <div className="text-zinc-500 text-xs">Personalizada</div>
+                  <div className="text-stone-400 text-xs">Personalizada</div>
                 </div>
               </div>
             </button>
@@ -1022,7 +1022,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
           {form.fechaInicio && form.fechaInicio !== 'no-especificado' && form.fechaNacimiento && (
             <div>
               <label className={cx.label}>Días tentativos de clase *</label>
-              <p className="text-zinc-500 text-xs mb-2">Mínimo 1 día. Se usan para calcular la fecha de fin.</p>
+              <p className="text-stone-400 text-xs mb-2">Mínimo 1 día. Se usan para calcular la fecha de fin.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
                   const permitidos = diasPermitidosPorTurnoCategoria(turnoSeleccionado, categoriaAlumno);
@@ -1035,10 +1035,10 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                       disabled={disabled}
                       className={
                         disabled
-                          ? 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-900 text-zinc-700 text-xs font-semibold opacity-40 cursor-not-allowed'
+                          ? 'px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-stone-50 text-stone-300 text-xs font-semibold opacity-40 cursor-not-allowed'
                           : selected
-                            ? 'px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
-                            : 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                            ? 'px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
+                            : 'px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                       }
                     >
                       {dia}
@@ -1050,9 +1050,9 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
           )}
 
           {fechaFinCalculada && detallesFechaFin && (
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
               <p className="text-emerald-400 text-xs uppercase tracking-wider mb-1">Fecha de fin calculada</p>
-              <p className="text-white text-base font-bold">{formatearFechaLarga(fechaFinCalculada)}</p>
+              <p className="text-stone-900 text-base font-bold">{formatearFechaLarga(fechaFinCalculada)}</p>
               <p className="text-emerald-400/70 text-xs mt-1">
                 {detallesFechaFin.clasesTotales} clases · {detallesFechaFin.semanasAproximadas} semanas
               </p>
@@ -1063,7 +1063,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Código */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">7. Código promocional (opcional)</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">7. Código promocional (opcional)</h3>
         <div className="flex gap-2">
           <input
             type="text"
@@ -1077,7 +1077,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
           </button>
         </div>
         {codigoAplicado?.valido && (
-          <div className="mt-3 flex items-start gap-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+          <div className="mt-3 flex items-start gap-3 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
             <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
             <div className="flex-1 text-xs">
               <p className="text-emerald-400 font-semibold">Código "{codigoAplicado.codigo}" aplicado</p>
@@ -1092,16 +1092,16 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Resumen */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">8. Resumen</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">8. Resumen</h3>
         <div className="space-y-2 text-sm">
-          <div className="flex justify-between text-zinc-400">
+          <div className="flex justify-between text-stone-500">
             <span>{NOMBRES_PROGRAMA[programa]}</span>
-            <span className="text-white">S/ {precioBase}</span>
+            <span className="text-stone-900">S/ {precioBase}</span>
           </div>
           {polosOption !== '0' && (
-            <div className="flex justify-between text-zinc-400">
+            <div className="flex justify-between text-stone-500">
               <span>{polosOption} polo(s){codigoAplicado?.tipo === 'polo_gratis' && ' (desc. aplicado)'}</span>
-              <span className="text-white">S/ {precioPolosAjustado}</span>
+              <span className="text-stone-900">S/ {precioPolosAjustado}</span>
             </div>
           )}
           {descuentoDinero > 0 && (
@@ -1127,9 +1127,9 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
               * Total sobrescrito manualmente (calculado: S/ {totalCalculado})
             </div>
           )}
-          <div className="flex justify-between items-center pt-3 border-t border-zinc-800">
-            <span className="text-white font-bold text-base">TOTAL</span>
-            <span className="text-[#FCA929] text-2xl font-bold">S/ {total}</span>
+          <div className="flex justify-between items-center pt-3 border-t border-stone-200">
+            <span className="text-stone-900 font-bold text-base">TOTAL</span>
+            <span className="text-[var(--accent)] text-2xl font-bold">S/ {total}</span>
           </div>
         </div>
       </section>
@@ -1138,25 +1138,25 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
       <section className={cx.card + ' overflow-hidden'}>
         <button
           onClick={() => setAdminOpen(!adminOpen)}
-          className="w-full flex items-center justify-between px-5 py-4 hover:bg-zinc-800/50 transition-colors"
+          className="w-full flex items-center justify-between px-5 py-4 hover:bg-stone-50 transition-colors"
         >
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#FA7B21]/15 flex items-center justify-center">
-              <Shield size={14} className="text-[#FA7B21]" />
+            <div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center">
+              <Shield size={14} className="text-[var(--accent)]" />
             </div>
             <div className="text-left">
-              <h3 className="text-white text-sm font-semibold">Ajustes de administrador</h3>
-              <p className="text-zinc-500 text-xs">Override de precios, estado de pago, firma, notas internas</p>
+              <h3 className="text-stone-900 text-sm font-semibold">Ajustes de administrador</h3>
+              <p className="text-stone-400 text-xs">Override de precios, estado de pago, firma, notas internas</p>
             </div>
           </div>
-          {adminOpen ? <ChevronUp size={16} className="text-zinc-400" /> : <ChevronDown size={16} className="text-zinc-400" />}
+          {adminOpen ? <ChevronUp size={16} className="text-stone-500" /> : <ChevronDown size={16} className="text-stone-500" />}
         </button>
 
         {adminOpen && (
-          <div className="px-5 pb-5 space-y-5 border-t border-zinc-800">
+          <div className="px-5 pb-5 space-y-5 border-t border-stone-200">
             {/* Overrides de precio */}
             <div className="pt-4">
-              <p className="text-zinc-400 text-xs uppercase tracking-wider mb-3">Overrides de precio</p>
+              <p className="text-stone-500 text-xs uppercase tracking-wider mb-3">Overrides de precio</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className={cx.label}>Precio programa override</label>
@@ -1199,7 +1199,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
             {/* Estado de pago */}
             <div>
-              <p className="text-zinc-400 text-xs uppercase tracking-wider mb-3">Estado de pago</p>
+              <p className="text-stone-500 text-xs uppercase tracking-wider mb-3">Estado de pago</p>
               <div className="grid grid-cols-3 gap-2 mb-4">
                 {(['Pendiente', 'Parcial', 'Pagado'] as EstadoPago[]).map((ep) => (
                   <button
@@ -1207,8 +1207,8 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                     onClick={() => setAdmin((a) => ({ ...a, estadoPago: ep }))}
                     className={
                       admin.estadoPago === ep
-                        ? 'px-3 py-2.5 rounded-xl border-2 border-[#FA7B21] bg-[#FA7B21]/15 text-[#FA7B21] text-xs font-semibold'
-                        : 'px-3 py-2.5 rounded-xl border-2 border-zinc-800 bg-zinc-800 text-zinc-400 text-xs font-semibold hover:border-[#FA7B21]/30 transition-all'
+                        ? 'px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
+                        : 'px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
                     }
                   >
                     {ep}
@@ -1248,14 +1248,14 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
                   )}
                 </div>
               )}
-              <p className="text-zinc-500 text-xs mt-2">
+              <p className="text-stone-400 text-xs mt-2">
                 Si seleccionas Pagado o Parcial, se registrará automáticamente una entrada en la tabla de pagos.
               </p>
             </div>
 
             {/* Programa y clases override */}
             <div>
-              <p className="text-zinc-400 text-xs uppercase tracking-wider mb-3">Overrides de programa</p>
+              <p className="text-stone-500 text-xs uppercase tracking-wider mb-3">Overrides de programa</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={cx.label}>Nombre programa custom</label>
@@ -1318,30 +1318,30 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
             {/* Flags */}
             <div className="space-y-2">
-              <label className="flex items-start gap-3 p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+              <label className="flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200 cursor-pointer hover:border-orange-200 transition-all">
                 <input
                   type="checkbox"
                   checked={admin.skipContrato}
                   onChange={(e) => setAdmin((a) => ({ ...a, skipContrato: e.target.checked }))}
-                  className="mt-1 w-4 h-4 accent-[#FA7B21]"
+                  className="mt-1 w-4 h-4 accent-[var(--accent)]"
                 />
                 <div className="flex-1">
-                  <div className="text-white text-sm font-medium">Registrar sin firma del contrato</div>
-                  <div className="text-zinc-500 text-xs mt-0.5">
+                  <div className="text-stone-900 text-sm font-medium">Registrar sin firma del contrato</div>
+                  <div className="text-stone-400 text-xs mt-0.5">
                     Útil para walk-ins donde el padre firma un contrato físico aparte.
                   </div>
                 </div>
               </label>
-              <label className="flex items-start gap-3 p-3 rounded-xl bg-zinc-800/50 border border-zinc-800 cursor-pointer hover:border-[#FA7B21]/30 transition-all">
+              <label className="flex items-start gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200 cursor-pointer hover:border-orange-200 transition-all">
                 <input
                   type="checkbox"
                   checked={admin.skipEmail}
                   onChange={(e) => setAdmin((a) => ({ ...a, skipEmail: e.target.checked }))}
-                  className="mt-1 w-4 h-4 accent-[#FA7B21]"
+                  className="mt-1 w-4 h-4 accent-[var(--accent)]"
                 />
                 <div className="flex-1">
-                  <div className="text-white text-sm font-medium">No enviar email de confirmación</div>
-                  <div className="text-zinc-500 text-xs mt-0.5">
+                  <div className="text-stone-900 text-sm font-medium">No enviar email de confirmación</div>
+                  <div className="text-stone-400 text-xs mt-0.5">
                     El registro se guarda pero no se notifica por correo al padre.
                   </div>
                 </div>
@@ -1353,7 +1353,7 @@ export function SpaceRenovar({ token, onGoToInscritos }: Props) {
 
       {/* Contrato */}
       <section className={cx.card + ' p-5'}>
-        <h3 className="text-white text-sm font-semibold mb-4">9. Contrato y firma</h3>
+        <h3 className="text-stone-900 text-sm font-semibold mb-4">9. Contrato y firma</h3>
         <ContratoFirma datos={datosContrato} onFirmaCompleta={(firma) => setFirmaBase64(firma)} />
       </section>
 

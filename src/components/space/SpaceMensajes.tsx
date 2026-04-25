@@ -119,7 +119,7 @@ function StatsBar({ stats, loading }: { stats: MensajeStats; loading: boolean })
           ) : (
             <>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-zinc-400 text-xs font-medium uppercase tracking-wider">
+                <span className="text-stone-500 text-xs font-medium uppercase tracking-wider">
                   {item.label}
                 </span>
                 <span className={item.gradient.icon}>{item.icon}</span>
@@ -154,9 +154,9 @@ function TableSkeleton() {
 function EmptyState() {
   return (
     <div className={cx.card + ' py-16 text-center'}>
-      <MessageSquare size={40} className="mx-auto text-zinc-700 mb-3" />
-      <p className="text-zinc-400 mb-1">Sin mensajes</p>
-      <p className="text-zinc-500 text-sm">
+      <MessageSquare size={40} className="mx-auto text-stone-300 mb-3" />
+      <p className="text-stone-500 mb-1">Sin mensajes</p>
+      <p className="text-stone-400 text-sm">
         No se encontraron mensajes enviados
       </p>
     </div>
@@ -353,8 +353,8 @@ function SendModal({
                 }}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium border transition-all duration-200 ${
                   tipo === opt.key
-                    ? 'bg-[#FA7B21]/15 text-[#FA7B21] border-[#FA7B21]/30'
-                    : 'bg-zinc-800 text-zinc-400 border-zinc-800 hover:bg-zinc-700 hover:text-zinc-300'
+                    ? 'bg-orange-50 text-[var(--accent)] border-orange-200'
+                    : 'bg-stone-50 text-stone-500 border-stone-200 hover:bg-stone-100 hover:text-stone-700'
                 }`}
               >
                 {opt.icon}
@@ -369,7 +369,7 @@ function SendModal({
           <div>
             <label className={cx.label}>Programa</label>
             {loadingProgramas ? (
-              <div className="flex items-center gap-2 text-zinc-500 text-sm py-2">
+              <div className="flex items-center gap-2 text-stone-400 text-sm py-2">
                 <Loader2 size={14} className="animate-spin" />
                 Cargando programas...
               </div>
@@ -407,7 +407,7 @@ function SendModal({
                 className={cx.input}
               />
               {searching && (
-                <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 animate-spin" />
+                <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 animate-spin" />
               )}
             </div>
             {alumnoId && alumnoNombre && (
@@ -416,22 +416,22 @@ function SendModal({
               </p>
             )}
             {showResults && searchResults.length > 0 && (
-              <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl max-h-48 overflow-y-auto shadow-xl">
+              <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl max-h-48 overflow-y-auto shadow-xl">
                 {searchResults.map((a) => (
                   <button
                     key={a.id}
                     onClick={() => handleSelectAlumno(a)}
-                    className="w-full text-left px-3.5 py-2.5 text-sm text-white hover:bg-zinc-700 transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2.5 text-sm text-stone-900 hover:bg-stone-100 transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center gap-2"
                   >
-                    <User size={14} className="text-zinc-500 shrink-0" />
+                    <User size={14} className="text-stone-400 shrink-0" />
                     <span>{a.nombre}</span>
-                    {a.dni && <span className="text-zinc-500 text-xs ml-auto">{a.dni}</span>}
+                    {a.dni && <span className="text-stone-400 text-xs ml-auto">{a.dni}</span>}
                   </button>
                 ))}
               </div>
             )}
             {showResults && searchResults.length === 0 && searchQuery.length >= 2 && !searching && (
-              <div className="absolute z-50 left-0 right-0 mt-1 bg-zinc-800 border border-zinc-700 rounded-xl px-3.5 py-3 text-sm text-zinc-500">
+              <div className="absolute z-50 left-0 right-0 mt-1 bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-3 text-sm text-stone-400">
                 Sin resultados
               </div>
             )}
@@ -564,13 +564,13 @@ function DetailModal({
             <span className={cx.badge(TIPO_BADGE[mensaje.tipo] ?? badgeColors.gray)}>
               {TIPO_LABEL[mensaje.tipo] ?? mensaje.tipo}
             </span>
-            <span className="text-zinc-500 text-xs">{formatFecha(mensaje.fecha)}</span>
+            <span className="text-stone-400 text-xs">{formatFecha(mensaje.fecha)}</span>
           </div>
-          <h3 className="text-white text-base font-semibold">{mensaje.asunto}</h3>
-          <p className="text-zinc-400 text-sm leading-relaxed whitespace-pre-wrap">
+          <h3 className="text-stone-900 text-base font-semibold">{mensaje.asunto}</h3>
+          <p className="text-stone-500 text-sm leading-relaxed whitespace-pre-wrap">
             {mensaje.contenido}
           </p>
-          <div className="flex items-center gap-2 text-xs text-zinc-500">
+          <div className="flex items-center gap-2 text-xs text-stone-400">
             <Eye size={12} />
             <span>
               {mensaje.leidos} / {mensaje.total_destinatarios} leidos
@@ -580,7 +580,7 @@ function DetailModal({
 
         {/* Lecturas table */}
         <div>
-          <h4 className="text-zinc-400 text-xs font-medium uppercase tracking-wider mb-3">
+          <h4 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">
             Destinatarios
           </h4>
           {loadingLecturas ? (
@@ -593,12 +593,12 @@ function DetailModal({
               ))}
             </div>
           ) : lecturas.length === 0 ? (
-            <p className="text-zinc-500 text-sm">Sin datos de lectura</p>
+            <p className="text-stone-400 text-sm">Sin datos de lectura</p>
           ) : (
             <div className={cx.card + ' overflow-hidden'}>
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-800">
+                  <tr className="border-b border-stone-200">
                     <th className={cx.th}>Nombre</th>
                     <th className={cx.th}>Fecha leido</th>
                   </tr>
@@ -606,14 +606,14 @@ function DetailModal({
                 <tbody>
                   {lecturas.map((l) => (
                     <tr key={l.alumno_id} className={cx.tr}>
-                      <td className={cx.td + ' text-white'}>{l.nombre}</td>
+                      <td className={cx.td + ' text-stone-900'}>{l.nombre}</td>
                       <td className={cx.td}>
                         {l.fecha_leido ? (
                           <span className="text-emerald-400 text-xs">
                             {formatFecha(l.fecha_leido)}
                           </span>
                         ) : (
-                          <span className="text-zinc-500 text-xs">No leido</span>
+                          <span className="text-stone-400 text-xs">No leido</span>
                         )}
                       </td>
                     </tr>
@@ -712,8 +712,8 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white text-xl font-bold">Mensajes</h1>
-          <p className="text-zinc-500 text-sm mt-0.5">Envia mensajes a padres y apoderados</p>
+          <h1 className="text-stone-900 text-xl font-bold">Mensajes</h1>
+          <p className="text-stone-400 text-sm mt-0.5">Envia mensajes a padres y apoderados</p>
         </div>
         <button
           onClick={() => setSendOpen(true)}
@@ -737,7 +737,7 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-stone-200">
                   <th className={cx.th}>Asunto</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Tipo</th>
                   <th className={cx.th + ' hidden md:table-cell'}>Destinatario</th>
@@ -754,8 +754,8 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
                   >
                     <td className={cx.td}>
                       <div className="flex items-center gap-2">
-                        <MessageSquare size={14} className="text-zinc-600 shrink-0" />
-                        <span className="text-white truncate max-w-[200px]">{m.asunto}</span>
+                        <MessageSquare size={14} className="text-stone-300 shrink-0" />
+                        <span className="text-stone-900 truncate max-w-[200px]">{m.asunto}</span>
                       </div>
                     </td>
                     <td className={cx.td + ' hidden sm:table-cell'}>
@@ -763,18 +763,18 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
                         {TIPO_LABEL[m.tipo] ?? m.tipo}
                       </span>
                     </td>
-                    <td className={cx.td + ' hidden md:table-cell text-zinc-400'}>
+                    <td className={cx.td + ' hidden md:table-cell text-stone-500'}>
                       {m.destinatario || 'Todos'}
                     </td>
                     <td className={cx.td}>
                       <div className="flex items-center gap-1.5">
-                        <Eye size={12} className="text-zinc-600" />
-                        <span className="text-zinc-400 text-xs">
+                        <Eye size={12} className="text-stone-300" />
+                        <span className="text-stone-500 text-xs">
                           {m.leidos}/{m.total_destinatarios}
                         </span>
                       </div>
                     </td>
-                    <td className={cx.td + ' hidden lg:table-cell text-zinc-500 text-xs'}>
+                    <td className={cx.td + ' hidden lg:table-cell text-stone-400 text-xs'}>
                       {formatFecha(m.fecha)}
                     </td>
                   </tr>
@@ -785,8 +785,8 @@ export function SpaceMensajes({ token }: SpaceMensajesProps) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800">
-              <span className="text-zinc-500 text-xs">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-stone-200">
+              <span className="text-stone-400 text-xs">
                 Pagina {page} de {totalPages} ({total} mensajes)
               </span>
               <div className="flex gap-1.5">
