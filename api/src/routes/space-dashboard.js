@@ -79,4 +79,58 @@ router.get('/heatmap', async (_req, res) => {
   }
 });
 
+// GET /inscripciones-trend — monthly inscriptions last 6 months
+router.get('/inscripciones-trend', async (_req, res) => {
+  try {
+    const rows = await query(
+      `SELECT to_char(date_trunc('month', created_at), 'YYYY-MM') AS mes,
+              COUNT(*)::int AS total
+       FROM inscripciones
+       WHERE created_at >= date_trunc('month', CURRENT_DATE) - INTERVAL '5 months'
+       GROUP BY date_trunc('month', created_at)
+       ORDER BY date_trunc('month', created_at)`
+    );
+    return res.json({ success: true, data: rows || [] });
+  } catch (err) {
+    console.error('Error inscripciones-trend:', err);
+    return res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
+// GET /inscripciones-diarias — daily inscriptions current + previous month
+router.get('/inscripciones-diarias', async (_req, res) => {
+  try {
+    const rows = await query(
+      `SELECT fecha_inicio::date AS dia, COUNT(*)::int AS total
+       FROM inscripciones
+       WHERE fecha_inicio >= date_trunc('month', CURRENT_DATE) - INTERVAL '1 month'
+         AND fecha_inicio < date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'
+       GROUP BY fecha_inicio::date
+       ORDER BY dia`
+    );
+    return res.json({ success: true, data: rows || [] });
+  } catch (err) {
+    console.error('Error inscripciones-diarias:', err);
+    return res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
+// GET /top-implementos — top 8 most sold items
+router.get('/top-implementos', async (_req, res) => {
+  try {
+    const rows = await query(
+      `SELECT tipo, COUNT(*)::int AS total
+       FROM implementos
+       WHERE origen = 'compra'
+       GROUP BY tipo
+       ORDER BY total DESC
+       LIMIT 8`
+    );
+    return res.json({ success: true, data: rows || [] });
+  } catch (err) {
+    console.error('Error top-implementos:', err);
+    return res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+});
+
 module.exports = router;
