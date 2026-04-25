@@ -2,8 +2,12 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Users, ClipboardList, CalendarCheck, UserPlus,
   GraduationCap, ClipboardCheck, Download, TrendingUp, AlertTriangle,
-  ArrowRight, Clock,
+  ArrowRight, Clock, ShoppingBag,
 } from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, CartesianGrid,
+} from 'recharts';
 import { API_BASE } from '../../config/api';
 import { cx, statGradients } from './tokens';
 import type { SpacePage } from './SpaceApp';
@@ -22,6 +26,10 @@ interface HeatmapEntry {
   clase: string;
   total: number;
 }
+
+interface TrendEntry { mes: string; total: number }
+interface DailyEntry { dia: string; total: number }
+interface ImplEntry { tipo: string; total: number }
 
 interface Props {
   token: string;
@@ -76,17 +84,27 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [heatmap, setHeatmap] = useState<HeatmapEntry[]>([]);
+  const [trend, setTrend] = useState<TrendEntry[]>([]);
+  const [daily, setDaily] = useState<DailyEntry[]>([]);
+  const [topImpl, setTopImpl] = useState<ImplEntry[]>([]);
 
   useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` };
+    const safeJson = (url: string) => fetch(url, { headers }).then(r => r.json()).catch(() => ({ success: false }));
     Promise.all([
-      fetch(`${API_BASE}/space/dashboard/stats`, { headers }).then(r => r.json()),
-      fetch(`${API_BASE}/space/dashboard/heatmap`, { headers }).then(r => r.json()).catch(() => ({ success: false })),
+      safeJson(`${API_BASE}/space/dashboard/stats`),
+      safeJson(`${API_BASE}/space/dashboard/heatmap`),
+      safeJson(`${API_BASE}/space/dashboard/inscripciones-trend`),
+      safeJson(`${API_BASE}/space/dashboard/inscripciones-diarias`),
+      safeJson(`${API_BASE}/space/dashboard/top-implementos`),
     ])
-      .then(([statsData, heatmapData]) => {
+      .then(([statsData, heatmapData, trendData, dailyData, implData]) => {
         if (statsData.success && statsData.stats) setStats(statsData.stats);
         else setError('No se pudieron cargar las estadisticas');
         if (heatmapData.success) setHeatmap(heatmapData.heatmap || []);
+        if (trendData.success) setTrend(trendData.data || []);
+        if (dailyData.success) setDaily(dailyData.data || []);
+        if (implData.success) setTopImpl(implData.data || []);
       })
       .catch(() => setError('Error de conexion'))
       .finally(() => setLoading(false));
@@ -103,6 +121,45 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   }, [stats]);
 
   const go = useCallback((page: SpacePage) => onNavigate?.(page), [onNavigate]);
+
+  // Process monthly trend — format labels
+  const trendChart = useMemo(() => {
+    const MESES_CORTO: Record<string, string> = {
+      '01': 'Ene', '02': 'Feb', '03': 'Mar', '04': 'Abr', '05': 'May', '06': 'Jun',
+      '07': 'Jul', '08': 'Ago', '09': 'Sep', '10': 'Oct', '11': 'Nov', '12': 'Dic',
+    };
+    return trend.map(t => ({
+      label: MESES_CORTO[t.mes.split('-')[1]] || t.mes,
+      total: t.total,
+    }));
+  }, [trend]);
+
+  // Process daily data — split into current month and previous month
+  const dailyChart = useMemo(() => {
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth(); // 0-indexed
+    const daysInMonth = new Date(curYear, curMonth + 1, 0).getDate();
+
+    const curMap = new Map<number, number>();
+    const prevMap = new Map<number, number>();
+
+    for (const d of daily) {
+      const date = new Date(d.dia);
+      const day = date.getUTCDate();
+      if (date.getUTCMonth() === curMonth && date.getUTCFullYear() === curYear) {
+        curMap.set(day, (curMap.get(day) || 0) + d.total);
+      } else {
+        prevMap.set(day, (prevMap.get(day) || 0) + d.total);
+      }
+    }
+
+    return Array.from({ length: daysInMonth }, (_, i) => ({
+      dia: i + 1,
+      actual: curMap.get(i + 1) || 0,
+      anterior: prevMap.get(i + 1) || 0,
+    }));
+  }, [daily]);
 
   const today = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Lima' });
 
@@ -211,6 +268,84 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Charts: Inscripciones */}
+      {(trendChart.length > 0 || dailyChart.length > 0) && (
+        <div>
+          <h3 className="text-stone-400 text-[10px] uppercase tracking-widest font-medium mb-3">Inscripciones</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Monthly trend */}
+            {trendChart.length > 0 && (
+              <div className={`${cx.card} p-5`}>
+                <p className="text-stone-900 text-sm font-semibold mb-4">Inscripciones mensuales</p>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={trendChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} allowDecimals={false} width={30} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e7e5e4', borderRadius: 8, fontSize: 12, color: '#1c1917' }}
+                      labelStyle={{ color: '#78716c', fontWeight: 600 }}
+                    />
+                    <Line type="monotone" dataKey="total" stroke="#e8590c" strokeWidth={2.5} dot={{ r: 4, fill: '#e8590c' }} activeDot={{ r: 6 }} name="Inscripciones" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+            {/* Daily: this month vs previous */}
+            {dailyChart.length > 0 && (
+              <div className={`${cx.card} p-5`}>
+                <p className="text-stone-900 text-sm font-semibold mb-1">Este mes vs anterior</p>
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-0.5 bg-[#e8590c] rounded-full" />
+                    <span className="text-stone-400 text-[10px]">Este mes</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-0.5 bg-stone-300 rounded-full" />
+                    <span className="text-stone-400 text-[10px]">Mes anterior</span>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={dailyChart}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
+                    <XAxis dataKey="dia" tick={{ fontSize: 10, fill: '#a8a29e' }} axisLine={false} tickLine={false} interval={4} />
+                    <YAxis tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} allowDecimals={false} width={20} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e7e5e4', borderRadius: 8, fontSize: 12, color: '#1c1917' }}
+                      labelFormatter={(v) => `Día ${v}`}
+                    />
+                    <Line type="monotone" dataKey="actual" stroke="#e8590c" strokeWidth={2} dot={false} name="Este mes" />
+                    <Line type="monotone" dataKey="anterior" stroke="#d6d3d1" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="Mes anterior" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Chart: Top implementos */}
+      {topImpl.length > 0 && (
+        <div>
+          <h3 className="text-stone-400 text-[10px] uppercase tracking-widest font-medium mb-3">Implementos mas vendidos</h3>
+          <div className={`${cx.card} p-5`}>
+            <ResponsiveContainer width="100%" height={Math.max(180, topImpl.length * 36)}>
+              <BarChart data={topImpl} layout="vertical" margin={{ left: 0, right: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                <YAxis type="category" dataKey="tipo" tick={{ fontSize: 12, fill: '#57534e' }} axisLine={false} tickLine={false} width={110} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#fff', border: '1px solid #e7e5e4', borderRadius: 8, fontSize: 12, color: '#1c1917' }}
+                  cursor={{ fill: '#f5f5f4' }}
+                />
+                <Bar dataKey="total" fill="#e8590c" radius={[0, 4, 4, 0]} barSize={20} name="Vendidos" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       )}
