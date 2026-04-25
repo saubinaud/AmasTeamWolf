@@ -309,19 +309,20 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           <div className="ml-auto flex items-center gap-2">
             {/* Academia switcher */}
             {user.academias && user.academias.length > 1 && (
-              <div className="flex items-center bg-stone-100 rounded-lg p-0.5 gap-0.5">
+              <div className="flex items-center bg-stone-100 rounded-lg p-1 gap-1">
                 {user.academias.map((a) => (
                   <button
                     key={a}
                     onClick={() => onSwitchAcademia(a)}
-                    className={`px-2.5 py-1.5 rounded-md text-[11px] font-semibold transition-all ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
                       academia === a
                         ? 'bg-[var(--accent)] text-white shadow-sm'
-                        : 'text-stone-500 hover:text-stone-800'
+                        : 'text-stone-400 hover:text-stone-700 hover:bg-stone-50'
                     }`}
                     title={ACADEMIA_LABELS[a]}
                   >
-                    {a === 'amas' ? 'AMAS' : 'DK'}
+                    <span>{a === 'amas' ? '🐺' : '🐉'}</span>
+                    {a === 'amas' ? 'Wolf' : 'Dragon'}
                   </button>
                 ))}
               </div>

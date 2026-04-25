@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Toaster } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { SpaceLogin } from './SpaceLogin';
 import { SpaceLayout } from './SpaceLayout';
@@ -42,8 +43,8 @@ export type SpacePage =
 export type Academia = 'amas' | 'dk';
 
 export const ACADEMIA_LABELS: Record<Academia, string> = {
-  amas: 'AMAS Team Wolf',
-  dk: 'Dragon Knight',
+  amas: 'Wolf',
+  dk: 'Dragon',
 };
 
 export interface SpaceUser {
@@ -201,6 +202,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'torneos' && <SpaceTorneos token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
+    <Toaster theme="light" position="bottom-right" richColors />
     </div>
   );
 }
