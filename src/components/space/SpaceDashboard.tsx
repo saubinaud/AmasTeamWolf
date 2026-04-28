@@ -29,11 +29,12 @@ interface Analytics {
   ingresosMes: number;
   inscripcionesDiarias: DailyEntry[];
   ventasMensuales: Array<{ mes: string; nuevos: number; renovaciones: number; ingresos_nuevos: number; ingresos_renovaciones: number }>;
-  porPrograma: Array<{ programa: string; total: number }>;
+  porPrograma: Array<{ programa: string; total: number; ingresos: number }>;
   porTipoCliente: Array<{ tipo: string; total: number; ingresos: number }>;
   porHora: Array<{ hora: number; total: number }>;
   topImplementos: Array<{ tipo: string; total: number }>;
   alumnosAntiguos: Array<{ id: number; nombre: string; estado: string; primera_inscripcion: string; inscripciones_count: number; total_pagado: number }>;
+  leadershipActivos: Array<{ alumno_id: number; nombre: string; programa: string; fecha_inicio: string; precio_pagado: number; estado_pago: string }>;
 }
 
 interface Props {
@@ -485,12 +486,51 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
         </div>
       )}
 
-      {/* Donuts + Leadership table */}
+      {/* Distribución: Programas + Tipo cliente */}
       {a && (a.porPrograma.length > 0 || a.porTipoCliente.length > 0) && (
         <div>
           <SectionTitle>Distribución</SectionTitle>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {/* Programas donut */}
+
+          {/* Tabla de ingresos por programa — full width */}
+          {a.porPrograma.length > 0 && (
+            <div className={`${cx.card} overflow-hidden mb-3`}>
+              <div className="px-4 py-3 border-b border-stone-100">
+                <p className="text-stone-900 text-sm font-semibold">Ingresos por programa</p>
+              </div>
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-stone-50">
+                  <th className={cx.th}>Programa</th>
+                  <th className={cx.th + ' text-center'}>Inscritos</th>
+                  <th className={cx.th + ' text-right'}>Ingresos</th>
+                  <th className={cx.th + ' text-right hidden sm:table-cell'}>Ticket prom.</th>
+                </tr></thead>
+                <tbody>
+                  {a.porPrograma.map((p, i) => (
+                    <tr key={p.programa} className={cx.tr}>
+                      <td className={cx.td}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
+                          <span className="text-stone-900 text-xs font-medium">{p.programa}</span>
+                        </div>
+                      </td>
+                      <td className={cx.td + ' text-center text-stone-600'}>{p.total}</td>
+                      <td className={cx.td + ' text-right'}><span className="text-stone-900 text-xs font-bold">{formatSoles(Number(p.ingresos))}</span></td>
+                      <td className={cx.td + ' text-right text-stone-500 hidden sm:table-cell'}>{p.total > 0 ? formatSoles(Math.round(Number(p.ingresos) / p.total)) : '—'}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t border-stone-200 bg-stone-50">
+                    <td className={cx.td + ' font-bold text-stone-900 text-xs'}>Total</td>
+                    <td className={cx.td + ' text-center font-bold text-stone-900'}>{a.porPrograma.reduce((s, p) => s + p.total, 0)}</td>
+                    <td className={cx.td + ' text-right font-bold text-stone-900'}>{formatSoles(a.porPrograma.reduce((s, p) => s + Number(p.ingresos), 0))}</td>
+                    <td className={cx.td + ' hidden sm:table-cell'} />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Donuts side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {a.porPrograma.length > 0 && (
               <div className={`${cx.card} p-5`}>
                 <p className="text-stone-900 text-sm font-semibold mb-2">Por programa</p>
@@ -513,7 +553,6 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
               </div>
             )}
 
-            {/* Tipo cliente donut */}
             {a.porTipoCliente.length > 0 && (
               <div className={`${cx.card} p-5`}>
                 <p className="text-stone-900 text-sm font-semibold mb-2">Nuevos vs Renovaciones</p>
@@ -538,24 +577,39 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
 
-            {/* Leadership/Fighters summary */}
-            {leadershipList.length > 0 && (
-              <div className={`${cx.card} p-5`}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Sword size={14} className="text-[var(--accent)]" />
-                  <p className="text-stone-900 text-sm font-semibold">Leadership / Fighters</p>
-                </div>
-                <div className="space-y-2">
-                  {leadershipList.map(p => (
-                    <div key={p.programa} className="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
-                      <span className="text-stone-700 text-xs font-medium">{p.programa}</span>
-                      <span className="text-stone-900 text-sm font-bold">{p.total}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* Leadership / Fighters activos */}
+      {a && a.leadershipActivos && a.leadershipActivos.length > 0 && (
+        <div>
+          <SectionTitle>Leadership / Fighters activos</SectionTitle>
+          <div className={`${cx.card} overflow-hidden`}>
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-stone-100">
+                <th className={cx.th}>Alumno</th>
+                <th className={cx.th}>Programa</th>
+                <th className={cx.th + ' hidden sm:table-cell'}>Desde</th>
+                <th className={cx.th + ' text-right'}>Pagado</th>
+              </tr></thead>
+              <tbody>
+                {a.leadershipActivos.map((l, i) => (
+                  <tr key={`${l.alumno_id}-${i}`} className={cx.tr + ' cursor-pointer'} onClick={() => go('alumnos')}>
+                    <td className={cx.td}>
+                      <p className="text-stone-900 text-xs font-medium">{l.nombre}</p>
+                    </td>
+                    <td className={cx.td}>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-50 text-orange-700">
+                        <Sword size={10} /> {l.programa}
+                      </span>
+                    </td>
+                    <td className={cx.td + ' text-stone-500 text-xs hidden sm:table-cell'}>{l.fecha_inicio ? formatFechaCorta(l.fecha_inicio) : '—'}</td>
+                    <td className={cx.td + ' text-right'}><span className="text-stone-900 text-xs font-bold">{formatSoles(Number(l.precio_pagado))}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -612,8 +666,8 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
                 </tr></thead>
                 <tbody>
                   {a.alumnosAntiguos.map(al => (
-                    <tr key={al.id} className={cx.tr}>
-                      <td className={cx.td}><p className="text-stone-900 font-medium text-xs">{al.nombre}</p>
+                    <tr key={al.id} className={cx.tr + ' cursor-pointer'} onClick={() => go('alumnos')}>
+                      <td className={cx.td}><p className="text-stone-900 font-medium text-xs hover:text-[var(--accent)]">{al.nombre}</p>
                         <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${al.estado === 'activo' ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-400'}`}>{al.estado}</span>
                       </td>
                       <td className={cx.td + ' text-stone-500 text-xs'}>{formatFechaCorta(al.primera_inscripcion)}</td>
