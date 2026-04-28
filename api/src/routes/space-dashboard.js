@@ -56,6 +56,7 @@ router.get('/analytics', async (req, res) => {
       porHora,
       topImpl,
       alumnosLtv,
+      leadershipActivos,
     ] = await Promise.all([
       // 1. Resumen del rango
       queryOne(
@@ -86,11 +87,12 @@ router.get('/analytics', async (req, res) => {
          ORDER BY mes`
       ),
 
-      // 4. Por programa
+      // 4. Por programa (con ingresos)
       query(
-        `SELECT programa, COUNT(*)::int AS total
+        `SELECT programa, COUNT(*)::int AS total,
+                COALESCE(SUM(precio_pagado), 0)::numeric AS ingresos
          FROM inscripciones WHERE created_at BETWEEN $1 AND $2
-         GROUP BY programa ORDER BY total DESC LIMIT 8`,
+         GROUP BY programa ORDER BY ingresos DESC LIMIT 10`,
         [desde, hastaInclusive]
       ),
 
@@ -131,6 +133,18 @@ router.get('/analytics', async (req, res) => {
          ORDER BY total_pagado DESC
          LIMIT 10`
       ),
+
+      // 9. Leadership/Fighters activos
+      query(
+        `SELECT a.id AS alumno_id, a.nombre_alumno AS nombre, i.programa,
+                i.fecha_inicio, COALESCE(i.precio_pagado, 0)::numeric AS precio_pagado,
+                i.estado_pago
+         FROM inscripciones i
+         JOIN alumnos a ON a.id = i.alumno_id
+         WHERE i.estado = 'Activo'
+           AND (LOWER(i.programa) LIKE '%leadership%' OR LOWER(i.programa) LIKE '%fighters%')
+         ORDER BY i.created_at DESC`
+      ),
     ]);
 
     return res.json({
@@ -145,6 +159,7 @@ router.get('/analytics', async (req, res) => {
         porHora: porHora || [],
         topImplementos: topImpl || [],
         alumnosAntiguos: alumnosLtv || [],
+        leadershipActivos: leadershipActivos || [],
       },
     });
   } catch (err) {
