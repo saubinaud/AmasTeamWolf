@@ -182,7 +182,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       academia={academia}
       onSwitchAcademia={handleSwitchAcademia}
     >
-      {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} />}
+      {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} academia={academia} />}
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
       {currentPage === 'alumnos' && <SpaceAlumnos token={token} />}
       {currentPage === 'inscripciones' && <SpaceInscripciones token={token} />}
