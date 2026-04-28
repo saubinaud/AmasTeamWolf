@@ -123,12 +123,13 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
   const [drillData, setDrillData] = useState<Array<{ nombre: string; programa: string; ingresos: number }>>([]);
   const [drillLoading, setDrillLoading] = useState(false);
 
-  // Stats load
+  // Stats load — non-blocking (don't show error screen if only stats fails)
   useEffect(() => {
     setLoading(true); setStats(null); setAnalytics(null); setError('');
     fetch(`${API_BASE}/space/dashboard/stats`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json()).then(d => { if (d.success) setStats(d.stats); else setError('Error cargando stats'); })
-      .catch(() => setError('Error de conexión')).finally(() => setLoading(false));
+      .then(r => r.json()).then(d => { if (d.success) setStats(d.stats); })
+      .catch(() => { /* silent — analytics will still load */ })
+      .finally(() => setLoading(false));
   }, [token, academia]);
 
   // Analytics load
@@ -281,9 +282,7 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
     );
   }
 
-  if (error) {
-    return <div className={`${cx.card} p-8 text-center`}><AlertTriangle className="w-8 h-8 text-rose-500 mx-auto mb-3" /><p className="text-rose-600 text-sm">{error}</p></div>;
-  }
+  // No blocking error screen — render what we have
 
   const a = analytics;
 
