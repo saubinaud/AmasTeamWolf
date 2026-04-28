@@ -105,9 +105,20 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // 5. Registrar implementos si es Leadership/Fighters
+    if (Array.isArray(d.implementosADar) && d.implementosADar.length > 0) {
+      for (const impl of d.implementosADar) {
+        await client.query(
+          `INSERT INTO implementos (alumno_id, categoria, tipo, precio, origen, created_at)
+           VALUES ($1, $2, $3, $4, 'incluido_programa', NOW())`,
+          [alumno.id, impl.categoria || 'accesorio', impl.tipo, impl.precio || 0]
+        );
+      }
+    }
+
     await client.query('COMMIT');
 
-    // 4b. Referral bonus (after COMMIT, non-blocking)
+    // 5b. Referral bonus (after COMMIT, non-blocking)
     if (d.codigoReferido && typeof d.codigoReferido === 'string' && d.codigoReferido.trim()) {
       try {
         const referidor = await pool.query(
