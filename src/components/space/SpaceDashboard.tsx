@@ -39,6 +39,7 @@ interface Props {
   token: string;
   userName?: string;
   onNavigate?: (page: SpacePage) => void;
+  academia?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -102,7 +103,7 @@ function formatFechaCorta(iso: string): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function SpaceDashboard({ token, userName, onNavigate }: Props) {
+export function SpaceDashboard({ token, userName, onNavigate, academia }: Props) {
   const [stats, setStats] = useState<Stats | null>(null);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,15 +116,19 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   });
   const [hasta, setHasta] = useState(() => toISODate(new Date()));
 
-  // Initial load — stats (no date filter)
+  // Initial load — stats (no date filter, refetch on academia change)
   useEffect(() => {
+    setLoading(true);
+    setStats(null);
+    setAnalytics(null);
+    setError('');
     const headers = { Authorization: `Bearer ${token}` };
     fetch(`${API_BASE}/space/dashboard/stats`, { headers })
       .then(r => r.json())
       .then(d => { if (d.success) setStats(d.stats); else setError('No se pudieron cargar las estadísticas'); })
       .catch(() => setError('Error de conexión'))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, academia]);
 
   // Analytics — refetch on date change WITHOUT full page reload
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -137,7 +142,7 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
       if (d.success) setAnalytics(d.data);
     } catch { /* silent */ }
     finally { setAnalyticsLoading(false); }
-  }, [token, desde, hasta]);
+  }, [token, desde, hasta, academia]);
 
   useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
 
@@ -145,18 +150,44 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
 
   const today = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Lima' });
 
-  // Date presets
-  const setPreset = useCallback((key: 'este_mes' | '30d' | '90d' | 'este_ano') => {
-    const now = new Date();
-    let d: Date;
-    switch (key) {
-      case 'este_mes': d = new Date(now.getFullYear(), now.getMonth(), 1); break;
-      case '30d': d = new Date(now.getTime() - 30 * 86400000); break;
-      case '90d': d = new Date(now.getTime() - 90 * 86400000); break;
-      case 'este_ano': d = new Date(now.getFullYear(), 0, 1); break;
-    }
-    setDesde(toISODate(d));
-    setHasta(toISODate(now));
+  // Year/month selector
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
+  const [selectedMonths, setSelectedMonths] = useState<Set<number>>(() => new Set([new Date().getMonth()]));
+
+  const toggleMonth = useCallback((m: number) => {
+    setSelectedMonths(prev => {
+      const next = new Set(prev);
+      if (next.has(m)) { if (next.size > 1) next.delete(m); } else next.add(m);
+      // Update desde/hasta from selected range
+      const months = Array.from(next).sort((a, b) => a - b);
+      const firstMonth = months[0];
+      const lastMonth = months[months.length - 1];
+      const y = selectedYear;
+      setDesde(toISODate(new Date(y, firstMonth, 1)));
+      const lastDay = new Date(y, lastMonth + 1, 0);
+      const today = new Date();
+      setHasta(toISODate(lastDay > today ? today : lastDay));
+      return next;
+    });
+  }, [selectedYear]);
+
+  const selectAllYear = useCallback(() => {
+    const all = new Set(Array.from({ length: 12 }, (_, i) => i));
+    setSelectedMonths(all);
+    setDesde(toISODate(new Date(selectedYear, 0, 1)));
+    const dec31 = new Date(selectedYear, 11, 31);
+    const today = new Date();
+    setHasta(toISODate(dec31 > today ? today : dec31));
+  }, [selectedYear]);
+
+  const changeYear = useCallback((y: number) => {
+    setSelectedYear(y);
+    const today = new Date();
+    const curMonth = y === today.getFullYear() ? today.getMonth() : 0;
+    setSelectedMonths(new Set([curMonth]));
+    setDesde(toISODate(new Date(y, curMonth, 1)));
+    const lastDay = new Date(y, curMonth + 1, 0);
+    setHasta(toISODate(lastDay > today ? today : lastDay));
   }, []);
 
   // Processed chart data
@@ -232,29 +263,35 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
               <div className="w-5 h-5 border-2 border-[#e8590c] border-t-transparent rounded-full animate-spin" />
             )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Presets */}
-            {[
-              { key: 'este_mes' as const, label: 'Este mes' },
-              { key: '30d' as const, label: '30 días' },
-              { key: '90d' as const, label: '90 días' },
-              { key: 'este_ano' as const, label: 'Este año' },
-            ].map(p => (
-              <button
-                key={p.key}
-                onClick={() => setPreset(p.key)}
-                className="px-2.5 py-1 rounded-md text-[11px] font-medium text-stone-500 hover:text-stone-800 hover:bg-white/80 transition-colors"
-              >
-                {p.label}
-              </button>
+          {/* Year selector */}
+          <div className="flex items-center gap-2">
+            {[2025, 2026].map(y => (
+              <button key={y} onClick={() => changeYear(y)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  selectedYear === y ? 'bg-[var(--accent)] text-white' : 'bg-white border border-stone-200 text-stone-500 hover:text-stone-800'
+                }`}
+              >{y}</button>
             ))}
-            <div className="w-px h-4 bg-stone-200 mx-1 hidden sm:block" />
-            <div className="flex items-center gap-2">
-              <Calendar size={13} className="text-stone-400 shrink-0" />
-              <input type="date" value={desde} onChange={e => setDesde(e.target.value)} className="px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-700 text-xs focus:outline-none focus:border-stone-400" />
-              <span className="text-stone-300 text-xs">—</span>
-              <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} className="px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-700 text-xs focus:outline-none focus:border-stone-400" />
-            </div>
+            <button onClick={selectAllYear}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-white border border-stone-200 text-stone-400 hover:text-stone-700 transition-colors"
+            >Todo el año</button>
+            {analyticsLoading && <div className="w-4 h-4 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin ml-2" />}
+          </div>
+          {/* Month grid */}
+          <div className="flex flex-wrap gap-1">
+            {Object.entries(MESES_CORTO).map(([num, label]) => {
+              const m = parseInt(num, 10) - 1;
+              const active = selectedMonths.has(m) && selectedYear === selectedYear;
+              const isFuture = selectedYear === new Date().getFullYear() && m > new Date().getMonth();
+              return (
+                <button key={num} onClick={() => !isFuture && toggleMonth(m)} disabled={isFuture}
+                  className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors ${
+                    isFuture ? 'text-stone-300 cursor-not-allowed' :
+                    active ? 'bg-[var(--accent)] text-white' : 'bg-white border border-stone-200 text-stone-500 hover:border-[var(--accent)] hover:text-stone-800'
+                  }`}
+                >{label}</button>
+              );
+            })}
           </div>
         </div>
       </div>
