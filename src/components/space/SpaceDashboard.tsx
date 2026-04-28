@@ -115,31 +115,49 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
   });
   const [hasta, setHasta] = useState(() => toISODate(new Date()));
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError('');
+  // Initial load — stats (no date filter)
+  useEffect(() => {
     const headers = { Authorization: `Bearer ${token}` };
-    const safe = (url: string) => fetch(url, { headers }).then(r => r.json()).catch(() => ({ success: false }));
+    fetch(`${API_BASE}/space/dashboard/stats`, { headers })
+      .then(r => r.json())
+      .then(d => { if (d.success) setStats(d.stats); else setError('No se pudieron cargar las estadísticas'); })
+      .catch(() => setError('Error de conexión'))
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  // Analytics — refetch on date change WITHOUT full page reload
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  const fetchAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    const headers = { Authorization: `Bearer ${token}` };
     try {
-      const [statsData, analyticsData] = await Promise.all([
-        safe(`${API_BASE}/space/dashboard/stats`),
-        safe(`${API_BASE}/space/dashboard/analytics?desde=${desde}&hasta=${hasta}`),
-      ]);
-      if (statsData.success) setStats(statsData.stats);
-      else setError('No se pudieron cargar las estadísticas');
-      if (analyticsData.success) setAnalytics(analyticsData.data);
-    } catch {
-      setError('Error de conexión');
-    } finally {
-      setLoading(false);
-    }
+      const r = await fetch(`${API_BASE}/space/dashboard/analytics?desde=${desde}&hasta=${hasta}`, { headers });
+      const d = await r.json();
+      if (d.success) setAnalytics(d.data);
+    } catch { /* silent */ }
+    finally { setAnalyticsLoading(false); }
   }, [token, desde, hasta]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchAnalytics(); }, [fetchAnalytics]);
 
   const go = useCallback((page: SpacePage) => onNavigate?.(page), [onNavigate]);
 
   const today = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'America/Lima' });
+
+  // Date presets
+  const setPreset = useCallback((key: 'este_mes' | '30d' | '90d' | 'este_ano') => {
+    const now = new Date();
+    let d: Date;
+    switch (key) {
+      case 'este_mes': d = new Date(now.getFullYear(), now.getMonth(), 1); break;
+      case '30d': d = new Date(now.getTime() - 30 * 86400000); break;
+      case '90d': d = new Date(now.getTime() - 90 * 86400000); break;
+      case 'este_ano': d = new Date(now.getFullYear(), 0, 1); break;
+    }
+    setDesde(toISODate(d));
+    setHasta(toISODate(now));
+  }, []);
 
   // Processed chart data
   const ventasChart = useMemo(() => {
@@ -204,16 +222,39 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
     <div className="space-y-6">
       {/* Welcome header + date filter */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-50 via-white to-white border border-stone-200 p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h2 className="text-stone-900 text-lg sm:text-xl font-bold">Hola, {userName || 'Admin'}</h2>
-            <p className="text-stone-400 text-sm mt-0.5 capitalize">{today}</p>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-stone-900 text-lg sm:text-xl font-bold">Hola, {userName || 'Admin'}</h2>
+              <p className="text-stone-400 text-sm mt-0.5 capitalize">{today}</p>
+            </div>
+            {analyticsLoading && (
+              <div className="w-5 h-5 border-2 border-[#e8590c] border-t-transparent rounded-full animate-spin" />
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={14} className="text-stone-400 shrink-0" />
-            <input type="date" value={desde} onChange={e => setDesde(e.target.value)} className="px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-700 text-xs focus:outline-none focus:border-stone-400" />
-            <span className="text-stone-300 text-xs">—</span>
-            <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} className="px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-700 text-xs focus:outline-none focus:border-stone-400" />
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Presets */}
+            {[
+              { key: 'este_mes' as const, label: 'Este mes' },
+              { key: '30d' as const, label: '30 días' },
+              { key: '90d' as const, label: '90 días' },
+              { key: 'este_ano' as const, label: 'Este año' },
+            ].map(p => (
+              <button
+                key={p.key}
+                onClick={() => setPreset(p.key)}
+                className="px-2.5 py-1 rounded-md text-[11px] font-medium text-stone-500 hover:text-stone-800 hover:bg-white/80 transition-colors"
+              >
+                {p.label}
+              </button>
+            ))}
+            <div className="w-px h-4 bg-stone-200 mx-1 hidden sm:block" />
+            <div className="flex items-center gap-2">
+              <Calendar size={13} className="text-stone-400 shrink-0" />
+              <input type="date" value={desde} onChange={e => setDesde(e.target.value)} className="px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-700 text-xs focus:outline-none focus:border-stone-400" />
+              <span className="text-stone-300 text-xs">—</span>
+              <input type="date" value={hasta} onChange={e => setHasta(e.target.value)} className="px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-stone-700 text-xs focus:outline-none focus:border-stone-400" />
+            </div>
           </div>
         </div>
       </div>
@@ -290,34 +331,52 @@ export function SpaceDashboard({ token, userName, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Row 2: Monthly sales comparison — Nuevos vs Renovaciones */}
+      {/* Row 2: Monthly sales — stacked bars (ingresos) + line (cantidad) */}
       {a && ventasChart.length > 0 && (
         <div>
           <SectionTitle>Ventas mes a mes</SectionTitle>
-          <div className={`${cx.card} p-5`}>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-stone-900 text-sm font-semibold">Ingresos mensuales — Nuevos vs Renovaciones</p>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-0.5 bg-[#e8590c] rounded-full" />
-                  <span className="text-stone-400 text-[10px]">Nuevos</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-0.5 bg-[#0f766e] rounded-full" />
-                  <span className="text-stone-400 text-[10px]">Renovaciones</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            {/* Ingresos mensuales — barras stacked */}
+            <div className={`${cx.card} p-5`}>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-stone-900 text-sm font-semibold">Ingresos mensuales (S/)</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#e8590c]" /><span className="text-stone-400 text-[10px]">Nuevos</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-sm bg-[#0f766e]" /><span className="text-stone-400 text-[10px]">Renovaciones</span></div>
                 </div>
               </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={ventasChart}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: '#a8a29e' }} axisLine={false} tickLine={false} width={45} tickFormatter={v => `${v}`} />
+                  <Tooltip {...TOOLTIP_STYLE} formatter={(v: number, name: string) => [`S/ ${v.toLocaleString()}`, name]} />
+                  <Bar dataKey="Nuevos" stackId="a" fill="#e8590c" radius={[0, 0, 0, 0]} barSize={24} name="Nuevos" />
+                  <Bar dataKey="Renovaciones" stackId="a" fill="#0f766e" radius={[4, 4, 0, 0]} barSize={24} name="Renovaciones" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-            <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={ventasChart}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} width={50} tickFormatter={v => `${v}`} />
-                <Tooltip {...TOOLTIP_STYLE} formatter={(v: number, name: string) => [`S/ ${v.toLocaleString()}`, name]} />
-                <Line type="monotone" dataKey="Nuevos" stroke="#e8590c" strokeWidth={2.5} dot={{ r: 4, fill: '#e8590c' }} />
-                <Line type="monotone" dataKey="Renovaciones" stroke="#0f766e" strokeWidth={2.5} dot={{ r: 4, fill: '#0f766e' }} />
-              </LineChart>
-            </ResponsiveContainer>
+
+            {/* Cantidad de inscripciones mensuales — líneas */}
+            <div className={`${cx.card} p-5`}>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-stone-900 text-sm font-semibold">Inscripciones mensuales</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 rounded-full bg-[#e8590c]" /><span className="text-stone-400 text-[10px]">Nuevos</span></div>
+                  <div className="flex items-center gap-1.5"><div className="w-3 h-0.5 rounded-full bg-[#0f766e]" /><span className="text-stone-400 text-[10px]">Renovaciones</span></div>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={analytics!.ventasMensuales.map(v => ({ label: MESES_CORTO[v.mes.split('-')[1]] || v.mes, Nuevos: v.nuevos, Renovaciones: v.renovaciones }))}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" vertical={false} />
+                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#a8a29e' }} axisLine={false} tickLine={false} allowDecimals={false} width={25} />
+                  <Tooltip {...TOOLTIP_STYLE} />
+                  <Line type="monotone" dataKey="Nuevos" stroke="#e8590c" strokeWidth={2.5} dot={{ r: 4, fill: '#e8590c' }} name="Nuevos" />
+                  <Line type="monotone" dataKey="Renovaciones" stroke="#0f766e" strokeWidth={2.5} dot={{ r: 4, fill: '#0f766e' }} name="Renovaciones" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       )}
