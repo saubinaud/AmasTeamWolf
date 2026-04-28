@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx } from './tokens';
 import { ContratoFirma } from '../ContratoFirma';
+import { SpaceInscribirAdicional } from './SpaceInscribirAdicional';
 import {
   PROGRAMAS_INSCRIPCION,
   PROGRAMA_CLASES,
@@ -122,7 +123,10 @@ const PROGRAMA_LABELS: Record<ProgramaKey, { titulo: string; sub: string }> = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function SpaceInscribir({ onGoToInscritos }: Props) {
+export function SpaceInscribir({ token, onGoToInscritos }: Props) {
+  // Tab mode
+  const [modo, setModo] = useState<'basico' | 'adicional'>('basico');
+
   // Programa
   const [programa, setPrograma] = useState<ProgramaKey>('full');
 
@@ -516,14 +520,34 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
 
   return (
     <div className="space-y-5 max-w-4xl">
-      {/* Header */}
+      {/* Header + tabs */}
       <div>
         <h1 className="text-stone-900 text-xl font-bold">Inscribir alumno</h1>
-        <p className="text-stone-400 text-xs mt-1">
-          Formulario completo con horarios por edad, códigos promocionales, cálculo automático de fecha fin y contrato firmado.
-        </p>
+        <div className="flex gap-1 mt-3 bg-stone-100 rounded-xl p-1 w-fit border border-stone-200">
+          <button
+            onClick={() => setModo('basico')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              modo === 'basico' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            Programas básicos
+          </button>
+          <button
+            onClick={() => setModo('adicional')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              modo === 'adicional' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            Leadership / Fighters
+          </button>
+        </div>
       </div>
 
+      {modo === 'adicional' && (
+        <SpaceInscribirAdicional token={token} onGoToInscritos={onGoToInscritos} />
+      )}
+
+      {modo === 'basico' && <>
       {/* Success banner */}
       {lastCreated && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-emerald-50 border border-emerald-200">
@@ -1311,6 +1335,7 @@ export function SpaceInscribir({ onGoToInscritos }: Props) {
           Registrar matrícula
         </button>
       </div>
+      </>}
     </div>
   );
 }
