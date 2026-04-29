@@ -409,8 +409,12 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
   const [detalle, setDetalle] = useState<AlumnoDetalle | null>(null);
   const [detalleLoading, setDetalleLoading] = useState(false);
 
-  // Debounced search
-  const [searchInput, setSearchInput] = useState('');
+  // Debounced search — check if dashboard sent us here with a name
+  const [searchInput, setSearchInput] = useState(() => {
+    const saved = sessionStorage.getItem('space_alumno_search');
+    if (saved) { sessionStorage.removeItem('space_alumno_search'); return saved; }
+    return '';
+  });
   const debouncedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const limit = 20;
