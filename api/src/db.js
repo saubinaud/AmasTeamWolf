@@ -25,10 +25,12 @@ const ACADEMIAS = {
 };
 
 const POOL_CONFIG = {
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  max: 10,
+  idleTimeoutMillis: 60000,
+  connectionTimeoutMillis: 15000,
   statement_timeout: 30000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10000,
 };
 
 // ── Pools (lazy-initialized) ──
@@ -39,7 +41,9 @@ function getPool(academia = 'amas') {
   if (!pools[key]) {
     pools[key] = new Pool({ ...ACADEMIAS[key], ...POOL_CONFIG });
     pools[key].on('error', (err) => {
-      console.error(`Error en pool PostgreSQL [${key}]:`, err);
+      console.error(`Pool [${key}] error (idle client):`, err.message);
+      // Remove dead pool so next request creates a fresh one
+      delete pools[key];
     });
   }
   return pools[key];
