@@ -170,7 +170,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
   if (!user || !token) return <div className="space-app"><SpaceLogin onLogin={handleLogin} /></div>;
 
   return (
-    <div className="space-app contents">
+    <div className="space-app h-dvh">
     <SpaceLayout
       user={user}
       currentPage={currentPage}
