@@ -230,7 +230,7 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
   // Leadership table
   const leadershipList = useMemo(() => {
     if (!analytics) return [];
-    return analytics.porPrograma.filter(p => p.programa.toLowerCase().includes('leadership') || p.programa.toLowerCase().includes('fighters'));
+    return analytics.porPrograma.filter(p => p.programa && (p.programa.toLowerCase().includes('leadership') || p.programa.toLowerCase().includes('fighters')));
   }, [analytics]);
 
   // Drill-down handler
