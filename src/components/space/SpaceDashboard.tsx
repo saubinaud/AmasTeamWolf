@@ -594,7 +594,7 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
               </tr></thead>
               <tbody>
                 {a.leadershipActivos.map((l, i) => (
-                  <tr key={`${l.alumno_id}-${i}`} className={cx.tr + ' cursor-pointer'} onClick={() => go('alumnos')}>
+                  <tr key={`${l.alumno_id}-${i}`} className={cx.tr + ' cursor-pointer'} onClick={() => { sessionStorage.setItem('space_alumno_search', l.nombre); go('alumnos'); }}>
                     <td className={cx.td}>
                       <p className="text-stone-900 text-xs font-medium">{l.nombre}</p>
                     </td>
@@ -665,7 +665,7 @@ export function SpaceDashboard({ token, userName, onNavigate, academia }: Props)
                 </tr></thead>
                 <tbody>
                   {a.alumnosAntiguos.map(al => (
-                    <tr key={al.id} className={cx.tr + ' cursor-pointer'} onClick={() => go('alumnos')}>
+                    <tr key={al.id} className={cx.tr + ' cursor-pointer'} onClick={() => { sessionStorage.setItem('space_alumno_search', al.nombre); go('alumnos'); }}>
                       <td className={cx.td}><p className="text-stone-900 font-medium text-xs hover:text-[var(--accent)]">{al.nombre}</p>
                         <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-semibold ${al.estado === 'activo' ? 'bg-emerald-50 text-emerald-700' : 'bg-stone-100 text-stone-400'}`}>{al.estado}</span>
                       </td>
