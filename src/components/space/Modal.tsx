@@ -9,7 +9,7 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'full-right';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full-right';
 }
 
 export function Modal({ open, onClose, title, children, footer, size = 'md' }: ModalProps) {
@@ -35,6 +35,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
+    xl: 'max-w-4xl',
     'full-right': 'max-w-md h-full ml-auto rounded-none rounded-l-2xl',
   }[size];
 
