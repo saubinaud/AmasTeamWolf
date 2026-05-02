@@ -65,21 +65,43 @@ interface SpaceGraduacionesProps {
 // ---------------------------------------------------------------------------
 
 const RANGOS = [
-  'Cinturon Blanco', 'Punta Amarilla', 'Cinturon Amarillo', 'Punta Verde',
-  'Cinturon Verde', 'Punta Azul', 'Cinturon Azul', 'Punta Roja',
-  'Cinturon Rojo', 'Punta Negra', 'Cinturon Negro',
+  'Blanco con tira dorada',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira naranja delgada',
+  'Blanco con tira naranja gruesa',
+  'Blanco con tira morada delgada',
+  'Blanco con tira morada gruesa',
+  'Blanco con tira verde delgada',
+  'Blanco con tira verde gruesa',
+  'Blanco con tira azul delgada',
+  'Blanco con tira azul gruesa',
+  'Amarillo',
+  'Amarillo Camuflado',
+  'Naranja',
+  'Naranja Camuflado',
+  'Verde',
+  'Verde Camuflado',
+  'Azul',
+  'Azul Camuflado',
+  'Rojo',
+  'Rojo Camuflado',
+  'Negro 1 Dan',
+  'Negro 2 Dan',
+  'Negro 3 Dan',
 ];
 
 const TURNOS = [
-  { value: 'primer', label: 'Primer Turno' },
-  { value: 'segundo', label: 'Segundo Turno' },
-  { value: 'tercer', label: 'Tercer Turno' },
-  { value: 'cuarto', label: 'Cuarto Turno' },
+  { value: '1 TURNO', label: '1er Turno' },
+  { value: '2 TURNO', label: '2do Turno' },
+  { value: '3 TURNO', label: '3er Turno' },
+  { value: '4 TURNO', label: '4to Turno' },
 ];
 
 const EMPTY_FORM: FormData = {
   alumno_id: null, nombre: '', apellido: '', rango: RANGOS[0],
-  horario: '', turno: 'primer', fecha: '', observaciones: '',
+  horario: '', turno: '1 TURNO', fecha: '', observaciones: '',
 };
 
 const ESTADO_PILL: Record<string, string> = {
