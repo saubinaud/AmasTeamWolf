@@ -113,6 +113,7 @@ const prefersReducedMotion = () => {
 export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
   const [graduados, setGraduados] = useState<Graduado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showSkeleton, setShowSkeleton] = useState(false);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     nombre: '',
@@ -141,26 +142,18 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch graduados on mount
+  // Fetch graduados on mount — delay skeleton to avoid flash
   useEffect(() => {
     fetchGraduados();
+    const timer = setTimeout(() => setShowSkeleton(true), 200);
+    return () => clearTimeout(timer);
   }, []);
 
   const fetchGraduados = async () => {
     setIsLoading(true);
     try {
       const { API_BASE } = await import('../config/api');
-      const url = `${API_BASE}/graduacion`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        mode: 'cors',
-        cache: 'no-cache',
-      });
+      const response = await fetch(`${API_BASE}/graduacion`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -168,10 +161,9 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
       
       const data = await response.json();
       
-      // Verificar si el webhook está en modo "workflow started"
+      // Verificar respuesta vacía
       if (data && data.message === "Workflow was started") {
         setGraduados([]);
-        toast.error('El webhook no está configurado para devolver datos.');
         return;
       }
       
@@ -198,17 +190,10 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
         .map(normalizeGraduado);
       
       setGraduados(normalizedGraduados);
-      
-      if (normalizedGraduados.length > 0) {
-        toast.success(`${normalizedGraduados.length} graduados cargados correctamente`);
-      } else {
-        toast.error('No se encontraron datos válidos de graduados.');
-      }
-      
+
     } catch (error) {
       console.error('Error fetching graduados:', error);
       setGraduados([]);
-      toast.error('Error al conectar con el servidor. Por favor intente más tarde.');
     } finally {
       setIsLoading(false);
     }
@@ -414,16 +399,17 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
         <section id="graduados-section" className="py-8 sm:py-12 md:py-16 px-4 md:px-6">
           <div className="container mx-auto max-w-7xl">
             {isLoading ? (
-              <div className="space-y-8">
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-[#FA7B21] animate-spin mb-4" />
-                  <p className="text-white/60 text-sm sm:text-base">Cargando graduados...</p>
+              showSkeleton ? (
+                <div className="space-y-8">
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="w-10 h-10 sm:w-12 sm:h-12 text-[#FA7B21] animate-spin mb-4" />
+                    <p className="text-white/60 text-sm sm:text-base">Cargando graduados...</p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+                    {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
+                  </div>
                 </div>
-                {/* Skeleton cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-                  {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
-                </div>
-              </div>
+              ) : null
             ) : graduados.length === 0 ? (
               <div className="text-center py-20">
                 <Award className="w-12 h-12 sm:w-16 sm:h-16 text-white/20 mx-auto mb-4" />
