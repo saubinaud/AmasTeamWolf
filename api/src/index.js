@@ -55,7 +55,7 @@ app.use(cors({
     'http://localhost:3000',
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Academia'],
 }));
 app.use(express.json({ limit: '15mb' }));
 
