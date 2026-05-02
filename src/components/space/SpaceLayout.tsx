@@ -1,12 +1,13 @@
-import { useState, useCallback, useEffect, useMemo, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature, BarChart3, QrCode, History, UserCheck, Trophy,
+  ChevronRight, FileSignature, BarChart3, QrCode, History, UserCheck, Trophy, Bell,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser, SpaceTheme, Academia } from './SpaceApp';
 import { ACADEMIA_LABELS } from './SpaceApp';
+import { API_BASE } from '../../config/api';
 
 interface Props {
   user: SpaceUser;
@@ -19,6 +20,7 @@ interface Props {
   onToggleTheme: () => void;
   academia: Academia;
   onSwitchAcademia: (a: Academia) => void;
+  token: string;
 }
 
 // Dashboard siempre accesible. Si permisos es null (admin) todo visible.
@@ -95,10 +97,14 @@ const TITLES: Record<SpacePage, string> = {
   compras: 'Compras', profesores: 'Profesores', 'clases-prueba': 'Clases de prueba', torneos: 'Torneos', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
-export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme, academia, onSwitchAcademia }: Props) {
+export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme, academia, onSwitchAcademia, token }: Props) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const [notifCount, setNotifCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifItems, setNotifItems] = useState<Array<{ type: string; label: string; count: number; page: SpacePage }>>([]);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -120,6 +126,43 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
       }
     }
   }, [currentPage]);
+
+  // Fetch notification counts
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const [corr, leads] = await Promise.all([
+        fetch(`${API_BASE}/space/graduaciones/correcciones?estado=pendiente`, { headers }).then(r => r.ok ? r.json() : null),
+        fetch(`${API_BASE}/space/leads/stats`, { headers }).then(r => r.ok ? r.json() : null),
+      ]);
+
+      const items: Array<{ type: string; label: string; count: number; page: SpacePage }> = [];
+      const corrCount = Array.isArray(corr?.data) ? corr.data.length : 0;
+      if (corrCount > 0) items.push({ type: 'correcciones', label: `${corrCount} correcciones pendientes`, count: corrCount, page: 'graduaciones' });
+
+      const leadsNew = leads?.stats?.nuevos ?? leads?.nuevos ?? 0;
+      if (leadsNew > 0) items.push({ type: 'leads', label: `${leadsNew} leads nuevos`, count: leadsNew, page: 'leads' });
+
+      setNotifItems(items);
+      setNotifCount(items.reduce((sum, i) => sum + i.count, 0));
+    } catch { /* silent */ }
+  }, [token]);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // every 60s
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
+
+  // Close notif dropdown on outside click
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [notifOpen]);
 
   const toggleGroup = useCallback((key: string) => {
     setExpandedGroups((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -307,6 +350,54 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
           )}
           <h1 className="text-stone-900 font-semibold text-[15px]">{TITLES[currentPage]}</h1>
           <div className="ml-auto flex items-center gap-2">
+            {/* Notifications bell */}
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotifOpen(prev => !prev)}
+                className="relative p-2 text-stone-400 hover:text-stone-600 hover:bg-stone-100 rounded-xl transition-all"
+                aria-label="Notificaciones"
+              >
+                <Bell size={18} />
+                {notifCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 min-w-[18px] flex items-center justify-center bg-red-500 text-white text-[9px] font-bold rounded-full">
+                    {notifCount > 99 ? '99+' : notifCount}
+                  </span>
+                )}
+              </button>
+              {notifOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white border border-stone-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-stone-100">
+                    <p className="text-stone-900 text-sm font-medium">Notificaciones</p>
+                  </div>
+                  {notifItems.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-stone-400 text-sm">
+                      Sin notificaciones pendientes
+                    </div>
+                  ) : (
+                    <div className="max-h-60 overflow-y-auto">
+                      {notifItems.map(item => (
+                        <button
+                          key={item.type}
+                          onClick={() => { onNavigate(item.page); setNotifOpen(false); }}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors border-b border-stone-50 last:border-0"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
+                            <Bell size={14} className="text-[var(--accent)]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-stone-900 text-xs font-medium">{item.label}</p>
+                            <p className="text-stone-400 text-[10px]">Toca para ver</p>
+                          </div>
+                          <span className="shrink-0 w-5 h-5 flex items-center justify-center bg-red-100 text-red-600 text-[10px] font-bold rounded-full">
+                            {item.count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             {/* Academia switcher */}
             {user.academias && user.academias.length > 1 && (
               <div className="flex items-center bg-stone-100 rounded-lg p-1 gap-1">
