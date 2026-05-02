@@ -140,20 +140,34 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     return () => clearInterval(id);
   }, []);
 
-  // ── Fetch daily QR on mount ──
+  // ── Fetch daily QR on mount — auto-generate if none exists ──
   useEffect(() => {
     if (!autenticada) return;
-    const fetchDiarioActivo = async () => {
+    const fetchOrGenerateDiario = async () => {
       try {
         const r = await fetch(`${API_BASE}/qr/diario-activo`);
-        if (!r.ok) return;
-        const d = await r.json();
-        if (d?.success && d.activo) {
-          setSesionDiaria({ token: d.token, url: d.url, valido_hasta: d.valido_hasta });
+        if (r.ok) {
+          const d = await r.json();
+          if (d?.success && d.activo) {
+            setSesionDiaria({ token: d.token, url: d.url, valido_hasta: d.valido_hasta });
+            return;
+          }
+        }
+        // No hay QR activo → generar automáticamente
+        const gen = await fetch(`${API_BASE}/qr/generar-diario`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sede_id: 1 }),
+        });
+        if (gen.ok) {
+          const d = await gen.json();
+          if (d?.success) {
+            setSesionDiaria({ token: d.token, url: d.url, valido_hasta: d.valido_hasta });
+          }
         }
       } catch { /* ignore */ }
     };
-    fetchDiarioActivo();
+    fetchOrGenerateDiario();
   }, [autenticada]);
 
   // ── Fetch today's attendances + poll every 15s ──
@@ -547,35 +561,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
             </div>
           </div>
 
-          {/* ═══ SECTION 3: Today's schedule (read-only) ═══ */}
-          <div className="bg-white border border-stone-200 rounded-2xl p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-4 h-4 text-[#e8590c]" />
-              <span className="text-stone-900 font-semibold text-sm">Horario de hoy</span>
-              <span className="text-stone-400 text-xs ml-auto">{NOMBRES_DIA[diaHoy]}</span>
-            </div>
-            {horariosHoy.length === 0 ? (
-              <p className="text-stone-400 text-sm text-center py-4">No hay clases programadas hoy</p>
-            ) : (
-              <div className="space-y-1.5">
-                {horariosHoy.map((h, i) => (
-                  <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-50">
-                    <span className="text-stone-500 text-xs font-mono w-20 shrink-0">
-                      {formatHora12(h.hora_inicio)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-stone-900 text-sm truncate">{h.nombre_clase}</p>
-                      {(h.edad_min_meses != null || h.edad_max_meses != null) && (
-                        <p className="text-stone-400 text-[10px]">{edadLabel(h.edad_min_meses, h.edad_max_meses)}</p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ═══ SECTION 4: Today's attendances ═══ */}
+          {/* ═══ SECTION 3: Today's attendances (grouped by class) ═══ */}
           <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
               <div className="flex items-center gap-2">
@@ -594,19 +580,63 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
                 <p className="text-stone-400 text-sm">Nadie ha marcado asistencia hoy</p>
               </div>
             ) : (
-              <div className="divide-y divide-stone-100 overflow-y-auto max-h-[50vh]">
-                {asistencias.map((a, i) => (
-                  <div key={i} className="flex items-center justify-between px-4 py-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 bg-emerald-50 rounded-full flex items-center justify-center shrink-0">
-                        <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <div className="overflow-y-auto max-h-[50vh]">
+                {(() => {
+                  // Group by turno/programa
+                  const groups: Record<string, Asistencia[]> = {};
+                  asistencias.forEach(a => {
+                    const key = a.turno || a.programa || 'Sin clase';
+                    if (!groups[key]) groups[key] = [];
+                    groups[key].push(a);
+                  });
+                  return Object.entries(groups).map(([clase, items]) => (
+                    <div key={clase}>
+                      <div className="px-4 py-2 bg-stone-50 border-b border-stone-100 flex items-center justify-between">
+                        <span className="text-stone-600 text-xs font-semibold">{clase}</span>
+                        <span className="text-stone-400 text-[10px]">{items.length} alumno{items.length !== 1 ? 's' : ''}</span>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-stone-900 text-sm font-medium truncate">{a.nombre_alumno}</p>
-                        <p className="text-stone-400 text-xs truncate">{a.turno || a.programa || ''}</p>
+                      <div className="divide-y divide-stone-50">
+                        {items.map((a, i) => (
+                          <div key={i} className="flex items-center justify-between px-4 py-2.5">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-7 h-7 bg-emerald-50 rounded-full flex items-center justify-center shrink-0">
+                                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+                              </div>
+                              <p className="text-stone-900 text-sm truncate">{a.nombre_alumno}</p>
+                            </div>
+                            <p className="text-stone-400 text-xs shrink-0 ml-2">{a.hora}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <p className="text-stone-500 text-xs shrink-0 ml-2">{a.hora}</p>
+                  ));
+                })()}
+              </div>
+            )}
+          </div>
+
+          {/* ═══ SECTION 4: Today's schedule (reference, at bottom) ═══ */}
+          <div className="bg-white border border-stone-200 rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="w-4 h-4 text-stone-400" />
+              <span className="text-stone-600 font-semibold text-sm">Horario de hoy</span>
+              <span className="text-stone-400 text-xs ml-auto">{NOMBRES_DIA[diaHoy]}</span>
+            </div>
+            {horariosHoy.length === 0 ? (
+              <p className="text-stone-400 text-sm text-center py-4">No hay clases programadas hoy</p>
+            ) : (
+              <div className="space-y-1.5">
+                {horariosHoy.map((h, i) => (
+                  <div key={i} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-stone-50">
+                    <span className="text-stone-500 text-xs font-mono w-20 shrink-0">
+                      {formatHora12(h.hora_inicio)}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-stone-900 text-sm truncate">{h.nombre_clase}</p>
+                      {(h.edad_min_meses != null || h.edad_max_meses != null) && (
+                        <p className="text-stone-400 text-[10px]">{edadLabel(h.edad_min_meses, h.edad_max_meses)}</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
