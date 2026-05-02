@@ -59,14 +59,14 @@ const capitalizeWords = (text: string): string => {
 
 const normalizeTurno = (turno: string | undefined | null): string => {
   if (!turno) return 'Sin especificar';
-  
+
   const turnoLower = turno.toLowerCase().trim();
-  
-  if (turnoLower.includes('primer')) return 'Primer Turno';
-  if (turnoLower.includes('segundo')) return 'Segundo Turno';
-  if (turnoLower.includes('tercer')) return 'Tercer Turno';
-  if (turnoLower.includes('cuarto')) return 'Cuarto Turno';
-  
+
+  if (turnoLower.includes('1') || turnoLower.includes('primer')) return 'Primer Turno';
+  if (turnoLower.includes('2') || turnoLower.includes('segundo')) return 'Segundo Turno';
+  if (turnoLower.includes('3') || turnoLower.includes('tercer')) return 'Tercer Turno';
+  if (turnoLower.includes('4') || turnoLower.includes('cuarto')) return 'Cuarto Turno';
+
   // Si no coincide con ningún patrón, capitalizar la primera letra de cada palabra
   return capitalizeWords(turno);
 };
