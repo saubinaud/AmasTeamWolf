@@ -39,9 +39,9 @@ router.get('/correcciones', async (req, res) => {
     const estado = req.query.estado || 'pendiente';
 
     const rows = await query(
-      `SELECT gc.*, g.nombre_alumno, g.apellido_alumno, g.rango, g.fecha_graduacion
+      `SELECT gc.*, g.nombre_alumno AS grad_nombre, g.apellido_alumno AS grad_apellido, g.rango, g.fecha_graduacion
        FROM graduacion_correcciones gc
-       JOIN graduaciones g ON g.id = gc.graduacion_id
+       LEFT JOIN graduaciones g ON g.id = gc.graduacion_id
        WHERE gc.estado = $1
        ORDER BY gc.created_at DESC
        LIMIT 100`,
