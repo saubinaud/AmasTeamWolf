@@ -14,7 +14,16 @@ router.get('/', async (_req, res) => {
         rango AS "RANGO",
         horario AS "HORARIO",
         turno AS "TURNO",
-        TO_CHAR(fecha_graduacion, 'DD "de" TMMonth "de" YYYY') AS "FECHA"
+        CONCAT(
+          EXTRACT(DAY FROM fecha_graduacion)::text, ' de ',
+          CASE EXTRACT(MONTH FROM fecha_graduacion)
+            WHEN 1 THEN 'Enero' WHEN 2 THEN 'Febrero' WHEN 3 THEN 'Marzo'
+            WHEN 4 THEN 'Abril' WHEN 5 THEN 'Mayo' WHEN 6 THEN 'Junio'
+            WHEN 7 THEN 'Julio' WHEN 8 THEN 'Agosto' WHEN 9 THEN 'Septiembre'
+            WHEN 10 THEN 'Octubre' WHEN 11 THEN 'Noviembre' WHEN 12 THEN 'Diciembre'
+          END, ' de ',
+          EXTRACT(YEAR FROM fecha_graduacion)::text
+        ) AS "FECHA"
       FROM graduaciones
       WHERE estado = 'programada' AND fecha_graduacion >= CURRENT_DATE
       ORDER BY fecha_graduacion, turno
