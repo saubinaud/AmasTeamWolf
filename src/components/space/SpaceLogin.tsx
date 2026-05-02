@@ -27,6 +27,13 @@ export function SpaceLogin({ onLogin }: Props) {
       });
       const data = await res.json();
       if (data.success && data.token) {
+        // Store credentials for browser auto-fill (fingerprint/Face ID)
+        if (window.PasswordCredential) {
+          try {
+            const cred = new PasswordCredential({ id: email, password, name: data.usuario?.nombre || email });
+            await navigator.credentials.store(cred);
+          } catch { /* silent — not all browsers support this */ }
+        }
         onLogin(data.token, data.usuario);
       } else {
         setError(data.error || 'Credenciales incorrectas');
