@@ -62,12 +62,11 @@ const normalizeTurno = (turno: string | undefined | null): string => {
 
   const turnoLower = turno.toLowerCase().trim();
 
-  if (turnoLower.includes('1') || turnoLower.includes('primer')) return 'Primer Turno';
-  if (turnoLower.includes('2') || turnoLower.includes('segundo')) return 'Segundo Turno';
-  if (turnoLower.includes('3') || turnoLower.includes('tercer')) return 'Tercer Turno';
-  if (turnoLower.includes('4') || turnoLower.includes('cuarto')) return 'Cuarto Turno';
+  if (turnoLower.includes('1') || turnoLower.includes('primer')) return '1er Turno';
+  if (turnoLower.includes('2') || turnoLower.includes('segundo')) return '2do Turno';
+  if (turnoLower.includes('3') || turnoLower.includes('tercer')) return '3er Turno';
+  if (turnoLower.includes('4') || turnoLower.includes('cuarto')) return '4to Turno';
 
-  // Si no coincide con ningún patrón, capitalizar la primera letra de cada palabra
   return capitalizeWords(turno);
 };
 
@@ -261,7 +260,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
       return acc;
     }, {} as Record<string, Graduado[]>);
 
-    const ordenTurnos = ['Primer Turno', 'Segundo Turno', 'Tercer Turno', 'Cuarto Turno'];
+    const ordenTurnos = ['1er Turno', '2do Turno', '3er Turno', '4to Turno'];
     const ordenados = Object.keys(porTurno).sort((a, b) => {
       const indexA = ordenTurnos.indexOf(a);
       const indexB = ordenTurnos.indexOf(b);
@@ -278,14 +277,12 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
   // Funciones de estilo - optimizadas con useCallback
   const getTurnoGradient = useCallback((turno: string) => {
     if (!turno) return 'from-zinc-400 to-zinc-500';
-    
-    const turnoLower = turno.toLowerCase();
-    
-    if (turnoLower.includes('primer')) return 'from-[#FA7B21] to-[#FCA929]';
-    if (turnoLower.includes('segundo')) return 'from-[#007BFF] to-[#0056b3]';
-    if (turnoLower.includes('tercer')) return 'from-[#28a745] to-[#218838]';
-    if (turnoLower.includes('cuarto')) return 'from-[#6c757d] to-[#545b62]';
-    
+
+    if (turno.includes('1')) return 'from-[#FA7B21] to-[#FCA929]';
+    if (turno.includes('2')) return 'from-[#007BFF] to-[#0056b3]';
+    if (turno.includes('3')) return 'from-[#28a745] to-[#218838]';
+    if (turno.includes('4')) return 'from-[#6c757d] to-[#545b62]';
+
     return 'from-zinc-400 to-zinc-500';
   }, []);
 
