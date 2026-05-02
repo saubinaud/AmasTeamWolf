@@ -93,15 +93,15 @@ const RANGOS = [
 ];
 
 const TURNOS = [
-  { value: '1 TURNO', label: '1er Turno' },
-  { value: '2 TURNO', label: '2do Turno' },
-  { value: '3 TURNO', label: '3er Turno' },
-  { value: '4 TURNO', label: '4to Turno' },
+  { value: '1er Turno', label: '1er Turno' },
+  { value: '2do Turno', label: '2do Turno' },
+  { value: '3er Turno', label: '3er Turno' },
+  { value: '4to Turno', label: '4to Turno' },
 ];
 
 const EMPTY_FORM: FormData = {
   alumno_id: null, nombre: '', apellido: '', rango: RANGOS[0],
-  horario: '', turno: '1 TURNO', fecha: '', observaciones: '',
+  horario: '', turno: '1er Turno', fecha: '', observaciones: '',
 };
 
 const ESTADO_PILL: Record<string, string> = {
@@ -452,11 +452,11 @@ function parseExcelDate(raw: string): string {
 
 function normalizeTurno(raw: string): string {
   const cleaned = raw.trim().toUpperCase();
-  if (cleaned.includes('1') || cleaned.startsWith('PRIMER')) return '1 TURNO';
-  if (cleaned.includes('2') || cleaned.startsWith('SEGUNDO')) return '2 TURNO';
-  if (cleaned.includes('3') || cleaned.startsWith('TERCER')) return '3 TURNO';
-  if (cleaned.includes('4') || cleaned.startsWith('CUARTO')) return '4 TURNO';
-  return cleaned;
+  if (cleaned.includes('1') || cleaned.startsWith('PRIMER')) return '1er Turno';
+  if (cleaned.includes('2') || cleaned.startsWith('SEGUNDO')) return '2do Turno';
+  if (cleaned.includes('3') || cleaned.startsWith('TERCER')) return '3er Turno';
+  if (cleaned.includes('4') || cleaned.startsWith('CUARTO')) return '4to Turno';
+  return raw.trim();
 }
 
 function BatchGraduacionModal({
