@@ -237,7 +237,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
       if (!response.ok) throw new Error('Error al enviar comentario');
       
       setSubmitSuccess(true);
-      setFormData({ nombre: '', apellido: '', comentario: '' });
+      setFormData({ nombre: '', apellido: '', correo: '', comentario: '' });
       toast.success('¡Gracias! Tu comentario ha sido enviado correctamente.');
       
       setTimeout(() => setSubmitSuccess(false), 5000);
@@ -587,12 +587,11 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                   </label>
                   <input
                     id="correo"
-                    type="text"
+                    type="email"
                     value={formData.correo}
                     onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
                     className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#FCA929] transition-colors text-sm sm:text-base"
                     placeholder="Ingresa tu correo"
-                    required
                   />
                 </div>
 
