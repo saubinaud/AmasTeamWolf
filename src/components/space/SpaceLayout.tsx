@@ -131,17 +131,25 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
   const fetchNotifications = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [corr, leads] = await Promise.all([
+      const [corr, stats, venc] = await Promise.all([
         fetch(`${API_BASE}/space/graduaciones/correcciones?estado=pendiente`, { headers }).then(r => r.ok ? r.json() : null),
-        fetch(`${API_BASE}/space/leads/stats`, { headers }).then(r => r.ok ? r.json() : null),
+        fetch(`${API_BASE}/space/dashboard/stats`, { headers }).then(r => r.ok ? r.json() : null),
+        fetch(`${API_BASE}/space/inscripciones/vencimientos`, { headers }).then(r => r.ok ? r.json() : null),
       ]);
 
       const items: Array<{ type: string; label: string; count: number; page: SpacePage }> = [];
-      const corrCount = Array.isArray(corr?.data) ? corr.data.length : 0;
-      if (corrCount > 0) items.push({ type: 'correcciones', label: `${corrCount} correcciones pendientes`, count: corrCount, page: 'graduaciones' });
 
-      const leadsNew = leads?.stats?.nuevos ?? leads?.nuevos ?? 0;
-      if (leadsNew > 0) items.push({ type: 'leads', label: `${leadsNew} leads nuevos`, count: leadsNew, page: 'leads' });
+      // Correcciones de graduación
+      const corrCount = Array.isArray(corr?.data) ? corr.data.length : 0;
+      if (corrCount > 0) items.push({ type: 'correcciones', label: `${corrCount} corrección${corrCount !== 1 ? 'es' : ''} de graduación`, count: corrCount, page: 'graduaciones' });
+
+      // Leads nuevos
+      const leadsNew = stats?.stats?.leadsNuevos ?? 0;
+      if (leadsNew > 0) items.push({ type: 'leads', label: `${leadsNew} lead${leadsNew !== 1 ? 's' : ''} nuevo${leadsNew !== 1 ? 's' : ''}`, count: leadsNew, page: 'leads' });
+
+      // Inscripciones por vencer (próximos 7 días)
+      const vencCount = Array.isArray(venc?.data) ? venc.data.length : (venc?.vencimientos?.length ?? 0);
+      if (vencCount > 0) items.push({ type: 'vencimientos', label: `${vencCount} inscripción${vencCount !== 1 ? 'es' : ''} por vencer`, count: vencCount, page: 'inscripciones' });
 
       setNotifItems(items);
       setNotifCount(items.reduce((sum, i) => sum + i.count, 0));
@@ -375,24 +383,33 @@ export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, c
                     </div>
                   ) : (
                     <div className="max-h-60 overflow-y-auto">
-                      {notifItems.map(item => (
-                        <button
-                          key={item.type}
-                          onClick={() => { onNavigate(item.page); setNotifOpen(false); }}
-                          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors border-b border-stone-50 last:border-0"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center shrink-0">
-                            <Bell size={14} className="text-[var(--accent)]" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-stone-900 text-xs font-medium">{item.label}</p>
-                            <p className="text-stone-400 text-[10px]">Toca para ver</p>
-                          </div>
-                          <span className="shrink-0 w-5 h-5 flex items-center justify-center bg-red-100 text-red-600 text-[10px] font-bold rounded-full">
-                            {item.count}
-                          </span>
-                        </button>
-                      ))}
+                      {notifItems.map(item => {
+                        const iconMap: Record<string, { bg: string; icon: typeof Bell }> = {
+                          correcciones: { bg: 'bg-amber-50', icon: GraduationCap },
+                          leads: { bg: 'bg-blue-50', icon: UserPlus },
+                          vencimientos: { bg: 'bg-rose-50', icon: CalendarCheck },
+                        };
+                        const style = iconMap[item.type] || { bg: 'bg-orange-50', icon: Bell };
+                        const ItemIcon = style.icon;
+                        return (
+                          <button
+                            key={item.type}
+                            onClick={() => { onNavigate(item.page); setNotifOpen(false); }}
+                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors border-b border-stone-50 last:border-0"
+                          >
+                            <div className={`w-8 h-8 rounded-full ${style.bg} flex items-center justify-center shrink-0`}>
+                              <ItemIcon size={14} className="text-[var(--accent)]" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-stone-900 text-xs font-medium">{item.label}</p>
+                              <p className="text-stone-400 text-[10px]">Toca para ver</p>
+                            </div>
+                            <span className="shrink-0 w-5 h-5 flex items-center justify-center bg-red-100 text-red-600 text-[10px] font-bold rounded-full">
+                              {item.count}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
