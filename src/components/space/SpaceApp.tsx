@@ -181,6 +181,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       onToggleTheme={toggleTheme}
       academia={academia}
       onSwitchAcademia={handleSwitchAcademia}
+      token={token}
     >
       {currentPage === 'dashboard' && <SpaceDashboard token={token} userName={user.nombre} onNavigate={handleNavigate} academia={academia} />}
       {currentPage === 'graduaciones' && <SpaceGraduaciones token={token} />}
