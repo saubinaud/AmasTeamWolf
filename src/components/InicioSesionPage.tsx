@@ -50,6 +50,13 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     }
 
     if (result.success) {
+      // Store credentials for browser auto-fill (fingerprint/Face ID)
+      if (window.PasswordCredential && password) {
+        try {
+          const cred = new PasswordCredential({ id: dni, password, name: `AMAS ${dni}` });
+          await navigator.credentials.store(cred);
+        } catch { /* silent */ }
+      }
       onNavigate('perfil');
     } else {
       setError(result.error || 'Error al iniciar sesión');
@@ -109,29 +116,33 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
 
           {/* Step: Login */}
           {step === 'login' && (
-            <div className="space-y-4">
+            <form onSubmit={e => { e.preventDefault(); handleLogin(); }} className="space-y-4" autoComplete="on">
               <div>
-                <label className="block text-white/70 text-sm mb-1.5">DNI del apoderado</label>
+                <label htmlFor="login-dni" className="block text-white/70 text-sm mb-1.5">DNI del apoderado</label>
                 <input
+                  id="login-dni"
+                  name="username"
                   type="text"
                   inputMode="numeric"
                   maxLength={15}
+                  autoComplete="username"
                   value={dni}
                   onChange={e => setDni(e.target.value.replace(/\D/g, ''))}
-                  onKeyDown={e => handleKeyDown(e, handleLogin)}
                   placeholder="Ej: 12345678"
                   className="w-full px-4 py-3 bg-zinc-800 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-[#FA7B21]/50 focus:ring-1 focus:ring-[#FA7B21]/30 transition-colors"
                   autoFocus
                 />
               </div>
               <div>
-                <label className="block text-white/70 text-sm mb-1.5">Contraseña</label>
+                <label htmlFor="login-pass" className="block text-white/70 text-sm mb-1.5">Contraseña</label>
                 <div className="relative">
                   <input
+                    id="login-pass"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
                     value={password}
                     onChange={e => setPassword_(e.target.value)}
-                    onKeyDown={e => handleKeyDown(e, handleLogin)}
                     placeholder="Tu contraseña"
                     className="w-full px-4 py-3 bg-zinc-800 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-[#FA7B21]/50 focus:ring-1 focus:ring-[#FA7B21]/30 transition-colors pr-12"
                   />
@@ -146,7 +157,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
               </div>
 
               <Button
-                onClick={handleLogin}
+                type="submit"
                 disabled={loading || !dni}
                 className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
               >
@@ -157,7 +168,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
               <p className="text-center text-white/40 text-xs pt-2">
                 Primera vez? Ingresa tu DNI y presiona Entrar
               </p>
-            </div>
+            </form>
           )}
 
           {/* Step: Create Password */}
