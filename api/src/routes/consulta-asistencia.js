@@ -29,17 +29,26 @@ router.get('/', consultaLimiter, async (req, res) => {
       return res.status(400).json({ success: false, error: 'DNI inválido' });
     }
 
-    // 1. Buscar alumno con DNI normalizado
-    const alumno = await queryOne(`
+    // 1. Buscar alumno con DNI normalizado (alumno O apoderado)
+    let alumno = await queryOne(`
       SELECT id, nombre_alumno, cinturon_actual
       FROM alumnos
-      WHERE dni_alumno_norm = $1
-        AND estado = 'Activo'
+      WHERE dni_alumno_norm = $1 AND estado = 'Activo'
       LIMIT 1
     `, [dniNorm]);
 
     if (!alumno) {
-      return res.json({ success: false, error: 'DNI no encontrado' });
+      // Intentar como DNI de apoderado
+      alumno = await queryOne(`
+        SELECT id, nombre_alumno, cinturon_actual
+        FROM alumnos
+        WHERE dni_apoderado_norm = $1 AND estado = 'Activo'
+        LIMIT 1
+      `, [dniNorm]);
+    }
+
+    if (!alumno) {
+      return res.json({ success: false, error: 'DNI no encontrado. Puedes usar el DNI del alumno o del apoderado.' });
     }
 
     // 2. Buscar inscripción activa

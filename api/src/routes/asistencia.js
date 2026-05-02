@@ -42,43 +42,32 @@ function mapearCategoria(categoria) {
   return CATEGORIA_MAP[categoria.toLowerCase().trim()] || null;
 }
 
-// ── Helper: detectar turno del alumno para QR diario ──
+// ── Helper: detectar turno del alumno para QR diario (1 sola query) ──
 async function detectarTurnoDiario(dniAlumno) {
-  // 1. Buscar turno desde inscripcion activa
-  const inscripcion = await queryOne(`
-    SELECT i.turno, i.programa
-    FROM inscripciones i
-    JOIN alumnos a ON a.id = i.alumno_id
-    WHERE a.dni_alumno = $1 AND i.estado = 'activa'
-    ORDER BY i.fecha_inicio DESC
+  const dniNorm = String(dniAlumno).replace(/[\s\-\.]/g, '').trim().toUpperCase();
+  const row = await queryOne(`
+    SELECT a.categoria, a.fecha_nacimiento, i.turno AS insc_turno, i.programa
+    FROM alumnos a
+    LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
+    WHERE a.dni_alumno_norm = $1 OR a.dni_apoderado_norm = $1
+    ORDER BY i.fecha_inicio DESC NULLS LAST
     LIMIT 1
-  `, [dniAlumno]);
+  `, [dniNorm]);
 
-  if (inscripcion && inscripcion.turno) {
-    return inscripcion.turno;
-  }
-  if (inscripcion && inscripcion.programa) {
-    const mapped = mapearCategoria(inscripcion.programa);
+  if (!row) return 'General';
+
+  // Prioridad: turno inscripción > programa mapeado > categoría > edad
+  if (row.insc_turno) return row.insc_turno;
+  if (row.programa) {
+    const mapped = mapearCategoria(row.programa);
     if (mapped) return mapped;
   }
-
-  // 2. Buscar por categoria del alumno
-  const alumno = await queryOne(`
-    SELECT categoria, fecha_nacimiento
-    FROM alumnos
-    WHERE dni_alumno = $1
-  `, [dniAlumno]);
-
-  if (alumno) {
-    const fromCategoria = mapearCategoria(alumno.categoria);
-    if (fromCategoria) return fromCategoria;
-
-    // 3. Inferir por edad
-    const fromEdad = detectarClase(alumno.fecha_nacimiento);
-    if (fromEdad) return fromEdad;
+  if (row.categoria) {
+    const mapped = mapearCategoria(row.categoria);
+    if (mapped) return mapped;
   }
-
-  return 'General';
+  const fromEdad = detectarClase(row.fecha_nacimiento);
+  return fromEdad || 'General';
 }
 
 // POST /api/asistencia — Registrar asistencia via QR
@@ -89,6 +78,25 @@ router.post('/', async (req, res) => {
 
     if (!dni_alumno || !token_qr) {
       return res.status(400).json({ success: false, error: 'DNI y token QR son requeridos' });
+    }
+
+    const dniNorm = String(dni_alumno).replace(/[\s\-\.]/g, '').trim().toUpperCase();
+
+    // Resolver DNI: puede ser del alumno O del apoderado
+    let dniParaRegistro = dniNorm;
+    const alumnoByDni = await queryOne(
+      `SELECT dni_alumno FROM alumnos WHERE dni_alumno_norm = $1 LIMIT 1`,
+      [dniNorm]
+    );
+    if (!alumnoByDni) {
+      // Intentar como DNI de apoderado
+      const alumnoByApoderado = await queryOne(
+        `SELECT dni_alumno FROM alumnos WHERE dni_apoderado_norm = $1 AND estado = 'Activo' LIMIT 1`,
+        [dniNorm]
+      );
+      if (alumnoByApoderado) {
+        dniParaRegistro = alumnoByApoderado.dni_alumno;
+      }
     }
 
     // Verificar si es QR diario para auto-detectar turno
@@ -102,7 +110,7 @@ router.post('/', async (req, res) => {
       );
       if (sesion && sesion.programa === 'diario') {
         esDiario = true;
-        turnoFinal = await detectarTurnoDiario(dni_alumno);
+        turnoFinal = await detectarTurnoDiario(dniParaRegistro);
       }
     } catch (_err) {
       // Si falla la consulta, continuar con turno normal
@@ -110,7 +118,7 @@ router.post('/', async (req, res) => {
 
     const result = await queryOne(
       'SELECT registrar_asistencia($1, $2, $3) AS resultado',
-      [dni_alumno, token_qr, turnoFinal]
+      [dniParaRegistro, token_qr, turnoFinal]
     );
 
     const data = typeof result.resultado === 'string'
