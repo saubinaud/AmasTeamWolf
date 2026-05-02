@@ -391,8 +391,51 @@ function GraduacionModal({
 }
 
 // ---------------------------------------------------------------------------
-// Batch Modal
+// Batch Modal — Supports pasting from Excel (NOMBRE | APELLIDO | RANGO | HORARIO | TURNO | FECHA)
 // ---------------------------------------------------------------------------
+
+interface ParsedExcelRow {
+  nombre: string;
+  apellido: string;
+  rango: string;
+  horario: string;
+  turno: string;
+  fecha: string;
+  fecha_iso: string;
+  alumno_id: number | null;
+  alumno_nombre_db: string;
+  matching: boolean;
+  matched: boolean;
+}
+
+function parseExcelDate(raw: string): string {
+  // Parses "6 DE MAYO", "15 DE JUNIO 2026", etc. → ISO date
+  const meses: Record<string, string> = {
+    enero: '01', febrero: '02', marzo: '03', abril: '04',
+    mayo: '05', junio: '06', julio: '07', agosto: '08',
+    septiembre: '09', octubre: '10', noviembre: '11', diciembre: '12',
+  };
+  const cleaned = raw.trim().toLowerCase().replace(/^\s+|\s+$/g, '');
+  const match = cleaned.match(/(\d{1,2})\s+de\s+(\w+)(?:\s+(\d{4}))?/);
+  if (match) {
+    const day = match[1].padStart(2, '0');
+    const month = meses[match[2]] || '01';
+    const year = match[3] || new Date().getFullYear().toString();
+    return `${year}-${month}-${day}`;
+  }
+  // Try ISO format already
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw.trim())) return raw.trim();
+  return '';
+}
+
+function normalizeTurno(raw: string): string {
+  const cleaned = raw.trim().toUpperCase();
+  if (cleaned.includes('1') || cleaned.startsWith('PRIMER')) return '1 TURNO';
+  if (cleaned.includes('2') || cleaned.startsWith('SEGUNDO')) return '2 TURNO';
+  if (cleaned.includes('3') || cleaned.startsWith('TERCER')) return '3 TURNO';
+  if (cleaned.includes('4') || cleaned.startsWith('CUARTO')) return '4 TURNO';
+  return cleaned;
+}
 
 function BatchGraduacionModal({
   open, onClose, token, onSuccess,
@@ -402,10 +445,152 @@ function BatchGraduacionModal({
   token: string;
   onSuccess: () => void;
 }) {
+  const [mode, setMode] = useState<'manual' | 'excel'>('excel');
+  const [pasteText, setPasteText] = useState('');
+  const [parsedRows, setParsedRows] = useState<ParsedExcelRow[]>([]);
+  const [matchingAll, setMatchingAll] = useState(false);
+
+  // Manual mode state
   const [rows, setRows] = useState<BatchRow[]>([{ ...EMPTY_BATCH_ROW }]);
   const [submitting, setSubmitting] = useState(false);
   const [results, setResults] = useState<{ processed: number; errors?: Array<{ index: number; error: string }> } | null>(null);
   const searchTimersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
+
+  // --- Excel paste mode ---
+
+  const handleParse = () => {
+    const lines = pasteText.trim().split('\n').filter(l => l.trim());
+    const parsed: ParsedExcelRow[] = [];
+
+    for (const line of lines) {
+      // Split by tab (Excel copy) or multiple spaces or pipe
+      const cols = line.includes('\t')
+        ? line.split('\t').map(c => c.trim())
+        : line.split('|').map(c => c.trim());
+
+      if (cols.length < 4) continue;
+
+      const nombre = cols[0] || '';
+      const apellido = cols[1] || '';
+      const rango = cols[2] || '';
+      const horario = cols[3] || '';
+      const turnoRaw = cols[4] || '';
+      const fechaRaw = cols[5] || '';
+
+      // Skip header row
+      if (nombre.toUpperCase() === 'NOMBRE') continue;
+
+      const fecha_iso = parseExcelDate(fechaRaw);
+      const turno = normalizeTurno(turnoRaw);
+
+      parsed.push({
+        nombre: nombre.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ').trim(),
+        apellido: apellido.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ').trim(),
+        rango: rango.trim(),
+        horario: horario.trim(),
+        turno,
+        fecha: fechaRaw.trim(),
+        fecha_iso,
+        alumno_id: null,
+        alumno_nombre_db: '',
+        matching: false,
+        matched: false,
+      });
+    }
+
+    setParsedRows(parsed);
+    if (parsed.length > 0) {
+      matchAlumnos(parsed);
+    } else {
+      toast.error('No se encontraron filas validas. Formato: NOMBRE [tab] APELLIDO [tab] RANGO [tab] HORARIO [tab] TURNO [tab] FECHA');
+    }
+  };
+
+  const matchAlumnos = async (rowsToMatch: ParsedExcelRow[]) => {
+    setMatchingAll(true);
+    const updated = [...rowsToMatch];
+
+    for (let i = 0; i < updated.length; i++) {
+      const row = updated[i];
+      const searchQuery = `${row.nombre} ${row.apellido}`.trim();
+      try {
+        const res = await fetch(
+          `${API_BASE}/space/graduaciones/alumnos/buscar?q=${encodeURIComponent(searchQuery)}`,
+          { headers: authHeaders(token) }
+        );
+        const data = await res.json();
+        const list: AlumnoBusqueda[] = Array.isArray(data.data) ? data.data : [];
+
+        if (list.length > 0) {
+          // Pick best match: try exact name+apellido, then first result
+          const fullNorm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\s]/g, '');
+          const targetNorm = fullNorm(searchQuery);
+          const exact = list.find(a => fullNorm(`${a.nombre} ${a.apellido || ''}`) === targetNorm);
+          const best = exact || list[0];
+          updated[i] = { ...row, alumno_id: best.id, alumno_nombre_db: `${best.nombre} ${best.apellido || ''}`.trim(), matched: true, matching: false };
+        } else {
+          updated[i] = { ...row, matched: false, matching: false };
+        }
+      } catch {
+        updated[i] = { ...row, matched: false, matching: false };
+      }
+    }
+
+    setParsedRows(updated);
+    setMatchingAll(false);
+
+    const matchedCount = updated.filter(r => r.matched).length;
+    if (matchedCount === updated.length) {
+      toast.success(`${matchedCount} alumnos encontrados`);
+    } else {
+      toast(`${matchedCount} de ${updated.length} alumnos encontrados`);
+    }
+  };
+
+  const removeExcelRow = (idx: number) => {
+    setParsedRows(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleSubmitExcel = async () => {
+    const validExcel = parsedRows.filter(r => r.alumno_id && r.fecha_iso);
+    if (validExcel.length === 0) {
+      toast.error('No hay filas validas (necesitan alumno vinculado + fecha)');
+      return;
+    }
+    setSubmitting(true);
+    setResults(null);
+    try {
+      const payload = validExcel.map(r => ({
+        nombre_alumno: r.nombre,
+        apellido_alumno: r.apellido,
+        rango: r.rango,
+        horario: r.horario,
+        turno: r.turno,
+        fecha_graduacion: r.fecha_iso,
+        alumno_id: r.alumno_id,
+      }));
+      const res = await fetch(`${API_BASE}/space/graduaciones/bulk`, {
+        method: 'POST',
+        headers: authHeaders(token),
+        body: JSON.stringify({ graduaciones: payload }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setResults({ processed: data.count || validExcel.length });
+        toast.success(`${data.count || validExcel.length} graduaciones registradas`);
+        onSuccess();
+      } else {
+        toast.error(data.error || 'Error al procesar lote');
+        if (data.details) setResults({ processed: 0, errors: data.details.map((d: { index: number; missing: string[] }) => ({ index: d.index, error: `Faltan: ${d.missing.join(', ')}` })) });
+      }
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // --- Manual mode ---
 
   const addRow = () => setRows(prev => [...prev, { ...EMPTY_BATCH_ROW }]);
 
@@ -451,7 +636,7 @@ function BatchGraduacionModal({
 
   const validRows = rows.filter(r => r.alumno_id && r.cinturon_nuevo && r.fecha_examen);
 
-  const handleSubmit = async () => {
+  const handleSubmitManual = async () => {
     if (validRows.length === 0) {
       toast.error('No hay filas validas para procesar');
       return;
@@ -489,22 +674,36 @@ function BatchGraduacionModal({
 
   const handleClose = () => {
     setRows([{ ...EMPTY_BATCH_ROW }]);
+    setPasteText('');
+    setParsedRows([]);
     setResults(null);
     onClose();
   };
+
+  const validExcelCount = parsedRows.filter(r => r.alumno_id && r.fecha_iso).length;
 
   return (
     <Modal
       open={open}
       onClose={handleClose}
       title="Carga masiva de graduaciones"
-      size="lg"
+      size="xl"
       footer={
         <>
           <button onClick={handleClose} className={cx.btnSecondary}>Cerrar</button>
-          {!results && (
+          {!results && mode === 'excel' && parsedRows.length > 0 && (
             <button
-              onClick={handleSubmit}
+              onClick={handleSubmitExcel}
+              disabled={submitting || validExcelCount === 0}
+              className={cx.btnPrimary + ' flex items-center gap-2'}
+            >
+              {submitting && <Loader2 size={15} className="animate-spin" />}
+              Registrar {validExcelCount} graduacion{validExcelCount !== 1 ? 'es' : ''}
+            </button>
+          )}
+          {!results && mode === 'manual' && (
+            <button
+              onClick={handleSubmitManual}
               disabled={submitting || validRows.length === 0}
               className={cx.btnPrimary + ' flex items-center gap-2'}
             >
@@ -517,11 +716,11 @@ function BatchGraduacionModal({
     >
       {results ? (
         <div className="space-y-3">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-400 text-sm">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-emerald-700 text-sm">
             {results.processed} graduacion{results.processed !== 1 ? 'es' : ''} registrada{results.processed !== 1 ? 's' : ''} correctamente.
           </div>
           {results.errors && results.errors.length > 0 && (
-            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-red-400 text-sm space-y-1">
+            <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-red-600 text-sm space-y-1">
               <p className="font-medium">Errores:</p>
               {results.errors.map((e, i) => (
                 <p key={i}>Fila {e.index + 1}: {e.error}</p>
@@ -530,86 +729,201 @@ function BatchGraduacionModal({
           )}
         </div>
       ) : (
-        <div className="space-y-3">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-stone-200">
-                  <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Alumno</th>
-                  <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Cinturon nuevo</th>
-                  <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Fecha examen</th>
-                  <th className="px-2 py-2 w-10"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, idx) => (
-                  <tr key={idx} className="border-b border-stone-100">
-                    <td className="px-2 py-2 relative">
-                      <input
-                        type="text"
-                        placeholder="Buscar alumno..."
-                        value={row.query}
-                        onChange={e => searchAlumno(idx, e.target.value)}
-                        onFocus={() => row.results.length > 0 && updateRow(idx, { showResults: true })}
-                        className={cx.input + (row.alumno_id ? ' border-emerald-200' : '')}
-                      />
-                      {row.showResults && row.results.length > 0 && (
-                        <div className="absolute z-30 top-full left-2 right-2 mt-1 bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xl max-h-40 overflow-y-auto">
-                          {row.results.map(a => (
-                            <button
-                              key={a.id}
-                              onClick={() => selectAlumno(idx, a)}
-                              className="w-full text-left px-3 py-2 text-stone-900 text-sm hover:bg-stone-50 transition-colors border-b border-stone-200 last:border-0"
-                            >
-                              {a.nombre} {a.apellido}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-2 py-2">
-                      <select
-                        value={row.cinturon_nuevo}
-                        onChange={e => updateRow(idx, { cinturon_nuevo: e.target.value })}
-                        className={cx.select}
-                      >
-                        {CINTURONES_BATCH.map(c => (
-                          <option key={c} value={c}>{c}</option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-2 py-2">
-                      <input
-                        type="date"
-                        value={row.fecha_examen}
-                        onChange={e => updateRow(idx, { fecha_examen: e.target.value })}
-                        className={cx.input}
-                      />
-                    </td>
-                    <td className="px-2 py-2">
-                      <button
-                        onClick={() => removeRow(idx)}
-                        className={cx.btnDanger}
-                        title="Quitar fila"
-                      >
-                        <X size={14} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <div className="space-y-4">
+          {/* Mode selector */}
+          <div className="flex gap-1 bg-stone-100 rounded-xl p-1 w-fit border border-stone-200">
+            <button
+              onClick={() => setMode('excel')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'excel' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'}`}
+            >
+              Pegar desde Excel
+            </button>
+            <button
+              onClick={() => setMode('manual')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${mode === 'manual' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'}`}
+            >
+              Manual
+            </button>
           </div>
 
-          <button onClick={addRow} className={cx.btnSecondary + ' flex items-center gap-2 text-xs'}>
-            <Plus size={14} />
-            Anadir fila
-          </button>
+          {mode === 'excel' && (
+            <>
+              {parsedRows.length === 0 ? (
+                <div className="space-y-3">
+                  <p className="text-stone-500 text-sm">
+                    Copia las filas desde Excel y pegalas aqui. Formato esperado (separado por tabs):
+                  </p>
+                  <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs text-stone-500 font-mono">
+                    NOMBRE &nbsp;&nbsp; APELLIDO &nbsp;&nbsp; RANGO &nbsp;&nbsp; HORARIO &nbsp;&nbsp; TURNO &nbsp;&nbsp; FECHA
+                  </div>
+                  <textarea
+                    value={pasteText}
+                    onChange={e => setPasteText(e.target.value)}
+                    placeholder="Pega aqui las filas del Excel..."
+                    rows={10}
+                    className={cx.input + ' resize-none font-mono text-xs'}
+                  />
+                  <button
+                    onClick={handleParse}
+                    disabled={!pasteText.trim()}
+                    className={cx.btnPrimary + ' flex items-center gap-2'}
+                  >
+                    <Upload size={14} />
+                    Procesar datos
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-stone-500 text-sm">
+                      {parsedRows.length} filas parseadas — {validExcelCount} listas para registrar
+                    </p>
+                    <button
+                      onClick={() => { setParsedRows([]); setPasteText(''); }}
+                      className={cx.btnSecondary + ' text-xs'}
+                    >
+                      Volver a pegar
+                    </button>
+                  </div>
 
-          {validRows.length > 0 && (
-            <p className="text-xs text-stone-400">
-              {validRows.length} de {rows.length} filas listas para registrar
-            </p>
+                  {matchingAll && (
+                    <div className="flex items-center gap-2 text-stone-500 text-sm">
+                      <Loader2 size={14} className="animate-spin" />
+                      Buscando alumnos...
+                    </div>
+                  )}
+
+                  <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-white z-10">
+                        <tr className="border-b border-stone-200">
+                          <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Alumno (Excel)</th>
+                          <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Match BD</th>
+                          <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Rango</th>
+                          <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Horario</th>
+                          <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Turno</th>
+                          <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Fecha</th>
+                          <th className="px-2 py-2 w-8"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {parsedRows.map((row, idx) => (
+                          <tr key={idx} className={`border-b border-stone-100 ${!row.matched ? 'bg-rose-50/50' : ''}`}>
+                            <td className="px-2 py-2 text-stone-900 font-medium whitespace-nowrap">
+                              {row.nombre} {row.apellido}
+                            </td>
+                            <td className="px-2 py-2">
+                              {row.matched ? (
+                                <span className="inline-flex items-center gap-1 text-emerald-700 text-xs">
+                                  <Check size={12} />
+                                  {row.alumno_nombre_db}
+                                </span>
+                              ) : (
+                                <span className="text-red-500 text-xs">Sin match</span>
+                              )}
+                            </td>
+                            <td className="px-2 py-2 text-stone-600 text-xs">{row.rango}</td>
+                            <td className="px-2 py-2 text-stone-600 text-xs">{row.horario}</td>
+                            <td className="px-2 py-2 text-stone-600 text-xs">{row.turno}</td>
+                            <td className="px-2 py-2 text-stone-600 text-xs">{row.fecha_iso || row.fecha}</td>
+                            <td className="px-2 py-2">
+                              <button onClick={() => removeExcelRow(idx)} className={cx.btnDanger} title="Quitar">
+                                <X size={12} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {mode === 'manual' && (
+            <div className="space-y-3">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-stone-200">
+                      <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Alumno</th>
+                      <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Cinturon nuevo</th>
+                      <th className="px-2 py-2 text-left text-stone-400 text-xs font-medium">Fecha examen</th>
+                      <th className="px-2 py-2 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row, idx) => (
+                      <tr key={idx} className="border-b border-stone-100">
+                        <td className="px-2 py-2 relative">
+                          <input
+                            type="text"
+                            placeholder="Buscar alumno..."
+                            value={row.query}
+                            onChange={e => searchAlumno(idx, e.target.value)}
+                            onFocus={() => row.results.length > 0 && updateRow(idx, { showResults: true })}
+                            className={cx.input + (row.alumno_id ? ' border-emerald-200' : '')}
+                          />
+                          {row.showResults && row.results.length > 0 && (
+                            <div className="absolute z-30 top-full left-2 right-2 mt-1 bg-white border border-stone-200 rounded-xl overflow-hidden shadow-xl max-h-40 overflow-y-auto">
+                              {row.results.map(a => (
+                                <button
+                                  key={a.id}
+                                  onClick={() => selectAlumno(idx, a)}
+                                  className="w-full text-left px-3 py-2 text-stone-900 text-sm hover:bg-stone-50 transition-colors border-b border-stone-200 last:border-0"
+                                >
+                                  {a.nombre} {a.apellido}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-2 py-2">
+                          <select
+                            value={row.cinturon_nuevo}
+                            onChange={e => updateRow(idx, { cinturon_nuevo: e.target.value })}
+                            className={cx.select}
+                          >
+                            {CINTURONES_BATCH.map(c => (
+                              <option key={c} value={c}>{c}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-2 py-2">
+                          <input
+                            type="date"
+                            value={row.fecha_examen}
+                            onChange={e => updateRow(idx, { fecha_examen: e.target.value })}
+                            className={cx.input}
+                          />
+                        </td>
+                        <td className="px-2 py-2">
+                          <button
+                            onClick={() => removeRow(idx)}
+                            className={cx.btnDanger}
+                            title="Quitar fila"
+                          >
+                            <X size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <button onClick={addRow} className={cx.btnSecondary + ' flex items-center gap-2 text-xs'}>
+                <Plus size={14} />
+                Anadir fila
+              </button>
+
+              {validRows.length > 0 && (
+                <p className="text-xs text-stone-400">
+                  {validRows.length} de {rows.length} filas listas para registrar
+                </p>
+              )}
+            </div>
           )}
         </div>
       )}
