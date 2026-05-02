@@ -133,8 +133,9 @@ router.get('/', async (req, res) => {
 
     // Fetch page
     const rows = await query(
-      `SELECT g.*
+      `SELECT g.*, c.nombre AS cinturon_nombre, c.orden AS cinturon_orden
        FROM graduaciones g
+       LEFT JOIN cinturones c ON c.id = g.cinturon_id
        ${where}
        ORDER BY ${sortColumn} ${sortOrder}
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
@@ -151,6 +152,67 @@ router.get('/', async (req, res) => {
   } catch (err) {
     console.error('Error listando graduaciones:', err);
     return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_LIST_ERROR' });
+  }
+});
+
+// ===== CINTURONES =====
+
+// GET /api/space/graduaciones/cinturones — Catálogo completo de cinturones (desde tabla)
+router.get('/cinturones', async (_req, res) => {
+  try {
+    const rows = await query('SELECT id, nombre, orden FROM cinturones WHERE activo = true ORDER BY orden ASC');
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Error obteniendo cinturones:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// GET /api/space/graduaciones/cinturones/distribucion — Distribución de cinturones en la academia
+router.get('/cinturones/distribucion', async (_req, res) => {
+  try {
+    const rows = await query(`
+      SELECT COALESCE(c.nombre, a.cinturon_actual, 'Blanco') AS cinturon, COUNT(*) AS total
+      FROM alumnos a
+      LEFT JOIN cinturones c ON c.id = a.cinturon_actual_id
+      WHERE a.estado = 'Activo'
+      GROUP BY COALESCE(c.nombre, a.cinturon_actual, 'Blanco')
+      ORDER BY total DESC
+    `);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Error distribución cinturones:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// GET /api/space/graduaciones/historial/:alumnoId — Historial de cinturones de un alumno
+router.get('/historial/:alumnoId', async (req, res) => {
+  try {
+    const rows = await query(
+      `SELECT h.cinturon, h.cinturon_id, h.fecha_obtencion, h.observaciones, c.orden
+       FROM historial_cinturones h
+       LEFT JOIN cinturones c ON c.id = h.cinturon_id
+       WHERE h.alumno_id = $1
+       ORDER BY h.fecha_obtencion ASC`,
+      [req.params.alumnoId]
+    );
+    const actual = await queryOne(
+      `SELECT a.cinturon_actual, a.cinturon_actual_id, c.nombre AS cinturon_nombre, c.orden
+       FROM alumnos a
+       LEFT JOIN cinturones c ON c.id = a.cinturon_actual_id
+       WHERE a.id = $1`,
+      [req.params.alumnoId]
+    );
+    res.json({
+      success: true,
+      cinturon_actual: actual?.cinturon_actual || 'Blanco',
+      cinturon_actual_id: actual?.cinturon_actual_id || null,
+      historial: rows,
+    });
+  } catch (err) {
+    console.error('Error historial cinturones:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 
@@ -186,16 +248,20 @@ router.post('/', async (req, res) => {
       });
     }
 
+    // Resolve cinturon_id from rango name
+    const cinturonRow = await queryOne('SELECT id FROM cinturones WHERE nombre = $1', [rango]);
+    const cinturon_id = cinturonRow?.id || null;
+
     const row = await queryOne(
       `INSERT INTO graduaciones
         (nombre_alumno, apellido_alumno, rango, horario, turno, fecha_graduacion,
-         alumno_id, inscripcion_id, sede_id, observaciones, estado, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'programada', $11)
+         alumno_id, inscripcion_id, sede_id, observaciones, cinturon_id, estado, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'programada', $12)
        RETURNING *`,
       [
         nombre_alumno, apellido_alumno, rango, horario, turno, fecha_graduacion,
         alumno_id || null, inscripcion_id || null, sede_id || null,
-        observaciones || null, req.spaceUser.id,
+        observaciones || null, cinturon_id, req.spaceUser.id,
       ]
     );
 
@@ -236,16 +302,21 @@ router.post('/bulk', async (req, res) => {
 
     await client.query('BEGIN');
 
+    // Pre-load cinturones for fast lookup
+    const cinturonRows = await client.query('SELECT id, nombre FROM cinturones').then(r => r.rows);
+    const cinturonMap = new Map(cinturonRows.map(c => [c.nombre, c.id]));
+
     for (const g of graduaciones) {
+      const cinturon_id = cinturonMap.get(g.rango) || null;
       await client.query(
         `INSERT INTO graduaciones
           (nombre_alumno, apellido_alumno, rango, horario, turno, fecha_graduacion,
-           alumno_id, inscripcion_id, sede_id, observaciones, estado, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'programada', $11)`,
+           alumno_id, inscripcion_id, sede_id, observaciones, cinturon_id, estado, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'programada', $12)`,
         [
           g.nombre_alumno, g.apellido_alumno, g.rango, g.horario, g.turno, g.fecha_graduacion,
           g.alumno_id || null, g.inscripcion_id || null, g.sede_id || null,
-          g.observaciones || null, req.spaceUser.id,
+          g.observaciones || null, cinturon_id, req.spaceUser.id,
         ]
       );
     }
@@ -384,49 +455,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// ===== CINTURONES =====
-
-// Orden oficial de cinturones
-const CINTURONES_ORDEN = [
-  'Blanco', 'Blanco-Amarillo', 'Amarillo', 'Amarillo-Verde',
-  'Verde', 'Verde-Azul', 'Azul', 'Azul-Rojo',
-  'Rojo', 'Rojo-Negro', 'Negro 1 Dan', 'Negro 2 Dan', 'Negro 3 Dan'
-];
-
-// GET /api/space/graduaciones/cinturones — Orden oficial de cinturones
-router.get('/cinturones', (_req, res) => {
-  res.json({ success: true, data: CINTURONES_ORDEN });
-});
-
-// GET /api/space/graduaciones/cinturones/distribucion — Distribución de cinturones en la academia
-router.get('/cinturones/distribucion', async (_req, res) => {
-  try {
-    const rows = await query(`
-      SELECT cinturon_actual, COUNT(*) AS total
-      FROM alumnos WHERE estado = 'Activo'
-      GROUP BY cinturon_actual ORDER BY total DESC
-    `);
-    res.json({ success: true, data: rows });
-  } catch (err) {
-    console.error('Error distribución cinturones:', err);
-    res.status(500).json({ success: false, error: 'Error del servidor' });
-  }
-});
-
-// GET /api/space/graduaciones/historial/:alumnoId — Historial de cinturones de un alumno
-router.get('/historial/:alumnoId', async (req, res) => {
-  try {
-    const rows = await query(
-      'SELECT cinturon, fecha_obtencion, observaciones FROM historial_cinturones WHERE alumno_id = $1 ORDER BY fecha_obtencion ASC',
-      [req.params.alumnoId]
-    );
-    const actual = await queryOne('SELECT cinturon_actual FROM alumnos WHERE id = $1', [req.params.alumnoId]);
-    res.json({ success: true, cinturon_actual: actual?.cinturon_actual || 'Blanco', historial: rows });
-  } catch (err) {
-    console.error('Error historial cinturones:', err);
-    res.status(500).json({ success: false, error: 'Error del servidor' });
-  }
-});
+// (cinturones and historial routes moved above /:id to avoid route conflict)
 
 // PUT /api/space/graduaciones/:id/aprobar — Aprobar graduación y ascender cinturón
 router.put('/:id/aprobar', async (req, res) => {
@@ -438,7 +467,7 @@ router.put('/:id/aprobar', async (req, res) => {
     await client.query('BEGIN');
 
     const grad = await client.query(
-      'SELECT alumno_id, cinturon_desde, cinturon_hasta, nombre_alumno FROM graduaciones WHERE id = $1',
+      'SELECT alumno_id, cinturon_desde, cinturon_hasta, rango, cinturon_id, nombre_alumno FROM graduaciones WHERE id = $1',
       [id]
     ).then(r => r.rows[0]);
 
@@ -447,31 +476,42 @@ router.put('/:id/aprobar', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Graduación no encontrada' });
     }
 
-    const nuevoCinturon = cinturon_hasta || grad.cinturon_hasta;
+    // Determine the new belt: explicit override > cinturon_hasta > rango
+    const nuevoCinturon = cinturon_hasta || grad.cinturon_hasta || grad.rango;
+
+    // Resolve cinturon_id from the name
+    let cinturonId = grad.cinturon_id;
+    if (nuevoCinturon && !cinturonId) {
+      const cRow = await client.query('SELECT id FROM cinturones WHERE nombre = $1', [nuevoCinturon]).then(r => r.rows[0]);
+      if (cRow) cinturonId = cRow.id;
+    }
 
     // 1. Marcar graduación como aprobada
     await client.query(
-      "UPDATE graduaciones SET aprobado = TRUE, estado = 'completada', cinturon_hasta = $1, updated_at = NOW() WHERE id = $2",
-      [nuevoCinturon, id]
+      "UPDATE graduaciones SET aprobado = TRUE, estado = 'completada', cinturon_hasta = $1, cinturon_id = $2, updated_at = NOW() WHERE id = $3",
+      [nuevoCinturon, cinturonId || null, id]
     );
 
-    // 2. Actualizar cinturón actual del alumno
-    if (nuevoCinturon && grad.alumno_id) {
-      await client.query('UPDATE alumnos SET cinturon_actual = $1 WHERE id = $2', [nuevoCinturon, grad.alumno_id]);
-    }
-
-    // 3. Registrar en historial
+    // 2. Actualizar cinturón actual del alumno (VARCHAR + ID)
     if (nuevoCinturon && grad.alumno_id) {
       await client.query(
-        'INSERT INTO historial_cinturones (alumno_id, cinturon, fecha_obtencion, graduacion_id) VALUES ($1, $2, CURRENT_DATE, $3)',
-        [grad.alumno_id, nuevoCinturon, id]
+        'UPDATE alumnos SET cinturon_actual = $1, cinturon_actual_id = $2 WHERE id = $3',
+        [nuevoCinturon, cinturonId || null, grad.alumno_id]
+      );
+    }
+
+    // 3. Registrar en historial (VARCHAR + ID)
+    if (nuevoCinturon && grad.alumno_id) {
+      await client.query(
+        'INSERT INTO historial_cinturones (alumno_id, cinturon, cinturon_id, fecha_obtencion, graduacion_id) VALUES ($1, $2, $3, CURRENT_DATE, $4)',
+        [grad.alumno_id, nuevoCinturon, cinturonId || null, id]
       );
     }
 
     await client.query('COMMIT');
 
-    console.log(`[GRAD] Aprobada: ${grad.nombre_alumno}, ${grad.cinturon_desde} → ${nuevoCinturon}`);
-    res.json({ success: true, nuevo_cinturon: nuevoCinturon });
+    console.log(`[GRAD] Aprobada: ${grad.nombre_alumno}, ${grad.cinturon_desde || 'Blanco'} → ${nuevoCinturon}`);
+    res.json({ success: true, nuevo_cinturon: nuevoCinturon, cinturon_id: cinturonId });
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Error aprobando graduación:', err);
