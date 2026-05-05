@@ -36,6 +36,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasStrokes, setHasStrokes] = useState(false);
   const [aceptado, setAceptado] = useState(false);
+  const [autorizaImagen, setAutorizaImagen] = useState(true);
   const [clausulasAbiertas, setClausulasAbiertas] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
   const [fullscreenMode, setFullscreenMode] = useState(false);
@@ -268,12 +269,15 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     'OBJETO DEL CONTRATO. AMAS Team Wolf se compromete a brindar al alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado.',
     'VIGENCIA. El contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado.',
     'PAGO. El monto total deberá abonarse antes del inicio de clases. No se iniciará ningún programa sin confirmación del pago.',
-    'POLITICA DE NO CANCELACIONES Y NO REEMBOLSOS. Una vez realizado el pago, no se aceptarán cancelaciones ni se realizarán devoluciones. La inasistencia no genera derecho a clases de recuperación.',
+    'POLITICA DE NO CANCELACIONES Y NO REEMBOLSOS. Una vez realizado el pago, no se aceptarán cancelaciones ni se realizarán devoluciones. La inasistencia no genera derecho a clases de recuperación en membresías menores a 3 meses.',
     'EXCEPCIONES. AMAS Team Wolf podrá ofrecer congelamiento temporal por razones de salud con certificado médico, sujeto a aprobación de la dirección.',
-    'HORARIOS. La academia puede modificar horarios con al menos 48 horas de anticipación.',
+    'HORARIOS. La academia puede modificar horarios en cualquier momento. Los padres de familia deben respetar los horarios asignados a su categoría.',
+    'UNIFORMIDAD. El alumno debe asistir correctamente uniformado: pantalón, chaqueta, cinturón y polo de la academia. No se permite asistir con otra vestimenta que no sea la reglamentaria.',
+    'IMPLEMENTOS. Únicamente está permitido el uso de implementos reglamentarios proporcionados por la organización AMAS o la Academia Team Wolf.',
     'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra apto para la práctica de artes marciales.',
-    'AUTORIZACION DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales y promocionales.',
-    'RESPONSABILIDAD. La academia no se responsabiliza por objetos olvidados en las instalaciones.',
+    'CONDUCTA Y CONVIVENCIA. No está permitido ningún tipo de maltrato ni conflicto dentro de la academia. No se permite la venta de productos o servicios dentro de las instalaciones.',
+    'RESPONSABILIDAD. La academia no se responsabiliza por objetos olvidados en las instalaciones ni por daños físicos que el alumno se ocasione fuera del horario de clase.',
+    `AUTORIZACION DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales${autorizaImagen ? ' y promocionales' : ' (NO se autoriza el uso promocional)'}.`,
     'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología ni información interna de AMAS Team Wolf.',
     'LEY APLICABLE. Las partes se someten a la legislación civil peruana y tribunales de Lima.',
   ];
@@ -398,7 +402,25 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         </p>
       </div>
 
-      {/* ── CHECKBOX ── */}
+      {/* ── CHECKBOX IMAGEN PROMOCIONAL ── */}
+      <label className="flex items-center gap-3 cursor-pointer py-1">
+        <div className="relative flex-shrink-0">
+          <input
+            type="checkbox"
+            checked={autorizaImagen}
+            onChange={(e) => setAutorizaImagen(e.target.checked)}
+            className="sr-only peer"
+          />
+          <div className="w-5 h-5 rounded border-2 border-white/30 bg-zinc-800 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
+            {autorizaImagen && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+          </div>
+        </div>
+        <span className="text-white/70 text-xs leading-snug">
+          Autorizo el uso de fotografias y videos del alumno para fines <strong className="text-white">promocionales</strong> (desmarcar si solo autoriza uso institucional).
+        </span>
+      </label>
+
+      {/* ── CHECKBOX ACEPTACION ── */}
       <label className="flex items-center gap-3 cursor-pointer py-1">
         <div className="relative flex-shrink-0">
           <input
