@@ -19,9 +19,13 @@ interface Inscripcion {
   programa: string;
   fecha_inicio: string;
   fecha_fin: string;
+  clases_totales?: number;
+  turno?: string;
+  dias_tentativos?: string;
   frecuencia_semanal?: number;
   estado_pago: 'pendiente' | 'parcial' | 'pagado' | 'vencido';
   activa: boolean;
+  fecha_nacimiento?: string;
 }
 
 interface PagoDetail {
@@ -712,10 +716,12 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                 <tr className="border-b border-stone-200">
                   <th className={cx.th}>Alumno</th>
                   <th className={cx.th}>Programa</th>
-                  <th className={cx.th + ' hidden sm:table-cell'}>Freq.</th>
+                  <th className={cx.th + ' hidden lg:table-cell'}>Turno</th>
+                  <th className={cx.th + ' hidden lg:table-cell'}>Clases</th>
                   <th className={cx.th + ' hidden sm:table-cell'}>Fecha inicio</th>
                   <th className={cx.th + ' hidden md:table-cell'}>Fecha fin</th>
-                  <th className={cx.th}>Estado pago</th>
+                  <th className={cx.th + ' hidden xl:table-cell'}>Días</th>
+                  <th className={cx.th}>Pago</th>
                   <th className={cx.th}>Activa</th>
                 </tr>
               </thead>
@@ -727,20 +733,28 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                     className={cx.tr + ' hover:bg-stone-50/50 cursor-pointer transition-colors'}
                   >
                     <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>
-                      {ins.alumno_nombre} {ins.alumno_apellido}
+                      <div>{ins.alumno_nombre} {ins.alumno_apellido}</div>
+                      {ins.fecha_nacimiento && (
+                        <span className="text-stone-400 text-[10px]">
+                          {(() => {
+                            const nac = new Date(ins.fecha_nacimiento);
+                            const meses = Math.floor((Date.now() - nac.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                            return meses >= 12 ? `${Math.floor(meses / 12)} años` : `${meses} meses`;
+                          })()}
+                        </span>
+                      )}
                     </td>
                     <td className={cx.td + ' text-stone-600'}>{ins.programa}</td>
-                    <td className={cx.td + ' hidden sm:table-cell'}>
-                      {ins.frecuencia_semanal != null && ins.frecuencia_semanal !== 2 ? (
-                        <span className={cx.badge(ins.frecuencia_semanal === 1 ? badgeColors.orange : badgeColors.blue)}>
-                          {ins.frecuencia_semanal === 1 ? '1x/sem' : `${ins.frecuencia_semanal}x/sem`}
-                        </span>
-                      ) : (
-                        <span className="text-stone-300 text-xs">—</span>
+                    <td className={cx.td + ' text-stone-600 hidden lg:table-cell'}>{ins.turno || '—'}</td>
+                    <td className={cx.td + ' text-stone-600 hidden lg:table-cell'}>
+                      {ins.clases_totales || '—'}
+                      {ins.frecuencia_semanal != null && ins.frecuencia_semanal !== 2 && (
+                        <span className="text-stone-400 text-[10px] ml-1">({ins.frecuencia_semanal}x)</span>
                       )}
                     </td>
                     <td className={cx.td + ' text-stone-600 hidden sm:table-cell'}>{formatFecha(ins.fecha_inicio)}</td>
                     <td className={cx.td + ' text-stone-600 hidden md:table-cell'}>{formatFecha(ins.fecha_fin)}</td>
+                    <td className={cx.td + ' text-stone-500 text-xs hidden xl:table-cell'}>{ins.dias_tentativos || '—'}</td>
                     <td className={cx.td}>
                       <span className={cx.badge(PAGO_BADGE[ins.estado_pago] ?? badgeColors.gray)}>
                         {ins.estado_pago}
