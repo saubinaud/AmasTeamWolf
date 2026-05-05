@@ -29,6 +29,7 @@ const spaceComprasRoutes = require('./routes/space-compras');
 const spaceProfesoresRoutes = require('./routes/space-profesores');
 const spaceClasesPruebaRoutes = require('./routes/space-clases-prueba');
 const spaceTorneosRoutes = require('./routes/space-torneos');
+const spaceReferidosRoutes = require('./routes/space-referidos');
 const { spaceAuth, spaceRequestLogger, requireAdmin } = require('./middleware/spaceAuth');
 const { academiaSwitch } = require('./middleware/academiaSwitch');
 
@@ -118,6 +119,7 @@ app.use('/api/space/compras', spaceAuth, spaceComprasRoutes);
 app.use('/api/space/profesores', spaceAuth, spaceProfesoresRoutes);
 app.use('/api/space/clases-prueba', spaceAuth, spaceClasesPruebaRoutes);
 app.use('/api/space/torneos', spaceAuth, spaceTorneosRoutes);
+app.use('/api/space/referidos', spaceAuth, spaceReferidosRoutes);
 
 // 404
 app.use((_req, res) => {
