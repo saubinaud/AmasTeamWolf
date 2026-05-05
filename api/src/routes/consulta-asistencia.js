@@ -1,8 +1,15 @@
 const { Router } = require('express');
 const rateLimit = require('express-rate-limit');
 const { query, queryOne } = require('../db');
+const { AlumnoService, InscripcionService } = require('../services');
 
 const router = Router();
+
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code, ...(err.extra || {}) });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
+}
 
 // Rate limit específico: 30 req/min por IP
 const consultaLimiter = rateLimit({
@@ -29,36 +36,15 @@ router.get('/', consultaLimiter, async (req, res) => {
       return res.status(400).json({ success: false, error: 'DNI inválido' });
     }
 
-    // 1. Buscar alumno con DNI normalizado (alumno O apoderado)
-    let alumno = await queryOne(`
-      SELECT id, nombre_alumno, cinturon_actual
-      FROM alumnos
-      WHERE dni_alumno_norm = $1 AND estado = 'Activo'
-      LIMIT 1
-    `, [dniNorm]);
-
-    if (!alumno) {
-      // Intentar como DNI de apoderado
-      alumno = await queryOne(`
-        SELECT id, nombre_alumno, cinturon_actual
-        FROM alumnos
-        WHERE dni_apoderado_norm = $1 AND estado = 'Activo'
-        LIMIT 1
-      `, [dniNorm]);
-    }
+    // 1. Buscar alumno con DNI normalizado (alumno O apoderado) — unified query
+    const alumno = await AlumnoService.buscarPorDni(dniNorm, { soloActivos: true });
 
     if (!alumno) {
       return res.json({ success: false, error: 'DNI no encontrado. Puedes usar el DNI del alumno o del apoderado.' });
     }
 
     // 2. Buscar inscripción activa
-    const inscripcion = await queryOne(`
-      SELECT programa, clases_totales, fecha_inicio, fecha_fin, estado
-      FROM inscripciones
-      WHERE alumno_id = $1 AND estado = 'Activo'
-      ORDER BY fecha_inicio DESC
-      LIMIT 1
-    `, [alumno.id]);
+    const inscripcion = await InscripcionService.getActiva(alumno.id, { strict: true });
 
     let programa = null;
     let clasesTotales = 0;
@@ -112,8 +98,7 @@ router.get('/', consultaLimiter, async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('Error en consulta-asistencia:', err);
-    res.status(500).json({ success: false, error: 'Error del servidor' });
+    handleError(res, err);
   }
 });
 

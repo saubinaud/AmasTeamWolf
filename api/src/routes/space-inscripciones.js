@@ -1,7 +1,14 @@
 const { Router } = require('express');
 const { query, queryOne, pool } = require('../db');
+const { InscripcionService } = require('../services');
 
 const router = Router();
+
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code, ...(err.extra || {}) });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
+}
 
 // GET /api/space/inscripciones/vencimientos — Expiring within 7 days
 router.get('/vencimientos', async (_req, res) => {
@@ -25,76 +32,16 @@ router.get('/vencimientos', async (_req, res) => {
 // GET /api/space/inscripciones — List inscripciones paginated with filters
 router.get('/', async (req, res) => {
   try {
-    const { programa, estado_pago, activa, vence_en, sort, order } = req.query;
-    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
-    const offset = (page - 1) * limit;
-
-    // Safe sort columns
-    const ALLOWED_SORT = ['created_at', 'fecha_inicio', 'fecha_fin', 'programa', 'clases_totales'];
-    const sortCol = ALLOWED_SORT.includes(sort) ? `i.${sort}` : 'i.created_at';
-    const sortDir = order === 'asc' ? 'ASC' : 'DESC';
-
-    const conditions = [];
-    const params = [];
-    let paramIndex = 1;
-
-    if (programa) {
-      conditions.push(`i.programa = $${paramIndex++}`);
-      params.push(programa);
-    }
-    if (estado_pago) {
-      conditions.push(`LOWER(i.estado_pago) = $${paramIndex++}`);
-      params.push(estado_pago.toLowerCase());
-    }
-    if (activa !== undefined && activa !== '') {
-      conditions.push(`i.estado = $${paramIndex++}`);
-      params.push(activa === 'si' || activa === 'true' ? 'Activo' : 'Vencido');
-    }
-    // Filtro: inscripciones que vencen en los próximos N días
-    if (vence_en && !isNaN(parseInt(vence_en, 10))) {
-      const dias = parseInt(vence_en, 10);
-      conditions.push(`i.estado = 'Activo' AND i.fecha_fin IS NOT NULL AND i.fecha_fin BETWEEN CURRENT_DATE AND CURRENT_DATE + INTERVAL '${dias} days'`);
-    }
-
-    const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-    const countResult = await queryOne(
-      `SELECT COUNT(*) AS total FROM inscripciones i ${where}`,
-      params
-    );
-    const total = parseInt(countResult.total, 10);
-    const totalPages = Math.ceil(total / limit);
-
-    const rows = await query(
-      `SELECT i.id, i.alumno_id,
-              a.nombre_alumno AS alumno_nombre,
-              i.programa, i.fecha_inicio, i.fecha_fin,
-              i.clases_totales, i.turno, i.dias_tentativos,
-              i.frecuencia_semanal,
-              LOWER(i.estado_pago) AS estado_pago,
-              i.precio_programa, i.precio_pagado,
-              (i.estado = 'Activo') AS activa,
-              a.fecha_nacimiento,
-              i.created_at
-       FROM inscripciones i
-       JOIN alumnos a ON a.id = i.alumno_id
-       ${where}
-       ORDER BY ${sortCol} ${sortDir}
-       LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
-      [...params, limit, offset]
-    );
-
+    const result = await InscripcionService.listar(req.query);
     return res.json({
       success: true,
-      data: rows,
-      total,
-      page,
-      totalPages,
+      data: result.data,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     });
   } catch (err) {
-    console.error('Error listando inscripciones:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'INSC_LIST_ERROR' });
+    handleError(res, err);
   }
 });
 
@@ -105,30 +52,13 @@ router.get('/', async (req, res) => {
 // GET /api/space/inscripciones/:id — Full detail with alumno, pagos, contratos
 router.get('/:id', async (req, res) => {
   try {
-    const inscripcion = await queryOne('SELECT * FROM inscripciones WHERE id = $1', [req.params.id]);
-
-    if (!inscripcion) {
+    const data = await InscripcionService.getById(req.params.id);
+    return res.json({ success: true, data });
+  } catch (err) {
+    if (err.statusHint === 404) {
       return res.status(404).json({ success: false, error: 'Inscripcion no encontrada', code: 'INSC_NOT_FOUND' });
     }
-
-    const [alumno, pagos, contratos] = await Promise.all([
-      queryOne('SELECT * FROM alumnos WHERE id = $1', [inscripcion.alumno_id]),
-      query('SELECT * FROM pagos WHERE inscripcion_id = $1 ORDER BY created_at DESC', [req.params.id]),
-      query('SELECT * FROM contratos WHERE inscripcion_id = $1 ORDER BY created_at DESC', [req.params.id]),
-    ]);
-
-    return res.json({
-      success: true,
-      data: {
-        inscripcion,
-        alumno: alumno || null,
-        pagos,
-        contratos,
-      },
-    });
-  } catch (err) {
-    console.error('Error obteniendo inscripcion:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'INSC_GET_ERROR' });
+    handleError(res, err);
   }
 });
 
