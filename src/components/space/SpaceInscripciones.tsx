@@ -441,6 +441,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   const [filterEstadoPago, setFilterEstadoPago] = useState('');
   const [filterActiva, setFilterActiva] = useState('');
   const [filterVencimiento, setFilterVencimiento] = useState<'' | '5' | '7' | '15' | '30'>('');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [vencimientos, setVencimientos] = useState(0);
 
   // Check if dashboard sent us here with por_vencer filter
@@ -479,6 +480,8 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
       if (filterEstadoPago) params.set('estado_pago', filterEstadoPago);
       if (filterActiva) params.set('activa', filterActiva);
       if (filterVencimiento) params.set('vence_en', filterVencimiento);
+      params.set('sort', 'created_at');
+      params.set('order', sortOrder);
       const qs = params.toString();
       const res = await fetch(`${API_BASE}/space/inscripciones?${qs}`, { headers: authHeaders(token) });
       const data = await res.json();
@@ -492,7 +495,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
     } finally {
       setLoading(false);
     }
-  }, [token, search, filterPrograma, filterEstadoPago, filterActiva, filterVencimiento, page]);
+  }, [token, search, filterPrograma, filterEstadoPago, filterActiva, filterVencimiento, sortOrder, page]);
 
   const fetchVencimientos = useCallback(async () => {
     try {
@@ -607,9 +610,18 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   return (
     <div className="space-y-5">
       {/* Header */}
-      <div>
-        <h1 className="text-stone-900 text-xl font-bold">Inscritos</h1>
-        <p className="text-stone-400 text-xs mt-1">{total} inscripciones registradas</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-stone-900 text-xl font-bold">Inscritos</h1>
+          <p className="text-stone-400 text-xs mt-1">{total} inscripciones registradas</p>
+        </div>
+        <button
+          onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100 transition-all"
+          title={sortOrder === 'desc' ? 'Más recientes primero' : 'Más antiguos primero'}
+        >
+          {sortOrder === 'desc' ? '↓' : '↑'} Fecha inscripción
+        </button>
       </div>
 
       {/* Vencimientos alert */}

@@ -25,10 +25,15 @@ router.get('/vencimientos', async (_req, res) => {
 // GET /api/space/inscripciones — List inscripciones paginated with filters
 router.get('/', async (req, res) => {
   try {
-    const { programa, estado_pago, activa, vence_en } = req.query;
+    const { programa, estado_pago, activa, vence_en, sort, order } = req.query;
     const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
     const offset = (page - 1) * limit;
+
+    // Safe sort columns
+    const ALLOWED_SORT = ['created_at', 'fecha_inicio', 'fecha_fin', 'programa', 'clases_totales'];
+    const sortCol = ALLOWED_SORT.includes(sort) ? `i.${sort}` : 'i.created_at';
+    const sortDir = order === 'asc' ? 'ASC' : 'DESC';
 
     const conditions = [];
     const params = [];
@@ -75,7 +80,7 @@ router.get('/', async (req, res) => {
        FROM inscripciones i
        JOIN alumnos a ON a.id = i.alumno_id
        ${where}
-       ORDER BY i.created_at DESC
+       ORDER BY ${sortCol} ${sortDir}
        LIMIT $${paramIndex++} OFFSET $${paramIndex++}`,
       [...params, limit, offset]
     );
