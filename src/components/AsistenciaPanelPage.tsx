@@ -74,10 +74,13 @@ function formatHora12(hora24: string): string {
 function tiempoRestante(validoHasta: string): string {
   const diff = new Date(validoHasta).getTime() - Date.now();
   if (diff <= 0) return 'Expirado';
-  const mins = Math.floor(diff / 60000);
-  const hrs = Math.floor(mins / 60);
-  const m = mins % 60;
-  return hrs > 0 ? `${hrs}h ${m}m` : `${m}min`;
+  const totalSecs = Math.floor(diff / 1000);
+  const hrs = Math.floor(totalSecs / 3600);
+  const mins = Math.floor((totalSecs % 3600) / 60);
+  const secs = totalSecs % 60;
+  if (hrs > 0) return `${hrs}h ${String(mins).padStart(2, '0')}m ${String(secs).padStart(2, '0')}s`;
+  if (mins > 0) return `${mins}m ${String(secs).padStart(2, '0')}s`;
+  return `${secs}s`;
 }
 
 function edadLabel(minMeses?: number, maxMeses?: number): string {
@@ -135,9 +138,9 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     if (sessionStorage.getItem('amas_panel_auth') === 'true') setAutenticada(true);
   }, [skipAuth]);
 
-  // ── Countdown every 30s ──
+  // ── Countdown every second (for live QR timer) ──
   useEffect(() => {
-    const id = setInterval(() => setTick(t => t + 1), 30000);
+    const id = setInterval(() => setTick(t => t + 1), 1000);
     return () => clearInterval(id);
   }, []);
 
@@ -202,19 +205,19 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     fetchHorarios();
   }, [autenticada]);
 
-  // ── Load all active students once (for instant client-side search) ──
+  // ── Load all active students once (public endpoint, for instant client-side search) ──
   useEffect(() => {
     if (!autenticada) return;
     const fetchAlumnos = async () => {
       try {
-        const r = await fetch(`${API_BASE}/space/alumnos?limit=500&estado=activo`);
+        const r = await fetch(`${API_BASE}/asistencia/alumnos-activos`);
         if (!r.ok) return;
         const d = await r.json();
-        const list = Array.isArray(d) ? d : d?.data ?? [];
+        const list = Array.isArray(d?.data) ? d.data : [];
         setTodosAlumnos(list.map((a: any) => ({
           id: a.id,
-          nombre_alumno: a.nombre_alumno || a.nombre || '',
-          dni_alumno: a.dni_alumno || a.dni || '',
+          nombre_alumno: a.nombre_alumno || '',
+          dni_alumno: a.dni_alumno || '',
           categoria: a.categoria || '',
         })));
       } catch { /* ignore */ }
