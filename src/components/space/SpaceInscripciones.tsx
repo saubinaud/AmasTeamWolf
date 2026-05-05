@@ -616,10 +616,9 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
         </div>
         <button
           onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-stone-50 text-stone-500 border border-stone-200 hover:bg-stone-100 transition-all"
-          title={sortOrder === 'desc' ? 'Más recientes primero' : 'Más antiguos primero'}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-white text-stone-700 border border-stone-200 hover:bg-stone-50 shadow-sm transition-all"
         >
-          {sortOrder === 'desc' ? '↓' : '↑'} Fecha inscripción
+          {sortOrder === 'desc' ? '↓ Recientes primero' : '↑ Antiguos primero'}
         </button>
       </div>
 
@@ -726,14 +725,11 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
               <thead>
                 <tr className="border-b border-stone-200">
                   <th className={cx.th}>Alumno</th>
-                  <th className={cx.th}>Programa</th>
-                  <th className={cx.th + ' hidden lg:table-cell'}>Turno</th>
-                  <th className={cx.th + ' hidden lg:table-cell'}>Clases</th>
-                  <th className={cx.th + ' hidden sm:table-cell'}>Fecha inicio</th>
-                  <th className={cx.th + ' hidden md:table-cell'}>Fecha fin</th>
-                  <th className={cx.th + ' hidden xl:table-cell'}>Días</th>
+                  <th className={cx.th + ' hidden sm:table-cell'}>Programa / Turno</th>
+                  <th className={cx.th + ' hidden md:table-cell'}>Clases</th>
+                  <th className={cx.th + ' hidden sm:table-cell'}>Período</th>
                   <th className={cx.th}>Pago</th>
-                  <th className={cx.th}>Activa</th>
+                  <th className={cx.th}>Estado</th>
                 </tr>
               </thead>
               <tbody>
@@ -743,29 +739,34 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
                     onClick={() => handleRowClick(ins)}
                     className={cx.tr + ' hover:bg-stone-50/50 cursor-pointer transition-colors'}
                   >
-                    <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>
-                      <div>{ins.alumno_nombre} {ins.alumno_apellido}</div>
-                      {ins.fecha_nacimiento && (
-                        <span className="text-stone-400 text-[10px]">
-                          {(() => {
-                            const nac = new Date(ins.fecha_nacimiento);
-                            const meses = Math.floor((Date.now() - nac.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-                            return meses >= 12 ? `${Math.floor(meses / 12)} años` : `${meses} meses`;
-                          })()}
-                        </span>
-                      )}
+                    <td className={cx.td}>
+                      <div className="text-stone-900 font-medium">{ins.alumno_nombre} {ins.alumno_apellido}</div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {ins.fecha_nacimiento && (
+                          <span className="text-stone-400 text-[10px]">
+                            {(() => {
+                              const nac = new Date(ins.fecha_nacimiento);
+                              const meses = Math.floor((Date.now() - nac.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+                              return meses >= 12 ? `${Math.floor(meses / 12)} años` : `${meses} meses`;
+                            })()}
+                          </span>
+                        )}
+                        {ins.dias_tentativos && (
+                          <span className="text-stone-400 text-[10px]">{ins.dias_tentativos}</span>
+                        )}
+                      </div>
                     </td>
-                    <td className={cx.td + ' text-stone-600'}>{ins.programa}</td>
-                    <td className={cx.td + ' text-stone-600 hidden lg:table-cell'}>{ins.turno || '—'}</td>
-                    <td className={cx.td + ' text-stone-600 hidden lg:table-cell'}>
+                    <td className={cx.td + ' hidden sm:table-cell'}>
+                      <div className="text-stone-700 text-xs font-medium">{ins.programa}</div>
+                      <div className="text-stone-400 text-[10px]">{ins.turno || '—'}{ins.frecuencia_semanal != null && ins.frecuencia_semanal !== 2 ? ` · ${ins.frecuencia_semanal}x/sem` : ''}</div>
+                    </td>
+                    <td className={cx.td + ' hidden md:table-cell text-stone-600 text-xs'}>
                       {ins.clases_totales || '—'}
-                      {ins.frecuencia_semanal != null && ins.frecuencia_semanal !== 2 && (
-                        <span className="text-stone-400 text-[10px] ml-1">({ins.frecuencia_semanal}x)</span>
-                      )}
                     </td>
-                    <td className={cx.td + ' text-stone-600 hidden sm:table-cell'}>{formatFecha(ins.fecha_inicio)}</td>
-                    <td className={cx.td + ' text-stone-600 hidden md:table-cell'}>{formatFecha(ins.fecha_fin)}</td>
-                    <td className={cx.td + ' text-stone-500 text-xs hidden xl:table-cell'}>{ins.dias_tentativos || '—'}</td>
+                    <td className={cx.td + ' hidden sm:table-cell'}>
+                      <div className="text-stone-600 text-xs">{formatFecha(ins.fecha_inicio)}</div>
+                      <div className="text-stone-400 text-[10px]">{formatFecha(ins.fecha_fin)}</div>
+                    </td>
                     <td className={cx.td}>
                       <span className={cx.badge(PAGO_BADGE[ins.estado_pago] ?? badgeColors.gray)}>
                         {ins.estado_pago}
