@@ -77,17 +77,56 @@ async function yaRegistroHoy(alumnoId, turno) {
  * @param {object} opts - { turno, tokenQr, metodo, sedeId }
  * @returns {{ success, alumno, clase_detectada, asistencia }}
  */
+/**
+ * Registrar asistencia.
+ *
+ * Reglas de negocio:
+ * - Alumno INACTIVO → rechazar (admin lo desactivó manualmente)
+ * - Alumno ACTIVO + inscripción ACTIVA → registrar normal
+ * - Alumno ACTIVO + inscripción VENCIDA → registrar + flag membresia_vencida
+ * - Alumno ACTIVO + sin inscripción → registrar + flag sin_membresia
+ *
+ * Un alumno solo puede pasar a inactivo si completó todas sus clases.
+ */
 async function registrar(alumnoId, { turno, tokenQr, metodo = 'manual', sedeId = 1 } = {}) {
   // 1. Get alumno
   const alumno = await AlumnoService.getById(alumnoId);
 
-  // 2. Get inscription (with fallback)
+  // 2. Verificar si está inactivo (marcado manualmente por admin)
+  if (alumno.estado && alumno.estado.toLowerCase() === 'inactivo') {
+    throw new NotFoundError(
+      `${alumno.nombre_alumno} está marcado como inactivo. Contacta al administrador.`,
+      'ALUMNO_INACTIVO'
+    );
+  }
+
+  // 3. Get inscription (activa primero, fallback a más reciente)
   const inscripcion = await InscripcionService.getActiva(alumnoId, { strict: false });
 
-  // 3. Resolve turno
+  // 4. Determinar estado de membresía
+  let membresiaVencida = false;
+  let sinMembresia = false;
+  let clasesRestantes = null;
+
+  if (!inscripcion) {
+    sinMembresia = true;
+  } else if (inscripcion.estado !== 'Activo') {
+    membresiaVencida = true;
+  }
+
+  // Calcular clases restantes si hay inscripción con clases_totales
+  if (inscripcion?.clases_totales && inscripcion.clases_totales > 0) {
+    const asistidas = await queryOne(
+      "SELECT COUNT(*) AS total FROM asistencias WHERE inscripcion_id = $1 AND asistio = 'Sí'",
+      [inscripcion.id]
+    );
+    clasesRestantes = inscripcion.clases_totales - parseInt(asistidas?.total || '0');
+  }
+
+  // 5. Resolve turno
   const turnoFinal = turno || resolverTurno(alumno, inscripcion);
 
-  // 4. Check duplicate
+  // 6. Check duplicate
   if (await yaRegistroHoy(alumnoId, turnoFinal)) {
     throw new DuplicateError(
       `${alumno.nombre_alumno} ya tiene asistencia registrada hoy para ${turnoFinal}`,
@@ -96,7 +135,7 @@ async function registrar(alumnoId, { turno, tokenQr, metodo = 'manual', sedeId =
     );
   }
 
-  // 5. Resolve QR session if token provided
+  // 7. Resolve QR session if token provided
   let qrSesionId = null;
   if (tokenQr) {
     const sesion = await queryOne(
@@ -108,7 +147,7 @@ async function registrar(alumnoId, { turno, tokenQr, metodo = 'manual', sedeId =
     }
   }
 
-  // 6. INSERT into asistencias
+  // 8. INSERT into asistencias (SIEMPRE registra si alumno está activo)
   const asistencia = await queryOne(`
     INSERT INTO asistencias (alumno_id, inscripcion_id, sede_id, fecha, hora, turno, asistio, metodo_registro, qr_sesion_id)
     VALUES ($1, $2, $3, CURRENT_DATE, NOW()::time, $4, 'Sí', $5, $6)
@@ -122,11 +161,15 @@ async function registrar(alumnoId, { turno, tokenQr, metodo = 'manual', sedeId =
     qrSesionId,
   ]);
 
-  // 7. Return result
+  // 9. Return result con flags de estado
   return {
     success: true,
     alumno: alumno.nombre_alumno,
     clase_detectada: turnoFinal,
+    programa: inscripcion?.programa || null,
+    clases_restantes: clasesRestantes,
+    membresia_vencida: membresiaVencida,
+    sin_membresia: sinMembresia,
     asistencia,
   };
 }
