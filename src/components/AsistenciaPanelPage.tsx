@@ -101,11 +101,12 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const [generandoDiario, setGenerandoDiario] = useState(false);
   const [reiniciandoDiario, setReiniciandoDiario] = useState(false);
 
-  // Search by name
+  // Search by name (client-side)
   const [busquedaNombre, setBusquedaNombre] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState<AlumnoBusqueda[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [registrandoPorNombre, setRegistrandoPorNombre] = useState(false);
+  const [todosAlumnos, setTodosAlumnos] = useState<AlumnoBusqueda[]>([]);
 
   // DNI manual
   const [dniManual, setDniManual] = useState('');
@@ -201,22 +202,37 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     fetchHorarios();
   }, [autenticada]);
 
-  // ── Search alumnos by name/DNI (debounced) ──
+  // ── Load all active students once (for instant client-side search) ──
   useEffect(() => {
-    if (busquedaNombre.length < 2) { setResultadosBusqueda([]); return; }
-    const timeout = setTimeout(async () => {
-      setBuscando(true);
+    if (!autenticada) return;
+    const fetchAlumnos = async () => {
       try {
-        const r = await fetch(`${API_BASE}/space/alumnos?search=${encodeURIComponent(busquedaNombre)}&limit=8`);
+        const r = await fetch(`${API_BASE}/space/alumnos?limit=500&estado=activo`);
         if (!r.ok) return;
         const d = await r.json();
         const list = Array.isArray(d) ? d : d?.data ?? [];
-        setResultadosBusqueda(list);
+        setTodosAlumnos(list.map((a: any) => ({
+          id: a.id,
+          nombre_alumno: a.nombre_alumno || a.nombre || '',
+          dni_alumno: a.dni_alumno || a.dni || '',
+          categoria: a.categoria || '',
+        })));
       } catch { /* ignore */ }
-      finally { setBuscando(false); }
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [busquedaNombre]);
+    };
+    fetchAlumnos();
+  }, [autenticada]);
+
+  // ── Search alumnos client-side (instant) ──
+  useEffect(() => {
+    if (busquedaNombre.length < 2) { setResultadosBusqueda([]); return; }
+    const q = busquedaNombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const filtered = todosAlumnos.filter(a => {
+      const nombre = (a.nombre_alumno || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const dni = (a.dni_alumno || '');
+      return nombre.includes(q) || dni.includes(q);
+    }).slice(0, 8);
+    setResultadosBusqueda(filtered);
+  }, [busquedaNombre, todosAlumnos]);
 
   // ── Handlers ──
 
