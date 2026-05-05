@@ -1,6 +1,6 @@
-import { motion } from 'motion/react';
 import { timelineMilestones } from '../data/timeline';
 import { Check } from 'lucide-react';
+import { FadeIn } from './FadeIn';
 
 // Iconos para cada etapa
 const stageIcons = [
@@ -27,18 +27,12 @@ export function LeadershipTimeline() {
       </div>
 
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="text-center mb-8 sm:mb-12 md:mb-16"
-        >
+        <FadeIn className="text-center mb-8 sm:mb-12 md:mb-16">
         <h2 className="text-white mb-3 sm:mb-4">🏆 EL CAMINO LEADERSHIP en 12 Hitos</h2>
         <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-3xl mx-auto">
           Un viaje estructurado donde cada hito prepara el siguiente
         </p>
-        </motion.div>
+        </FadeIn>
 
         {/* Timeline vertical */}
         <div className="max-w-5xl mx-auto relative">
@@ -49,14 +43,12 @@ export function LeadershipTimeline() {
           <div className="space-y-4 md:space-y-14 max-w-md md:max-w-none mx-auto">
             {timelineMilestones.map((milestone, index) => {
               const isEven = index % 2 === 0;
-              
+
               return (
-                <motion.div
+                <FadeIn
                   key={milestone.month}
-                  initial={{ opacity: 0, x: isEven ? -30 : 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  delay={index * 50}
+                  direction={isEven ? 'up' : 'up'}
                   className={`relative flex items-center ${
                     isEven ? 'md:flex-row' : 'md:flex-row-reverse'
                   } flex-col md:gap-8`}
@@ -66,29 +58,29 @@ export function LeadershipTimeline() {
                     <div className="bg-zinc-900/60 border border-[#FA7B21]/30 rounded-lg md:rounded-2xl px-3 py-3 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-300 group relative overflow-hidden">
                       {/* Glow effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/5 to-[#FCA929]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      
+
                       <div className={`relative flex ${isEven ? 'md:flex-row-reverse' : 'md:flex-row'} flex-row md:flex-row items-start gap-3 md:gap-4`}>
                         {/* Icon */}
                         <div className="text-3xl md:text-5xl flex-shrink-0">
                           {stageIcons[index]}
                         </div>
-                        
+
                         <div className="flex-1 min-w-0">
                           {/* Badge */}
                           <div className="inline-block px-2 py-0.5 md:px-3 md:py-1 bg-[#FA7B21] rounded-full text-white text-[10px] md:text-xs mb-2 md:mb-3">
                             HITO {milestone.month}
                           </div>
-                          
+
                           {/* Title */}
                           <h3 className="text-white text-sm md:text-2xl lg:text-3xl mb-1 md:mb-2 leading-snug md:leading-normal">
                             {milestone.title}
                           </h3>
-                          
+
                           {/* Description */}
                           <p className="text-[#FCA929] italic text-xs md:text-base mb-2 md:mb-4 leading-snug">
                             "{milestone.description}"
                           </p>
-                          
+
                           {/* Achievements - Todos visibles */}
                           <div className="space-y-1 md:space-y-2">
                             {milestone.achievements.map((achievement, i) => (
@@ -111,7 +103,7 @@ export function LeadershipTimeline() {
                   <div className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-gradient-to-br from-[#FA7B21] to-[#E65C0F] items-center justify-center border-4 border-black shadow-lg z-10">
                     <Check className="w-7 h-7 lg:w-8 lg:h-8 text-white" strokeWidth={3} />
                   </div>
-                  
+
                   {/* Círculo móvil - Centrado en la línea */}
                   <div className="md:hidden absolute left-[22px] top-4 transform -translate-x-1/2 w-8 h-8 rounded-full bg-gradient-to-br from-[#FA7B21] to-[#E65C0F] flex items-center justify-center border-2 border-black shadow-md z-10">
                     <Check className="w-4 h-4 text-white" strokeWidth={2.5} />
@@ -119,24 +111,18 @@ export function LeadershipTimeline() {
 
                   {/* Spacer para el lado vacío en desktop */}
                   <div className="hidden md:block w-[calc(50%-2rem)]" />
-                </motion.div>
+                </FadeIn>
               );
             })}
           </div>
         </div>
 
         {/* CTA final */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="mt-8 sm:mt-12 md:mt-16 text-center"
-        >
+        <FadeIn className="mt-8 sm:mt-12 md:mt-16 text-center">
           <div className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-full text-white">
             <span className="text-sm sm:text-base md:text-lg lg:text-xl">🏆 12 hitos de transformación completa</span>
           </div>
-        </motion.div>
+        </FadeIn>
       </div>
     </section>
   );

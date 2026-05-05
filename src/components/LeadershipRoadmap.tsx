@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { useRef } from 'react';
 import { Card, CardContent } from './ui/card';
 import { CheckCircle } from 'lucide-react';
+import { FadeIn } from './FadeIn';
 
 interface RoadmapStage {
   number: number;
@@ -108,41 +108,19 @@ const stages: RoadmapStage[] = [
 
 export function LeadershipRoadmap() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const pathRef = useRef<SVGPathElement>(null);
-  const [pathLength, setPathLength] = useState(0);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start']
-  });
-
-  const pathProgress = useTransform(scrollYProgress, [0, 1], [0, pathLength]);
-
-  useEffect(() => {
-    if (pathRef.current) {
-      const length = pathRef.current.getTotalLength();
-      setPathLength(length);
-    }
-  }, []);
 
   return (
     <section id="roadmap" ref={containerRef} className="py-20 bg-gradient-to-b from-black to-zinc-900 relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <FadeIn className="text-center mb-16">
           <h2 className="text-white mb-4">🏆 EL CAMINO LEADERSHIP en 7 Etapas</h2>
           <p className="text-white/70 text-xl max-w-3xl mx-auto">
             Un viaje estructurado donde cada etapa prepara la siguiente
           </p>
-        </motion.div>
+        </FadeIn>
 
         <div className="max-w-5xl mx-auto relative">
-          {/* SVG Path - El camino animado */}
+          {/* SVG Path - Decorative line */}
           <svg
             className="absolute left-0 right-0 w-full h-full pointer-events-none hidden md:block"
             style={{ top: '0' }}
@@ -154,40 +132,20 @@ export function LeadershipRoadmap() {
               </linearGradient>
             </defs>
             <path
-              ref={pathRef}
               d="M 100 50 Q 200 100, 100 200 T 100 400 T 100 600 T 100 800 T 100 1000 T 100 1200 T 100 1400"
               stroke="url(#pathGradient)"
               strokeWidth="3"
               fill="none"
-              strokeDasharray={pathLength}
-              strokeDashoffset={pathLength}
-              style={{
-                strokeDashoffset: useTransform(pathProgress, (v) => pathLength - v).get()
-              }}
             />
           </svg>
-
-          {/* Bolita animada que sigue el scroll */}
-          <motion.div
-            className="absolute w-8 h-8 bg-[#FA7B21] rounded-full border-4 border-white shadow-lg hidden md:block z-20"
-            style={{
-              left: '84px',
-              top: useTransform(scrollYProgress, [0, 1], ['0px', `${stages.length * 220}px`]),
-              boxShadow: '0 0 20px rgba(250, 123, 33, 0.6)'
-            }}
-          >
-            <div className="absolute inset-0 bg-[#FA7B21] rounded-full animate-ping opacity-75" />
-          </motion.div>
 
           {/* Etapas */}
           <div className="space-y-12 relative z-10">
             {stages.map((stage, index) => (
-              <motion.div
+              <FadeIn
                 key={stage.number}
-                initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-100px' }}
-                transition={{ duration: 0.6, delay: 0.1 }}
+                delay={100}
+                direction="up"
                 className={`flex items-center gap-8 ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
               >
                 {/* Marcador numérico */}
@@ -212,32 +170,23 @@ export function LeadershipRoadmap() {
 
                     <div className="grid gap-2">
                       {stage.achievements.map((achievement, i) => (
-                        <motion.div
+                        <div
                           key={i}
-                          initial={{ opacity: 0, x: -20 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: i * 0.1 }}
                           className="flex items-center gap-2"
                         >
                           <CheckCircle className="h-4 w-4 text-[#FCA929] flex-shrink-0" />
                           <span className="text-white/70 text-sm">{achievement}</span>
-                        </motion.div>
+                        </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
-              </motion.div>
+              </FadeIn>
             ))}
           </div>
 
           {/* Información final */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-16 bg-gradient-to-r from-[#431C28]/50 to-zinc-900/50 border border-[#FA7B21]/30 rounded-lg p-8 text-center"
-          >
+          <FadeIn className="mt-16 bg-gradient-to-r from-[#431C28]/50 to-zinc-900/50 border border-[#FA7B21]/30 rounded-lg p-8 text-center">
             <div className="grid md:grid-cols-2 gap-8 mb-6">
               <div>
                 <p className="text-white/70 mb-2">⏱️ DURACIÓN TOTAL</p>
@@ -249,10 +198,10 @@ export function LeadershipRoadmap() {
               </div>
             </div>
             <p className="text-white/80 max-w-2xl mx-auto">
-              No solo técnica marcial, sino liderazgo, disciplina, 
+              No solo técnica marcial, sino liderazgo, disciplina,
               creatividad y la confianza para destacar en cualquier área.
             </p>
-          </motion.div>
+          </FadeIn>
         </div>
       </div>
     </section>

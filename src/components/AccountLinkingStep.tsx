@@ -5,7 +5,6 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
-import { motion } from 'motion/react';
 
 interface AccountLinkingStepProps {
     onComplete: () => void;
@@ -86,21 +85,13 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
     if (linked) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a] px-4">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center"
-                >
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: 0.2, type: "spring" }}
-                    >
+                <div className="text-center animate-fade-in-up">
+                    <div>
                         <CheckCircle className="w-20 h-20 text-emerald-500 mx-auto mb-6" />
-                    </motion.div>
+                    </div>
                     <h2 className="text-2xl font-bold text-white mb-2">¡Cuenta Vinculada!</h2>
                     <p className="text-white/60">Cargando tu perfil...</p>
-                </motion.div>
+                </div>
             </div>
         );
     }
@@ -114,21 +105,16 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
             </div>
 
             <div className="relative max-w-lg mx-auto">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 shadow-2xl"
+                <div
+                    className="bg-zinc-900/80 border border-white/10 rounded-2xl p-8 shadow-2xl animate-fade-in-up"
                 >
                     {/* Header */}
                     <div className="text-center mb-8">
-                        <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ type: "spring", delay: 0.1 }}
+                        <div
                             className="w-20 h-20 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-[#FA7B21]/30"
                         >
                             <Users className="w-10 h-10 text-white" />
-                        </motion.div>
+                        </div>
                         <h1 className="text-2xl font-bold text-white mb-2">
                             ¡Bienvenido a AMAS!
                         </h1>
@@ -199,10 +185,8 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
 
                         {/* Search Result */}
                         {searchResult && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6"
+                            <div
+                                className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-6 animate-fade-in-up"
                             >
                                 <div className="flex items-start gap-4">
                                     <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -248,7 +232,7 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
                                         </>
                                     )}
                                 </Button>
-                            </motion.div>
+                            </div>
                         )}
 
                         {/* Help text */}
@@ -277,7 +261,7 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
                             Cerrar sesión
                         </button>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </div>
     );
