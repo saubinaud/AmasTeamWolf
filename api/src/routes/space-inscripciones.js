@@ -65,11 +65,12 @@ router.get('/', async (req, res) => {
       `SELECT i.id, i.alumno_id,
               a.nombre_alumno AS alumno_nombre,
               i.programa, i.fecha_inicio, i.fecha_fin,
-              i.clases_totales, i.turno,
+              i.clases_totales, i.turno, i.dias_tentativos,
               i.frecuencia_semanal,
               LOWER(i.estado_pago) AS estado_pago,
               i.precio_programa, i.precio_pagado,
               (i.estado = 'Activo') AS activa,
+              a.fecha_nacimiento,
               i.created_at
        FROM inscripciones i
        JOIN alumnos a ON a.id = i.alumno_id
