@@ -332,7 +332,10 @@ export function SpaceInscribir({ token, onGoToInscritos }: Props) {
   const descuentoManual = Number(admin.descuentoManual) || 0;
   const descuentoDineroTotal = descuentoDinero + descuentoManual;
 
-  const subtotal = precioBase + precioPolosAjustado + precioUniforme - descuentoDineroTotal;
+  // Cargo adicional por frecuencia > 2x/semana (S/100 por cada clase extra)
+  const cargoFrecuencia = frecuenciaSemanal > 2 ? (frecuenciaSemanal - 2) * 100 : 0;
+
+  const subtotal = precioBase + cargoFrecuencia + precioPolosAjustado + precioUniforme - descuentoDineroTotal;
   const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
   const totalCalculado = Math.max(0, subtotal - descuentoPorcentualMonto);
 
@@ -833,31 +836,29 @@ export function SpaceInscribir({ token, onGoToInscritos }: Props) {
           {/* Frecuencia semanal */}
           <div>
             <label className={cx.label}>Frecuencia semanal</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFrecuenciaSemanal(2)}
-                className={
-                  frecuenciaSemanal === 2
-                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
-                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
-                }
-              >
-                2x por semana
-              </button>
-              <button
-                onClick={() => setFrecuenciaSemanal(1)}
-                className={
-                  frecuenciaSemanal === 1
-                    ? 'flex-1 px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
-                    : 'flex-1 px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
-                }
-              >
-                1x por semana
-              </button>
+            <div className="flex gap-1.5 flex-wrap">
+              {[1, 2, 3, 4, 5, 6].map(n => (
+                <button
+                  key={n}
+                  onClick={() => setFrecuenciaSemanal(n)}
+                  className={
+                    frecuenciaSemanal === n
+                      ? 'px-3 py-2.5 rounded-xl border-2 border-[var(--accent)] bg-orange-50 text-[var(--accent)] text-xs font-semibold'
+                      : 'px-3 py-2.5 rounded-xl border-2 border-stone-200 bg-white text-stone-500 text-xs font-semibold hover:border-orange-200 transition-all'
+                  }
+                >
+                  {n}x/sem
+                </button>
+              ))}
             </div>
             {frecuenciaSemanal === 1 && (
-              <p className="text-amber-400 text-xs mt-2">
-                El programa de {programa === '1mes' ? '1 mes' : programa === 'full' ? '3 meses' : programa === '6meses' ? '6 meses' : '12 meses'} se extiende a {programa === '1mes' ? '2 meses' : programa === 'full' ? '6 meses' : programa === '6meses' ? '12 meses' : '24 meses'} (mismo numero de clases, 1 vez por semana). Selecciona solo 1 dia tentativo.
+              <p className="text-amber-500 text-xs mt-2">
+                Programa extendido al doble de duración (mismo total de clases, 1 vez por semana).
+              </p>
+            )}
+            {frecuenciaSemanal > 2 && (
+              <p className="text-emerald-600 text-xs mt-2">
+                +S/ {(frecuenciaSemanal - 2) * 100} adicional por {frecuenciaSemanal - 2} clase{frecuenciaSemanal > 3 ? 's' : ''} extra/semana
               </p>
             )}
           </div>

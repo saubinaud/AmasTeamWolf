@@ -270,9 +270,12 @@ function EditModal({
           <div>
             <label className={cx.label}>Frecuencia semanal</label>
             <select value={frecuenciaSemanal} onChange={e => setFrecuenciaSemanal(parseInt(e.target.value))} className={cx.select}>
-              <option value={1}>1 vez/semana</option>
-              <option value={2}>2 veces/semana</option>
-              <option value={3}>3 veces/semana</option>
+              <option value={1}>1x/semana</option>
+              <option value={2}>2x/semana</option>
+              <option value={3}>3x/semana (+S/100)</option>
+              <option value={4}>4x/semana (+S/200)</option>
+              <option value={5}>5x/semana (+S/300)</option>
+              <option value={6}>6x/semana (+S/400)</option>
             </select>
           </div>
           <div>

@@ -499,7 +499,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               >
                 <div className="flex items-center gap-1.5 mb-2">
                   <Award className="w-3.5 h-3.5 text-[#FA7B21]" />
-                  <span className="text-[10px] text-[#FA7B21]/80">Plan</span>
+                  <span className="text-[10px] text-[#FA7B21]/80">Membresía</span>
                 </div>
                 <p className="text-xs font-semibold text-orange-300 truncate">{user.matricula?.programa}</p>
                 <p className="text-[10px] text-zinc-500">{user.matricula?.clasesTotales} clases</p>
@@ -864,7 +864,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
 
               <div className="flex justify-between items-start mb-6 relative">
                 <div>
-                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Tu Plan</p>
+                  <p className="text-[10px] text-zinc-500 uppercase tracking-widest mb-1">Tu Membresía</p>
                   <h3 className="text-2xl font-bold">{user.matricula?.programa}</h3>
                 </div>
                 <Badge className={cn(
@@ -946,7 +946,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                     <Snowflake className="w-6 h-6 text-blue-400" />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-blue-100">Congelar Plan</h3>
+                    <h3 className="text-base font-semibold text-blue-100">Congelar Membresía</h3>
                     <p className="text-sm text-blue-300/60">Máximo {maxDiasCongelar} días disponibles</p>
                   </div>
                 </div>
@@ -1096,7 +1096,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 variant="outline"
                 className="w-full h-14 border-white/10 bg-white/5 hover:bg-white/10 rounded-2xl font-medium text-base transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
               >
-                <Zap className="w-5 h-5 mr-2 text-[#FA7B21]" /> Ver Todos los Planes
+                <Zap className="w-5 h-5 mr-2 text-[#FA7B21]" /> Ver Todas las Membresías
               </Button>
             </div>
           </div>
@@ -1421,7 +1421,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
             <AlertTriangle className={cn("w-5 h-5 flex-shrink-0", estaVencido ? "text-red-400" : "text-amber-400")} />
             <div className="flex-1 min-w-0">
               <p className={cn("text-sm font-medium", estaVencido ? "text-red-300" : "text-amber-300")}>
-                {estaVencido ? `Vencido hace ${diasVencido} días` : `${diasRestantes} días restantes`}
+                {estaVencido ? `Vencido hace ${diasVencido} días` : `${user?.matricula?.clasesRestantes ?? diasRestantes} clases restantes`}
               </p>
             </div>
             <Button
@@ -1481,7 +1481,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               {[
                 { id: 'home', icon: Home, label: 'Inicio' },
                 { id: 'calendar', icon: Calendar, label: 'Asistencias' },
-                { id: 'plan', icon: CreditCard, label: 'Plan' },
+                { id: 'plan', icon: CreditCard, label: 'Membresía' },
                 { id: 'graduacion', icon: Award, label: 'Graduación' },
                 { id: 'messages', icon: MessageCircle, label: 'Mensajes' },
               ].map(item => (
