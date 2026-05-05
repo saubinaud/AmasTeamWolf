@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { Modal } from './Modal';
+import { SpaceSelect } from './SpaceSelect';
 // Fechas — timeZone: America/Lima forzado
 import { formatFecha } from './dateUtils';
 
@@ -269,14 +270,18 @@ function EditModal({
           </div>
           <div>
             <label className={cx.label}>Frecuencia semanal</label>
-            <select value={frecuenciaSemanal} onChange={e => setFrecuenciaSemanal(parseInt(e.target.value))} className={cx.select}>
-              <option value={1}>1x/semana</option>
-              <option value={2}>2x/semana</option>
-              <option value={3}>3x/semana (+S/100)</option>
-              <option value={4}>4x/semana (+S/200)</option>
-              <option value={5}>5x/semana (+S/300)</option>
-              <option value={6}>6x/semana (+S/400)</option>
-            </select>
+            <SpaceSelect
+              value={String(frecuenciaSemanal)}
+              onChange={v => setFrecuenciaSemanal(parseInt(v))}
+              options={[
+                { value: '1', label: '1x/semana' },
+                { value: '2', label: '2x/semana' },
+                { value: '3', label: '3x/semana (+S/100)' },
+                { value: '4', label: '4x/semana (+S/200)' },
+                { value: '5', label: '5x/semana (+S/300)' },
+                { value: '6', label: '6x/semana (+S/400)' },
+              ]}
+            />
           </div>
           <div>
             <label className={cx.label}>Turno / Clase</label>
@@ -304,18 +309,22 @@ function EditModal({
           </div>
           <div>
             <label className={cx.label}>Estado de pago</label>
-            <select value={estadoPago} onChange={e => setEstadoPago(e.target.value as Inscripcion['estado_pago'])} className={cx.select}>
-              {ESTADO_PAGO_OPTIONS.map(ep => (
-                <option key={ep} value={ep}>{ep.charAt(0).toUpperCase() + ep.slice(1)}</option>
-              ))}
-            </select>
+            <SpaceSelect
+              value={estadoPago}
+              onChange={v => setEstadoPago(v as Inscripcion['estado_pago'])}
+              options={ESTADO_PAGO_OPTIONS.map(ep => ({ value: ep, label: ep.charAt(0).toUpperCase() + ep.slice(1) }))}
+            />
           </div>
           <div>
             <label className={cx.label}>Estado</label>
-            <select value={activa ? 'si' : 'no'} onChange={e => setActiva(e.target.value === 'si')} className={cx.select}>
-              <option value="si">Activa</option>
-              <option value="no">Inactiva</option>
-            </select>
+            <SpaceSelect
+              value={activa ? 'si' : 'no'}
+              onChange={v => setActiva(v === 'si')}
+              options={[
+                { value: 'si', label: 'Activa' },
+                { value: 'no', label: 'Inactiva / Vencida' },
+              ]}
+            />
           </div>
         </div>
 
