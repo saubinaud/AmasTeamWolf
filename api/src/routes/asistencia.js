@@ -430,12 +430,19 @@ router.post('/por-nombre', async (req, res) => {
       res.json(data);
     } else {
       // Sin token: registro manual directo
-      // Buscar inscripcion activa
-      const inscripcion = await queryOne(`
-        SELECT id, sede_id FROM inscripciones
-        WHERE alumno_id = $1 AND estado = 'activa'
+      // Buscar inscripción: primero activa, sino la más reciente
+      let inscripcion = await queryOne(`
+        SELECT id FROM inscripciones
+        WHERE alumno_id = $1 AND estado = 'Activo'
         ORDER BY fecha_inicio DESC LIMIT 1
       `, [alumno_id]);
+      if (!inscripcion) {
+        inscripcion = await queryOne(`
+          SELECT id FROM inscripciones
+          WHERE alumno_id = $1
+          ORDER BY fecha_inicio DESC LIMIT 1
+        `, [alumno_id]);
+      }
 
       // Verificar si ya marcó hoy
       const yaRegistro = await queryOne(`
@@ -453,12 +460,11 @@ router.post('/por-nombre', async (req, res) => {
       }
 
       await query(`
-        INSERT INTO asistencias (alumno_id, inscripcion_id, sede_id, fecha, hora, turno, asistio)
-        VALUES ($1, $2, $3, CURRENT_DATE, NOW()::time, $4, 'Sí')
+        INSERT INTO asistencias (alumno_id, inscripcion_id, sede_id, fecha, hora, turno, asistio, metodo_registro)
+        VALUES ($1, $2, 1, CURRENT_DATE, NOW()::time, $3, 'Sí', 'manual')
       `, [
         alumno_id,
         inscripcion?.id || null,
-        inscripcion?.sede_id || 1,
         turnoFinal,
       ]);
 
@@ -502,18 +508,28 @@ router.get('/buscar-alumno', async (req, res) => {
     }
 
     const normalized = q.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    // Split into words for multi-token search ("rafael luyo" → both must match)
+    const words = normalized.split(/\s+/).filter(w => w.length >= 2);
+
+    if (words.length === 0) return res.json([]);
+
+    // Build condition: each word must appear in name OR the full query matches DNI
+    const nameConditions = words.map((_, i) => `nombre_alumno_norm LIKE '%' || $${i + 1} || '%'`).join(' AND ');
+    const dniParam = words.length + 1;
+    const params = [...words, normalized];
 
     const rows = await query(`
       SELECT a.id, a.nombre_alumno, a.dni_alumno, a.categoria
       FROM alumnos a
       WHERE LOWER(a.estado) = 'activo'
         AND (
-          nombre_alumno_norm LIKE '%' || $1 || '%'
-          OR dni_alumno LIKE '%' || $1 || '%'
+          (${nameConditions})
+          OR dni_alumno LIKE '%' || $${dniParam} || '%'
+          OR dni_apoderado LIKE '%' || $${dniParam} || '%'
         )
       ORDER BY nombre_alumno
       LIMIT 8
-    `, [normalized]);
+    `, params);
 
     res.json(rows);
   } catch (err) {
