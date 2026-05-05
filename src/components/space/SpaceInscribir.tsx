@@ -24,6 +24,7 @@ import {
   obtenerClasesExtraDePromo,
   formatearFechaLarga,
   toISODateString,
+  parseISOToLima,
 } from './matriculaShared';
 
 // ---------------------------------------------------------------------------
@@ -232,7 +233,7 @@ export function SpaceInscribir({ token, onGoToInscritos }: Props) {
       return;
     }
     const clasesExtra = codigoAplicado?.codigo ? obtenerClasesExtraDePromo(codigoAplicado.codigo) : 0;
-    const resultado = calcularFechaFin(new Date(form.fechaInicio), programa, diasTentativos, clasesExtra);
+    const resultado = calcularFechaFin(parseISOToLima(form.fechaInicio), programa, diasTentativos, clasesExtra);
     setFechaFinCalculada(toISODateString(resultado.fechaFin));
     setDetallesFechaFin({
       clasesTotales: resultado.clasesTotales,

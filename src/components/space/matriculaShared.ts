@@ -161,8 +161,29 @@ export interface HorariosInfo {
 
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
+// Obtener componentes de fecha en timezone Lima (evita desfase UTC)
+function toLimaDate(d: Date): { year: number; month: number; day: number; weekday: number } {
+  const parts = d.toLocaleDateString('en-US', { timeZone: 'America/Lima', year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short' });
+  const [weekdayStr, dateStr] = parts.split(', ');
+  const [m, day, y] = dateStr.split('/').map(Number);
+  const weekdays: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+  return { year: y, month: m, day, weekday: weekdays[weekdayStr] ?? d.getDay() };
+}
+
+// Crear Date desde año/mes/día en Lima (sin desfase UTC)
+export function dateFromLima(year: number, month: number, day: number): Date {
+  return new Date(year, month - 1, day, 12, 0, 0); // noon to avoid DST edge
+}
+
+// Parse ISO date string '2026-05-05' → Date en Lima (sin desfase UTC)
+export function parseISOToLima(isoStr: string): Date {
+  const [y, m, d] = isoStr.split('-').map(Number);
+  return dateFromLima(y, m, d);
+}
+
 export function obtenerNombreDia(fecha: Date): string {
-  return DIAS[fecha.getDay()];
+  const { weekday } = toLimaDate(fecha);
+  return DIAS[weekday];
 }
 
 export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
@@ -223,46 +244,53 @@ export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
 }
 
 export function esFeriado(fecha: Date): boolean {
-  const anio = fecha.getFullYear();
-  const mes = fecha.getMonth() + 1;
-  const dia = fecha.getDate();
+  const { year, month, day } = toLimaDate(fecha);
 
-  const esFijo = FERIADOS_FIJOS_PERU.some((f) => f.mes === mes && f.dia === dia);
+  const esFijo = FERIADOS_FIJOS_PERU.some((f) => f.mes === month && f.dia === day);
   if (esFijo) return true;
 
-  const fechaStr = fecha.toISOString().split('T')[0];
-  const moviles = FERIADOS_MOVILES[anio] || [];
+  const fechaStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const moviles = FERIADOS_MOVILES[year] || [];
   return moviles.some((f) => f.fecha === fechaStr);
 }
 
 export function esCierreVacacionalAMAS(fecha: Date): boolean {
-  const mes = fecha.getMonth() + 1;
-  const dia = fecha.getDate();
-  if (mes === 12 && dia >= 20) return true;
-  if (mes === 1 && dia <= 4) return true;
+  const { month, day } = toLimaDate(fecha);
+  if (month === 12 && day >= 20) return true;
+  if (month === 1 && day <= 4) return true;
   return false;
 }
 
-// Devuelve las próximas 5 fechas hábiles a partir de mañana
+// Devuelve las próximas 5 fechas hábiles a partir de mañana (timezone Lima)
 export function obtenerFechasDisponiblesInicio(): Date[] {
-  const hoy = new Date();
+  const now = new Date();
+  const { year, month, day } = toLimaDate(now);
   const fechas: Date[] = [];
   let contadas = 0;
-  const cursor = new Date(hoy);
-  cursor.setDate(cursor.getDate() + 1);
+  let cursorDay = day + 1;
+  let cursorMonth = month;
+  let cursorYear = year;
 
   while (contadas < 5) {
-    if (cursor.getDay() === 0) {
-      cursor.setDate(cursor.getDate() + 1);
+    // Advance month if needed
+    const daysInMonth = new Date(cursorYear, cursorMonth, 0).getDate();
+    if (cursorDay > daysInMonth) {
+      cursorDay = 1;
+      cursorMonth++;
+      if (cursorMonth > 12) { cursorMonth = 1; cursorYear++; }
+    }
+
+    const cursor = dateFromLima(cursorYear, cursorMonth, cursorDay);
+    const { weekday } = toLimaDate(cursor);
+
+    if (weekday === 0 || esCierreVacacionalAMAS(cursor)) {
+      cursorDay++;
       continue;
     }
-    if (esCierreVacacionalAMAS(cursor)) {
-      cursor.setDate(cursor.getDate() + 1);
-      continue;
-    }
-    fechas.push(new Date(cursor));
+
+    fechas.push(cursor);
     contadas++;
-    cursor.setDate(cursor.getDate() + 1);
+    cursorDay++;
   }
 
   return fechas;
@@ -291,26 +319,40 @@ export function calcularFechaFin(
   clasesExtra: number = 0,
 ): CalculoFechaFin {
   const clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
-  const fechaActual = new Date(fechaInicio);
+  const inicio = toLimaDate(fechaInicio);
+  let cursorDay = inicio.day;
+  let cursorMonth = inicio.month;
+  let cursorYear = inicio.year;
   let clasesContadas = 1;
 
   while (clasesContadas < clasesTotales) {
-    fechaActual.setDate(fechaActual.getDate() + 1);
-    if (fechaActual.getDay() === 0) continue;
-    if (esCierreVacacionalAMAS(fechaActual)) continue;
+    cursorDay++;
+    const daysInMonth = new Date(cursorYear, cursorMonth, 0).getDate();
+    if (cursorDay > daysInMonth) {
+      cursorDay = 1;
+      cursorMonth++;
+      if (cursorMonth > 12) { cursorMonth = 1; cursorYear++; }
+    }
 
-    const nombreDia = obtenerNombreDia(fechaActual);
+    const cursor = dateFromLima(cursorYear, cursorMonth, cursorDay);
+    const { weekday } = toLimaDate(cursor);
+
+    if (weekday === 0) continue;
+    if (esCierreVacacionalAMAS(cursor)) continue;
+
+    const nombreDia = DIAS[weekday];
     if (diasTentativos.includes(nombreDia)) {
-      if (esFeriado(fechaActual)) continue;
+      if (esFeriado(cursor)) continue;
       clasesContadas++;
     }
   }
 
+  const fechaFin = dateFromLima(cursorYear, cursorMonth, cursorDay);
   return {
-    fechaFin: fechaActual,
+    fechaFin,
     clasesTotales,
     semanasAproximadas: Math.ceil(
-      (fechaActual.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000),
+      (fechaFin.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000),
     ),
   };
 }
@@ -360,8 +402,6 @@ export function formatearFechaLarga(iso: string): string {
 }
 
 export function toISODateString(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  const { year, month, day } = toLimaDate(d);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
