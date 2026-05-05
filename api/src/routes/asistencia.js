@@ -522,4 +522,20 @@ router.get('/buscar-alumno', async (req, res) => {
   }
 });
 
+// GET /api/asistencia/alumnos-activos — Lista ligera de alumnos activos (público, para búsqueda client-side)
+router.get('/alumnos-activos', async (_req, res) => {
+  try {
+    const rows = await query(`
+      SELECT a.id, a.nombre_alumno, a.dni_alumno, a.categoria
+      FROM alumnos a
+      WHERE LOWER(a.estado) = 'activo'
+      ORDER BY a.nombre_alumno
+    `);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('Error listando alumnos activos:', err);
+    res.json({ success: true, data: [] });
+  }
+});
+
 module.exports = router;
