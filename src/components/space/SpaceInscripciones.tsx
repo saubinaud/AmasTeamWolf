@@ -36,9 +36,18 @@ interface PagoDetail {
 
 interface InscripcionDetail {
   id: number;
+  programa: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  clases_totales: number;
+  turno: string;
+  dias_tentativos: string;
+  frecuencia_semanal: number | null;
   precio_programa: number;
   precio_pagado: number;
+  descuento: number;
   estado_pago: string;
+  estado: string;
 }
 
 interface SpaceInscripcionesProps {
@@ -105,12 +114,24 @@ function EditModal({
   inscripcion: Inscripcion;
   saving: boolean;
   onClose: () => void;
-  onSave: (id: number, patch: { estado_pago: string; activa: boolean }) => void;
+  onSave: (id: number, patch: Record<string, unknown>) => void;
   token: string;
   onRefresh: () => void;
 }) {
   const [estadoPago, setEstadoPago] = useState(inscripcion.estado_pago);
   const [activa, setActiva] = useState(inscripcion.activa);
+
+  // Editable fields (loaded from detail)
+  const [programa, setPrograma] = useState('');
+  const [clasesTotales, setClasesTotales] = useState(0);
+  const [frecuenciaSemanal, setFrecuenciaSemanal] = useState<number>(2);
+  const [turno, setTurno] = useState('');
+  const [diasTentativos, setDiasTentativos] = useState('');
+  const [fechaInicio, setFechaInicio] = useState('');
+  const [fechaFin, setFechaFin] = useState('');
+  const [precioPrograma, setPrecioPrograma_] = useState(0);
+  const [descuento, setDescuento] = useState(0);
+  const [detailLoaded, setDetailLoaded] = useState(false);
 
   // Pagos detail
   const [pagos, setPagos] = useState<PagoDetail[]>([]);
@@ -134,7 +155,20 @@ function EditModal({
         if (cancelled) return;
         if (data.success !== false && data.data) {
           setPagos(Array.isArray(data.data.pagos) ? data.data.pagos : []);
-          setInscDetail(data.data.inscripcion || null);
+          const ins = data.data.inscripcion || data.data;
+          setInscDetail(ins);
+          if (ins && !detailLoaded) {
+            setPrograma(ins.programa || '');
+            setClasesTotales(Number(ins.clases_totales) || 0);
+            setFrecuenciaSemanal(ins.frecuencia_semanal ?? 2);
+            setTurno(ins.turno || '');
+            setDiasTentativos(ins.dias_tentativos || '');
+            setFechaInicio((ins.fecha_inicio || '').slice(0, 10));
+            setFechaFin((ins.fecha_fin || '').slice(0, 10));
+            setPrecioPrograma_(Number(ins.precio_programa) || 0);
+            setDescuento(Number(ins.descuento) || 0);
+            setDetailLoaded(true);
+          }
         }
       })
       .catch(() => {})
@@ -143,8 +177,20 @@ function EditModal({
   }, [inscripcion.id, token]);
 
   const handleSave = useCallback(() => {
-    onSave(inscripcion.id, { estado_pago: estadoPago, activa });
-  }, [inscripcion.id, estadoPago, activa, onSave]);
+    onSave(inscripcion.id, {
+      estado_pago: estadoPago,
+      estado: activa ? 'Activo' : 'Vencido',
+      programa,
+      clases_totales: clasesTotales,
+      frecuencia_semanal: frecuenciaSemanal,
+      turno,
+      dias_tentativos: diasTentativos,
+      fecha_inicio: fechaInicio || undefined,
+      fecha_fin: fechaFin || undefined,
+      precio_programa: precioPrograma,
+      descuento,
+    });
+  }, [inscripcion.id, estadoPago, activa, programa, clasesTotales, frecuenciaSemanal, turno, diasTentativos, fechaInicio, fechaFin, precioPrograma, descuento, onSave]);
 
   const handleRegisterPago = useCallback(async () => {
     const monto = parseFloat(pagoMonto);
@@ -183,15 +229,16 @@ function EditModal({
     }
   }, [inscripcion.id, pagoMonto, pagoMetodo, pagoObs, token, onRefresh, estadoPago]);
 
-  const precioPrograma = inscDetail ? Number(inscDetail.precio_programa) || 0 : 0;
+  const precioTotal = inscDetail ? Number(inscDetail.precio_programa) || 0 : 0;
   const precioPagado = inscDetail ? Number(inscDetail.precio_pagado) || 0 : 0;
-  const porcentajePagado = precioPrograma > 0 ? Math.min(100, Math.round((precioPagado / precioPrograma) * 100)) : 0;
+  const porcentajePagado = precioTotal > 0 ? Math.min(100, Math.round((precioPagado / precioTotal) * 100)) : 0;
 
   return (
     <Modal
       open={true}
       onClose={onClose}
-      title="Detalle de inscripcion"
+      title="Editar inscripcion"
+      size="lg"
       footer={
         <>
           <button onClick={onClose} className={cx.btnSecondary}>Cancelar</button>
@@ -205,11 +252,50 @@ function EditModal({
       <div className="space-y-5">
         <div>
           <p className="text-stone-900 font-medium text-sm">{inscripcion.alumno_nombre} {inscripcion.alumno_apellido}</p>
-          <p className="text-stone-400 text-xs mt-0.5">{inscripcion.programa}</p>
         </div>
 
         {/* Edit fields */}
         <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={cx.label}>Programa</label>
+            <input type="text" value={programa} onChange={e => setPrograma(e.target.value)} className={cx.input} placeholder="Ej: 3 Meses Full" />
+          </div>
+          <div>
+            <label className={cx.label}>Clases totales</label>
+            <input type="number" value={clasesTotales || ''} onChange={e => setClasesTotales(parseInt(e.target.value) || 0)} className={cx.input} min={0} />
+          </div>
+          <div>
+            <label className={cx.label}>Frecuencia semanal</label>
+            <select value={frecuenciaSemanal} onChange={e => setFrecuenciaSemanal(parseInt(e.target.value))} className={cx.select}>
+              <option value={1}>1 vez/semana</option>
+              <option value={2}>2 veces/semana</option>
+              <option value={3}>3 veces/semana</option>
+            </select>
+          </div>
+          <div>
+            <label className={cx.label}>Turno / Clase</label>
+            <input type="text" value={turno} onChange={e => setTurno(e.target.value)} className={cx.input} placeholder="Ej: Baby Wolf" />
+          </div>
+          <div>
+            <label className={cx.label}>Fecha inicio</label>
+            <input type="date" value={fechaInicio} onChange={e => setFechaInicio(e.target.value)} className={cx.input} />
+          </div>
+          <div>
+            <label className={cx.label}>Fecha fin</label>
+            <input type="date" value={fechaFin} onChange={e => setFechaFin(e.target.value)} className={cx.input} />
+          </div>
+          <div>
+            <label className={cx.label}>Dias tentativos</label>
+            <input type="text" value={diasTentativos} onChange={e => setDiasTentativos(e.target.value)} className={cx.input} placeholder="Lunes, Miercoles" />
+          </div>
+          <div>
+            <label className={cx.label}>Precio programa (S/)</label>
+            <input type="number" value={precioPrograma || ''} onChange={e => setPrecioPrograma_(parseFloat(e.target.value) || 0)} className={cx.input} min={0} step="0.01" />
+          </div>
+          <div>
+            <label className={cx.label}>Descuento (S/)</label>
+            <input type="number" value={descuento || ''} onChange={e => setDescuento(parseFloat(e.target.value) || 0)} className={cx.input} min={0} step="0.01" />
+          </div>
           <div>
             <label className={cx.label}>Estado de pago</label>
             <select value={estadoPago} onChange={e => setEstadoPago(e.target.value as Inscripcion['estado_pago'])} className={cx.select}>
@@ -219,10 +305,10 @@ function EditModal({
             </select>
           </div>
           <div>
-            <label className={cx.label}>Activa</label>
+            <label className={cx.label}>Estado</label>
             <select value={activa ? 'si' : 'no'} onChange={e => setActiva(e.target.value === 'si')} className={cx.select}>
-              <option value="si">Si</option>
-              <option value="no">No</option>
+              <option value="si">Activa</option>
+              <option value="no">Inactiva</option>
             </select>
           </div>
         </div>
@@ -243,7 +329,7 @@ function EditModal({
           {!loadingDetail && inscDetail && (
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs mb-1.5">
-                <span className="text-stone-500">S/ {precioPagado} de S/ {precioPrograma}</span>
+                <span className="text-stone-500">S/ {precioPagado} de S/ {precioTotal}</span>
                 <span className={cx.badge(porcentajePagado >= 100 ? badgeColors.green : porcentajePagado > 0 ? badgeColors.orange : badgeColors.yellow)}>
                   {porcentajePagado}%
                 </span>
@@ -459,7 +545,7 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
     setEditingInscripcion(null);
   }, []);
 
-  const handleSaveEdit = useCallback(async (id: number, patch: { estado_pago: string; activa: boolean }) => {
+  const handleSaveEdit = useCallback(async (id: number, patch: Record<string, unknown>) => {
     setSaving(true);
     try {
       const res = await fetch(`${API_BASE}/space/inscripciones/${id}`, {

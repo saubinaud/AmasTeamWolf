@@ -962,13 +962,15 @@ export function SpaceInscribir({ token, onGoToInscritos }: Props) {
           )}
 
           {/* Días tentativos */}
-          {form.fechaInicio && form.fechaInicio !== 'no-especificado' && form.fechaNacimiento && (
+          {form.fechaInicio && form.fechaInicio !== 'no-especificado' && (
             <div>
               <label className={cx.label}>Días tentativos de clase *</label>
               <p className="text-stone-400 text-xs mb-2">Mínimo 1 día. Se usan para calcular la fecha de fin.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
-                  const permitidos = diasPermitidosPorTurnoCategoria(turnoSeleccionado, categoriaAlumno);
+                  const permitidos = categoriaAlumno
+                    ? diasPermitidosPorTurnoCategoria(turnoSeleccionado, categoriaAlumno)
+                    : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
                   const disabled = !permitidos.includes(dia);
                   const selected = diasTentativos.includes(dia);
                   return (
