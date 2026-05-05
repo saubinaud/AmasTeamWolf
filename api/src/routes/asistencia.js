@@ -1,73 +1,13 @@
 const { Router } = require('express');
 const { query, queryOne } = require('../db');
+const { AlumnoService, AsistenciaService } = require('../services');
 
 const router = Router();
 
-// ── Helper: detectar clase por edad ──
-function detectarClase(fechaNacimiento) {
-  if (!fechaNacimiento) return null;
-  const hoy = new Date();
-  const nacimiento = new Date(fechaNacimiento);
-  const edadMeses = Math.floor((hoy - nacimiento) / (1000 * 60 * 60 * 24 * 30.44));
-  const edadAnios = Math.floor(edadMeses / 12);
-
-  if (edadMeses >= 11 && edadMeses <= 26) return 'Súper Baby Wolf';
-  if (edadMeses >= 27 && edadMeses <= 48) return 'Baby Wolf';
-  if (edadMeses >= 49 && edadMeses <= 71) return 'Little Wolf';
-  if (edadAnios >= 6 && edadAnios <= 11) return 'Junior Wolf';
-  if (edadAnios >= 12 && edadAnios <= 17) return 'Adolescentes Wolf';
-  return 'Adolescentes Wolf'; // default for adults
-}
-
-// ── Helper: mapear categoria a nombre de clase ──
-const CATEGORIA_MAP = {
-  'baby wolf': 'Baby Wolf',
-  'baby': 'Baby Wolf',
-  'littel': 'Little Wolf',
-  'little': 'Little Wolf',
-  'little wolf': 'Little Wolf',
-  'juniors': 'Junior Wolf',
-  'junior': 'Junior Wolf',
-  'junior wolf': 'Junior Wolf',
-  'adolescentes': 'Adolescentes Wolf',
-  'adolescentes wolf': 'Adolescentes Wolf',
-  'súper baby wolf': 'Súper Baby Wolf',
-  'super baby wolf': 'Súper Baby Wolf',
-  'súper baby': 'Súper Baby Wolf',
-  'super baby': 'Súper Baby Wolf',
-};
-
-function mapearCategoria(categoria) {
-  if (!categoria) return null;
-  return CATEGORIA_MAP[categoria.toLowerCase().trim()] || null;
-}
-
-// ── Helper: detectar turno del alumno para QR diario (1 sola query) ──
-async function detectarTurnoDiario(dniAlumno) {
-  const dniNorm = String(dniAlumno).replace(/[\s\-\.]/g, '').trim().toUpperCase();
-  const row = await queryOne(`
-    SELECT a.categoria, a.fecha_nacimiento, i.turno AS insc_turno, i.programa
-    FROM alumnos a
-    LEFT JOIN inscripciones i ON i.alumno_id = a.id AND i.estado = 'Activo'
-    WHERE a.dni_alumno_norm = $1 OR a.dni_apoderado_norm = $1
-    ORDER BY i.fecha_inicio DESC NULLS LAST
-    LIMIT 1
-  `, [dniNorm]);
-
-  if (!row) return 'General';
-
-  // Prioridad: turno inscripción > programa mapeado > categoría > edad
-  if (row.insc_turno) return row.insc_turno;
-  if (row.programa) {
-    const mapped = mapearCategoria(row.programa);
-    if (mapped) return mapped;
-  }
-  if (row.categoria) {
-    const mapped = mapearCategoria(row.categoria);
-    if (mapped) return mapped;
-  }
-  const fromEdad = detectarClase(row.fecha_nacimiento);
-  return fromEdad || 'General';
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code, ...(err.extra || {}) });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
 }
 
 // POST /api/asistencia — Registrar asistencia via QR
@@ -80,24 +20,24 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ success: false, error: 'DNI y token QR son requeridos' });
     }
 
-    const dniNorm = String(dni_alumno).replace(/[\s\-\.]/g, '').trim().toUpperCase();
+    const dniNorm = AlumnoService.normalizeDni(dni_alumno);
 
     // Resolver DNI: puede ser del alumno O del apoderado
-    let dniParaRegistro = dniNorm;
-    const alumnoByDni = await queryOne(
-      `SELECT dni_alumno FROM alumnos WHERE dni_alumno_norm = $1 LIMIT 1`,
-      [dniNorm]
-    );
-    if (!alumnoByDni) {
-      // Intentar como DNI de apoderado
-      const alumnoByApoderado = await queryOne(
-        `SELECT dni_alumno FROM alumnos WHERE dni_apoderado_norm = $1 AND estado = 'Activo' LIMIT 1`,
-        [dniNorm]
+    let alumno = await AlumnoService.buscarPorDni(dniNorm);
+
+    if (!alumno) {
+      // If no match, try the stored function directly with raw DNI
+      const result = await queryOne(
+        'SELECT registrar_asistencia($1, $2, $3) AS resultado',
+        [dniNorm, token_qr, turno || detectarTurno()]
       );
-      if (alumnoByApoderado) {
-        dniParaRegistro = alumnoByApoderado.dni_alumno;
-      }
+      const data = typeof result.resultado === 'string'
+        ? JSON.parse(result.resultado)
+        : result.resultado;
+      return res.json(data);
     }
+
+    const dniParaRegistro = alumno.dni_alumno;
 
     // Verificar si es QR diario para auto-detectar turno
     let turnoFinal = turno || detectarTurno();
@@ -110,7 +50,13 @@ router.post('/', async (req, res) => {
       );
       if (sesion && sesion.programa === 'diario') {
         esDiario = true;
-        turnoFinal = await detectarTurnoDiario(dniParaRegistro);
+        turnoFinal = AsistenciaService.resolverTurno(alumno, null);
+        // Try to get inscription for better turno resolution
+        const { InscripcionService } = require('../services');
+        const inscripcion = await InscripcionService.getActiva(alumno.id, { strict: false });
+        if (inscripcion) {
+          turnoFinal = AsistenciaService.resolverTurno(alumno, inscripcion);
+        }
       }
     } catch (_err) {
       // Si falla la consulta, continuar con turno normal
@@ -133,8 +79,7 @@ router.post('/', async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    console.error('Error registrando asistencia:', err);
-    res.status(500).json({ success: false, error: 'Error del servidor' });
+    handleError(res, err);
   }
 });
 
@@ -143,48 +88,10 @@ router.post('/', async (req, res) => {
 router.get('/hoy', async (req, res) => {
   try {
     const { token } = req.query;
-    let rows;
-
-    if (token) {
-      // Filtrar por sesión QR específica
-      rows = await query(`
-        SELECT
-          a.nombre_alumno,
-          ast.hora::text AS hora,
-          ast.turno,
-          ast.asistio,
-          i.programa
-        FROM asistencias ast
-        JOIN alumnos a ON a.id = ast.alumno_id
-        LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
-        JOIN qr_sesiones qs ON qs.id = ast.qr_sesion_id
-        WHERE ast.fecha = CURRENT_DATE AND qs.token = $1
-        ORDER BY ast.hora DESC
-      `, [token]);
-    } else {
-      // Todas las del día
-      try {
-        rows = await query('SELECT * FROM v_asistencia_hoy ORDER BY hora DESC');
-      } catch (_viewErr) {
-        rows = await query(`
-          SELECT
-            a.nombre_alumno,
-            ast.hora::text AS hora,
-            ast.turno,
-            ast.asistio,
-            i.programa
-          FROM asistencias ast
-          JOIN alumnos a ON a.id = ast.alumno_id
-          LEFT JOIN inscripciones i ON i.id = ast.inscripcion_id
-          WHERE ast.fecha = CURRENT_DATE
-          ORDER BY ast.hora DESC
-        `);
-      }
-    }
+    const rows = await AsistenciaService.getHoy({ token });
     res.json(rows);
   } catch (err) {
-    console.error('Error obteniendo asistencias de hoy:', err);
-    res.status(500).json({ success: false, error: 'Error del servidor' });
+    handleError(res, err);
   }
 });
 
@@ -360,30 +267,6 @@ function detectarTurno() {
   return 'General';
 }
 
-// ── Helper: detectar turno por edad usando horarios configurados ──
-async function detectarTurnoPorEdad(fechaNacimiento) {
-  if (!fechaNacimiento) return null;
-  const hoy = new Date();
-  const nacimiento = new Date(fechaNacimiento);
-  const edadMeses = Math.floor((hoy - nacimiento) / (1000 * 60 * 60 * 24 * 30.44));
-
-  // Primero intentar con horarios configurados (edad_min_meses / edad_max_meses)
-  try {
-    const horario = await queryOne(`
-      SELECT nombre_clase FROM horarios
-      WHERE activo = true AND edad_min_meses IS NOT NULL
-        AND $1 >= edad_min_meses AND $1 <= edad_max_meses
-      LIMIT 1
-    `, [edadMeses]);
-    if (horario?.nombre_clase) return horario.nombre_clase;
-  } catch (_err) {
-    // Si falla (columnas no existen aún), fallback
-  }
-
-  // Fallback a detección hardcoded
-  return detectarClase(fechaNacimiento);
-}
-
 // POST /api/asistencia/por-nombre — Registrar asistencia por alumno_id
 // Body: { alumno_id, token?, turno? }
 router.post('/por-nombre', async (req, res) => {
@@ -394,27 +277,15 @@ router.post('/por-nombre', async (req, res) => {
       return res.status(400).json({ success: false, error: 'alumno_id es requerido' });
     }
 
-    // Buscar alumno
-    const alumno = await queryOne(
-      'SELECT id, dni_alumno, nombre_alumno, fecha_nacimiento, categoria FROM alumnos WHERE id = $1',
-      [alumno_id]
-    );
-    if (!alumno) {
-      return res.status(404).json({ success: false, error: 'Alumno no encontrado' });
-    }
-
-    // Detectar turno
-    let turnoFinal = turno || null;
-    if (!turnoFinal) {
-      turnoFinal = await detectarTurnoPorEdad(alumno.fecha_nacimiento);
-      if (!turnoFinal) {
-        const fromCategoria = mapearCategoria(alumno.categoria);
-        turnoFinal = fromCategoria || 'General';
-      }
-    }
-
+    // If token is provided and we need the stored function behavior, use it
     if (token) {
-      // Con token QR: usar registrar_asistencia
+      // Get alumno for turno detection and stored function
+      const alumno = await AlumnoService.getById(alumno_id);
+      const { InscripcionService } = require('../services');
+      const inscripcion = await InscripcionService.getActiva(alumno_id, { strict: false });
+
+      let turnoFinal = turno || AsistenciaService.resolverTurno(alumno, inscripcion);
+
       const result = await queryOne(
         'SELECT registrar_asistencia($1, $2, $3) AS resultado',
         [alumno.dni_alumno, token, turnoFinal]
@@ -427,56 +298,30 @@ router.post('/por-nombre', async (req, res) => {
       if (entry) {
         entry.clase_detectada = turnoFinal;
       }
-      res.json(data);
-    } else {
-      // Sin token: registro manual directo
-      // Buscar inscripción: primero activa, sino la más reciente
-      let inscripcion = await queryOne(`
-        SELECT id FROM inscripciones
-        WHERE alumno_id = $1 AND estado = 'Activo'
-        ORDER BY fecha_inicio DESC LIMIT 1
-      `, [alumno_id]);
-      if (!inscripcion) {
-        inscripcion = await queryOne(`
-          SELECT id FROM inscripciones
-          WHERE alumno_id = $1
-          ORDER BY fecha_inicio DESC LIMIT 1
-        `, [alumno_id]);
-      }
+      return res.json(data);
+    }
 
-      // Verificar si ya marcó hoy
-      const yaRegistro = await queryOne(`
-        SELECT id FROM asistencias
-        WHERE alumno_id = $1 AND fecha = CURRENT_DATE AND turno = $2
-      `, [alumno_id, turnoFinal]);
-
-      if (yaRegistro) {
+    // Sin token: registro manual via service
+    try {
+      const resultado = await AsistenciaService.registrar(alumno_id, { turno, metodo: 'manual' });
+      return res.json({
+        success: true,
+        alumno: resultado.alumno,
+        clase_detectada: resultado.clase_detectada,
+      });
+    } catch (err) {
+      if (err.code === 'DUPLICATE') {
         return res.json({
           success: false,
-          error: `${alumno.nombre_alumno} ya tiene asistencia registrada hoy para ${turnoFinal}`,
-          alumno: alumno.nombre_alumno,
-          clase_detectada: turnoFinal,
+          error: err.message,
+          alumno: err.extra.alumno,
+          clase_detectada: err.extra.clase_detectada,
         });
       }
-
-      await query(`
-        INSERT INTO asistencias (alumno_id, inscripcion_id, sede_id, fecha, hora, turno, asistio, metodo_registro)
-        VALUES ($1, $2, 1, CURRENT_DATE, NOW()::time, $3, 'Sí', 'manual')
-      `, [
-        alumno_id,
-        inscripcion?.id || null,
-        turnoFinal,
-      ]);
-
-      res.json({
-        success: true,
-        alumno: alumno.nombre_alumno,
-        clase_detectada: turnoFinal,
-      });
+      throw err;
     }
   } catch (err) {
-    console.error('Error registrando asistencia por nombre:', err);
-    res.status(500).json({ success: false, error: 'Error del servidor' });
+    handleError(res, err);
   }
 });
 
@@ -503,34 +348,7 @@ router.get('/horarios-hoy', async (_req, res) => {
 router.get('/buscar-alumno', async (req, res) => {
   try {
     const { q } = req.query;
-    if (!q || q.length < 2) {
-      return res.json([]);
-    }
-
-    const normalized = q.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-    // Split into words for multi-token search ("rafael luyo" → both must match)
-    const words = normalized.split(/\s+/).filter(w => w.length >= 2);
-
-    if (words.length === 0) return res.json([]);
-
-    // Build condition: each word must appear in name OR the full query matches DNI
-    const nameConditions = words.map((_, i) => `nombre_alumno_norm LIKE '%' || $${i + 1} || '%'`).join(' AND ');
-    const dniParam = words.length + 1;
-    const params = [...words, normalized];
-
-    const rows = await query(`
-      SELECT a.id, a.nombre_alumno, a.dni_alumno, a.categoria
-      FROM alumnos a
-      WHERE LOWER(a.estado) = 'activo'
-        AND (
-          (${nameConditions})
-          OR dni_alumno LIKE '%' || $${dniParam} || '%'
-          OR dni_apoderado LIKE '%' || $${dniParam} || '%'
-        )
-      ORDER BY nombre_alumno
-      LIMIT 8
-    `, params);
-
+    const rows = await AlumnoService.buscar(q, { limit: 8, soloActivos: true });
     res.json(rows);
   } catch (err) {
     console.error('Error buscando alumno:', err);
@@ -541,12 +359,7 @@ router.get('/buscar-alumno', async (req, res) => {
 // GET /api/asistencia/alumnos-activos — Lista ligera de alumnos activos (público, para búsqueda client-side)
 router.get('/alumnos-activos', async (_req, res) => {
   try {
-    const rows = await query(`
-      SELECT a.id, a.nombre_alumno, a.dni_alumno, a.categoria
-      FROM alumnos a
-      WHERE LOWER(a.estado) = 'activo'
-      ORDER BY a.nombre_alumno
-    `);
+    const rows = await AlumnoService.listarActivos();
     res.json({ success: true, data: rows });
   } catch (err) {
     console.error('Error listando alumnos activos:', err);
