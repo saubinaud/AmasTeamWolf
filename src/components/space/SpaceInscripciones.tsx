@@ -125,17 +125,16 @@ function EditModal({
   const [estadoPago, setEstadoPago] = useState(inscripcion.estado_pago);
   const [activa, setActiva] = useState(inscripcion.activa);
 
-  // Editable fields (loaded from detail)
-  const [programa, setPrograma] = useState('');
-  const [clasesTotales, setClasesTotales] = useState(0);
-  const [frecuenciaSemanal, setFrecuenciaSemanal] = useState<number>(2);
-  const [turno, setTurno] = useState('');
-  const [diasTentativos, setDiasTentativos] = useState('');
-  const [fechaInicio, setFechaInicio] = useState('');
-  const [fechaFin, setFechaFin] = useState('');
+  // Editable fields — initialized from list data, refined by detail fetch
+  const [programa, setPrograma] = useState(inscripcion.programa || '');
+  const [clasesTotales, setClasesTotales] = useState(inscripcion.clases_totales || 0);
+  const [frecuenciaSemanal, setFrecuenciaSemanal] = useState<number>(inscripcion.frecuencia_semanal ?? 2);
+  const [turno, setTurno] = useState(inscripcion.turno || '');
+  const [diasTentativos, setDiasTentativos] = useState(inscripcion.dias_tentativos || '');
+  const [fechaInicio, setFechaInicio] = useState((inscripcion.fecha_inicio || '').slice(0, 10));
+  const [fechaFin, setFechaFin] = useState((inscripcion.fecha_fin || '').slice(0, 10));
   const [precioPrograma, setPrecioPrograma_] = useState(0);
   const [descuento, setDescuento] = useState(0);
-  const [detailLoaded, setDetailLoaded] = useState(false);
 
   // Pagos detail
   const [pagos, setPagos] = useState<PagoDetail[]>([]);
@@ -161,17 +160,17 @@ function EditModal({
           setPagos(Array.isArray(data.data.pagos) ? data.data.pagos : []);
           const ins = data.data.inscripcion || data.data;
           setInscDetail(ins);
-          if (ins && !detailLoaded) {
-            setPrograma(ins.programa || '');
-            setClasesTotales(Number(ins.clases_totales) || 0);
-            setFrecuenciaSemanal(ins.frecuencia_semanal ?? 2);
-            setTurno(ins.turno || '');
-            setDiasTentativos(ins.dias_tentativos || '');
-            setFechaInicio((ins.fecha_inicio || '').slice(0, 10));
-            setFechaFin((ins.fecha_fin || '').slice(0, 10));
+          // Refine with detail data (has precio, descuento, etc.)
+          if (ins) {
+            if (ins.programa) setPrograma(ins.programa);
+            if (ins.clases_totales) setClasesTotales(Number(ins.clases_totales));
+            if (ins.frecuencia_semanal != null) setFrecuenciaSemanal(ins.frecuencia_semanal);
+            if (ins.turno) setTurno(ins.turno);
+            if (ins.dias_tentativos) setDiasTentativos(ins.dias_tentativos);
+            if (ins.fecha_inicio) setFechaInicio((ins.fecha_inicio).slice(0, 10));
+            if (ins.fecha_fin) setFechaFin((ins.fecha_fin).slice(0, 10));
             setPrecioPrograma_(Number(ins.precio_programa) || 0);
             setDescuento(Number(ins.descuento) || 0);
-            setDetailLoaded(true);
           }
         }
       })
