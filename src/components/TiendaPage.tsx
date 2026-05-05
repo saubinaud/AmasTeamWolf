@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
 import { Button } from './ui/button';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
@@ -33,9 +32,8 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
   
-  const shouldReduceMotion = useReducedMotion();
   const isDataSaver = useDataSaver();
-  const shouldDisableAnimations = isMobile || shouldReduceMotion || isDataSaver;
+  const shouldDisableAnimations = isMobile || isDataSaver;
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -203,23 +201,18 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
 
         <div className="container mx-auto px-4 md:px-6 relative z-10">
           {/* Back Button */}
-          <motion.button
+          <button
             onClick={() => onNavigate('home')}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 text-white/70 hover:text-[#FCA929] transition-colors mb-8 group"
+            className="flex items-center gap-2 text-white/70 hover:text-[#FCA929] transition-colors mb-8 group animate-fade-in-up"
           >
             <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
             <span>Volver al inicio</span>
-          </motion.button>
+          </button>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
+          <div
+            className="text-center mb-12 animate-fade-in-up"
           >
-            <motion.h1 
+            <h1
               className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl xl:text-6xl mb-4 px-4"
               style={{
                 background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 50%, #FA7B21 100%)',
@@ -229,18 +222,15 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
               }}
             >
               Tienda AMAS
-            </motion.h1>
+            </h1>
             <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-2xl mx-auto px-4">
               Todo el equipamiento profesional para tu entrenamiento
             </p>
-          </motion.div>
+          </div>
 
           {/* Categories Filter */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-2 mb-12"
+          <div
+            className="flex flex-wrap justify-center gap-2 mb-12 animate-fade-in-up"
           >
             {categories.map((category) => (
               <Button
@@ -256,18 +246,14 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
                 {category}
               </Button>
             ))}
-          </motion.div>
+          </div>
 
           {/* Products Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
-            {filteredProducts.map((product, index) => (
-              <motion.div
+            {filteredProducts.map((product) => (
+              <div
                 key={product.id}
-                initial={{ opacity: 0, y: shouldDisableAnimations ? 0 : 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: shouldDisableAnimations ? 0 : index * 0.05 }}
-                whileHover={!shouldDisableAnimations ? { y: -8, scale: 1.02 } : {}}
-                className="cursor-pointer group"
+                className="cursor-pointer group hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-300"
                 onClick={() => handleOpenProduct(product)}
               >
                 <div className="bg-zinc-900 rounded-lg overflow-hidden border border-white/10 hover:border-[#FA7B21]/50 transition-all duration-300 h-full flex flex-col">
@@ -296,7 +282,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

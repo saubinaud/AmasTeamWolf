@@ -42,7 +42,6 @@ import { toast } from 'sonner';
 import { format, addMonths, subMonths, isSameDay, isToday, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfWeek, addDays, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from './ui/utils';
-import { motion, AnimatePresence } from 'motion/react';
 import { HeaderMain } from './HeaderMain';
 import { DayPicker, DateRange } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
@@ -553,14 +552,11 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                     </div>
 
                     {/* Content Grid */}
-                    <AnimatePresence mode="wait">
+
                         {activeSection === 'home' && (
-                            <motion.div
+                            <div
                                 key="home"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
+                                className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 animate-fade-in-up"
                             >
                                 {/* Stats Cards */}
                                 <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6 transition-all duration-200 hover:border-[#FA7B21]/30 hover:scale-[1.02]">
@@ -749,18 +745,15 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         </p>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         )}
 
 
 
                         {activeSection === 'graduacion' && (
-                            <motion.div
+                            <div
                                 key="graduacion"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-6"
+                                className="space-y-6 animate-fade-in-up"
                             >
                                 <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8">
                                     <h3 className="text-2xl font-semibold text-white flex items-center gap-3 mb-6">
@@ -885,16 +878,13 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         )}
 
                         {activeSection === 'calendar' && (
-                            <motion.div
+                            <div
                                 key="calendar"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-6"
+                                className="space-y-6 animate-fade-in-up"
                             >
                                 {/* Google Calendar Style Header */}
                                 <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
@@ -1036,17 +1026,14 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         </div>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         )}
 
                         {
                             activeSection === 'plan' && (
-                                <motion.div
+                                <div
                                     key="plan"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                                    className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in-up"
                                 >
                                     {/* Plan Details */}
                                     <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8">
@@ -1326,18 +1313,15 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             </div>
                                         )}
                                     </div>
-                                </motion.div>
+                                </div>
                             )
                         }
 
                         {
                             activeSection === 'messages' && (
-                                <motion.div
+                                <div
                                     key="messages"
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -20 }}
-                                    className="max-w-3xl"
+                                    className="max-w-3xl animate-fade-in-up"
                                 >
                                     <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-8">
                                         <h3 className="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
@@ -1397,10 +1381,10 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                             </div>
                                         )}
                                     </div>
-                                </motion.div>
+                                </div>
                             )
                         }
-                    </AnimatePresence >
+
                 </div >
             </div >
         </div >

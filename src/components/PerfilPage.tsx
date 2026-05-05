@@ -46,7 +46,6 @@ import { toast } from 'sonner';
 import { format, addDays, subDays, isSameDay, isToday } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from './ui/utils';
-import { motion, AnimatePresence } from 'motion/react';
 import { PerfilDesktop } from './PerfilDesktop';
 import { AccountLinkingStep } from './AccountLinkingStep';
 import { HeaderMain } from './HeaderMain';
@@ -384,13 +383,9 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     switch (activeSection) {
       case 'home':
         return (
-          <motion.div
+          <div
             key="home"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="space-y-6"
+            className="space-y-6 animate-fade-in-up"
           >
             {/* Progress Card */}
             <div className="bg-gradient-to-br from-zinc-900/80 to-zinc-900/40 rounded-3xl p-6 border border-white/5">
@@ -399,15 +394,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <div className="relative w-28 h-28 flex-shrink-0">
                   <svg className="w-28 h-28 -rotate-90">
                     <circle cx="56" cy="56" r="48" stroke="currentColor" strokeWidth="8" fill="none" className="text-zinc-800/50" />
-                    <motion.circle
+                    <circle
                       cx="56" cy="56" r="48"
                       stroke="url(#progressGradient)"
                       strokeWidth="8"
                       fill="none"
                       strokeLinecap="round"
-                      initial={{ strokeDasharray: "0 302" }}
-                      animate={{ strokeDasharray: `${progress * 3.02} 302` }}
-                      transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
+                      strokeDasharray={`${progress * 3.02} 302`}
+                      style={{ transition: 'stroke-dasharray 1.5s ease-out' }}
                     />
                     <defs>
                       <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -721,18 +715,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <Phone className="w-5 h-5 mr-2" /> Soporte WhatsApp
               </Button>
             </div>
-          </motion.div>
+          </div>
         );
 
       case 'calendar':
         return (
-          <motion.div
+          <div
             key="calendar"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="space-y-6"
+            className="space-y-6 animate-fade-in-up"
           >
             {/* Month Navigation */}
             <div className="flex items-center justify-between px-2">
@@ -859,18 +849,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 ← Volver a hoy
               </button>
             )}
-          </motion.div>
+          </div>
         );
 
       case 'plan':
         return (
-          <motion.div
+          <div
             key="plan"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="space-y-6"
+            className="space-y-6 animate-fade-in-up"
           >
             {/* Plan Card */}
             <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-zinc-800/80 to-zinc-900/80 p-6 border border-white/5">
@@ -1113,17 +1099,14 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <Zap className="w-5 h-5 mr-2 text-[#FA7B21]" /> Ver Todos los Planes
               </Button>
             </div>
-          </motion.div>
+          </div>
         );
 
       case 'graduacion':
         return (
-          <motion.div
+          <div
             key="graduacion"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="space-y-6"
+            className="space-y-6 animate-fade-in-up"
           >
             {/* Proxima Graduacion Card */}
             <div className="bg-zinc-900/50 border border-white/5 rounded-3xl p-6">
@@ -1316,7 +1299,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <p className="text-zinc-500 text-sm">No has sido seleccionado para torneos activos</p>
               )}
             </div>
-          </motion.div>
+          </div>
         );
       case 'messages':
         const unreadCount = user.mensajes?.filter(m => !m.leido).length || 0;
@@ -1336,13 +1319,9 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         };
 
         return (
-          <motion.div
+          <div
             key="messages"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="space-y-4"
+            className="space-y-4 animate-fade-in-up"
           >
             {unreadCount > 0 && (
               <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-2xl px-4 py-3 flex items-center gap-3">
@@ -1401,7 +1380,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <Phone className="w-5 h-5 mr-2" /> Contactar Soporte
               </Button>
             </div>
-          </motion.div>
+          </div>
         );
     }
   };
@@ -1432,33 +1411,28 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         style={{ paddingTop: isMobile ? '65px' : '100px' }}
       >
         {/* Expiration Banner */}
-        <AnimatePresence>
-          {(estaVencido || estaPorVencer) && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={cn(
-                "mt-4 p-4 rounded-2xl flex items-center gap-3",
-                estaVencido ? "bg-red-500/10 border border-red-500/20" : "bg-amber-500/10 border border-amber-500/20"
-              )}
+        {(estaVencido || estaPorVencer) && (
+          <div
+            className={cn(
+              "mt-4 p-4 rounded-2xl flex items-center gap-3 animate-fade-in-up",
+              estaVencido ? "bg-red-500/10 border border-red-500/20" : "bg-amber-500/10 border border-amber-500/20"
+            )}
+          >
+            <AlertTriangle className={cn("w-5 h-5 flex-shrink-0", estaVencido ? "text-red-400" : "text-amber-400")} />
+            <div className="flex-1 min-w-0">
+              <p className={cn("text-sm font-medium", estaVencido ? "text-red-300" : "text-amber-300")}>
+                {estaVencido ? `Vencido hace ${diasVencido} días` : `${diasRestantes} días restantes`}
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => onNavigate('planes')}
+              className={cn("h-9 px-4 text-xs rounded-xl font-medium", estaVencido ? "bg-red-500 hover:bg-red-400" : "bg-amber-500 hover:bg-amber-400 text-black")}
             >
-              <AlertTriangle className={cn("w-5 h-5 flex-shrink-0", estaVencido ? "text-red-400" : "text-amber-400")} />
-              <div className="flex-1 min-w-0">
-                <p className={cn("text-sm font-medium", estaVencido ? "text-red-300" : "text-amber-300")}>
-                  {estaVencido ? `Vencido hace ${diasVencido} días` : `${diasRestantes} días restantes`}
-                </p>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => onNavigate('planes')}
-                className={cn("h-9 px-4 text-xs rounded-xl font-medium", estaVencido ? "bg-red-500 hover:bg-red-400" : "bg-amber-500 hover:bg-amber-400 text-black")}
-              >
-                Renovar
-              </Button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              Renovar
+            </Button>
+          </div>
+        )}
 
         {/* Header */}
         <div className="py-6">
@@ -1496,9 +1470,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
         </div>
 
         {/* Content */}
-        <AnimatePresence mode="wait">
-          {renderContent()}
-        </AnimatePresence>
+        {renderContent()}
       </div>
 
       {/* Bottom Navigation */}
@@ -1524,10 +1496,8 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                   <item.icon className="w-6 h-6" />
                   <span className="text-[10px] font-medium">{item.label}</span>
                   {activeSection === item.id && (
-                    <motion.div
-                      layoutId="activeTab"
+                    <div
                       className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#FA7B21]"
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
                 </button>
