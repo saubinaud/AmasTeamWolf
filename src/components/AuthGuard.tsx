@@ -1,15 +1,16 @@
 import { ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
     children: ReactNode;
-    onNavigate: (page: string) => void;
+    onNavigate?: (page: string) => void;
     requireAuth?: boolean;
     redirectIfAuth?: boolean;
 }
 
-export function AuthGuard({ children, onNavigate, requireAuth = false, redirectIfAuth = false }: AuthGuardProps) {
+export function AuthGuard({ children, requireAuth = false, redirectIfAuth = false }: AuthGuardProps) {
     const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
@@ -24,21 +25,11 @@ export function AuthGuard({ children, onNavigate, requireAuth = false, redirectI
     }
 
     if (requireAuth && !isAuthenticated) {
-        setTimeout(() => onNavigate('inicio-sesion'), 0);
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-                <Loader2 className="w-12 h-12 text-[#FA7B21] animate-spin" />
-            </div>
-        );
+        return <Navigate to="/inicio-sesion" replace />;
     }
 
     if (redirectIfAuth && isAuthenticated) {
-        setTimeout(() => onNavigate('perfil'), 0);
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-                <Loader2 className="w-12 h-12 text-[#FA7B21] animate-spin" />
-            </div>
-        );
+        return <Navigate to="/perfil" replace />;
     }
 
     return <>{children}</>;
