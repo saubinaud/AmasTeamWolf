@@ -3,7 +3,7 @@ import {
   LayoutDashboard, GraduationCap, Users, CalendarCheck,
   Settings, LogOut, ExternalLink, ClipboardList, UserPlus, RefreshCw,
   PanelLeftOpen, X, MessageSquare, ShoppingBag, Sparkles,
-  ChevronRight, FileSignature, BarChart3, QrCode, History, UserCheck, Trophy, Bell,
+  ChevronRight, FileSignature, BarChart3, QrCode, History, UserCheck, Trophy, Bell, Gift,
 } from 'lucide-react';
 import type { SpacePage, SpaceUser, SpaceTheme, Academia } from './SpaceApp';
 import { ACADEMIA_LABELS } from './SpaceApp';
@@ -81,6 +81,7 @@ const NAV: NavEntry[] = [
   { page: 'compras', label: 'Compras', icon: ShoppingBag },
   { page: 'profesores', label: 'Profesores', icon: UserCheck },
   { page: 'clases-prueba', label: 'Clases prueba', icon: Sparkles },
+  { page: 'referidos', label: 'Referidos', icon: Gift },
   { page: 'torneos', label: 'Torneos', icon: Trophy },
   { page: 'mensajes', label: 'Mensajes', icon: MessageSquare },
   { page: 'config', label: 'Ajustes', icon: Settings },
@@ -94,7 +95,7 @@ const TITLES: Record<SpacePage, string> = {
   'asistencia-historica': 'Asistencia — Registrar pasadas',
   'asistencia-profesores': 'Asistencia — Profesores',
   leads: 'Leads',
-  compras: 'Compras', profesores: 'Profesores', 'clases-prueba': 'Clases de prueba', torneos: 'Torneos', mensajes: 'Mensajes', config: 'Ajustes',
+  compras: 'Compras', profesores: 'Profesores', 'clases-prueba': 'Clases de prueba', referidos: 'Referidos', torneos: 'Torneos', mensajes: 'Mensajes', config: 'Ajustes',
 };
 
 export function SpaceLayout({ user, currentPage, onNavigate, onLogout, onExit, children, theme, onToggleTheme, academia, onSwitchAcademia, token }: Props) {
