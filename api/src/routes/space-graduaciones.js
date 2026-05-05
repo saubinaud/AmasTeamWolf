@@ -1,7 +1,14 @@
 const { Router } = require('express');
 const { query, queryOne, pool } = require('../db');
+const { AlumnoService } = require('../services');
 
 const router = Router();
+
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code, ...(err.extra || {}) });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
+}
 
 // Allowed sort columns to prevent SQL injection
 const ALLOWED_SORT_COLUMNS = [
@@ -63,26 +70,19 @@ router.get('/alumnos/buscar', async (req, res) => {
       return res.json({ success: true, data: [] });
     }
 
-    const searchTerm = q.trim();
-    const rows = await query(
-      `SELECT id,
-              nombre_alumno AS nombre,
-              '' AS apellido,
-              dni_alumno AS dni
-       FROM alumnos
-       WHERE nombre_alumno_norm ILIKE $1
-          OR nombre_apoderado_norm ILIKE $1
-          OR dni_alumno_norm ILIKE $1
-          OR dni_apoderado_norm ILIKE $1
-       ORDER BY nombre_alumno ASC
-       LIMIT 10`,
-      [`%${String(searchTerm).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f\s\-\.]/g, '')}%`]
-    );
+    const results = await AlumnoService.buscar(q.trim(), { limit: 10 });
 
-    return res.json({ success: true, data: rows });
+    // Map to the expected response shape (nombre, apellido, dni)
+    const data = results.map(r => ({
+      id: r.id,
+      nombre: r.nombre_alumno,
+      apellido: '',
+      dni: r.dni_alumno,
+    }));
+
+    return res.json({ success: true, data });
   } catch (err) {
-    console.error('Error buscando alumnos:', err);
-    return res.status(500).json({ success: false, error: 'Error del servidor', code: 'GRAD_SEARCH_ERROR' });
+    handleError(res, err);
   }
 });
 
