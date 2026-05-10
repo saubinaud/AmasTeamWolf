@@ -127,6 +127,7 @@ function AlumnoDetailPanel({
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     nombre_alumno: '', dni_alumno: '', fecha_nacimiento: '', categoria: '', estado: '',
+    cinturon_actual: '',
     nombre_apoderado: '', telefono: '', correo: '', direccion: '',
   });
 
@@ -139,6 +140,7 @@ function AlumnoDetailPanel({
         fecha_nacimiento: alumno.fecha_nacimiento ? alumno.fecha_nacimiento.split('T')[0] : '',
         categoria: alumno.categoria || '',
         estado: alumno.estado || '',
+        cinturon_actual: alumno.cinturon_actual || 'Blanco',
         nombre_apoderado: alumno.nombre_apoderado || '',
         telefono: alumno.telefono_apoderado || '',
         correo: alumno.correo_apoderado || '',
@@ -253,7 +255,8 @@ function AlumnoDetailPanel({
                   <div><label className={cx.label}>Nombre completo</label><input value={form.nombre_alumno} onChange={e => patch('nombre_alumno', e.target.value)} className={cx.input} /></div>
                   <div><label className={cx.label}>DNI alumno</label><input value={form.dni_alumno} onChange={e => patch('dni_alumno', e.target.value)} className={cx.input} /></div>
                   <div><label className={cx.label}>Fecha nacimiento</label><input type="date" value={form.fecha_nacimiento} onChange={e => patch('fecha_nacimiento', e.target.value)} className={cx.input} /></div>
-                  <div><label className={cx.label}>Categoria</label><input value={form.categoria} onChange={e => patch('categoria', e.target.value)} className={cx.input} placeholder="Ej: Mini, Niños, Adolescentes" /></div>
+                  <div><label className={cx.label}>Categoria</label><input value={form.categoria} onChange={e => patch('categoria', e.target.value)} className={cx.input} placeholder="Ej: Baby Wolf, Little Wolf" /></div>
+                  <div><label className={cx.label}>Cinturón actual</label><input value={form.cinturon_actual} onChange={e => patch('cinturon_actual', e.target.value)} className={cx.input} placeholder="Ej: Blanco con tira dorada" /></div>
                   <div>
                     <label className={cx.label}>Estado</label>
                     <select value={form.estado} onChange={e => patch('estado', e.target.value)} className={cx.select}>
@@ -270,6 +273,7 @@ function AlumnoDetailPanel({
                     ['DNI', alumno.dni],
                     ['Nacimiento', formatFecha(alumno.fecha_nacimiento)],
                     ['Categoria', alumno.categoria],
+                    ['Cinturón', alumno.cinturon_actual || 'Blanco'],
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between">
                       <span className="text-stone-400 text-sm">{label}</span>
