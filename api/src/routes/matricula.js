@@ -127,9 +127,12 @@ router.post('/', async (req, res) => {
       const { query: dbQuery } = require('../db');
       await dbQuery(`
         UPDATE leads SET estado = 'Convertido', alumno_inscrito_id = $1
-        WHERE estado != 'Convertido'
-          AND (telefono = $2 OR correo = $3 OR LOWER(nombre_alumno) = LOWER($4))
-        LIMIT 1
+        WHERE id = (
+          SELECT id FROM leads
+          WHERE estado != 'Convertido'
+            AND (telefono = $2 OR correo = $3 OR LOWER(nombre_alumno) = LOWER($4))
+          ORDER BY created_at DESC LIMIT 1
+        )
       `, [alumno.id, d.telefono || '', d.email || '', d.nombreAlumno || '']);
     } catch (_) { /* best effort */ }
 
