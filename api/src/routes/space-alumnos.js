@@ -241,6 +241,7 @@ router.put('/:id', async (req, res) => {
       tipo_documento: 'tipo_documento',
       fecha_nacimiento: 'fecha_nacimiento',
       categoria: 'categoria',
+      cinturon_actual: 'cinturon_actual',
       estado: 'estado',
       nombre_apoderado: 'nombre_apoderado',
       telefono: 'telefono',
