@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const { query, queryOne, pool } = require('../db');
+const { AlumnoService } = require('../services');
 
 const router = Router();
 
@@ -18,7 +19,7 @@ router.post('/', async (req, res) => {
 
       let result;
       if (dni_alumno) {
-        const dniNorm = String(dni_alumno).replace(/[\s\-\.]/g, '').trim();
+        const dniNorm = AlumnoService.normalizeDni(dni_alumno);
         result = await queryOne(`
           SELECT a.id, a.id AS apoderado_id, a.nombre_alumno AS alumno_nombre,
                  a.nombre_apoderado AS apoderado_nombre, i.programa
@@ -28,7 +29,7 @@ router.post('/', async (req, res) => {
           LIMIT 1
         `, [dniNorm]);
       } else {
-        const dniNorm = String(dni_padre).replace(/[\s\-\.]/g, '').trim();
+        const dniNorm = AlumnoService.normalizeDni(dni_padre);
         result = await queryOne(`
           SELECT a.id, a.id AS apoderado_id, a.nombre_alumno AS alumno_nombre,
                  a.nombre_apoderado AS apoderado_nombre, i.programa
