@@ -1,4 +1,4 @@
-# 18 — Mejoras Mayo 2026 (Sesión 2-5 mayo)
+# 18 — Mejoras Mayo 2026 (Sesiones 2-10 mayo)
 
 ## Arquitectura Frontend
 
@@ -183,3 +183,100 @@
 - Restaurada del backup 2026-05-03 (incidente por docker service update --force)
 - Requiere extensión `unaccent` + función `unaccent_immutable` ANTES del restore
 - REGLA: NUNCA usar --force en servicios que compartan stack con BD
+- Columna `alumno_inscrito_id` agregada a tabla `leads` (conversión)
+- Schema exportado: `database/01_schema.sql` (2422 líneas, pg_dump --schema-only)
+
+---
+
+## Capa de Servicios (Sesión 9-10 mayo)
+
+### Problema resuelto
+- 6 patrones distintos de búsqueda por DNI en el sistema
+- 4 formas diferentes de verificar inscripción activa
+- Función SQL `registrar_asistencia()` con lógica distinta al código JS
+- 24 de 28 rutas hacían SQL directo con inconsistencias
+
+### Servicios creados (`api/src/services/`)
+
+#### AlumnoService.js
+- `normalizeDni(val)` — normalización unificada
+- `normalizeNombre(val)` — NFD + strip diacritics + lowercase
+- `buscarPorDni(dni, { soloActivos })` — busca AMBOS dni_alumno_norm + dni_apoderado_norm en 1 query
+- `buscar(q, { limit, soloActivos })` — multi-palabra, cada token debe estar presente
+- `getById(id)` — throws NotFoundError si no existe
+- `listarActivos()` — lista ligera para búsqueda client-side
+
+#### InscripcionService.js
+- `getActiva(alumnoId, { strict })` — busca Activo primero, fallback a más reciente
+- `getById(id)` — detalle con alumno + pagos + contratos
+- `listar(filters)` — paginación + filtros + sort unificado
+
+#### AsistenciaService.js
+- `registrar(alumnoId, { turno, tokenQr, metodo })` — UN SOLO PUNTO para registrar asistencia
+  - Verifica alumno activo/inactivo
+  - Busca inscripción (con fallback)
+  - Resuelve turno automáticamente
+  - Verifica duplicado
+  - Retorna flags: `membresia_vencida`, `clases_restantes`
+- `resolverTurno(alumno, inscripcion)` — inscripción → programa → categoría → edad
+- `yaRegistroHoy(alumnoId, turno)` — check duplicado
+- `getHoy({ token })` — asistencias del día
+
+#### errors.js
+- `NotFoundError` (404), `ValidationError` (400), `DuplicateError` (409)
+- `statusHint` para traducción automática a HTTP status
+
+### Rutas migradas a servicios
+- `asistencia.js` — eliminó función SQL `registrar_asistencia()`, usa AsistenciaService
+- `consulta-asistencia.js` — AlumnoService + InscripcionService
+- `space-inscripciones.js` — InscripcionService.listar + getById
+- `space-graduaciones.js` — AlumnoService.buscar
+- `auth.js` — AlumnoService.buscarPorDni (4 endpoints)
+- `matricula.js` — AlumnoService.buscarPorDni + normalizeDni
+- `renovacion.js` — AlumnoService.buscarPorDni
+- `vincular.js` — AlumnoService.normalizeDni
+- `space-alumnos.js` — servicios importados
+
+### Conexiones de negocio implementadas
+
+#### Lead → Alumno (conversión automática)
+- Al matricular: busca lead por teléfono/email/nombre
+- Si encuentra: marca `estado = 'Convertido'`, guarda `alumno_inscrito_id`
+- Best-effort (no rompe matrícula si falla)
+
+#### Referidos → Descuento en renovación
+- Al renovar: verifica `alumnos.saldo_bonos`
+- Si > 0: aplica como descuento adicional (min entre saldo y precio)
+- Después: reduce saldo_bonos + marca referidos como canjeados
+- Respuesta incluye `descuento_referido` para frontend
+
+#### Graduación → Cinturón automático
+- Botón "Aprobar" en SpaceGraduaciones (frontend)
+- Al aprobar: actualiza `alumnos.cinturon_actual` + `cinturon_actual_id`
+- Inserta en `historial_cinturones`
+- Cinturón editable manualmente en detalle de alumno
+
+### Reglas de negocio (AsistenciaService)
+| Estado alumno | Inscripción | ¿Puede asistir? | Flag |
+|---|---|---|---|
+| Activo | Activa | ✅ | — |
+| Activo | Vencida | ✅ | `membresia_vencida: true` |
+| Activo | Sin inscripción | ✅ | `sin_membresia: true` |
+| Inactivo | Cualquiera | ❌ | error: "Alumno inactivo" |
+
+### E2E Tests (10/10 passing)
+1. Matrícula completa ✅
+2. Búsqueda unificada (nombre/DNI/apoderado) ✅
+3. Asistencia (servicio + rechazo duplicado) ✅
+4. Inscripciones CRUD ✅
+5. Graduación → cinturón cambia ✅
+6. Alumno inactivo → rechaza asistencia ✅
+7. Referidos + bono acumulado ✅
+8. Lead → conversión automática ✅
+9. Correcciones (público → Space) ✅
+10. Notificaciones (stats para badge) ✅
+
+### Schema documentación
+- `database/01_schema.sql` — export fresco de producción (2422 líneas)
+- `database/README.md` — instrucciones de deploy, restore, y cambios
+- Eliminados `02_views.sql`, `03_views.sql` (stale, referenciaban columnas inexistentes)
