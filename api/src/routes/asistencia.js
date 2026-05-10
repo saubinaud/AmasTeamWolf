@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { query, queryOne } = require('../db');
+const { query } = require('../db');
 const { AlumnoService, AsistenciaService } = require('../services');
 
 const router = Router();
@@ -23,62 +23,40 @@ router.post('/', async (req, res) => {
     const dniNorm = AlumnoService.normalizeDni(dni_alumno);
 
     // Resolver DNI: puede ser del alumno O del apoderado
-    let alumno = await AlumnoService.buscarPorDni(dniNorm);
+    const alumno = await AlumnoService.buscarPorDni(dniNorm);
 
     if (!alumno) {
-      // If no match, try the stored function directly with raw DNI
-      const result = await queryOne(
-        'SELECT registrar_asistencia($1, $2, $3) AS resultado',
-        [dniNorm, token_qr, turno || detectarTurno()]
-      );
-      const data = typeof result.resultado === 'string'
-        ? JSON.parse(result.resultado)
-        : result.resultado;
-      return res.json(data);
+      return res.status(404).json({ success: false, error: 'Alumno no encontrado con ese DNI' });
     }
 
-    const dniParaRegistro = alumno.dni_alumno;
+    // Registrar via service (handles turno resolution, duplicate check, membresia, etc.)
+    const resultado = await AsistenciaService.registrar(alumno.id, {
+      turno: turno || undefined,
+      tokenQr: token_qr,
+      metodo: 'qr',
+    });
 
-    // Verificar si es QR diario para auto-detectar turno
-    let turnoFinal = turno || detectarTurno();
-    let esDiario = false;
-
-    try {
-      const sesion = await queryOne(
-        'SELECT programa FROM qr_sesiones WHERE token = $1',
-        [token_qr]
-      );
-      if (sesion && sesion.programa === 'diario') {
-        esDiario = true;
-        turnoFinal = AsistenciaService.resolverTurno(alumno, null);
-        // Try to get inscription for better turno resolution
-        const { InscripcionService } = require('../services');
-        const inscripcion = await InscripcionService.getActiva(alumno.id, { strict: false });
-        if (inscripcion) {
-          turnoFinal = AsistenciaService.resolverTurno(alumno, inscripcion);
-        }
-      }
-    } catch (_err) {
-      // Si falla la consulta, continuar con turno normal
-    }
-
-    const result = await queryOne(
-      'SELECT registrar_asistencia($1, $2, $3) AS resultado',
-      [dniParaRegistro, token_qr, turnoFinal]
-    );
-
-    const data = typeof result.resultado === 'string'
-      ? JSON.parse(result.resultado)
-      : result.resultado;
-
-    // Si es QR diario, agregar info de clase detectada
-    if (esDiario && data && (Array.isArray(data) ? data[0] : data)) {
-      const entry = Array.isArray(data) ? data[0] : data;
-      entry.clase_detectada = turnoFinal;
-    }
-
-    res.json(data);
+    const now = new Date();
+    return res.json({
+      success: true,
+      alumno: resultado.alumno,
+      programa: resultado.programa,
+      fecha: now.toISOString().split('T')[0],
+      hora: now.toTimeString().slice(0, 5),
+      turno: resultado.clase_detectada,
+      clase_detectada: resultado.clase_detectada,
+      clases_restantes: resultado.clases_restantes,
+      membresia_vencida: resultado.membresia_vencida,
+    });
   } catch (err) {
+    if (err.code === 'DUPLICATE') {
+      return res.status(409).json({
+        success: false,
+        error: 'Asistencia ya registrada hoy',
+        alumno: err.extra?.alumno,
+        turno: err.extra?.clase_detectada,
+      });
+    }
     handleError(res, err);
   }
 });
@@ -260,13 +238,6 @@ router.get('/dashboard', async (req, res) => {
   }
 });
 
-function detectarTurno() {
-  const hora = new Date().getHours();
-  if (hora >= 6 && hora < 13) return 'Mañana';
-  if (hora >= 13 && hora < 20) return 'Tarde';
-  return 'General';
-}
-
 // POST /api/asistencia/por-nombre — Registrar asistencia por alumno_id
 // Body: { alumno_id, token?, turno? }
 router.post('/por-nombre', async (req, res) => {
@@ -277,50 +248,33 @@ router.post('/por-nombre', async (req, res) => {
       return res.status(400).json({ success: false, error: 'alumno_id es requerido' });
     }
 
-    // If token is provided and we need the stored function behavior, use it
-    if (token) {
-      // Get alumno for turno detection and stored function
-      const alumno = await AlumnoService.getById(alumno_id);
-      const { InscripcionService } = require('../services');
-      const inscripcion = await InscripcionService.getActiva(alumno_id, { strict: false });
+    const resultado = await AsistenciaService.registrar(alumno_id, {
+      turno: turno || undefined,
+      tokenQr: token || undefined,
+      metodo: token ? 'qr' : 'manual',
+    });
 
-      let turnoFinal = turno || AsistenciaService.resolverTurno(alumno, inscripcion);
-
-      const result = await queryOne(
-        'SELECT registrar_asistencia($1, $2, $3) AS resultado',
-        [alumno.dni_alumno, token, turnoFinal]
-      );
-      const data = typeof result?.resultado === 'string'
-        ? JSON.parse(result.resultado)
-        : result?.resultado;
-
-      const entry = Array.isArray(data) ? data[0] : data;
-      if (entry) {
-        entry.clase_detectada = turnoFinal;
-      }
-      return res.json(data);
-    }
-
-    // Sin token: registro manual via service
-    try {
-      const resultado = await AsistenciaService.registrar(alumno_id, { turno, metodo: 'manual' });
-      return res.json({
-        success: true,
-        alumno: resultado.alumno,
-        clase_detectada: resultado.clase_detectada,
-      });
-    } catch (err) {
-      if (err.code === 'DUPLICATE') {
-        return res.json({
-          success: false,
-          error: err.message,
-          alumno: err.extra.alumno,
-          clase_detectada: err.extra.clase_detectada,
-        });
-      }
-      throw err;
-    }
+    const now = new Date();
+    return res.json({
+      success: true,
+      alumno: resultado.alumno,
+      programa: resultado.programa,
+      fecha: now.toISOString().split('T')[0],
+      hora: now.toTimeString().slice(0, 5),
+      turno: resultado.clase_detectada,
+      clase_detectada: resultado.clase_detectada,
+      clases_restantes: resultado.clases_restantes,
+      membresia_vencida: resultado.membresia_vencida,
+    });
   } catch (err) {
+    if (err.code === 'DUPLICATE') {
+      return res.status(409).json({
+        success: false,
+        error: 'Asistencia ya registrada hoy',
+        alumno: err.extra?.alumno,
+        turno: err.extra?.clase_detectada,
+      });
+    }
     handleError(res, err);
   }
 });
