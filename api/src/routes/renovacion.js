@@ -40,7 +40,7 @@ router.post('/', async (req, res) => {
 
     const precioPrograma = Number(d.precioPrograma) || 0;
     const precioPagado = Number(d.total ?? d.precioPagado) || 0;
-    const descuento = Number(d.descuentoDinero ?? d.descuento) || 0;
+    let descuento = Number(d.descuentoDinero ?? d.descuento) || 0;
 
     await client.query('BEGIN');
 
@@ -50,6 +50,13 @@ router.post('/', async (req, res) => {
     if (!alumno) {
       await client.query('ROLLBACK');
       return res.status(404).json({ success: false, error: 'Alumno no encontrado' });
+    }
+
+    // 1b. Aplicar descuento por bono de referidos si tiene saldo
+    let descuentoReferido = 0;
+    if (alumno.saldo_bonos > 0) {
+      descuentoReferido = Math.min(alumno.saldo_bonos, precioPrograma);
+      descuento = descuento + descuentoReferido;
     }
 
     // 2. Marcar inscripción anterior como Vencido
@@ -99,6 +106,22 @@ router.post('/', async (req, res) => {
 
     await client.query('COMMIT');
 
+    // 5b. Reducir saldo de bonos del alumno (best effort, fuera de transacción)
+    if (descuentoReferido > 0) {
+      try {
+        await pool.query(
+          `UPDATE alumnos SET saldo_bonos = saldo_bonos - $1 WHERE id = $2`,
+          [descuentoReferido, alumno.id]
+        );
+        await pool.query(
+          `UPDATE referidos SET canjeado = true WHERE referidor_id = $1 AND canjeado = false`,
+          [alumno.id]
+        );
+      } catch (bonoErr) {
+        console.error('Error reduciendo saldo_bonos:', bonoErr.message);
+      }
+    }
+
     // 6. Guardar contrato firmado (salvo skipContrato)
     let contratoUrl = '';
     if (d.contratoFirmado && !skipContrato) {
@@ -123,6 +146,7 @@ router.post('/', async (req, res) => {
       inscripcion_id: inscripcionId,
       estado_pago: estadoPago,
       pago_registrado: estadoPago !== 'Pendiente',
+      descuento_referido: descuentoReferido,
       origen,
     });
   } catch (err) {

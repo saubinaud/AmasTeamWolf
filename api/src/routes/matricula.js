@@ -122,6 +122,17 @@ router.post('/', async (req, res) => {
 
     await client.query('COMMIT');
 
+    // 5a. Mark matching lead as converted (best effort, don't fail enrollment if this fails)
+    try {
+      const { query: dbQuery } = require('../db');
+      await dbQuery(`
+        UPDATE leads SET estado = 'Convertido', alumno_inscrito_id = $1
+        WHERE estado != 'Convertido'
+          AND (telefono = $2 OR correo = $3 OR LOWER(nombre_alumno) = LOWER($4))
+        LIMIT 1
+      `, [alumno.id, d.telefono || '', d.email || '', d.nombreAlumno || '']);
+    } catch (_) { /* best effort */ }
+
     // 5b. Referral bonus (after COMMIT, non-blocking)
     if (d.codigoReferido && typeof d.codigoReferido === 'string' && d.codigoReferido.trim()) {
       try {
