@@ -1,17 +1,8 @@
 const { Router } = require('express');
 const { query, queryOne, pool } = require('../db');
+const { AlumnoService, InscripcionService } = require('../services');
 
 const router = Router();
-
-/**
- * Normaliza un número de documento para búsqueda.
- * Quita espacios, guiones, puntos. Para DNI deja solo dígitos.
- * Para CE/Pasaporte deja alfanuméricos.
- */
-function normalizeDocumento(val) {
-  if (!val) return '';
-  return String(val).replace(/[\s\-\.]/g, '').trim();
-}
 
 const TIPOS_DOCUMENTO_VALIDOS = ['DNI', 'CE', 'Pasaporte'];
 
