@@ -3,8 +3,15 @@ const { pool } = require('../db');
 const { emailMatricula3y6Meses, emailMatricula1Mes } = require('../notifuse');
 const { generarPDFContrato } = require('../pdfContrato');
 const { guardarContratoPDF } = require('../cloudinary');
+const { AlumnoService } = require('../services');
 
 const router = Router();
+
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
+}
 
 // Valores aceptados por inscripciones.estado_pago
 const ESTADOS_PAGO_VALIDOS = ['Pendiente', 'Parcial', 'Pagado'];
@@ -34,11 +41,8 @@ router.post('/', async (req, res) => {
     const descuento = Number(d.descuentoDinero ?? d.descuento) || 0;
 
     // 1. Buscar o crear alumno (normalizar DNI para mejor match)
-    const dniNorm = String(d.dniAlumno || '').replace(/[\s\-\.]/g, '').trim();
-    let alumno = await client.query(
-      `SELECT id FROM alumnos WHERE dni_alumno_norm = $1`,
-      [dniNorm]
-    ).then(r => r.rows[0]);
+    const dniNorm = AlumnoService.normalizeDni(d.dniAlumno || '');
+    let alumno = await AlumnoService.buscarPorDni(d.dniAlumno || '');
 
     if (!alumno) {
       const tipoDoc = ['DNI', 'CE', 'Pasaporte'].includes(d.tipoDocumento) ? d.tipoDocumento : 'DNI';

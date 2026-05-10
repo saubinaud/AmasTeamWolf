@@ -3,8 +3,15 @@ const { pool } = require('../db');
 const { emailRenovacion } = require('../notifuse');
 const { generarPDFContrato } = require('../pdfContrato');
 const { guardarContratoPDF } = require('../cloudinary');
+const { AlumnoService, InscripcionService } = require('../services');
 
 const router = Router();
+
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
+}
 
 const ESTADOS_PAGO_VALIDOS = ['Pendiente', 'Parcial', 'Pagado'];
 const TIPOS_CLIENTE_VALIDOS = ['Nuevo/Primer registro', 'Renovación', 'Walk-in', 'Promocional', 'Transferido'];
@@ -37,12 +44,8 @@ router.post('/', async (req, res) => {
 
     await client.query('BEGIN');
 
-    // 1. Buscar alumno por DNI (normalizado)
-    const dniNorm = String(d.dniAlumno || '').replace(/[\s\-\.]/g, '').trim();
-    const alumno = await client.query(
-      `SELECT id FROM alumnos WHERE dni_alumno_norm = $1`,
-      [dniNorm]
-    ).then(r => r.rows[0]);
+    // 1. Buscar alumno por DNI via servicio
+    const alumno = await AlumnoService.buscarPorDni(d.dniAlumno);
 
     if (!alumno) {
       await client.query('ROLLBACK');

@@ -4,8 +4,15 @@ const crypto = require('crypto');
 const { query, queryOne, pool } = require('../db');
 const { authMiddleware, signToken } = require('../middleware/auth');
 const { enviarNotificacion } = require('../notifuse');
+const { AlumnoService } = require('../services');
 
 const router = Router();
+
+function handleError(res, err) {
+  if (err.statusHint) return res.status(err.statusHint).json({ success: false, error: err.message, code: err.code });
+  console.error(err);
+  res.status(500).json({ success: false, error: 'Error del servidor' });
+}
 
 // Rate limiting simple por DNI (en memoria)
 const loginAttempts = new Map();
@@ -265,15 +272,8 @@ router.post('/login', async (req, res) => {
       return res.status(429).json({ error: 'Demasiados intentos. Espera 15 minutos.' });
     }
 
-    // Buscar alumno por DNI (normalizado: sin espacios, guiones, puntos)
-    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
-    const alumno = await queryOne(
-      `SELECT id, password_hash, nombre_apoderado, correo FROM alumnos
-       WHERE dni_apoderado_norm = $1
-          OR dni_alumno_norm = $1
-       LIMIT 1`,
-      [dniNorm]
-    );
+    // Buscar alumno por DNI via servicio
+    const alumno = await AlumnoService.buscarPorDni(dni);
 
     if (!alumno) {
       return res.status(404).json({ error: 'DNI no registrado en la academia' });
@@ -307,14 +307,7 @@ router.post('/solicitar-codigo', async (req, res) => {
     const { dni } = req.body;
     if (!dni) return res.status(400).json({ error: 'DNI requerido' });
 
-    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
-    const alumno = await queryOne(
-      `SELECT id, correo, nombre_apoderado FROM alumnos
-       WHERE dni_apoderado_norm = $1
-          OR dni_alumno_norm = $1
-       LIMIT 1`,
-      [dniNorm]
-    );
+    const alumno = await AlumnoService.buscarPorDni(dni);
 
     if (!alumno) {
       return res.status(404).json({ error: 'DNI no registrado' });
@@ -368,14 +361,7 @@ router.post('/verificar-codigo', async (req, res) => {
     const { dni, code } = req.body;
     if (!dni || !code) return res.status(400).json({ error: 'DNI y código requeridos' });
 
-    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
-    const alumno = await queryOne(
-      `SELECT id FROM alumnos
-       WHERE dni_apoderado_norm = $1
-          OR dni_alumno_norm = $1
-       LIMIT 1`,
-      [dniNorm]
-    );
+    const alumno = await AlumnoService.buscarPorDni(dni);
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
 
     const vc = await queryOne(
@@ -409,14 +395,7 @@ router.post('/crear-password', async (req, res) => {
       return res.status(429).json({ error: 'Demasiados intentos. Espera 15 minutos.' });
     }
 
-    const dniNorm = String(dni).replace(/[\s\-\.]/g, '').trim();
-    const alumno = await queryOne(
-      `SELECT id, password_hash FROM alumnos
-       WHERE dni_apoderado_norm = $1
-          OR dni_alumno_norm = $1
-       LIMIT 1`,
-      [dniNorm]
-    );
+    const alumno = await AlumnoService.buscarPorDni(dni);
     if (!alumno) return res.status(404).json({ error: 'DNI no registrado' });
 
     // Solo permite crear si NO tiene contraseña aún
