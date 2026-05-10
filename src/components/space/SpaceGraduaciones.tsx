@@ -164,13 +164,14 @@ function turnoLabel(val: string): string {
 // ---------------------------------------------------------------------------
 
 function GraduacionesTable({
-  loading, graduaciones, onEdit, onDelete, onOpenCreate,
+  loading, graduaciones, onEdit, onDelete, onOpenCreate, onAprobar,
 }: {
   loading: boolean;
   graduaciones: Graduacion[];
   onEdit: (g: Graduacion) => void;
   onDelete: (id: number) => void;
   onOpenCreate: () => void;
+  onAprobar: (g: Graduacion) => void;
 }) {
   if (loading) {
     return (
@@ -237,6 +238,11 @@ function GraduacionesTable({
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <div className="inline-flex gap-1">
+                    {g.estado === 'programada' && (
+                      <button onClick={() => onAprobar(g)} className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-50 transition-colors" title="Aprobar graduación">
+                        <Check size={15} />
+                      </button>
+                    )}
                     <button onClick={() => onEdit(g)} className={cx.btnIcon} title="Editar">
                       <Pencil size={15} />
                     </button>
@@ -1125,6 +1131,27 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     }
   }, [form, editingId, token, fetchGraduaciones, fetchStats]);
 
+  const handleAprobar = useCallback(async (g: Graduacion) => {
+    if (!window.confirm(`Aprobar graduación de ${g.nombre_alumno || g.nombre} ${g.apellido_alumno || g.apellido}?\n\nCinturón: ${g.rango}\n\nEsto cambiará automáticamente el cinturón del alumno.`)) return;
+    try {
+      const res = await fetch(`${API_BASE}/space/graduaciones/${g.id}/aprobar`, {
+        method: 'PUT',
+        headers: authHeaders(token),
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast.success(`Graduación aprobada — Nuevo cinturón: ${data.nuevo_cinturon}`);
+        fetchGraduaciones();
+        fetchStats();
+      } else {
+        toast.error(data.error || 'Error al aprobar');
+      }
+    } catch {
+      toast.error('Error de conexion');
+    }
+  }, [token, fetchGraduaciones, fetchStats]);
+
   const handleDelete = useCallback(async (id: number) => {
     if (!window.confirm('Eliminar esta graduacion?')) return;
     try {
@@ -1316,6 +1343,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
             onEdit={openEdit}
             onDelete={handleDelete}
             onOpenCreate={openCreate}
+            onAprobar={handleAprobar}
           />
         </>
       )}
