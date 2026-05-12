@@ -1,7 +1,18 @@
 const { Router } = require('express');
-const { query, queryOne } = require('../db');
+const { query, queryOne, pool } = require('../db');
+const { AlumnoService, InscripcionService } = require('../services');
 
 const router = Router();
+
+const DEFAULT_MODALIDADES = [
+  { nombre: 'Fórmula', icono: 'Zap', implementos_requeridos: [] },
+  { nombre: 'Fórmula con armas', icono: 'Swords', implementos_requeridos: ['arma'] },
+  { nombre: 'Presentación Combat Weapons', icono: 'Target', implementos_requeridos: ['arma', 'protector'] },
+  { nombre: 'Combat Weapons Simple', icono: 'Shield', implementos_requeridos: ['arma'] },
+  { nombre: 'Rompimiento de madera', icono: 'Hammer', implementos_requeridos: [] },
+  { nombre: 'Fórmula creativa', icono: 'Wand2', implementos_requeridos: [] },
+  { nombre: 'Fórmula creativa con armas', icono: 'Axe', implementos_requeridos: ['arma'] },
+];
 
 // GET / — list active tournaments
 router.get('/', async (req, res) => {
@@ -37,8 +48,9 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// POST / — create tournament
+// POST / — create tournament + auto-create default modalidades
 router.post('/', async (req, res) => {
+  const client = await pool.connect();
   try {
     const { nombre, tipo, fecha, lugar, precio } = req.body;
     if (!nombre) {
@@ -47,15 +59,38 @@ router.post('/', async (req, res) => {
     const tiposValidos = ['regional', 'nacional', 'interescuelas', 'panamericano', 'mundial'];
     const tipoFinal = tiposValidos.includes(tipo) ? tipo : 'regional';
 
-    const row = await queryOne(`
+    await client.query('BEGIN');
+
+    const { rows: [torneo] } = await client.query(`
       INSERT INTO torneos_config (nombre, tipo, fecha, lugar, precio)
       VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `, [nombre, tipoFinal, fecha || null, lugar || null, precio || 0]);
-    res.status(201).json({ success: true, data: row });
+
+    // Auto-create default modalidades
+    for (let i = 0; i < DEFAULT_MODALIDADES.length; i++) {
+      const m = DEFAULT_MODALIDADES[i];
+      await client.query(`
+        INSERT INTO torneo_modalidades (torneo_id, nombre, icono, implementos_requeridos, activo, orden)
+        VALUES ($1, $2, $3, $4, TRUE, $5)
+      `, [torneo.id, m.nombre, m.icono, m.implementos_requeridos, i + 1]);
+    }
+
+    await client.query('COMMIT');
+
+    // Fetch created modalidades to return
+    const modalidades = await query(
+      'SELECT * FROM torneo_modalidades WHERE torneo_id = $1 ORDER BY orden',
+      [torneo.id]
+    );
+
+    res.status(201).json({ success: true, data: { ...torneo, modalidades } });
   } catch (err) {
+    await client.query('ROLLBACK');
     console.error('POST /torneos error:', err);
     res.status(500).json({ success: false, error: 'Error al crear torneo' });
+  } finally {
+    client.release();
   }
 });
 
@@ -108,13 +143,58 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// GET /:id/selecciones — list selections for a tournament
+// GET /:id/modalidades — list modalidades for a torneo
+router.get('/:id/modalidades', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const rows = await query(`
+      SELECT * FROM torneo_modalidades
+      WHERE torneo_id = $1
+      ORDER BY orden ASC, id ASC
+    `, [id]);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('GET /torneos/:id/modalidades error:', err);
+    res.status(500).json({ success: false, error: 'Error al obtener modalidades' });
+  }
+});
+
+// PUT /modalidades/:id — toggle activo / change order for a modalidad
+router.put('/modalidades/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { activo, orden } = req.body;
+
+    const existing = await queryOne('SELECT * FROM torneo_modalidades WHERE id = $1', [id]);
+    if (!existing) {
+      return res.status(404).json({ success: false, error: 'Modalidad no encontrada' });
+    }
+
+    const row = await queryOne(`
+      UPDATE torneo_modalidades
+      SET activo = COALESCE($1, activo),
+          orden  = COALESCE($2, orden)
+      WHERE id = $3
+      RETURNING *
+    `, [activo !== undefined ? activo : null, orden !== undefined ? orden : null, id]);
+
+    res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('PUT /modalidades/:id error:', err);
+    res.status(500).json({ success: false, error: 'Error al actualizar modalidad' });
+  }
+});
+
+// GET /:id/selecciones — list selections with new fields
 router.get('/:id/selecciones', async (req, res) => {
   try {
     const { id } = req.params;
     const rows = await query(`
-      SELECT ts.id, ts.torneo_id, ts.alumno_id, ts.modalidad, ts.estado,
-             ts.estado_pago, ts.observaciones, ts.created_at,
+      SELECT ts.id, ts.torneo_id, ts.alumno_id, ts.modalidad,
+             ts.modalidades, ts.estado, ts.estado_pago,
+             ts.precio_total, ts.descuento, ts.descuento_tipo,
+             ts.implementos_faltantes,
+             ts.observaciones, ts.created_at,
              a.nombre_alumno, a.dni_alumno, a.categoria
       FROM torneo_selecciones ts
       JOIN alumnos a ON a.id = ts.alumno_id
