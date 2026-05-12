@@ -7,13 +7,7 @@ import {
     ChevronDown,
     Loader2,
     Search,
-    Upload,
-    X,
     Check,
-    CreditCard,
-    Smartphone,
-    ClipboardList,
-    ImageIcon,
     CheckCircle2,
     Send,
     Sparkles,
@@ -28,81 +22,71 @@ import {
     Axe,
     Hammer,
     Wand2,
+    AlertTriangle,
     type LucideIcon
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
-
-// Base URL — en dev usa proxy local, en prod el API propio
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? '/api'
-    : 'https://amas-api.s6hx3x.easypanel.host/api';
+import { API_BASE } from '../config/api';
 
 // ============================================================
-// CONSTANTES EDITABLES — Actualizar aquí para cada torneo
+// ICON MAPPING — modalidad.icono string -> lucide component
 // ============================================================
-const TORNEO_CONFIG = {
-    // Datos del torneo
-    fecha: '1 de Marzo, 2026',
-    hora: '10:00 AM',
-    lugar: 'Liceo Naval Contralmirante Montero',
+const ICON_MAP: Record<string, LucideIcon> = { Zap, Swords, Target, Shield, Hammer, Wand2, Axe };
 
-    // Datos de pago — Transferencias bancarias
-    bancos: [
-        { nombre: 'INTERBANK', moneda: 'Soles', cuenta: '8983331662706' },
-        { nombre: 'BCP', moneda: 'Soles', cuenta: '19204159709025' },
-        { nombre: 'BBVA', moneda: 'Soles', cuenta: '0011-0814-0220041447' }
-    ],
-
-    // Datos de pago — Yape
-    yapeNumero: '982 287 822',
-    yapeNombre: 'Profesora Jimena Won',
-
-    // Costo de entrada
-    costoEntrada: 25,
-
-    // Descuento — Alumnos Leadership & Fighter Wolf (10%)
-    descuentoPorcentaje: 10,
-    dniConDescuento: [
-        '93796147',
-        '93772219',
-        '93497133',
-        '93539149',
-        '94709144',
-        '93758535',
-        '93013125',
-        '93747517',
-    ],
-
-    // Webhook
-    webhookUrl: `${API_URL}/torneo`,
-    consultarAlumnoUrl: `${API_URL}/torneo/consultar`,
-};
+function getIconForModalidad(icono?: string): LucideIcon {
+    if (icono && ICON_MAP[icono]) return ICON_MAP[icono];
+    return Zap;
+}
 
 // ============================================================
-// MODALIDADES Y PRECIOS
+// PRICE CALCULATION (client-side, from spec)
 // ============================================================
-const MODALIDADES: { name: string; Icon: LucideIcon }[] = [
-    { name: 'Fórmula', Icon: Zap },
-    { name: 'Fórmula con armas', Icon: Swords },
-    { name: 'Presentación Combat Weapons', Icon: Target },
-    { name: 'Combat Weapons Simple', Icon: Shield },
-    { name: 'Rompimiento de madera', Icon: Hammer },
-    { name: 'Fórmula creativa', Icon: Wand2 },
-    { name: 'Fórmula creativa con armas', Icon: Axe },
-];
-
 function calcularPrecio(cantidad: number): number {
     if (cantidad <= 0) return 0;
     if (cantidad === 1) return 100;
     if (cantidad === 2) return 150;
     if (cantidad === 3) return 200;
-    return 250; // 4 o más
+    return 250; // 4+
 }
 
 // ============================================================
-// COMPONENTES UI — Mismos estilos que RegistroShowroomPage
+// TYPES
+// ============================================================
+interface Modalidad {
+    id: string;
+    nombre: string;
+    icono?: string;
+    implementos_requeridos?: string[];
+}
+
+interface TorneoData {
+    torneo: {
+        id: string;
+        nombre: string;
+        fecha: string;
+        hora?: string;
+        lugar: string;
+        descripcion?: string;
+    };
+    modalidades: Modalidad[];
+    precios: Record<number, number>;
+    descuento_leadership?: number;
+}
+
+interface AlumnoData {
+    nombre: string;
+    dni: string;
+}
+
+interface ConsultaResult {
+    alumno: AlumnoData;
+    implementos: string[];
+    es_leadership: boolean;
+}
+
+// ============================================================
+// UI COMPONENTS
 // ============================================================
 const Label = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
     <label className={`block text-white text-sm md:text-base font-bold mb-2 tracking-wide ${className}`}>
@@ -128,6 +112,32 @@ interface TorneoPageProps {
 }
 
 // ============================================================
+// FAQ DATA
+// ============================================================
+const FAQ_ITEMS = [
+    {
+        q: '¿Quiénes pueden participar?',
+        a: 'Todos los alumnos registrados en AMAS Team Wolf pueden inscribirse en el torneo.'
+    },
+    {
+        q: '¿Puedo inscribirme en varias modalidades?',
+        a: 'Sí, puedes elegir tantas modalidades como desees. El precio es por paquete: 1 modalidad S/100, 2 por S/150, 3 por S/200, y 4 o más por S/250.'
+    },
+    {
+        q: '¿Qué implementos necesito?',
+        a: 'Depende de la modalidad. Al seleccionar cada una, te indicaremos si necesitas algún implemento adicional como arma o uniforme.'
+    },
+    {
+        q: '¿Hay costo de entrada para el público?',
+        a: 'Sí, la entrada al evento cuesta S/25 por persona (de 12 a 60 años), pagada directamente en puerta.'
+    },
+    {
+        q: '¿Qué es el descuento Leadership Wolf?',
+        a: 'Los alumnos Leadership Wolf reciben un 50% de descuento al inscribirse en 4 o más modalidades.'
+    },
+];
+
+// ============================================================
 // COMPONENT
 // ============================================================
 export function TorneoPage({
@@ -139,50 +149,63 @@ export function TorneoPage({
     const topRef = useRef<HTMLDivElement>(null);
     const formRef = useRef<HTMLDivElement>(null);
 
-    // PHASE 1: DNI lookup
+    // Step 1: Torneo data from API
+    const [torneoData, setTorneoData] = useState<TorneoData | null>(null);
+    const [loadingTorneo, setLoadingTorneo] = useState(true);
+    const [torneoError, setTorneoError] = useState('');
+
+    // Step 2: DNI lookup
     const [dni, setDni] = useState('');
     const [isLookingUp, setIsLookingUp] = useState(false);
+    const [consultaResult, setConsultaResult] = useState<ConsultaResult | null>(null);
     const [dniStatus, setDniStatus] = useState<'idle' | 'found' | 'not_found'>('idle');
     const [dniError, setDniError] = useState('');
-    const [alumnoData, setAlumnoData] = useState<{ nombre_alumno: string; nombre_apoderado: string; correo: string } | null>(null);
 
-    // PHASE 2: Form state
-    const [apoderado, setApoderado] = useState('');
-    const [alumno, setAlumno] = useState('');
-    const [email, setEmail] = useState('');
-    const [emailFromApi, setEmailFromApi] = useState(false);
-    const [modalidades, setModalidades] = useState<string[]>([]);
-
-    // Payment panel
-    const [showPago, setShowPago] = useState(false);
-    const [comprobanteFile, setComprobanteFile] = useState<File | null>(null);
-    const [comprobantePreview, setComprobantePreview] = useState<string | null>(null);
+    // Step 3: Modalidades selection
+    const [selectedModalidades, setSelectedModalidades] = useState<string[]>([]);
 
     // Submission
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [successData, setSuccessData] = useState<{ precio_total: number; descuento: number; implementos_faltantes: string[] } | null>(null);
 
-    // Discount
-    const [hasDiscount, setHasDiscount] = useState(false);
+    // FAQ accordion
+    const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-    useEffect(() => { window.scrollTo(0, 0); }, []);
+    // ---- Step 1: Fetch active torneo ----
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        (async () => {
+            try {
+                const res = await fetch(`${API_BASE}/torneo/activo`);
+                if (!res.ok) {
+                    setTorneoError('No hay torneos programados por el momento.');
+                    return;
+                }
+                const data = await res.json();
+                if (!data?.torneo) {
+                    setTorneoError('No hay torneos programados por el momento.');
+                    return;
+                }
+                setTorneoData(data);
+            } catch {
+                setTorneoError('No hay torneos programados por el momento.');
+            } finally {
+                setLoadingTorneo(false);
+            }
+        })();
+    }, []);
 
-    // ---- Derived state ----
-    const subtotal = calcularPrecio(modalidades.length);
-    const descuento = hasDiscount ? Math.round(subtotal * TORNEO_CONFIG.descuentoPorcentaje / 100) : 0;
+    // ---- Derived pricing ----
+    const subtotal = calcularPrecio(selectedModalidades.length);
+    const esLeadership = consultaResult?.es_leadership ?? false;
+    const leadershipDiscountApplies = esLeadership && selectedModalidades.length >= 4;
+    const descuento = leadershipDiscountApplies ? Math.round(subtotal * 0.5) : 0;
     const total = subtotal - descuento;
-    const validateEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+
     const isFormValid =
         dniStatus === 'found' &&
-        apoderado.trim().length > 0 &&
-        alumno.trim().length > 0 &&
-        /^\d{8}$/.test(dni) &&
-        validateEmail(email) &&
-        modalidades.length > 0;
-
-    const getModalidadIcon = (name: string): LucideIcon => {
-        return MODALIDADES.find(m => m.name === name)?.Icon || Zap;
-    };
+        selectedModalidades.length > 0;
 
     // ---- DNI lookup ----
     const lookupDni = async (dniValue: string) => {
@@ -190,55 +213,24 @@ export function TorneoPage({
         setIsLookingUp(true);
         setDniError('');
         setDniStatus('idle');
-        setAlumnoData(null);
+        setConsultaResult(null);
+        setSelectedModalidades([]);
         try {
-            const res = await fetch(`${TORNEO_CONFIG.consultarAlumnoUrl}?dni=${dniValue}`);
-            const text = await res.text();
-            if (!text || text.trim().length === 0) {
-                // Empty response → treat as not found
+            const res = await fetch(`${API_BASE}/torneo/consultar?dni=${dniValue}`);
+            if (!res.ok) {
                 setDniStatus('not_found');
                 setDniError('Este DNI no está registrado en AMAS Team Wolf. Verifica los datos.');
                 return;
             }
-
-            const parsed = JSON.parse(text);
-
-            // The logic:
-            // 1) If the webhook couldn't find it, it returns: { "encontrado": false }
-            // 2) If it did find it, it returns an array: [ { "id": 172, "nombre_alumno": "...", ... } ]
-
-            // Check if it's explicitly "not found" object
-            if (!Array.isArray(parsed) && parsed.encontrado === false) {
+            const data = await res.json();
+            if (!data?.alumno) {
                 setDniStatus('not_found');
                 setDniError('Este DNI no está registrado en AMAS Team Wolf. Verifica los datos.');
                 return;
             }
-
-            // Otherwise, it should be an array with the student data
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                const result = parsed[0];
-                setDniStatus('found');
-                setAlumnoData(result);
-                // Check discount eligibility
-                const cleanedDni = dniValue.replace(/\D/g, '').slice(0, 8);
-                setHasDiscount(TORNEO_CONFIG.dniConDescuento.includes(cleanedDni));
-                setAlumno(result.nombre_alumno || '');
-                setApoderado(result.nombre_apoderado || '');
-                const emailResult = result.correo || '';
-
-                if (emailResult) {
-                    setEmail(emailResult);
-                    setEmailFromApi(true);
-                } else {
-                    setEmail('');
-                    setEmailFromApi(false);
-                }
-            } else {
-                setDniStatus('not_found');
-                setDniError('Este DNI no está registrado en AMAS Team Wolf. Verifica los datos.');
-            }
-        } catch (err) {
-            console.error('[DNI lookup] error:', err);
+            setDniStatus('found');
+            setConsultaResult(data);
+        } catch {
             setDniStatus('not_found');
             setDniError('Error al consultar. Intenta nuevamente.');
         } finally {
@@ -250,28 +242,20 @@ export function TorneoPage({
     const handleDniChange = (value: string) => {
         const cleaned = value.replace(/\D/g, '').slice(0, 8);
         setDni(cleaned);
-        // Reset phase 2 if DNI changes
         if (cleaned.length < 8) {
             setDniStatus('idle');
             setDniError('');
-            setAlumnoData(null);
-            setAlumno('');
-            setApoderado('');
-            setEmail('');
-            setEmailFromApi(false);
-            setModalidades([]);
-            setShowPago(false);
-            setHasDiscount(false);
+            setConsultaResult(null);
+            setSelectedModalidades([]);
         }
-        // Auto-lookup when 8 digits
         if (cleaned.length === 8) {
             lookupDni(cleaned);
         }
     };
 
-    const toggleModalidad = (m: string) => {
-        setModalidades((prev: string[]) =>
-            prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]
+    const toggleModalidad = (id: string) => {
+        setSelectedModalidades(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
         );
     };
 
@@ -279,77 +263,33 @@ export function TorneoPage({
         formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const handleRegistrarClick = () => {
-        if (!isFormValid) return;
-        setShowPago(true);
-        setTimeout(() => {
-            document.getElementById('pago-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-    };
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-        if (!validTypes.includes(file.type)) {
-            toast.error('Formato no válido. Usa JPG, PNG o PDF.');
-            return;
-        }
-        if (file.size > 10 * 1024 * 1024) {
-            toast.error('El archivo es demasiado grande (máx 10 MB).');
-            return;
-        }
-        setComprobanteFile(file);
-        if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = () => setComprobantePreview(reader.result as string);
-            reader.readAsDataURL(file);
-        } else {
-            setComprobantePreview(null);
-        }
-    };
-
-    const fileToBase64 = (file: File): Promise<string> =>
-        new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-
-    const handleConfirm = async () => {
+    const handleSubmit = async () => {
+        if (!isFormValid || !consultaResult) return;
         setIsSubmitting(true);
         try {
-            const comprobanteBase64 = comprobanteFile ? await fileToBase64(comprobanteFile) : null;
-
-            const payload = {
-                apoderado: apoderado.trim(),
-                alumno: alumno.trim(),
-                dni: dni.trim(),
-                email: email.trim(),
-                modalidades,
-                total,
-                comprobante: comprobanteBase64,
-                fecha_registro: new Date().toISOString(),
-                fecha_torneo: TORNEO_CONFIG.fecha,
-            };
-
-            const res = await fetch(TORNEO_CONFIG.webhookUrl, {
+            const res = await fetch(`${API_BASE}/torneo/inscribir`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
+                body: JSON.stringify({
+                    dni_alumno: dni.trim(),
+                    modalidades: selectedModalidades,
+                }),
             });
 
-            if (!res.ok) throw new Error('Error del servidor');
+            if (!res.ok) {
+                const errData = await res.json().catch(() => null);
+                throw new Error(errData?.message || 'Error del servidor');
+            }
 
+            const result = await res.json();
+            setSuccessData(result);
             setIsSuccess(true);
-            toast.success('¡Registro exitoso!', { position: 'top-center' });
+            toast.success('Inscripcion exitosa!', { position: 'top-center' });
             topRef.current?.scrollIntoView({ behavior: 'smooth' });
-        } catch (err) {
+        } catch (err: any) {
             console.error(err);
-            toast.error('Ocurrió un error. Intenta nuevamente.', {
+            toast.error(err?.message || 'Ocurrio un error. Intenta nuevamente.', {
                 position: 'top-center',
-                action: { label: 'Reintentar', onClick: handleConfirm },
             });
         } finally {
             setIsSubmitting(false);
@@ -357,21 +297,74 @@ export function TorneoPage({
     };
 
     // ================================================================
-    // RENDER — SUCCESS
+    // RENDER — LOADING
     // ================================================================
-    if (isSuccess) {
+    if (loadingTorneo) {
         return (
-            <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FA7B21] selection:text-white bg-black text-white overflow-x-hidden">
+            <div ref={topRef} className="min-h-screen flex flex-col bg-zinc-950 text-white overflow-x-hidden">
                 <Toaster position="top-center" richColors />
                 <div className="relative z-20">
                     <HeaderMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} currentPage="torneo" />
                 </div>
                 <main className="flex-1 flex items-center justify-center px-4 py-32">
-                    <motion.div
-                        initial={{ scale: 0.95, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="relative max-w-lg w-full"
-                    >
+                    <div className="text-center animate-fade-in-up">
+                        <Loader2 className="w-10 h-10 text-[#FA7B21] animate-spin mx-auto mb-4" />
+                        <p className="text-white/60">Cargando torneo...</p>
+                    </div>
+                </main>
+                <div className="relative z-20 mt-16">
+                    <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
+                </div>
+            </div>
+        );
+    }
+
+    // ================================================================
+    // RENDER — NO ACTIVE TORNEO
+    // ================================================================
+    if (torneoError || !torneoData) {
+        return (
+            <div ref={topRef} className="min-h-screen flex flex-col bg-zinc-950 text-white overflow-x-hidden">
+                <Toaster position="top-center" richColors />
+                <div className="relative z-20">
+                    <HeaderMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} currentPage="torneo" />
+                </div>
+                <main className="flex-1 flex items-center justify-center px-4 py-32">
+                    <div className="text-center animate-fade-in-up max-w-md">
+                        <div className="w-20 h-20 mx-auto mb-6 bg-zinc-900 border-2 border-white/10 rounded-full flex items-center justify-center">
+                            <Trophy className="w-10 h-10 text-white/30" />
+                        </div>
+                        <h2 className="text-2xl md:text-3xl font-black text-white mb-3">No hay torneos programados</h2>
+                        <p className="text-white/50 mb-8">Cuando se programe un nuevo torneo, lo veras aqui. Mantente atento a nuestras redes.</p>
+                        <button
+                            onClick={() => onNavigate('home')}
+                            className="px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105"
+                        >
+                            Volver al Inicio
+                        </button>
+                    </div>
+                </main>
+                <div className="relative z-20 mt-16">
+                    <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
+                </div>
+            </div>
+        );
+    }
+
+    const { torneo, modalidades } = torneoData;
+
+    // ================================================================
+    // RENDER — SUCCESS
+    // ================================================================
+    if (isSuccess) {
+        return (
+            <div ref={topRef} className="min-h-screen flex flex-col bg-zinc-950 text-white overflow-x-hidden">
+                <Toaster position="top-center" richColors />
+                <div className="relative z-20">
+                    <HeaderMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} currentPage="torneo" />
+                </div>
+                <main className="flex-1 flex items-center justify-center px-4 py-32">
+                    <div className="animate-fade-in-up relative max-w-lg w-full">
                         <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#ff8800]/30 rounded-3xl blur-3xl" />
                         <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-4 border-[#FA7B21] rounded-3xl p-8 md:p-12 text-center shadow-2xl overflow-hidden">
                             <div className="absolute top-0 right-0 w-40 h-40 bg-[#FA7B21]/20 rounded-full blur-3xl" />
@@ -388,13 +381,40 @@ export function TorneoPage({
                                     </div>
                                 </div>
                                 <h3 className="text-4xl md:text-6xl font-black text-[#FA7B21] mb-4">
-                                    ¡Inscrito!
+                                    Inscrito!
                                 </h3>
                                 <p className="text-white/90 mb-3 text-lg md:text-xl leading-relaxed">
-                                    <span className="font-bold text-white">{alumno}</span> está registrado en el torneo.
+                                    <span className="font-bold text-white">{consultaResult?.alumno?.nombre}</span> esta registrado en el torneo.
                                 </p>
+
+                                {/* Summary from API response */}
+                                {successData && (
+                                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6 text-left space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-white/50">Precio total:</span>
+                                            <span className="text-white font-bold">S/ {successData.precio_total}</span>
+                                        </div>
+                                        {successData.descuento > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-green-400/70">Descuento aplicado:</span>
+                                                <span className="text-green-400 font-bold">- S/ {successData.descuento}</span>
+                                            </div>
+                                        )}
+                                        {successData.implementos_faltantes && successData.implementos_faltantes.length > 0 && (
+                                            <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+                                                <p className="text-amber-400 text-xs font-bold mb-1 flex items-center gap-1">
+                                                    <AlertTriangle className="w-3 h-3" /> Implementos faltantes:
+                                                </p>
+                                                <p className="text-amber-300/80 text-xs">
+                                                    {successData.implementos_faltantes.join(', ')}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
                                 <p className="text-white/70 text-base md:text-lg mb-8">
-                                    Recibirás confirmación por los canales de la academia.
+                                    Recibiras confirmacion por los canales de la academia.
                                 </p>
                                 <button
                                     onClick={() => onNavigate('home')}
@@ -405,7 +425,7 @@ export function TorneoPage({
                                 </button>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </main>
                 <div className="relative z-20 mt-16">
                     <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
@@ -418,7 +438,7 @@ export function TorneoPage({
     // RENDER — MAIN PAGE
     // ================================================================
     return (
-        <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FA7B21] selection:text-white bg-black text-white overflow-x-hidden">
+        <div ref={topRef} className="min-h-screen relative flex flex-col font-sans selection:bg-[#FA7B21] selection:text-white bg-zinc-950 text-white overflow-x-hidden">
             <Toaster position="top-center" richColors />
 
             {/* HEADER */}
@@ -430,7 +450,7 @@ export function TorneoPage({
             <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden pt-28 md:pt-32 pb-12 px-4">
                 {/* Background */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-zinc-950 via-zinc-950 to-zinc-950" />
                     <div className="absolute inset-0 opacity-25" style={{ background: 'radial-gradient(circle at 30% 40%, rgba(250, 123, 33, 0.25) 0%, transparent 60%)' }} />
                     <div className="absolute inset-0 opacity-15" style={{ background: 'radial-gradient(circle at 70% 60%, rgba(252, 169, 41, 0.2) 0%, transparent 60%)' }} />
                 </div>
@@ -443,57 +463,41 @@ export function TorneoPage({
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 max-w-5xl mx-auto text-center">
+                <div className="relative z-10 max-w-5xl mx-auto text-center animate-fade-in-up">
                     {/* Badge */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6 }}
-                        className="mb-6"
-                    >
+                    <div className="mb-6">
                         <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] px-6 py-3 rounded-full shadow-2xl border-2 border-white/20">
                             <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white animate-pulse" />
                             <span className="text-white font-black text-sm md:text-lg uppercase tracking-wider">
                                 Torneo Abierto
                             </span>
                         </div>
-                    </motion.div>
+                    </div>
 
-                    {/* Title */}
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight"
-                    >
-                        Tu hijo tiene algo
-                        <br />
-                        <span className="text-[#FA7B21]">
-                            que demostrar.
-                        </span>
-                    </motion.h1>
+                    {/* Title from API */}
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight">
+                        {torneo.nombre || (
+                            <>
+                                Tu hijo tiene algo
+                                <br />
+                                <span className="text-[#FA7B21]">que demostrar.</span>
+                            </>
+                        )}
+                    </h1>
 
-                    {/* Subtitle */}
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="text-lg sm:text-xl md:text-2xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed px-4"
-                    >
-                        Los torneos no son solo competencia. Son el momento en que todo el entrenamiento cobra sentido.
-                    </motion.p>
+                    {/* Description from API */}
+                    {torneo.descripcion && (
+                        <p className="text-lg sm:text-xl md:text-2xl text-white/80 mb-8 max-w-3xl mx-auto leading-relaxed px-4">
+                            {torneo.descripcion}
+                        </p>
+                    )}
 
-                    {/* Torneo data badges */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6, delay: 0.3 }}
-                        className="flex flex-wrap items-center justify-center gap-4 mb-10"
-                    >
+                    {/* Torneo data badges from API */}
+                    <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
                         {[
-                            { Icon: Calendar, label: 'Fecha', value: TORNEO_CONFIG.fecha },
-                            { Icon: Clock, label: 'Hora', value: TORNEO_CONFIG.hora },
-                            { Icon: MapPin, label: 'Lugar', value: TORNEO_CONFIG.lugar },
+                            { Icon: Calendar, label: 'Fecha', value: torneo.fecha },
+                            ...(torneo.hora ? [{ Icon: Clock, label: 'Hora', value: torneo.hora }] : []),
+                            { Icon: MapPin, label: 'Lugar', value: torneo.lugar },
                         ].map((item, i) => (
                             <div
                                 key={i}
@@ -506,15 +510,10 @@ export function TorneoPage({
                                 </div>
                             </div>
                         ))}
-                    </motion.div>
+                    </div>
 
                     {/* CTA */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.45 }}
-                        className="mt-4"
-                    >
+                    <div className="mt-4">
                         <button
                             onClick={scrollToForm}
                             className="group relative w-full max-w-md mx-auto overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.03] active:scale-95 block"
@@ -526,65 +525,51 @@ export function TorneoPage({
                                 <ChevronDown className="w-6 h-6 animate-bounce" />
                             </span>
                         </button>
-                    </motion.div>
+                    </div>
 
                     {/* Scroll indicator */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.6, delay: 0.6 }}
-                        className="mt-14"
-                    >
+                    <div className="mt-14">
                         <div className="w-6 h-10 border-2 border-white/30 rounded-full mx-auto flex justify-center">
                             <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-bounce" />
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
-            {/* ========== ¿POR QUÉ IR? ========== */}
+            {/* ========== POR QUE PARTICIPAR ========== */}
             <section className="relative py-16 md:py-24 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        className="text-center mb-12 md:mb-16"
-                    >
+                    <div className="text-center mb-12 md:mb-16 animate-fade-in-up">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-                            ¿Por qué <span className="text-[#FA7B21]">participar</span>?
+                            Por que <span className="text-[#FA7B21]">participar</span>?
                         </h2>
                         <p className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto">
-                            Un torneo transforma a tu hijo más de lo que imaginas
+                            Un torneo transforma a tu hijo mas de lo que imaginas
                         </p>
-                    </motion.div>
+                    </div>
 
                     <div className="flex flex-col gap-4 max-w-3xl mx-auto">
                         {[
                             {
                                 Icon: Trophy,
-                                title: 'Superan sus propios límites',
+                                title: 'Superan sus propios limites',
                                 desc: 'Un torneo les da la oportunidad de brillar y crecer.',
                             },
                             {
                                 Icon: Flame,
                                 title: 'Ganan confianza real',
-                                desc: 'Descubren que son capaces de más de lo que creen.',
+                                desc: 'Descubren que son capaces de mas de lo que creen.',
                             },
                             {
                                 Icon: Heart,
-                                title: 'Crean recuerdos únicos',
-                                desc: 'Un momento que tu hijo recordará siempre.',
+                                title: 'Crean recuerdos unicos',
+                                desc: 'Un momento que tu hijo recordara siempre.',
                             },
                         ].map((item, i) => (
-                            <motion.div
+                            <div
                                 key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.1 }}
-                                className="group relative"
+                                className="group relative animate-fade-in-up"
+                                style={{ animationDelay: `${i * 100}ms` }}
                             >
                                 <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl px-6 py-5 md:px-8 md:py-6 hover:border-[#FA7B21]/50 transition-all duration-500 flex items-center gap-5">
                                     <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-xl flex items-center justify-center shadow-lg shadow-[#FA7B21]/20 group-hover:scale-110 transition-transform duration-300">
@@ -595,44 +580,34 @@ export function TorneoPage({
                                         <p className="text-white/50 leading-relaxed text-sm">{item.desc}</p>
                                     </div>
                                 </div>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* ========== ¿CÓMO FUNCIONA? ========== */}
+            {/* ========== COMO FUNCIONA ========== */}
             <section className="relative py-16 md:py-24 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        className="text-center mb-12 md:mb-16"
-                    >
+                    <div className="text-center mb-12 md:mb-16 animate-fade-in-up">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-                            ¿Cómo <span className="text-[#FA7B21]">funciona</span>?
+                            Como <span className="text-[#FA7B21]">funciona</span>?
                         </h2>
                         <p className="text-white/60 text-lg md:text-xl">
-                            4 pasos simples para inscribir a tu hijo
+                            3 pasos simples para inscribir a tu hijo
                         </p>
-                    </motion.div>
+                    </div>
 
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+                    <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
                         {[
-                            { step: 1, text: 'Completa los datos del alumno', Icon: ClipboardList },
-                            { step: 2, text: 'Elige las modalidades en las que participará', Icon: CheckCircle2 },
-                            { step: 3, text: 'Realiza el pago por transferencia o Yape', Icon: CreditCard },
-                            { step: 4, text: 'Sube tu comprobante y listo', Icon: ImageIcon },
+                            { step: 1, text: 'Ingresa el DNI del alumno para verificar sus datos', Icon: Search },
+                            { step: 2, text: 'Elige las modalidades en las que participara', Icon: CheckCircle2 },
+                            { step: 3, text: 'Confirma la inscripcion y listo', Icon: Send },
                         ].map((item, i) => (
-                            <motion.div
+                            <div
                                 key={i}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: i * 0.12 }}
-                                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-3xl p-6 text-center hover:border-[#FA7B21]/50 transition-all duration-300"
+                                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-3xl p-6 text-center hover:border-[#FA7B21]/50 transition-all duration-300 animate-fade-in-up"
+                                style={{ animationDelay: `${i * 120}ms` }}
                             >
                                 <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#FA7B21]/20">
                                     {item.step}
@@ -641,45 +616,32 @@ export function TorneoPage({
                                     <item.Icon className="w-6 h-6 text-[#FCA929]" />
                                 </div>
                                 <p className="text-white/70 text-sm leading-relaxed">{item.text}</p>
-                            </motion.div>
+                            </div>
                         ))}
                     </div>
 
                     {/* Nota sobre entrada */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="max-w-3xl mx-auto mt-12"
-                    >
+                    <div className="max-w-3xl mx-auto mt-12 animate-fade-in-up">
                         <div className="flex items-start gap-3 bg-gradient-to-r from-[#FA7B21]/10 to-[#ff8800]/10 border border-[#FA7B21]/30 rounded-2xl px-6 py-4">
                             <Lightbulb className="w-5 h-5 text-[#FCA929] flex-shrink-0 mt-0.5" />
                             <p className="text-white/60 text-sm leading-relaxed">
-                                La entrada al evento tiene un costo de <span className="text-white font-semibold">S/ {TORNEO_CONFIG.costoEntrada}</span> por persona (entre 12 y 60 años), abonado directamente en puerta el día del torneo.
+                                Entrada al evento: <span className="text-white font-semibold">S/25</span> (personas de 12 a 60 anos, pago en puerta)
                             </p>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </section>
 
             {/* ========== FORMULARIO ========== */}
             <main ref={formRef} id="formulario-torneo" className="relative z-10 px-4 md:px-6 py-16 md:py-24 max-w-7xl mx-auto w-full">
-                <div className="max-w-2xl md:max-w-2xl mx-auto">
-                    <motion.div
-                        initial={{ y: 20, opacity: 0 }}
-                        whileInView={{ y: 0, opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.4 }}
-                        className="relative"
-                    >
+                <div className="max-w-2xl mx-auto">
+                    <div className="relative animate-fade-in-up">
                         {/* Glow effect */}
                         <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
 
                         <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden">
                             {/* Decorative top bar */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929]" />
-                            {/* Decorative elements */}
                             <div className="absolute top-10 right-10 w-32 h-32 bg-[#FA7B21]/10 rounded-full blur-3xl" />
                             <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#ff8800]/10 rounded-full blur-3xl" />
 
@@ -690,13 +652,13 @@ export function TorneoPage({
                                         Registro al Torneo
                                     </h2>
                                     <p className="text-white/60 text-sm md:text-base">
-                                        Completa los datos para inscribir a tu hijo/a
+                                        Ingresa el DNI del alumno para comenzar
                                     </p>
                                 </div>
 
                                 <div className="space-y-6 md:space-y-8">
 
-                                    {/* ===== FASE 1: Solo DNI ===== */}
+                                    {/* ===== STEP 2: DNI INPUT ===== */}
                                     <div className="space-y-2">
                                         <Label>DNI del Alumno *</Label>
                                         <div className="relative">
@@ -704,7 +666,7 @@ export function TorneoPage({
                                                 type="text"
                                                 inputMode="numeric"
                                                 pattern="[0-9]*"
-                                                placeholder="Ingresa los 8 dígitos del DNI"
+                                                placeholder="Ingresa los 8 digitos del DNI"
                                                 maxLength={8}
                                                 value={dni}
                                                 onChange={(e: any) => handleDniChange(e.target.value)}
@@ -723,7 +685,7 @@ export function TorneoPage({
                                         </div>
                                         {dni.length > 0 && dni.length < 8 && (
                                             <p className="text-white/40 text-sm ml-2">
-                                                {8 - dni.length} dígitos restantes
+                                                {8 - dni.length} digitos restantes
                                             </p>
                                         )}
                                         {isLookingUp && (
@@ -734,171 +696,218 @@ export function TorneoPage({
                                         )}
                                         {dniError && (
                                             <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
-                                                <span>⚠</span> {dniError}
+                                                <AlertTriangle className="w-3.5 h-3.5" /> {dniError}
                                             </p>
                                         )}
                                     </div>
 
-                                    {/* ===== FASE 2: Datos pre-llenados + Resto del formulario ===== */}
-                                    <AnimatePresence>
-                                        {dniStatus === 'found' && alumnoData && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 20 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                transition={{ duration: 0.35 }}
-                                                className="space-y-6 md:space-y-8"
-                                            >
-                                                {/* Nombre del Alumno (read-only) */}
-                                                <div className="space-y-2">
-                                                    <Label>Nombre del Alumno</Label>
-                                                    <Input
-                                                        value={alumno}
-                                                        readOnly
-                                                        className="opacity-70 cursor-not-allowed"
-                                                    />
-                                                </div>
-
-                                                {/* Nombre del Apoderado (read-only) */}
-                                                <div className="space-y-2">
-                                                    <Label>Nombre del Apoderado</Label>
-                                                    <Input
-                                                        value={apoderado}
-                                                        readOnly
-                                                        className="opacity-70 cursor-not-allowed"
-                                                    />
-                                                </div>
-
-                                                {/* Email */}
-                                                <div className="space-y-2">
-                                                    <Label>Correo Electrónico *</Label>
-                                                    <Input
-                                                        type="email"
-                                                        placeholder="correo@ejemplo.com"
-                                                        value={email}
-                                                        onChange={(e: any) => setEmail(e.target.value)}
-                                                        readOnly={emailFromApi}
-                                                        className={`${emailFromApi ? 'opacity-70 cursor-not-allowed' : ''} ${email.length > 0 && !validateEmail(email) ? 'border-red-500 ring-4 ring-red-500/30' : ''}`}
-                                                    />
-                                                    {email.length > 0 && !validateEmail(email) && (
-                                                        <p className="text-red-400 text-sm ml-2 flex items-center gap-1">
-                                                            <span>⚠</span> Email inválido
-                                                        </p>
+                                    {/* ===== STEP 2b: Alumno info (after DNI found) ===== */}
+                                    {dniStatus === 'found' && consultaResult && (
+                                        <div className="space-y-6 md:space-y-8 animate-fade-in-up">
+                                            {/* Alumno card */}
+                                            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h4 className="text-white font-bold text-lg">{consultaResult.alumno.nombre}</h4>
+                                                    {consultaResult.es_leadership && (
+                                                        <span className="inline-flex items-center gap-1.5 bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">
+                                                            Leadership Wolf
+                                                        </span>
                                                     )}
                                                 </div>
+                                                {/* Implementos que tiene */}
+                                                {consultaResult.implementos.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2 mt-2">
+                                                        {consultaResult.implementos.map(imp => (
+                                                            <span key={imp} className="inline-flex items-center gap-1 bg-[#FA7B21]/15 text-[#FCA929] border border-[#FA7B21]/30 px-3 py-1 rounded-full text-xs font-medium">
+                                                                <Check className="w-3 h-3" /> {imp}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                                {/* Modalidades */}
-                                                <div className="space-y-3">
-                                                    <Label>Modalidades de Participación *</Label>
-                                                    <p className="text-white/50 text-xs md:text-sm">Selecciona las modalidades en las que participará</p>
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                                        {MODALIDADES.map(({ name: m }) => {
-                                                            const selected = modalidades.includes(m);
-                                                            return (
-                                                                <button
-                                                                    key={m}
-                                                                    type="button"
-                                                                    onClick={() => toggleModalidad(m)}
-                                                                    className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4 ${selected
-                                                                        ? 'bg-[#FA7B21]/20 border-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/20'
-                                                                        : 'bg-white/5 border-white/20 text-white/70 hover:border-white/40 hover:bg-white/10'
-                                                                        }`}
-                                                                >
+                                            {/* ===== STEP 3: Modalidades ===== */}
+                                            <div className="space-y-3">
+                                                <Label>Modalidades de Participacion *</Label>
+                                                <p className="text-white/50 text-xs md:text-sm">Selecciona las modalidades en las que participara</p>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {modalidades.map((mod) => {
+                                                        const selected = selectedModalidades.includes(mod.id);
+                                                        const IconComponent = getIconForModalidad(mod.icono);
+
+                                                        // Check missing implementos
+                                                        const missingImplementos = (mod.implementos_requeridos || []).filter(
+                                                            req => !consultaResult.implementos.map(i => i.toLowerCase()).includes(req.toLowerCase())
+                                                        );
+
+                                                        return (
+                                                            <button
+                                                                key={mod.id}
+                                                                type="button"
+                                                                onClick={() => toggleModalidad(mod.id)}
+                                                                className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all duration-200 ${selected
+                                                                    ? 'bg-[#FA7B21]/20 border-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/20'
+                                                                    : 'bg-white/5 border-white/20 text-white/70 hover:border-white/40 hover:bg-white/10'
+                                                                    }`}
+                                                            >
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${selected
+                                                                        ? 'bg-gradient-to-br from-[#FA7B21] to-[#ff8800]'
+                                                                        : 'bg-white/10'
+                                                                        }`}>
+                                                                        <IconComponent className={`w-5 h-5 ${selected ? 'text-white' : 'text-white/50'}`} />
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <span className="text-sm md:text-base font-medium leading-snug block">{mod.nombre}</span>
+                                                                        {mod.implementos_requeridos && mod.implementos_requeridos.length > 0 && (
+                                                                            <span className="text-white/40 text-xs block mt-0.5">
+                                                                                Requiere: {mod.implementos_requeridos.join(', ')}
+                                                                            </span>
+                                                                        )}
+                                                                        {missingImplementos.length > 0 && (
+                                                                            <span className="text-amber-400 text-xs block mt-1 flex items-center gap-1">
+                                                                                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                                                                                Necesitas {missingImplementos.join(', ')}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
                                                                     <div className={`w-6 h-6 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200 ${selected
                                                                         ? 'bg-gradient-to-br from-[#FA7B21] to-[#ff8800] border-[#FA7B21] shadow-md shadow-[#FA7B21]/30'
                                                                         : 'border-white/30'
                                                                         }`}>
                                                                         {selected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
                                                                     </div>
-                                                                    <span className="text-sm md:text-base font-medium leading-snug">{m}</span>
-                                                                </button>
-                                                            );
-                                                        })}
+                                                                </div>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                            {/* ===== STEP 4: Price summary ===== */}
+                                            {selectedModalidades.length > 0 && (
+                                                <div className="relative animate-fade-in-up">
+                                                    <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-20" />
+                                                    <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 md:p-6">
+                                                        <div className="flex items-center gap-2 mb-4">
+                                                            <Shield className="w-5 h-5 text-[#FA7B21]" />
+                                                            <p className="text-white font-bold text-sm md:text-base">Resumen de inscripcion</p>
+                                                        </div>
+                                                        <ul className="space-y-2 mb-4">
+                                                            {selectedModalidades.map(modId => {
+                                                                const mod = modalidades.find(m => m.id === modId);
+                                                                if (!mod) return null;
+                                                                const MIcon = getIconForModalidad(mod.icono);
+                                                                return (
+                                                                    <li key={modId} className="text-white/80 text-sm flex items-center gap-2">
+                                                                        <MIcon className="w-4 h-4 text-[#FCA929] flex-shrink-0" />
+                                                                        {mod.nombre}
+                                                                    </li>
+                                                                );
+                                                            })}
+                                                        </ul>
+                                                        <div className="border-t border-white/10 pt-4 space-y-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-white/50 text-sm">{selectedModalidades.length} modalidad{selectedModalidades.length > 1 ? 'es' : ''}</span>
+                                                                <span className="text-white/50 text-sm">S/ {subtotal}</span>
+                                                            </div>
+                                                            {leadershipDiscountApplies && (
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-green-400 text-sm">Descuento Leadership Wolf (50%)</span>
+                                                                    <span className="text-green-400 text-sm">- S/ {descuento}</span>
+                                                                </div>
+                                                            )}
+                                                            <div className="flex items-center justify-between pt-2">
+                                                                <span className="text-white font-bold">Total</span>
+                                                                <p className={`text-2xl md:text-3xl font-black ${leadershipDiscountApplies ? 'text-green-400' : 'text-[#FA7B21]'}`}>
+                                                                    S/ {total}
+                                                                </p>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            )}
 
-                                                {/* Resumen de precios */}
-                                                <AnimatePresence>
-                                                    {modalidades.length > 0 && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                                            transition={{ duration: 0.3 }}
-                                                            className="relative"
-                                                        >
-                                                            <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-20" />
-                                                            <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 md:p-6">
-                                                                <div className="flex items-center gap-2 mb-4">
-                                                                    <Shield className="w-5 h-5 text-[#FA7B21]" />
-                                                                    <p className="text-white font-bold text-sm md:text-base">Resumen de inscripción</p>
-                                                                </div>
-                                                                <ul className="space-y-2 mb-4">
-                                                                    {modalidades.map(m => {
-                                                                        const MIcon = getModalidadIcon(m);
-                                                                        return (
-                                                                            <li key={m} className="text-white/80 text-sm flex items-center gap-2">
-                                                                                <MIcon className="w-4 h-4 text-[#FCA929] flex-shrink-0" />
-                                                                                {m}
-                                                                            </li>
-                                                                        );
-                                                                    })}
-                                                                </ul>
-                                                                <div className="border-t border-white/10 pt-4 flex items-center justify-between">
-                                                                    <div>
-                                                                        <span className="text-white/50 text-sm">{modalidades.length} modalidad{modalidades.length > 1 ? 'es' : ''}</span>
-                                                                        {hasDiscount && (
-                                                                            <span className="block text-green-400 text-xs mt-1">🏷️ Descuento {TORNEO_CONFIG.descuentoPorcentaje}% aplicado</span>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="text-right">
-                                                                        <p className="text-white/50 text-xs uppercase tracking-wider">Total</p>
-                                                                        {hasDiscount && subtotal !== total ? (
-                                                                            <>
-                                                                                <p className="text-white/40 text-sm line-through">S/ {subtotal}</p>
-                                                                                <p className="text-2xl md:text-3xl font-black text-green-400">
-                                                                                    S/ {total}
-                                                                                </p>
-                                                                            </>
-                                                                        ) : (
-                                                                            <p className="text-2xl md:text-3xl font-black text-[#FA7B21]">
-                                                                                S/ {total}
-                                                                            </p>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </motion.div>
+                                            {/* ===== STEP 5: Submit ===== */}
+                                            <div className="mt-14 md:mt-16">
+                                                <button
+                                                    type="button"
+                                                    disabled={!isFormValid || isSubmitting}
+                                                    onClick={handleSubmit}
+                                                    className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 mb-2 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
+                                                >
+                                                    <div className={`absolute inset-0 ${isFormValid && !isSubmitting ? 'bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
+                                                    {isFormValid && !isSubmitting && (
+                                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                                                     )}
-                                                </AnimatePresence>
-
-                                                {/* BOTÓN SUBMIT */}
-                                                <div className="mt-14 md:mt-16">
-                                                    <button
-                                                        type="button"
-                                                        disabled={!isFormValid}
-                                                        onClick={handleRegistrarClick}
-                                                        className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 mb-2 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
-                                                    >
-                                                        {/* Animated gradient background */}
-                                                        <div className={`absolute inset-0 ${isFormValid ? 'bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
-                                                        {/* Shine effect */}
-                                                        {isFormValid && (
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                                                    <span className="relative flex items-center justify-center gap-3 px-8 py-5 md:py-6 text-white text-lg md:text-2xl font-black uppercase tracking-wider">
+                                                        {isSubmitting ? (
+                                                            <>
+                                                                <Loader2 className="w-7 h-7 animate-spin" />
+                                                                Inscribiendo...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Send className="w-7 h-7 md:w-8 md:h-8 group-hover:translate-x-1 transition-transform" />
+                                                                Confirmar Inscripcion
+                                                            </>
                                                         )}
-                                                        <span className="relative flex items-center justify-center gap-3 px-8 py-5 md:py-6 text-white text-lg md:text-2xl font-black uppercase tracking-wider">
-                                                            <Send className="w-7 h-7 md:w-8 md:h-8 group-hover:translate-x-1 transition-transform" />
-                                                            Registrarse y Pagar
-                                                        </span>
-                                                    </button>
-                                                </div>
-
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
 
-                                <style>{`
+            {/* ========== FAQ ========== */}
+            <section className="relative py-16 md:py-24 px-4">
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-12 animate-fade-in-up">
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
+                            Preguntas <span className="text-[#FA7B21]">frecuentes</span>
+                        </h2>
+                    </div>
+
+                    <div className="space-y-3 animate-fade-in-up">
+                        {FAQ_ITEMS.map((item, i) => (
+                            <div
+                                key={i}
+                                className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl overflow-hidden transition-all duration-300 hover:border-[#FA7B21]/40"
+                            >
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                                    className="w-full flex items-center justify-between px-6 py-5 text-left"
+                                >
+                                    <span className="text-white font-bold text-sm md:text-base pr-4">{item.q}</span>
+                                    <ChevronDown
+                                        className={`w-5 h-5 text-[#FA7B21] flex-shrink-0 transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`}
+                                    />
+                                </button>
+                                <div
+                                    className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+                                >
+                                    <p className="px-6 pb-5 text-white/60 text-sm leading-relaxed">
+                                        {item.a}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* FOOTER */}
+            <div className="relative z-20 mt-16">
+                <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
+            </div>
+
+            <style>{`
                 @keyframes gradient-xy {
                   0%, 100% { background-position: 0% 50%; }
                   50% { background-position: 100% 50%; }
@@ -907,202 +916,7 @@ export function TorneoPage({
                   background-size: 200% 200%;
                   animation: gradient-xy 3s ease infinite;
                 }
-              `}</style>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
-            </main>
-
-            {/* ========== SECCIÓN DE PAGO ========== */}
-            <AnimatePresence>
-                {showPago && (
-                    <motion.section
-                        id="pago-section"
-                        initial={{ opacity: 0, y: 40 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 40 }}
-                        transition={{ duration: 0.5 }}
-                        className="relative px-4 pb-16 md:pb-24 max-w-7xl mx-auto w-full"
-                    >
-                        <div className="max-w-2xl mx-auto">
-                            <div className="relative">
-                                <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 rounded-3xl blur-3xl" />
-
-                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FCA929]/50 rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FCA929] via-[#FA7B21] to-[#FCA929]" />
-                                    <div className="absolute top-10 right-10 w-32 h-32 bg-[#FCA929]/10 rounded-full blur-3xl" />
-                                    <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#FA7B21]/10 rounded-full blur-3xl" />
-
-                                    <div className="relative z-10">
-                                        <div className="text-center mb-8">
-                                            <h3 className="text-2xl md:text-4xl font-black text-white mb-3">
-                                                Elige cómo pagar
-                                            </h3>
-                                            <p className="text-white/60 text-sm md:text-base">
-                                                Realiza tu pago y sube el comprobante
-                                            </p>
-                                        </div>
-
-                                        {/* Monto */}
-                                        <div className="relative mb-8">
-                                            <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-20" />
-                                            <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 text-center">
-                                                <p className="text-white/60 text-xs uppercase tracking-wider mb-1">Monto a pagar</p>
-                                                {hasDiscount && subtotal !== total ? (
-                                                    <>
-                                                        <p className="text-white/40 text-lg line-through">S/ {subtotal}</p>
-                                                        <p className="text-4xl font-black text-green-400">
-                                                            S/ {total}
-                                                        </p>
-                                                        <p className="text-green-400 text-xs mt-1">🏷️ Descuento {TORNEO_CONFIG.descuentoPorcentaje}% Leadership & Fighter Wolf</p>
-                                                    </>
-                                                ) : (
-                                                    <p className="text-4xl font-black text-[#FA7B21]">
-                                                        S/ {total}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="grid md:grid-cols-2 gap-6 mb-8">
-                                            {/* Transferencia */}
-                                            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl p-5 hover:border-[#FA7B21]/50 transition-colors duration-200">
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-xl flex items-center justify-center">
-                                                        <CreditCard className="w-4 h-4 text-white" />
-                                                    </div>
-                                                    <h4 className="font-bold text-white text-sm md:text-base">Transferencia bancaria</h4>
-                                                </div>
-                                                <div className="flex flex-col gap-4 text-sm mt-4">
-                                                    {TORNEO_CONFIG.bancos.map((banco, i) => (
-                                                        <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <div className={`w-2 h-2 rounded-full ${banco.nombre === 'INTERBANK' ? 'bg-green-500' : banco.nombre === 'BCP' ? 'bg-blue-500' : 'bg-white'}`} />
-                                                                <span className="font-bold text-white text-xs md:text-sm">{banco.nombre}</span>
-                                                                <span className="text-white/50 text-xs ml-auto">{banco.moneda}</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center text-xs">
-                                                                <span className="text-white/50">Cuenta:</span>
-                                                                <span className="text-white font-medium font-mono tracking-wider">{banco.cuenta}</span>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            {/* Yape */}
-                                            <div className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl p-5 hover:border-[#FA7B21]/50 transition-colors duration-200">
-                                                <div className="flex items-center gap-2 mb-4">
-                                                    <div className="w-8 h-8 bg-gradient-to-br from-[#FCA929] to-[#ff8800] rounded-xl flex items-center justify-center">
-                                                        <Smartphone className="w-4 h-4 text-white" />
-                                                    </div>
-                                                    <h4 className="font-bold text-white text-sm md:text-base">Yape</h4>
-                                                </div>
-                                                <div className="space-y-3 text-sm">
-                                                    {[
-                                                        { label: 'Número', value: TORNEO_CONFIG.yapeNumero },
-                                                        { label: 'Nombre', value: TORNEO_CONFIG.yapeNombre },
-                                                    ].map(row => (
-                                                        <div key={row.label} className="flex justify-between items-center">
-                                                            <span className="text-white/50">{row.label}:</span>
-                                                            <span className="text-white font-medium">{row.value}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Upload comprobante */}
-                                        <div className="space-y-3 mb-8">
-                                            <Label>Comprobante de Pago <span className="text-white/40 text-xs font-normal ml-1">(Opcional)</span></Label>
-                                            <p className="text-white/50 text-xs md:text-sm">
-                                                Si ya realizaste el pago, sube aquí tu comprobante. Si no lo has hecho, puedes enviarlo después por WhatsApp a la profesora.
-                                            </p>
-
-                                            {!comprobanteFile ? (
-                                                <label className="group flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-white/20 hover:border-[#FA7B21]/50 rounded-2xl cursor-pointer transition-all duration-200 hover:bg-white/5">
-                                                    <Upload className="w-8 h-8 text-white/30 group-hover:text-[#FA7B21] transition-colors duration-200 mb-2" />
-                                                    <p className="text-white/40 text-sm group-hover:text-white/70 transition-colors duration-200">
-                                                        Haz clic para seleccionar archivo
-                                                    </p>
-                                                    <p className="text-white/25 text-xs mt-1">JPG, PNG o PDF (máx 10 MB)</p>
-                                                    <input
-                                                        type="file"
-                                                        accept="image/jpeg,image/png,application/pdf"
-                                                        onChange={handleFileChange}
-                                                        className="hidden"
-                                                    />
-                                                </label>
-                                            ) : (
-                                                <div className="relative bg-white/5 border-2 border-white/20 rounded-2xl p-4">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => { setComprobanteFile(null); setComprobantePreview(null); }}
-                                                        className="absolute top-3 right-3 w-8 h-8 bg-red-500/20 hover:bg-red-500/40 rounded-full flex items-center justify-center transition-colors duration-200"
-                                                    >
-                                                        <X className="w-4 h-4 text-red-400" />
-                                                    </button>
-
-                                                    {comprobantePreview ? (
-                                                        <img src={comprobantePreview} alt="Comprobante" className="max-h-60 mx-auto rounded-lg object-contain" loading="lazy" decoding="async" />
-                                                    ) : (
-                                                        <div className="flex items-center gap-3 py-4 px-2">
-                                                            <div className="w-12 h-12 bg-[#FA7B21]/20 rounded-xl flex items-center justify-center">
-                                                                <ImageIcon className="w-6 h-6 text-[#FA7B21]" />
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-white text-sm font-medium">{comprobanteFile.name}</p>
-                                                                <p className="text-white/40 text-xs">{(comprobanteFile.size / 1024).toFixed(0)} KB</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Botón final */}
-                                        <button
-                                            type="button"
-                                            disabled={isSubmitting}
-                                            onClick={handleConfirm}
-                                            className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
-                                        >
-                                            <div className={`absolute inset-0 ${!isSubmitting ? 'bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
-                                            {!isSubmitting && (
-                                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                                            )}
-                                            <span className="relative flex items-center justify-center gap-3 px-8 py-5 md:py-6 text-white text-lg md:text-2xl font-black uppercase tracking-wider">
-                                                {isSubmitting ? (
-                                                    <>
-                                                        <Loader2 className="w-7 h-7 animate-spin" />
-                                                        Enviando...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Send className="w-7 h-7 group-hover:translate-x-1 transition-transform" />
-                                                        Confirmar mi registro
-                                                    </>
-                                                )}
-                                            </span>
-                                        </button>
-
-                                        {/* Trust badge */}
-                                        <p className="text-center text-white/30 text-xs md:text-sm mt-4">
-                                            Tus datos están seguros
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </motion.section>
-                )}
-            </AnimatePresence>
-
-            {/* FOOTER */}
-            <div className="relative z-20 mt-16">
-                <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
-            </div>
+            `}</style>
         </div>
     );
 }
