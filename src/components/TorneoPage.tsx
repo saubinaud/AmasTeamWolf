@@ -42,12 +42,24 @@ function getIconForModalidad(icono?: string): LucideIcon {
 // ============================================================
 // PRICE CALCULATION (client-side, from spec)
 // ============================================================
-function calcularPrecio(cantidad: number): number {
+interface PrecioEscala { desde: number; hasta: number; precio: number; }
+interface DescuentoPrograma { programa: string; label: string; porcentaje: number; }
+
+function calcularPrecioFromEscalas(cantidad: number, escalas: PrecioEscala[]): number {
     if (cantidad <= 0) return 0;
-    if (cantidad === 1) return 100;
-    if (cantidad === 2) return 150;
-    if (cantidad === 3) return 200;
-    return 250; // 4+
+    for (const e of escalas) {
+        if (cantidad >= e.desde && cantidad <= e.hasta) return e.precio;
+    }
+    return escalas[escalas.length - 1]?.precio || 0;
+}
+
+function resolverDescuentoCliente(programaActivo: string | null, descuentos: DescuentoPrograma[]): DescuentoPrograma | null {
+    if (!programaActivo) return null;
+    const prog = programaActivo.toLowerCase();
+    for (const d of descuentos) {
+        if (prog.includes(d.programa)) return d;
+    }
+    return null;
 }
 
 // ============================================================
@@ -68,10 +80,11 @@ interface TorneoData {
         hora?: string;
         lugar: string;
         descripcion?: string;
+        precio_entrada?: number;
     };
     modalidades: Modalidad[];
-    precios: Record<number, number>;
-    descuento_leadership?: number;
+    precios_modalidades: PrecioEscala[];
+    descuentos_programa: DescuentoPrograma[];
 }
 
 interface AlumnoData {
@@ -82,7 +95,9 @@ interface AlumnoData {
 interface ConsultaResult {
     alumno: AlumnoData;
     implementos: string[];
+    programa_activo: string | null;
     es_leadership: boolean;
+    es_fighter: boolean;
 }
 
 // ============================================================
@@ -132,8 +147,8 @@ const FAQ_ITEMS = [
         a: 'Sí, la entrada al evento cuesta S/25 por persona (de 12 a 60 años), pagada directamente en puerta.'
     },
     {
-        q: '¿Qué es el descuento Leadership Wolf?',
-        a: 'Los alumnos Leadership Wolf reciben un 50% de descuento al inscribirse en 4 o más modalidades.'
+        q: '¿Hay descuentos por programa?',
+        a: 'Sí. Los alumnos en programas especiales (Leadership Wolf, Fighter Wolf) reciben descuentos automáticos según la configuración del torneo.'
     },
 ];
 
@@ -196,11 +211,13 @@ export function TorneoPage({
         })();
     }, []);
 
-    // ---- Derived pricing ----
-    const subtotal = calcularPrecio(selectedModalidades.length);
-    const esLeadership = consultaResult?.es_leadership ?? false;
-    const leadershipDiscountApplies = esLeadership && selectedModalidades.length >= 4;
-    const descuento = leadershipDiscountApplies ? Math.round(subtotal * 0.5) : 0;
+    // ---- Derived pricing (from torneo config) ----
+    const escalas = torneoData?.precios_modalidades || [{ desde: 1, hasta: 1, precio: 80 }, { desde: 2, hasta: 2, precio: 150 }, { desde: 3, hasta: 99, precio: 200 }];
+    const descuentosConfig = torneoData?.descuentos_programa || [];
+    const subtotal = calcularPrecioFromEscalas(selectedModalidades.length, escalas);
+    const descuentoMatch = resolverDescuentoCliente(consultaResult?.programa_activo ?? null, descuentosConfig);
+    const descuento = descuentoMatch ? Math.round(subtotal * (descuentoMatch.porcentaje / 100)) : 0;
+    const descuentoLabel = descuentoMatch?.label || '';
     const total = subtotal - descuento;
 
     const isFormValid =
@@ -708,9 +725,9 @@ export function TorneoPage({
                                             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <h4 className="text-white font-bold text-lg">{consultaResult.alumno.nombre}</h4>
-                                                    {consultaResult.es_leadership && (
+                                                    {consultaResult.programa_activo && (
                                                         <span className="inline-flex items-center gap-1.5 bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">
-                                                            Leadership Wolf
+                                                            {consultaResult.programa_activo}
                                                         </span>
                                                     )}
                                                 </div>
@@ -811,15 +828,15 @@ export function TorneoPage({
                                                                 <span className="text-white/50 text-sm">{selectedModalidades.length} modalidad{selectedModalidades.length > 1 ? 'es' : ''}</span>
                                                                 <span className="text-white/50 text-sm">S/ {subtotal}</span>
                                                             </div>
-                                                            {leadershipDiscountApplies && (
+                                                            {descuento > 0 && (
                                                                 <div className="flex items-center justify-between">
-                                                                    <span className="text-green-400 text-sm">Descuento Leadership Wolf (50%)</span>
+                                                                    <span className="text-green-400 text-sm">Descuento {descuentoLabel} ({descuentoMatch?.porcentaje}%)</span>
                                                                     <span className="text-green-400 text-sm">- S/ {descuento}</span>
                                                                 </div>
                                                             )}
                                                             <div className="flex items-center justify-between pt-2">
                                                                 <span className="text-white font-bold">Total</span>
-                                                                <p className={`text-2xl md:text-3xl font-black ${leadershipDiscountApplies ? 'text-green-400' : 'text-[#FA7B21]'}`}>
+                                                                <p className={`text-2xl md:text-3xl font-black ${descuento > 0 ? 'text-green-400' : 'text-[#FA7B21]'}`}>
                                                                     S/ {total}
                                                                 </p>
                                                             </div>

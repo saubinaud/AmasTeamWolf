@@ -4,20 +4,41 @@ const { AlumnoService, InscripcionService } = require('../services');
 
 const router = Router();
 
-// ── Price calculation (uses DB values, falls back to defaults) ──
+// ── Price calculation from JSONB precios_modalidades ──
+const DEFAULT_PRECIOS = [
+  { desde: 1, hasta: 1, precio: 80 },
+  { desde: 2, hasta: 2, precio: 150 },
+  { desde: 3, hasta: 99, precio: 200 },
+];
+
+const DEFAULT_DESCUENTOS = [
+  { programa: 'leadership', label: 'Leadership Wolf', porcentaje: 20 },
+  { programa: 'fighter', label: 'Fighter Wolf', porcentaje: 30 },
+];
+
 function calcularPrecio(cantidadModalidades, torneo = null) {
   if (cantidadModalidades <= 0) return 0;
-  const p1 = parseFloat(torneo?.precio_1) || 100;
-  const p2 = parseFloat(torneo?.precio_2) || 150;
-  const p3 = parseFloat(torneo?.precio_3) || 200;
-  const p4 = parseFloat(torneo?.precio_4) || 250;
-  if (cantidadModalidades === 1) return p1;
-  if (cantidadModalidades === 2) return p2;
-  if (cantidadModalidades === 3) return p3;
-  return p4; // 4+
+  const escalas = torneo?.precios_modalidades || DEFAULT_PRECIOS;
+  for (const escala of escalas) {
+    if (cantidadModalidades >= escala.desde && cantidadModalidades <= escala.hasta) {
+      return parseFloat(escala.precio);
+    }
+  }
+  // Fallback: last scale
+  return parseFloat(escalas[escalas.length - 1]?.precio || 200);
 }
 
-const DESCUENTO_LEADERSHIP = { aplica_en: 4, porcentaje: 50 };
+function resolverDescuento(torneo, programaAlumno) {
+  if (!programaAlumno) return null;
+  const descuentos = torneo?.descuentos_programa || DEFAULT_DESCUENTOS;
+  const prog = programaAlumno.toLowerCase();
+  for (const d of descuentos) {
+    if (prog.includes(d.programa)) {
+      return d;
+    }
+  }
+  return null;
+}
 
 // GET /api/torneo/activo — Active tournament with modalidades
 router.get('/activo', async (req, res) => {
@@ -29,10 +50,8 @@ router.get('/activo', async (req, res) => {
       LIMIT 1
     `);
 
-    const defaultPrecios = { 1: 100, 2: 150, 3: 200, 4: 250 };
-
     if (!torneo) {
-      return res.json({ torneo: null, modalidades: [], precios: defaultPrecios, descuento_leadership: DESCUENTO_LEADERSHIP });
+      return res.json({ torneo: null, modalidades: [], precios_modalidades: DEFAULT_PRECIOS, descuentos_programa: DEFAULT_DESCUENTOS });
     }
 
     const modalidades = await query(`
@@ -41,18 +60,11 @@ router.get('/activo', async (req, res) => {
       ORDER BY orden ASC, id ASC
     `, [torneo.id]);
 
-    const precios = {
-      1: parseFloat(torneo.precio_1) || 100,
-      2: parseFloat(torneo.precio_2) || 150,
-      3: parseFloat(torneo.precio_3) || 200,
-      4: parseFloat(torneo.precio_4) || 250,
-    };
-
     res.json({
       torneo,
       modalidades,
-      precios,
-      descuento_leadership: DESCUENTO_LEADERSHIP,
+      precios_modalidades: torneo.precios_modalidades || DEFAULT_PRECIOS,
+      descuentos_programa: torneo.descuentos_programa || DEFAULT_DESCUENTOS,
     });
   } catch (err) {
     console.error('GET /torneo/activo error:', err);
@@ -80,15 +92,13 @@ router.get('/consultar', async (req, res) => {
     );
     const implementos = implementosRows.map(r => r.categoria).filter(Boolean);
 
-    // Check if Leadership
-    const leadershipRow = await queryOne(`
+    // Check active program (Leadership, Fighter, etc.)
+    const programaRow = await queryOne(`
       SELECT programa FROM inscripciones
-      WHERE alumno_id = $1
-        AND LOWER(programa) LIKE '%leadership%'
-        AND estado = 'Activo'
-      LIMIT 1
+      WHERE alumno_id = $1 AND estado = 'Activo'
+      ORDER BY fecha_inicio DESC LIMIT 1
     `, [alumno.id]);
-    const es_leadership = !!leadershipRow;
+    const programa_activo = programaRow?.programa || null;
 
     res.json({
       encontrado: true,
@@ -99,7 +109,9 @@ router.get('/consultar', async (req, res) => {
         categoria: alumno.categoria,
       },
       implementos,
-      es_leadership,
+      programa_activo,
+      es_leadership: programa_activo ? programa_activo.toLowerCase().includes('leadership') : false,
+      es_fighter: programa_activo ? programa_activo.toLowerCase().includes('fighter') : false,
     });
   } catch (err) {
     console.error('Error consultando alumno torneo:', err);
@@ -148,21 +160,20 @@ router.post('/inscribir', async (req, res) => {
     // Calculate price
     let precio_total = calcularPrecio(modalidades.length, torneo);
 
-    // Check Leadership discount
-    const leadershipRow = await queryOne(`
+    // Check program-based discount (Leadership, Fighter, etc.)
+    const programaRow = await queryOne(`
       SELECT programa FROM inscripciones
-      WHERE alumno_id = $1
-        AND LOWER(programa) LIKE '%leadership%'
-        AND estado = 'Activo'
-      LIMIT 1
+      WHERE alumno_id = $1 AND estado = 'Activo'
+      ORDER BY fecha_inicio DESC LIMIT 1
     `, [alumno.id]);
-    const es_leadership = !!leadershipRow;
+
+    const descuentoConfig = resolverDescuento(torneo, programaRow?.programa);
 
     let descuento = 0;
     let descuento_tipo = null;
-    if (es_leadership && modalidades.length >= DESCUENTO_LEADERSHIP.aplica_en) {
-      descuento = Math.round(precio_total * (DESCUENTO_LEADERSHIP.porcentaje / 100));
-      descuento_tipo = 'leadership_50';
+    if (descuentoConfig) {
+      descuento = Math.round(precio_total * (descuentoConfig.porcentaje / 100));
+      descuento_tipo = `${descuentoConfig.programa}_${descuentoConfig.porcentaje}`;
     }
 
     // Get alumno's implementos categories
