@@ -295,7 +295,7 @@ export function TorneoPage({
 
             if (!res.ok) {
                 const errData = await res.json().catch(() => null);
-                throw new Error(errData?.message || 'Error del servidor');
+                throw new Error(errData?.error || errData?.message || 'Error del servidor');
             }
 
             const result = await res.json();
