@@ -481,6 +481,7 @@ export function SpaceTorneos({ token }: { token: string }) {
                       <th className={cx.th}>Precio</th>
                       <th className={cx.th}>Descuento</th>
                       <th className={cx.th}>Pago</th>
+                      <th className={cx.th}>Fecha registro</th>
                       <th className={cx.th}>Implementos faltantes</th>
                       <th className={cx.th}></th>
                     </tr>
@@ -525,6 +526,14 @@ export function SpaceTorneos({ token }: { token: string }) {
                           <span className={cx.badge(PAGO_BADGE[s.estado_pago ?? ''] ?? badgeColors.gray)}>
                             {s.estado_pago ?? '—'}
                           </span>
+                        </td>
+                        <td className={cx.td + ' text-stone-500 text-xs'}>
+                          {s.created_at ? (() => {
+                            try {
+                              const d = new Date(s.created_at);
+                              return d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Lima' }) + ' ' + d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Lima' });
+                            } catch { return '—'; }
+                          })() : '—'}
                         </td>
                         <td className={cx.td}>
                           {(s.implementos_faltantes ?? []).length > 0 ? (
