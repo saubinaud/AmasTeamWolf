@@ -151,14 +151,23 @@ router.post('/inscribir', async (req, res) => {
       WHERE torneo_id = $1 AND activo = TRUE
     `, [torneo.id]);
     const nombresValidos = new Set(modalidadesDB.map(m => m.nombre));
+    const idsValidos = new Map(modalidadesDB.map(m => [String(m.id), m.nombre]));
 
-    const invalidas = modalidades.filter(m => !nombresValidos.has(m));
+    // Resolve: accept names OR IDs, normalize to names
+    const modalidadesResueltas = modalidades.map(m => {
+      if (nombresValidos.has(m)) return m;
+      if (idsValidos.has(String(m))) return idsValidos.get(String(m));
+      return null;
+    });
+    const invalidas = modalidades.filter((_, i) => !modalidadesResueltas[i]);
     if (invalidas.length > 0) {
       return res.status(400).json({ success: false, error: `Modalidades inválidas: ${invalidas.join(', ')}` });
     }
+    // Use resolved names from here
+    const modalidadesFinales = modalidadesResueltas.filter(Boolean);
 
-    // Calculate price
-    let precio_total = calcularPrecio(modalidades.length, torneo);
+    // Calculate price (use resolved names count)
+    let precio_total = calcularPrecio(modalidadesFinales.length, torneo);
 
     // Check program-based discount (Leadership, Fighter, etc.)
     const programaRow = await queryOne(`
@@ -191,7 +200,7 @@ router.post('/inscribir', async (req, res) => {
 
     // Compute implementos_faltantes across all selected modalidades
     const faltantesSet = new Set();
-    for (const nombre of modalidades) {
+    for (const nombre of modalidadesFinales) {
       const requeridos = modalidadMap[nombre] || [];
       for (const req of requeridos) {
         if (!implementosAlumno.has(req)) {
@@ -211,7 +220,7 @@ router.post('/inscribir', async (req, res) => {
     `, [
       torneo.id,
       alumno.id,
-      modalidades,
+      modalidadesFinales,
       precio_total - descuento,
       descuento,
       descuento_tipo,
