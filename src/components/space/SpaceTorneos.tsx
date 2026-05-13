@@ -136,6 +136,8 @@ export function SpaceTorneos({ token }: { token: string }) {
   const [alumnoResults, setAlumnoResults] = useState<AlumnoSearch[]>([]);
   const [searchingAlumnos, setSearchingAlumnos] = useState(false);
   const [addModalidades, setAddModalidades] = useState<string[]>([]);
+  const [editingMod, setEditingMod] = useState<Modalidad | null>(null);
+  const [editModForm, setEditModForm] = useState({ nombre: '', implementos: '' });
   const [addObservaciones, setAddObservaciones] = useState('');
 
   // Edit selection
@@ -304,6 +306,34 @@ export function SpaceTorneos({ token }: { token: string }) {
     }
   }, [selectedTorneo, token, addModalidades, addObservaciones, loadSelecciones]);
 
+  // Edit modalidad modal
+  useEffect(() => {
+    if (editingMod) {
+      setEditModForm({
+        nombre: editingMod.nombre,
+        implementos: (editingMod.implementos_requeridos ?? []).join(', '),
+      });
+    }
+  }, [editingMod]);
+
+  const handleSaveMod = useCallback(async () => {
+    if (!editingMod) return;
+    try {
+      const implementos = editModForm.implementos.split(',').map(s => s.trim()).filter(Boolean);
+      await apiFetch(`/modalidades/${editingMod.id}`, token, {
+        method: 'PUT',
+        body: JSON.stringify({
+          nombre: editModForm.nombre.trim(),
+          implementos_requeridos: implementos,
+        }),
+      });
+      setModalidades(prev => prev.map(m => m.id === editingMod.id ? { ...m, nombre: editModForm.nombre.trim(), implementos_requeridos: implementos } : m));
+      setEditingMod(null);
+    } catch {
+      alert('Error al guardar');
+    }
+  }, [editingMod, editModForm, token]);
+
   const toggleAddModalidad = (nombre: string) => {
     setAddModalidades(prev => prev.includes(nombre) ? prev.filter(m => m !== nombre) : [...prev, nombre]);
   };
@@ -417,16 +447,15 @@ export function SpaceTorneos({ token }: { token: string }) {
                   <thead>
                     <tr className="border-b border-stone-200">
                       <th className={cx.th}>Nombre</th>
-                      <th className={cx.th}>Icono</th>
-                      <th className={cx.th}>Implementos</th>
+                      <th className={cx.th}>Implementos requeridos</th>
                       <th className={cx.th}>Activo</th>
+                      <th className={cx.th}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {modalidades.map(m => (
                       <tr key={m.id} className={cx.tr}>
                         <td className={`${cx.td} text-stone-900 font-medium`}>{m.nombre}</td>
-                        <td className={`${cx.td} text-stone-400 text-xs font-mono`}>{m.icono}</td>
                         <td className={cx.td}>
                           {(m.implementos_requeridos ?? []).length > 0 ? (
                             <div className="flex gap-1 flex-wrap">
@@ -435,21 +464,16 @@ export function SpaceTorneos({ token }: { token: string }) {
                               ))}
                             </div>
                           ) : (
-                            <span className="text-stone-300 text-xs">—</span>
+                            <span className="text-stone-300 text-xs">Ninguno</span>
                           )}
                         </td>
                         <td className={cx.td}>
-                          <button
-                            onClick={() => toggleModalidad(m)}
-                            className="transition-colors"
-                            title={m.activo ? 'Desactivar' : 'Activar'}
-                          >
-                            {m.activo ? (
-                              <ToggleRight size={28} className="text-[var(--accent)]" />
-                            ) : (
-                              <ToggleLeft size={28} className="text-stone-300" />
-                            )}
+                          <button onClick={() => toggleModalidad(m)} className="transition-colors" title={m.activo ? 'Desactivar' : 'Activar'}>
+                            {m.activo ? <ToggleRight size={28} className="text-[var(--accent)]" /> : <ToggleLeft size={28} className="text-stone-300" />}
                           </button>
+                        </td>
+                        <td className={cx.td}>
+                          <button onClick={() => setEditingMod(m)} className={cx.btnIcon} title="Editar"><Pencil size={14} /></button>
                         </td>
                       </tr>
                     ))}
@@ -623,6 +647,23 @@ export function SpaceTorneos({ token }: { token: string }) {
             <div>
               <label className={cx.label}>Observaciones</label>
               <input className={cx.input} placeholder="Opcional" value={addObservaciones} onChange={e => setAddObservaciones(e.target.value)} />
+            </div>
+          </div>
+        </Modal>
+
+        {/* Edit modalidad modal */}
+        <Modal open={!!editingMod} onClose={() => setEditingMod(null)} title="Editar modalidad"
+          footer={<button onClick={handleSaveMod} className={cx.btnPrimary}>Guardar</button>}
+        >
+          <div className="space-y-4">
+            <div>
+              <label className={cx.label}>Nombre de la modalidad</label>
+              <input className={cx.input} value={editModForm.nombre} onChange={e => setEditModForm(f => ({ ...f, nombre: e.target.value }))} />
+            </div>
+            <div>
+              <label className={cx.label}>Implementos requeridos</label>
+              <input className={cx.input} value={editModForm.implementos} onChange={e => setEditModForm(f => ({ ...f, implementos: e.target.value }))} placeholder="Ej: combat, protector, uniforme" />
+              <p className="text-stone-400 text-[10px] mt-1">Separados por coma. Dejar vacio si no requiere implementos.</p>
             </div>
           </div>
         </Modal>

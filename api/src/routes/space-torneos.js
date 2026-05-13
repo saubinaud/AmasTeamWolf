@@ -177,7 +177,7 @@ router.get('/:id/modalidades', async (req, res) => {
 router.put('/modalidades/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { activo, orden } = req.body;
+    const { activo, orden, nombre, icono, implementos_requeridos } = req.body;
 
     const existing = await queryOne('SELECT * FROM torneo_modalidades WHERE id = $1', [id]);
     if (!existing) {
@@ -187,10 +187,16 @@ router.put('/modalidades/:id', async (req, res) => {
     const row = await queryOne(`
       UPDATE torneo_modalidades
       SET activo = COALESCE($1, activo),
-          orden  = COALESCE($2, orden)
-      WHERE id = $3
+          orden  = COALESCE($2, orden),
+          nombre = COALESCE($3, nombre),
+          icono  = COALESCE($4, icono),
+          implementos_requeridos = COALESCE($5, implementos_requeridos)
+      WHERE id = $6
       RETURNING *
-    `, [activo !== undefined ? activo : null, orden !== undefined ? orden : null, id]);
+    `, [activo !== undefined ? activo : null, orden !== undefined ? orden : null,
+        nombre || null, icono || null,
+        implementos_requeridos ? implementos_requeridos : null,
+        id]);
 
     res.json({ success: true, data: row });
   } catch (err) {
