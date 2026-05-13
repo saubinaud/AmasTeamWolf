@@ -74,7 +74,12 @@ export type SpaceTheme = 'dark' | 'light';
 export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void }) {
   const [token, setToken] = useState<string | null>(localStorage.getItem('space_token'));
   const [user, setUser] = useState<SpaceUser | null>(null);
-  const [currentPage, setCurrentPage] = useState<SpacePage>('dashboard');
+  const [currentPage, setCurrentPage] = useState<SpacePage>(() => {
+    // Restore from URL hash or localStorage
+    const hash = window.location.hash.replace('#', '') as SpacePage;
+    const saved = localStorage.getItem('space_page') as SpacePage | null;
+    return hash || saved || 'dashboard';
+  });
   const [loading, setLoading] = useState(true);
   const theme: SpaceTheme = 'light';
   const [academia, setAcademia] = useState<Academia>(
@@ -158,6 +163,8 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       }
     }
     setCurrentPage(page);
+    localStorage.setItem('space_page', page);
+    window.location.hash = page;
   }, [user]);
   const handleExit = useCallback(() => onNavigate('home'), [onNavigate]);
 
