@@ -4,16 +4,19 @@ const { AlumnoService, InscripcionService } = require('../services');
 
 const router = Router();
 
-// ── Price calculation ──
-function calcularPrecio(cantidadModalidades) {
+// ── Price calculation (uses DB values, falls back to defaults) ──
+function calcularPrecio(cantidadModalidades, torneo = null) {
   if (cantidadModalidades <= 0) return 0;
-  if (cantidadModalidades === 1) return 100;
-  if (cantidadModalidades === 2) return 150;
-  if (cantidadModalidades === 3) return 200;
-  return 250; // 4+
+  const p1 = parseFloat(torneo?.precio_1) || 100;
+  const p2 = parseFloat(torneo?.precio_2) || 150;
+  const p3 = parseFloat(torneo?.precio_3) || 200;
+  const p4 = parseFloat(torneo?.precio_4) || 250;
+  if (cantidadModalidades === 1) return p1;
+  if (cantidadModalidades === 2) return p2;
+  if (cantidadModalidades === 3) return p3;
+  return p4; // 4+
 }
 
-const PRECIOS = { 1: 100, 2: 150, 3: 200, 4: 250 };
 const DESCUENTO_LEADERSHIP = { aplica_en: 4, porcentaje: 50 };
 
 // GET /api/torneo/activo — Active tournament with modalidades
@@ -26,8 +29,10 @@ router.get('/activo', async (req, res) => {
       LIMIT 1
     `);
 
+    const defaultPrecios = { 1: 100, 2: 150, 3: 200, 4: 250 };
+
     if (!torneo) {
-      return res.json({ torneo: null, modalidades: [], precios: PRECIOS, descuento_leadership: DESCUENTO_LEADERSHIP });
+      return res.json({ torneo: null, modalidades: [], precios: defaultPrecios, descuento_leadership: DESCUENTO_LEADERSHIP });
     }
 
     const modalidades = await query(`
@@ -36,10 +41,17 @@ router.get('/activo', async (req, res) => {
       ORDER BY orden ASC, id ASC
     `, [torneo.id]);
 
+    const precios = {
+      1: parseFloat(torneo.precio_1) || 100,
+      2: parseFloat(torneo.precio_2) || 150,
+      3: parseFloat(torneo.precio_3) || 200,
+      4: parseFloat(torneo.precio_4) || 250,
+    };
+
     res.json({
       torneo,
       modalidades,
-      precios: PRECIOS,
+      precios,
       descuento_leadership: DESCUENTO_LEADERSHIP,
     });
   } catch (err) {
@@ -134,7 +146,7 @@ router.post('/inscribir', async (req, res) => {
     }
 
     // Calculate price
-    let precio_total = calcularPrecio(modalidades.length);
+    let precio_total = calcularPrecio(modalidades.length, torneo);
 
     // Check Leadership discount
     const leadershipRow = await queryOne(`
