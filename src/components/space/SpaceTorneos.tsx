@@ -307,41 +307,20 @@ export function SpaceTorneos({ token }: { token: string }) {
     }
   }, [selectedTorneo, token, addModalidades, addObservaciones, loadSelecciones]);
 
-  // Load catalogo implementos once
+  // Load catalogo implementos
   useEffect(() => {
-    fetch(`${API_BASE}/space/compras/categorias`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => {
-        if (Array.isArray(d?.data)) setCatalogoImplementos(d.data);
-      })
-      .catch(() => {});
-    // Also try the full catalog
-    fetch(`${API_BASE}/space/compras?limit=100`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .catch(() => {});
-  }, [token]);
-
-  // Load catalogo from implementos catalog
-  useEffect(() => {
-    fetch(`${API_BASE}/space/compras/categorias`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
-      .then(d => { if (Array.isArray(d?.data)) setCatalogoImplementos(d.data); })
-      .catch(() => {
-        // Fallback: hardcoded from DB
-        setCatalogoImplementos([
-          { id: 1, nombre: 'Dobok (uniforme completo)', categoria: 'uniforme' },
-          { id: 5, nombre: 'Peto (protector de torso)', categoria: 'protector' },
-          { id: 6, nombre: 'Espinilleras', categoria: 'protector' },
-          { id: 7, nombre: 'Guantes', categoria: 'protector' },
-          { id: 8, nombre: 'Casco', categoria: 'protector' },
-          { id: 9, nombre: 'Empeineras', categoria: 'protector' },
-          { id: 10, nombre: 'Nunchaku', categoria: 'arma' },
-          { id: 11, nombre: 'Sable', categoria: 'arma' },
-          { id: 12, nombre: 'Bo (baston largo)', categoria: 'arma' },
-          { id: 13, nombre: 'Tonfa', categoria: 'arma' },
-        ]);
-      });
-  }, [token]);
+    // The catalogo_implementos table has the real products
+    setCatalogoImplementos([
+      { id: 16, nombre: 'Guantes', categoria: 'protector' },
+      { id: 17, nombre: 'Zapatos', categoria: 'protector' },
+      { id: 18, nombre: 'Bo Staff', categoria: 'arma' },
+      { id: 19, nombre: 'Combat Weapon', categoria: 'arma' },
+      { id: 20, nombre: 'Nunchaku', categoria: 'arma' },
+      { id: 21, nombre: 'Parche', categoria: 'accesorio' },
+      { id: 22, nombre: 'Uniforme Completo', categoria: 'uniforme' },
+      { id: 23, nombre: 'Polo AMAS Team Wolf', categoria: 'polo' },
+    ]);
+  }, []);
 
   // Edit modalidad modal
   useEffect(() => {
