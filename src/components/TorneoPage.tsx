@@ -270,9 +270,9 @@ export function TorneoPage({
         }
     };
 
-    const toggleModalidad = (id: string) => {
+    const toggleModalidad = (nombre: string) => {
         setSelectedModalidades(prev =>
-            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+            prev.includes(nombre) ? prev.filter(x => x !== nombre) : [...prev, nombre]
         );
     };
 
@@ -755,7 +755,7 @@ export function TorneoPage({
                                                 <p className="text-white/50 text-xs md:text-sm">Selecciona las modalidades en las que participara</p>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                     {modalidades.map((mod) => {
-                                                        const selected = selectedModalidades.includes(mod.id);
+                                                        const selected = selectedModalidades.includes(mod.nombre);
                                                         const IconComponent = getIconForModalidad(mod.icono);
 
                                                         // Check missing implementos
@@ -767,7 +767,7 @@ export function TorneoPage({
                                                             <button
                                                                 key={mod.id}
                                                                 type="button"
-                                                                onClick={() => toggleModalidad(mod.id)}
+                                                                onClick={() => toggleModalidad(mod.nombre)}
                                                                 className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all duration-200 ${selected
                                                                     ? 'bg-[#FA7B21]/20 border-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/20'
                                                                     : 'bg-white/5 border-white/20 text-white/70 hover:border-white/40 hover:bg-white/10'
