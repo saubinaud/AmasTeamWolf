@@ -124,7 +124,7 @@ export function SpaceTorneos({ token }: { token: string }) {
   const [showModal, setShowModal] = useState(false);
   const [editingTorneo, setEditingTorneo] = useState<TorneoConfig | null>(null);
   const [form, setForm] = useState({
-    nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25',
+    nombre: '', descripcion: '', tipo: 'regional', fecha: '', hora: '', lugar: '', precio_entrada: '25',
     precios: [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }],
     descuentos: [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }],
   });
@@ -195,7 +195,7 @@ export function SpaceTorneos({ token }: { token: string }) {
   const openCreateModal = useCallback(() => {
     setEditingTorneo(null);
     setForm({
-      nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25',
+      nombre: '', descripcion: '', tipo: 'regional', fecha: '', hora: '', lugar: '', precio_entrada: '25',
       precios: [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }],
       descuentos: [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }],
     });
@@ -211,6 +211,7 @@ export function SpaceTorneos({ token }: { token: string }) {
       descripcion: t.descripcion ?? '',
       tipo: t.tipo ?? 'regional',
       fecha: t.fecha ? t.fecha.split('T')[0] : '',
+      hora: (t as any).hora ?? '',
       lugar: t.lugar ?? '',
       precio_entrada: String(t.precio_entrada ?? 25),
       precios: ((t as any).precios_modalidades || defPrecios).map((p: any) => ({ ...p, precio: String(p.precio) })),
@@ -227,6 +228,7 @@ export function SpaceTorneos({ token }: { token: string }) {
         nombre: form.nombre.trim(),
         tipo: form.tipo,
         fecha: form.fecha || null,
+        hora: form.hora || null,
         lugar: form.lugar.trim() || null,
         descripcion: form.descripcion.trim() || null,
         precio_entrada: parseFloat(form.precio_entrada) || 25,
@@ -688,10 +690,14 @@ export function SpaceTorneos({ token }: { token: string }) {
               options={TIPO_OPTIONS}
             />
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className={cx.label}>Fecha</label>
               <input type="date" className={cx.input} value={form.fecha} onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))} />
+            </div>
+            <div>
+              <label className={cx.label}>Hora</label>
+              <input type="time" className={cx.input} value={form.hora} onChange={e => setForm(f => ({ ...f, hora: e.target.value }))} />
             </div>
             <div>
               <label className={cx.label}>Lugar</label>
