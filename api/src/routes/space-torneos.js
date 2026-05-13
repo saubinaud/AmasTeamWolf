@@ -52,7 +52,7 @@ router.get('/stats', async (req, res) => {
 router.post('/', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { nombre, tipo, fecha, lugar, descripcion, precio_entrada, precio_1, precio_2, precio_3, precio_4 } = req.body;
+    const { nombre, tipo, fecha, lugar, descripcion, precio_entrada, precios_modalidades, descuentos_programa } = req.body;
     if (!nombre) {
       return res.status(400).json({ success: false, error: 'El nombre es requerido' });
     }
@@ -62,11 +62,14 @@ router.post('/', async (req, res) => {
     await client.query('BEGIN');
 
     const { rows: [torneo] } = await client.query(`
-      INSERT INTO torneos_config (nombre, tipo, fecha, lugar, descripcion, precio_entrada, precio_1, precio_2, precio_3, precio_4)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      INSERT INTO torneos_config (nombre, tipo, fecha, lugar, descripcion, precio_entrada, precios_modalidades, descuentos_programa)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
     `, [nombre, tipoFinal, fecha || null, lugar || null, descripcion || null,
-        precio_entrada || 25, precio_1 || 100, precio_2 || 150, precio_3 || 200, precio_4 || 250]);
+        precio_entrada || 25,
+        JSON.stringify(precios_modalidades || [{ desde: 1, hasta: 1, precio: 80 }, { desde: 2, hasta: 2, precio: 150 }, { desde: 3, hasta: 99, precio: 200 }]),
+        JSON.stringify(descuentos_programa || [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: 20 }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: 30 }]),
+    ]);
 
     // Auto-create default modalidades
     for (let i = 0; i < DEFAULT_MODALIDADES.length; i++) {
@@ -99,7 +102,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, tipo, fecha, lugar, descripcion, precio_entrada, precio_1, precio_2, precio_3, precio_4 } = req.body;
+    const { nombre, tipo, fecha, lugar, descripcion, precio_entrada, precios_modalidades, descuentos_programa } = req.body;
 
     const existing = await queryOne('SELECT id FROM torneos_config WHERE id = $1', [id]);
     if (!existing) {
@@ -117,17 +120,16 @@ router.put('/:id', async (req, res) => {
           lugar  = COALESCE($4, lugar),
           descripcion = COALESCE($5, descripcion),
           precio_entrada = COALESCE($6, precio_entrada),
-          precio_1 = COALESCE($7, precio_1),
-          precio_2 = COALESCE($8, precio_2),
-          precio_3 = COALESCE($9, precio_3),
-          precio_4 = COALESCE($10, precio_4)
-      WHERE id = $11
+          precios_modalidades = COALESCE($7, precios_modalidades),
+          descuentos_programa = COALESCE($8, descuentos_programa)
+      WHERE id = $9
       RETURNING *
     `, [nombre || null, tipoFinal || null, fecha || null, lugar || null,
         descripcion !== undefined ? descripcion : null,
         precio_entrada !== undefined ? precio_entrada : null,
-        precio_1 !== undefined ? precio_1 : null, precio_2 !== undefined ? precio_2 : null,
-        precio_3 !== undefined ? precio_3 : null, precio_4 !== undefined ? precio_4 : null, id]);
+        precios_modalidades ? JSON.stringify(precios_modalidades) : null,
+        descuentos_programa ? JSON.stringify(descuentos_programa) : null,
+        id]);
     res.json({ success: true, data: row });
   } catch (err) {
     console.error('PUT /torneos/:id error:', err);

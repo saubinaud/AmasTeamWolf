@@ -123,7 +123,11 @@ export function SpaceTorneos({ token }: { token: string }) {
   // Create/edit modal
   const [showModal, setShowModal] = useState(false);
   const [editingTorneo, setEditingTorneo] = useState<TorneoConfig | null>(null);
-  const [form, setForm] = useState({ nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25', precio_1: '100', precio_2: '150', precio_3: '200', precio_4: '250' });
+  const [form, setForm] = useState({
+    nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25',
+    precios: [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }],
+    descuentos: [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }],
+  });
   const [saving, setSaving] = useState(false);
 
   // Add student
@@ -190,12 +194,18 @@ export function SpaceTorneos({ token }: { token: string }) {
   // Create / Edit tournament
   const openCreateModal = useCallback(() => {
     setEditingTorneo(null);
-    setForm({ nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25', precio_1: '100', precio_2: '150', precio_3: '200', precio_4: '250' });
+    setForm({
+      nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25',
+      precios: [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }],
+      descuentos: [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }],
+    });
     setShowModal(true);
   }, []);
 
   const openEditModal = useCallback((t: TorneoConfig) => {
     setEditingTorneo(t);
+    const defPrecios = [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }];
+    const defDescuentos = [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }];
     setForm({
       nombre: t.nombre ?? '',
       descripcion: t.descripcion ?? '',
@@ -203,10 +213,8 @@ export function SpaceTorneos({ token }: { token: string }) {
       fecha: t.fecha ? t.fecha.split('T')[0] : '',
       lugar: t.lugar ?? '',
       precio_entrada: String(t.precio_entrada ?? 25),
-      precio_1: String((t as any).precio_1 ?? 100),
-      precio_2: String((t as any).precio_2 ?? 150),
-      precio_3: String((t as any).precio_3 ?? 200),
-      precio_4: String((t as any).precio_4 ?? 250),
+      precios: ((t as any).precios_modalidades || defPrecios).map((p: any) => ({ ...p, precio: String(p.precio) })),
+      descuentos: ((t as any).descuentos_programa || defDescuentos).map((d: any) => ({ ...d, porcentaje: String(d.porcentaje) })),
     });
     setShowModal(true);
   }, []);
@@ -222,10 +230,8 @@ export function SpaceTorneos({ token }: { token: string }) {
         lugar: form.lugar.trim() || null,
         descripcion: form.descripcion.trim() || null,
         precio_entrada: parseFloat(form.precio_entrada) || 25,
-        precio_1: parseFloat(form.precio_1) || 100,
-        precio_2: parseFloat(form.precio_2) || 150,
-        precio_3: parseFloat(form.precio_3) || 200,
-        precio_4: parseFloat(form.precio_4) || 250,
+        precios_modalidades: form.precios.map(p => ({ desde: p.desde, hasta: p.hasta, precio: parseFloat(String(p.precio)) || 0 })),
+        descuentos_programa: form.descuentos.map(d => ({ programa: d.programa, label: d.label, porcentaje: parseFloat(String(d.porcentaje)) || 0 })),
       };
       if (editingTorneo) {
         await apiFetch(`/${editingTorneo.id}`, token, { method: 'PUT', body: JSON.stringify(body) });
@@ -699,23 +705,28 @@ export function SpaceTorneos({ token }: { token: string }) {
           </div>
           <div>
             <label className={cx.label}>Precios por modalidades (S/)</label>
-            <div className="grid grid-cols-4 gap-2">
-              <div>
-                <p className="text-stone-400 text-[10px] mb-1">1 mod.</p>
-                <input type="number" step="10" min="0" className={cx.input} value={form.precio_1} onChange={e => setForm(f => ({ ...f, precio_1: e.target.value }))} />
-              </div>
-              <div>
-                <p className="text-stone-400 text-[10px] mb-1">2 mod.</p>
-                <input type="number" step="10" min="0" className={cx.input} value={form.precio_2} onChange={e => setForm(f => ({ ...f, precio_2: e.target.value }))} />
-              </div>
-              <div>
-                <p className="text-stone-400 text-[10px] mb-1">3 mod.</p>
-                <input type="number" step="10" min="0" className={cx.input} value={form.precio_3} onChange={e => setForm(f => ({ ...f, precio_3: e.target.value }))} />
-              </div>
-              <div>
-                <p className="text-stone-400 text-[10px] mb-1">4+ mod.</p>
-                <input type="number" step="10" min="0" className={cx.input} value={form.precio_4} onChange={e => setForm(f => ({ ...f, precio_4: e.target.value }))} />
-              </div>
+            <div className="space-y-2 mt-1">
+              {form.precios.map((p, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-stone-400 text-xs w-24 shrink-0">{p.desde === p.hasta ? `${p.desde} mod.` : `${p.desde}+ mod.`}</span>
+                  <span className="text-stone-400 text-xs">S/</span>
+                  <input type="number" step="5" min="0" className={cx.input + ' w-24'} value={p.precio}
+                    onChange={e => { const np = [...form.precios]; np[i] = { ...np[i], precio: e.target.value }; setForm(f => ({ ...f, precios: np })); }} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className={cx.label}>Descuentos por programa (%)</label>
+            <div className="space-y-2 mt-1">
+              {form.descuentos.map((d, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <span className="text-stone-500 text-xs w-32 shrink-0">{d.label}</span>
+                  <input type="number" step="5" min="0" max="100" className={cx.input + ' w-20'} value={d.porcentaje}
+                    onChange={e => { const nd = [...form.descuentos]; nd[i] = { ...nd[i], porcentaje: e.target.value }; setForm(f => ({ ...f, descuentos: nd })); }} />
+                  <span className="text-stone-400 text-xs">%</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
