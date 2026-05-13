@@ -512,7 +512,13 @@ export function TorneoPage({
                     {/* Torneo data badges from API */}
                     <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
                         {[
-                            { Icon: Calendar, label: 'Fecha', value: torneo.fecha },
+                            { Icon: Calendar, label: 'Fecha', value: (() => {
+                                try {
+                                    const d = new Date(torneo.fecha);
+                                    const fechaStr = d.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Lima' });
+                                    return torneo.hora ? `${fechaStr} a las ${torneo.hora}` : fechaStr;
+                                } catch { return torneo.fecha; }
+                            })() },
                             ...(torneo.hora ? [{ Icon: Clock, label: 'Hora', value: torneo.hora }] : []),
                             { Icon: MapPin, label: 'Lugar', value: torneo.lugar },
                         ].map((item, i) => (
