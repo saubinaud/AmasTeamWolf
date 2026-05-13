@@ -52,7 +52,7 @@ router.get('/stats', async (req, res) => {
 router.post('/', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { nombre, tipo, fecha, lugar, precio } = req.body;
+    const { nombre, tipo, fecha, lugar, descripcion, precio_entrada, precio_1, precio_2, precio_3, precio_4 } = req.body;
     if (!nombre) {
       return res.status(400).json({ success: false, error: 'El nombre es requerido' });
     }
@@ -62,10 +62,11 @@ router.post('/', async (req, res) => {
     await client.query('BEGIN');
 
     const { rows: [torneo] } = await client.query(`
-      INSERT INTO torneos_config (nombre, tipo, fecha, lugar, precio)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO torneos_config (nombre, tipo, fecha, lugar, descripcion, precio_entrada, precio_1, precio_2, precio_3, precio_4)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
-    `, [nombre, tipoFinal, fecha || null, lugar || null, precio || 0]);
+    `, [nombre, tipoFinal, fecha || null, lugar || null, descripcion || null,
+        precio_entrada || 25, precio_1 || 100, precio_2 || 150, precio_3 || 200, precio_4 || 250]);
 
     // Auto-create default modalidades
     for (let i = 0; i < DEFAULT_MODALIDADES.length; i++) {
@@ -98,7 +99,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { nombre, tipo, fecha, lugar, precio } = req.body;
+    const { nombre, tipo, fecha, lugar, descripcion, precio_entrada, precio_1, precio_2, precio_3, precio_4 } = req.body;
 
     const existing = await queryOne('SELECT id FROM torneos_config WHERE id = $1', [id]);
     if (!existing) {
@@ -114,10 +115,19 @@ router.put('/:id', async (req, res) => {
           tipo   = COALESCE($2, tipo),
           fecha  = COALESCE($3, fecha),
           lugar  = COALESCE($4, lugar),
-          precio = COALESCE($5, precio)
-      WHERE id = $6
+          descripcion = COALESCE($5, descripcion),
+          precio_entrada = COALESCE($6, precio_entrada),
+          precio_1 = COALESCE($7, precio_1),
+          precio_2 = COALESCE($8, precio_2),
+          precio_3 = COALESCE($9, precio_3),
+          precio_4 = COALESCE($10, precio_4)
+      WHERE id = $11
       RETURNING *
-    `, [nombre || null, tipoFinal || null, fecha || null, lugar || null, precio !== undefined ? precio : null, id]);
+    `, [nombre || null, tipoFinal || null, fecha || null, lugar || null,
+        descripcion !== undefined ? descripcion : null,
+        precio_entrada !== undefined ? precio_entrada : null,
+        precio_1 !== undefined ? precio_1 : null, precio_2 !== undefined ? precio_2 : null,
+        precio_3 !== undefined ? precio_3 : null, precio_4 !== undefined ? precio_4 : null, id]);
     res.json({ success: true, data: row });
   } catch (err) {
     console.error('PUT /torneos/:id error:', err);

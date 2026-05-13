@@ -123,7 +123,7 @@ export function SpaceTorneos({ token }: { token: string }) {
   // Create/edit modal
   const [showModal, setShowModal] = useState(false);
   const [editingTorneo, setEditingTorneo] = useState<TorneoConfig | null>(null);
-  const [form, setForm] = useState({ nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio: '', precio_entrada: '25' });
+  const [form, setForm] = useState({ nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25', precio_1: '100', precio_2: '150', precio_3: '200', precio_4: '250' });
   const [saving, setSaving] = useState(false);
 
   // Add student
@@ -131,7 +131,7 @@ export function SpaceTorneos({ token }: { token: string }) {
   const [alumnoSearch, setAlumnoSearch] = useState('');
   const [alumnoResults, setAlumnoResults] = useState<AlumnoSearch[]>([]);
   const [searchingAlumnos, setSearchingAlumnos] = useState(false);
-  const [addModalidad, setAddModalidad] = useState('');
+  const [addModalidades, setAddModalidades] = useState<string[]>([]);
   const [addObservaciones, setAddObservaciones] = useState('');
 
   // Edit selection
@@ -190,7 +190,7 @@ export function SpaceTorneos({ token }: { token: string }) {
   // Create / Edit tournament
   const openCreateModal = useCallback(() => {
     setEditingTorneo(null);
-    setForm({ nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio: '', precio_entrada: '25' });
+    setForm({ nombre: '', descripcion: '', tipo: 'regional', fecha: '', lugar: '', precio_entrada: '25', precio_1: '100', precio_2: '150', precio_3: '200', precio_4: '250' });
     setShowModal(true);
   }, []);
 
@@ -202,8 +202,11 @@ export function SpaceTorneos({ token }: { token: string }) {
       tipo: t.tipo ?? 'regional',
       fecha: t.fecha ? t.fecha.split('T')[0] : '',
       lugar: t.lugar ?? '',
-      precio: String(t.precio ?? 0),
       precio_entrada: String(t.precio_entrada ?? 25),
+      precio_1: String((t as any).precio_1 ?? 100),
+      precio_2: String((t as any).precio_2 ?? 150),
+      precio_3: String((t as any).precio_3 ?? 200),
+      precio_4: String((t as any).precio_4 ?? 250),
     });
     setShowModal(true);
   }, []);
@@ -217,15 +220,14 @@ export function SpaceTorneos({ token }: { token: string }) {
         tipo: form.tipo,
         fecha: form.fecha || null,
         lugar: form.lugar.trim() || null,
-        precio: parseFloat(form.precio) || 0,
+        descripcion: form.descripcion.trim() || null,
+        precio_entrada: parseFloat(form.precio_entrada) || 25,
+        precio_1: parseFloat(form.precio_1) || 100,
+        precio_2: parseFloat(form.precio_2) || 150,
+        precio_3: parseFloat(form.precio_3) || 200,
+        precio_4: parseFloat(form.precio_4) || 250,
       };
-      if (!editingTorneo) {
-        body.descripcion = form.descripcion.trim() || null;
-        body.precio_entrada = parseFloat(form.precio_entrada) || 25;
-      }
       if (editingTorneo) {
-        body.descripcion = form.descripcion.trim() || null;
-        body.precio_entrada = parseFloat(form.precio_entrada) || 25;
         await apiFetch(`/${editingTorneo.id}`, token, { method: 'PUT', body: JSON.stringify(body) });
       } else {
         await apiFetch('/', token, { method: 'POST', body: JSON.stringify(body) });
@@ -278,20 +280,25 @@ export function SpaceTorneos({ token }: { token: string }) {
         method: 'POST',
         body: JSON.stringify({
           alumno_id: alumnoId,
-          modalidad: addModalidad.trim() || null,
+          modalidad: addModalidades.join(', '),
+          modalidades: addModalidades,
           observaciones: addObservaciones.trim() || null,
         }),
       });
       setShowAddAlumno(false);
       setAlumnoSearch('');
       setAlumnoResults([]);
-      setAddModalidad('');
+      setAddModalidades([]);
       setAddObservaciones('');
       loadSelecciones(selectedTorneo.id);
     } catch (err: any) {
       alert(err?.message ?? 'Error al agregar alumno');
     }
-  }, [selectedTorneo, token, addModalidad, addObservaciones, loadSelecciones]);
+  }, [selectedTorneo, token, addModalidades, addObservaciones, loadSelecciones]);
+
+  const toggleAddModalidad = (nombre: string) => {
+    setAddModalidades(prev => prev.includes(nombre) ? prev.filter(m => m !== nombre) : [...prev, nombre]);
+  };
 
   // Edit selection
   const openEditSel = useCallback((s: Seleccion) => {
@@ -575,8 +582,26 @@ export function SpaceTorneos({ token }: { token: string }) {
             </div>
 
             <div>
-              <label className={cx.label}>Modalidad</label>
-              <input className={cx.input} placeholder="Ej: Combate, Poomsae..." value={addModalidad} onChange={e => setAddModalidad(e.target.value)} />
+              <label className={cx.label}>Modalidades</label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                {modalidades.filter(m => m.activo).map(m => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => toggleAddModalidad(m.nombre)}
+                    className={`text-left px-3 py-2 rounded-xl text-xs transition-all border-2 ${
+                      addModalidades.includes(m.nombre)
+                        ? 'border-[var(--accent)] bg-orange-50 text-[var(--accent)] font-medium'
+                        : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300'
+                    }`}
+                  >
+                    {m.nombre}
+                  </button>
+                ))}
+              </div>
+              {addModalidades.length > 0 && (
+                <p className="text-stone-400 text-[10px] mt-1">{addModalidades.length} seleccionada{addModalidades.length !== 1 ? 's' : ''}</p>
+              )}
             </div>
             <div>
               <label className={cx.label}>Observaciones</label>
@@ -663,18 +688,34 @@ export function SpaceTorneos({ token }: { token: string }) {
               <input type="date" className={cx.input} value={form.fecha} onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))} />
             </div>
             <div>
-              <label className={cx.label}>Precio (S/)</label>
-              <input type="number" step="0.01" min="0" className={cx.input} value={form.precio} onChange={e => setForm(f => ({ ...f, precio: e.target.value }))} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={cx.label}>Precio entrada (S/)</label>
-              <input type="number" step="0.01" min="0" className={cx.input} value={form.precio_entrada} onChange={e => setForm(f => ({ ...f, precio_entrada: e.target.value }))} placeholder="25" />
-            </div>
-            <div>
               <label className={cx.label}>Lugar</label>
               <input className={cx.input} value={form.lugar} onChange={e => setForm(f => ({ ...f, lugar: e.target.value }))} placeholder="Lugar del torneo" />
+            </div>
+          </div>
+          <div>
+            <label className={cx.label}>Precio entrada al evento (S/)</label>
+            <input type="number" step="1" min="0" className={cx.input} value={form.precio_entrada} onChange={e => setForm(f => ({ ...f, precio_entrada: e.target.value }))} placeholder="25" />
+            <p className="text-stone-400 text-[10px] mt-1">Personas de 12 a 60 años, pago en puerta</p>
+          </div>
+          <div>
+            <label className={cx.label}>Precios por modalidades (S/)</label>
+            <div className="grid grid-cols-4 gap-2">
+              <div>
+                <p className="text-stone-400 text-[10px] mb-1">1 mod.</p>
+                <input type="number" step="10" min="0" className={cx.input} value={form.precio_1} onChange={e => setForm(f => ({ ...f, precio_1: e.target.value }))} />
+              </div>
+              <div>
+                <p className="text-stone-400 text-[10px] mb-1">2 mod.</p>
+                <input type="number" step="10" min="0" className={cx.input} value={form.precio_2} onChange={e => setForm(f => ({ ...f, precio_2: e.target.value }))} />
+              </div>
+              <div>
+                <p className="text-stone-400 text-[10px] mb-1">3 mod.</p>
+                <input type="number" step="10" min="0" className={cx.input} value={form.precio_3} onChange={e => setForm(f => ({ ...f, precio_3: e.target.value }))} />
+              </div>
+              <div>
+                <p className="text-stone-400 text-[10px] mb-1">4+ mod.</p>
+                <input type="number" step="10" min="0" className={cx.input} value={form.precio_4} onChange={e => setForm(f => ({ ...f, precio_4: e.target.value }))} />
+              </div>
             </div>
           </div>
         </div>
