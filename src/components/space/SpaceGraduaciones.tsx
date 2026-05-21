@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Search, Check, Loader2, GraduationCap, Upload, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, Loader2, GraduationCap, Upload, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { Modal } from './Modal';
+import { SpaceSearch } from './SpaceSearch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -64,27 +65,35 @@ interface SpaceGraduacionesProps {
 // Constants
 // ---------------------------------------------------------------------------
 
+// Synced with cinturones table in DB (27 rows, orden 1-27)
 const RANGOS = [
   'Blanco',
   'Blanco con tira dorada',
-  'Blanco con tira naranja delgada',
-  'Blanco con tira naranja gruesa',
-  'Blanco con tira amarilla delgada',
-  'Blanco con tira amarilla gruesa',
   'Blanco con tira camuflada delgada',
   'Blanco con tira camuflada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira naranja delgada',
+  'Blanco con tira naranja gruesa',
+  'Blanco con tira morada delgada',
+  'Blanco con tira morada gruesa',
   'Blanco con tira verde delgada',
   'Blanco con tira verde gruesa',
-  'Blanco con tira violeta delgada',
-  'Blanco con tira violeta gruesa',
   'Blanco con tira azul delgada',
   'Blanco con tira azul gruesa',
-  'Blanco con tira marrón delgada',
-  'Blanco con tira marrón gruesa',
-  'Blanco con tira rojo delgada',
-  'Blanco con tira roja gruesa',
-  'Blanco con tira rojo negro delgada',
-  'Blanco con tira rojo negro gruesa',
+  'Amarillo',
+  'Amarillo Camuflado',
+  'Naranja',
+  'Naranja Camuflado',
+  'Verde',
+  'Verde Camuflado',
+  'Azul',
+  'Azul Camuflado',
+  'Rojo',
+  'Rojo Camuflado',
+  'Negro 1 Dan',
+  'Negro 2 Dan',
+  'Negro 3 Dan',
 ];
 
 const TURNOS = [
@@ -112,10 +121,34 @@ const CORRECCION_PILL: Record<string, string> = {
 };
 
 const CINTURONES_BATCH = [
-  'Blanco-Amarillo', 'Amarillo', 'Amarillo Camuflado',
-  'Naranja', 'Naranja Camuflado', 'Verde', 'Verde Camuflado',
-  'Azul', 'Azul Camuflado', 'Rojo', 'Rojo Camuflado', 'Negro',
-];
+  'Blanco',
+  'Blanco con tira dorada',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira camuflada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira naranja delgada',
+  'Blanco con tira naranja gruesa',
+  'Blanco con tira morada delgada',
+  'Blanco con tira morada gruesa',
+  'Blanco con tira verde delgada',
+  'Blanco con tira verde gruesa',
+  'Blanco con tira azul delgada',
+  'Blanco con tira azul gruesa',
+  'Amarillo',
+  'Amarillo Camuflado',
+  'Naranja',
+  'Naranja Camuflado',
+  'Verde',
+  'Verde Camuflado',
+  'Azul',
+  'Azul Camuflado',
+  'Rojo',
+  'Rojo Camuflado',
+  'Negro 1 Dan',
+  'Negro 2 Dan',
+  'Negro 3 Dan',
+] as const;
 
 interface BatchRow {
   alumno_id: number | null;
@@ -985,9 +1018,6 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
   const autocompleteRef = useRef<HTMLDivElement>(null);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced search input
-  const [searchInput, setSearchInput] = useState('');
-  const debouncedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // -----------------------------------------------------------------------
   // Fetch
@@ -1035,12 +1065,6 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
     if (tab === 'correcciones') fetchCorrecciones();
   }, [tab, fetchCorrecciones]);
 
-  // Debounced search
-  useEffect(() => {
-    if (debouncedRef.current) clearTimeout(debouncedRef.current);
-    debouncedRef.current = setTimeout(() => setSearch(searchInput), 300);
-    return () => { if (debouncedRef.current) clearTimeout(debouncedRef.current); };
-  }, [searchInput]);
 
   // Close autocomplete on outside click
   useEffect(() => {
@@ -1212,7 +1236,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   const handleTurnoFilter = useCallback((value: string) => setFilterTurno(prev => prev === value ? '' : value), []);
   const handleEstadoFilter = useCallback((value: string) => setFilterEstado(prev => prev === value ? '' : value), []);
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value), []);
+  const handleSearchChange = useCallback((value: string) => setSearch(value), []);
 
   const handleResolve = useCallback((id: number) => handleCorreccion(id, 'resuelta'), [handleCorreccion]);
   const handleReject = useCallback((id: number) => handleCorreccion(id, 'rechazada'), [handleCorreccion]);
@@ -1293,16 +1317,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
         <>
           {/* Search + filters */}
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input
-                type="text"
-                placeholder="Buscar por nombre..."
-                value={searchInput}
-                onChange={handleSearchChange}
-                className={cx.input + ' pl-9'}
-              />
-            </div>
+            <SpaceSearch onChange={handleSearchChange} placeholder="Buscar alumno..." loading={loading && !!search} />
             <div className="flex gap-2 flex-wrap">
               {TURNOS.map(t => (
                 <button

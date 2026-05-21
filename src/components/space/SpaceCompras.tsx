@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  ShoppingBag, Plus, Pencil, Trash2, Search, Package,
+  ShoppingBag, Plus, Pencil, Trash2, Package,
   Shield, Shirt, Loader2, User, Check, Clock, PackageCheck,
   Settings, X, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cx, badgeColors, statGradients } from './tokens';
 import { Modal } from './Modal';
+import { SpaceSearch } from './SpaceSearch';
 import { API_BASE } from '../../config/api';
 // Date helpers — fuerzan timeZone: America/Lima
 import { formatFecha } from './dateUtils';
@@ -994,7 +995,6 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
   const [total, setTotal] = useState(0);
   const [categoriaFilter, setCategoriaFilter] = useState<Categoria | 'all'>('all');
   const [entregaFilter, setEntregaFilter] = useState<'all' | 'pendiente' | 'entregado'>('all');
-  const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Compra | null>(null);
@@ -1005,14 +1005,10 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
 
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
 
-  // Debounce search input
-  useEffect(() => {
-    const id = setTimeout(() => {
-      setDebouncedSearch(searchInput.trim());
-      setPage(1);
-    }, 300);
-    return () => clearTimeout(id);
-  }, [searchInput]);
+  const handleSearchChange = useCallback((value: string) => {
+    setDebouncedSearch(value);
+    setPage(1);
+  }, []);
 
   // Reset page when category or entrega filter changes
   useEffect(() => {
@@ -1269,19 +1265,11 @@ export function SpaceCompras({ token }: SpaceComprasProps) {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none"
-        />
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Buscar por nombre de alumno..."
-          className={cx.input + ' pl-9'}
-        />
-      </div>
+      <SpaceSearch
+        onChange={handleSearchChange}
+        placeholder="Buscar alumno..."
+        loading={loadingTable && !!debouncedSearch}
+      />
 
       {/* Table */}
       {loadingTable ? (

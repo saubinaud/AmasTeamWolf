@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, FileText, Loader2, AlertTriangle, Plus, CreditCard } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { FileText, Loader2, AlertTriangle, Plus, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { Modal } from './Modal';
 import { SpaceSelect } from './SpaceSelect';
+import { SpaceSearch } from './SpaceSearch';
 // Fechas — timeZone: America/Lima forzado
 import { formatFecha } from './dateUtils';
 
@@ -469,10 +470,8 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
   const [editingInscripcion, setEditingInscripcion] = useState<Inscripcion | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Debounced search
-  const [searchInput, setSearchInput] = useState('');
+  // Search
   const [search, setSearch] = useState('');
-  const debouncedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const limit = 20;
 
@@ -524,21 +523,12 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
     fetchVencimientos();
   }, [fetchVencimientos]);
 
-  // Debounced search
-  useEffect(() => {
-    if (debouncedRef.current) clearTimeout(debouncedRef.current);
-    debouncedRef.current = setTimeout(() => {
-      setSearch(searchInput);
-      setPage(1);
-    }, 300);
-    return () => { if (debouncedRef.current) clearTimeout(debouncedRef.current); };
-  }, [searchInput]);
 
   // -----------------------------------------------------------------------
   // Handlers
   // -----------------------------------------------------------------------
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value), []);
+  const handleSearchChange = useCallback((value: string) => { setSearch(value); setPage(1); }, []);
 
   const handleProgramaFilter = useCallback((value: string) => {
     setFilterPrograma(prev => prev === value ? '' : value);
@@ -646,16 +636,11 @@ export function SpaceInscripciones({ token }: SpaceInscripcionesProps) {
 
       {/* Search + filters */}
       <div className="flex flex-col gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-          <input
-            type="text"
-            placeholder="Buscar por alumno..."
-            value={searchInput}
-            onChange={handleSearchChange}
-            className={cx.input + ' pl-9'}
-          />
-        </div>
+        <SpaceSearch
+          onChange={handleSearchChange}
+          placeholder="Buscar por nombre o DNI..."
+          loading={loading && !!search}
+        />
 
         <div className="flex gap-2 flex-wrap">
           {/* Programa chips */}
