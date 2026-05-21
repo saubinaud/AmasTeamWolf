@@ -52,7 +52,7 @@ async function getById(id) {
  * Replica la lógica exacta de space-inscripciones.js GET /
  */
 async function listar(filters = {}) {
-  const { programa, estado_pago, activa, vence_en, sort, order } = filters;
+  const { programa, estado_pago, activa, vence_en, search, sort, order } = filters;
   const page = Math.max(1, parseInt(filters.page, 10) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(filters.limit, 10) || 20));
   const offset = (page - 1) * limit;
@@ -65,6 +65,17 @@ async function listar(filters = {}) {
   const conditions = [];
   const params = [];
   let paramIndex = 1;
+
+  if (search) {
+    const normalized = String(search).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const words = normalized.split(/\s+/).filter(w => w.length >= 2);
+    if (words.length > 0) {
+      const nameConditions = words.map((_, i) => `a.nombre_alumno_norm LIKE '%' || $${paramIndex + i} || '%'`).join(' AND ');
+      conditions.push(`(${nameConditions} OR a.dni_alumno LIKE '%' || $${paramIndex + words.length} || '%')`);
+      params.push(...words, normalized.replace(/\s+/g, ''));
+      paramIndex += words.length + 1;
+    }
+  }
 
   if (programa) {
     conditions.push(`i.programa = $${paramIndex++}`);
@@ -86,7 +97,7 @@ async function listar(filters = {}) {
   const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
   const countResult = await queryOne(
-    `SELECT COUNT(*) AS total FROM inscripciones i ${where}`,
+    `SELECT COUNT(*) AS total FROM inscripciones i JOIN alumnos a ON a.id = i.alumno_id ${where}`,
     params
   );
   const total = parseInt(countResult.total, 10);

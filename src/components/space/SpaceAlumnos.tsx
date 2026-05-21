@@ -256,7 +256,33 @@ function AlumnoDetailPanel({
                   <div><label className={cx.label}>DNI alumno</label><input value={form.dni_alumno} onChange={e => patch('dni_alumno', e.target.value)} className={cx.input} /></div>
                   <div><label className={cx.label}>Fecha nacimiento</label><input type="date" value={form.fecha_nacimiento} onChange={e => patch('fecha_nacimiento', e.target.value)} className={cx.input} /></div>
                   <div><label className={cx.label}>Categoria</label><input value={form.categoria} onChange={e => patch('categoria', e.target.value)} className={cx.input} placeholder="Ej: Baby Wolf, Little Wolf" /></div>
-                  <div><label className={cx.label}>Cinturón actual</label><input value={form.cinturon_actual} onChange={e => patch('cinturon_actual', e.target.value)} className={cx.input} placeholder="Ej: Blanco con tira dorada" /></div>
+                  <div><label className={cx.label}>Cinturón actual</label>
+                    <select value={form.cinturon_actual} onChange={e => patch('cinturon_actual', e.target.value)} className={cx.select}>
+                      <option value="">Seleccionar cinturón</option>
+                      {[
+                        'Blanco',
+                        'Blanco con tira dorada',
+                        'Blanco con tira naranja delgada',
+                        'Blanco con tira naranja gruesa',
+                        'Blanco con tira amarilla delgada',
+                        'Blanco con tira amarilla gruesa',
+                        'Blanco con tira camuflada delgada',
+                        'Blanco con tira camuflada gruesa',
+                        'Blanco con tira verde delgada',
+                        'Blanco con tira verde gruesa',
+                        'Blanco con tira violeta delgada',
+                        'Blanco con tira violeta gruesa',
+                        'Blanco con tira azul delgada',
+                        'Blanco con tira azul gruesa',
+                        'Blanco con tira marrón delgada',
+                        'Blanco con tira marrón gruesa',
+                        'Blanco con tira rojo delgada',
+                        'Blanco con tira roja gruesa',
+                        'Blanco con tira rojo negro delgada',
+                        'Blanco con tira rojo negro gruesa',
+                      ].map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
                   <div>
                     <label className={cx.label}>Estado</label>
                     <select value={form.estado} onChange={e => patch('estado', e.target.value)} className={cx.select}>

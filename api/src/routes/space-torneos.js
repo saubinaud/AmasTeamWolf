@@ -6,12 +6,11 @@ const router = Router();
 
 const DEFAULT_MODALIDADES = [
   { nombre: 'Fórmula', icono: 'Zap', implementos_requeridos: [] },
-  { nombre: 'Fórmula con armas', icono: 'Swords', implementos_requeridos: ['arma'] },
-  { nombre: 'Presentación Combat Weapons', icono: 'Target', implementos_requeridos: ['arma', 'protector'] },
-  { nombre: 'Combat Weapons Simple', icono: 'Shield', implementos_requeridos: ['arma'] },
-  { nombre: 'Rompimiento de madera', icono: 'Hammer', implementos_requeridos: [] },
-  { nombre: 'Fórmula creativa', icono: 'Wand2', implementos_requeridos: [] },
-  { nombre: 'Fórmula creativa con armas', icono: 'Axe', implementos_requeridos: ['arma'] },
+  { nombre: 'Fórmula con armas', icono: 'Swords', implementos_requeridos: ['Bo Staff', 'Combat Weapon', 'Nunchaku'] },
+  { nombre: 'Presentación Combat Weapons', icono: 'Target', implementos_requeridos: ['Combat Weapon'] },
+  { nombre: 'Combat Weapons Simple', icono: 'Shield', implementos_requeridos: ['Combat Weapon', 'Cabezal', 'Face Mask', 'Pechera', 'Bucal', 'Inguinal'] },
+  { nombre: 'Combat Weapons Doble', icono: 'Swords', implementos_requeridos: ['Combat Weapon', 'Cabezal', 'Face Mask', 'Pechera', 'Bucal', 'Inguinal'] },
+  { nombre: 'Sparring', icono: 'Users', implementos_requeridos: ['Guantes', 'Zapatos', 'Cabezal', 'Face Mask', 'Pechera', 'Bucal', 'Inguinal'] },
 ];
 
 // GET / — list active tournaments
