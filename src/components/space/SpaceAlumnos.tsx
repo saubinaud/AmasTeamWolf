@@ -5,6 +5,7 @@ import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { DetailPanel } from './DetailPanel';
 import { SpaceSearch } from './SpaceSearch';
+import { SpaceSelect } from './SpaceSelect';
 import { BeltVisual } from './BeltVisual';
 // Fechas — timeZone: America/Lima forzado
 import { formatFecha } from './dateUtils';
@@ -350,20 +351,44 @@ function AlumnoDetailPanel({
                   <div><label className={cx.label}>Nombre completo</label><input value={form.nombre_alumno} onChange={e => patch('nombre_alumno', e.target.value)} className={cx.input} /></div>
                   <div><label className={cx.label}>DNI alumno</label><input value={form.dni_alumno} onChange={e => patch('dni_alumno', e.target.value)} className={cx.input} /></div>
                   <div><label className={cx.label}>Fecha nacimiento</label><input type="date" value={form.fecha_nacimiento} onChange={e => patch('fecha_nacimiento', e.target.value)} className={cx.input} /></div>
-                  <div><label className={cx.label}>Categoria</label><input value={form.categoria} onChange={e => patch('categoria', e.target.value)} className={cx.input} placeholder="Ej: Baby Wolf, Little Wolf" /></div>
-                  <div><label className={cx.label}>Cinturón actual</label>
-                    <select value={form.cinturon_actual} onChange={e => patch('cinturon_actual', e.target.value)} className={cx.select}>
-                      <option value="">Seleccionar cinturón</option>
-                      {CINTURONES_DB.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                  <div>
+                    <label className={cx.label}>Categoria</label>
+                    <SpaceSelect
+                      value={form.categoria}
+                      onChange={v => patch('categoria', v)}
+                      placeholder="Seleccionar categoría"
+                      options={[
+                        { value: 'Mega Súper Baby Wolf', label: 'Mega Súper Baby Wolf' },
+                        { value: 'Súper Baby Wolf', label: 'Súper Baby Wolf' },
+                        { value: 'Baby Wolf', label: 'Baby Wolf' },
+                        { value: 'Little Wolf', label: 'Little Wolf' },
+                        { value: 'Junior Wolf', label: 'Junior Wolf' },
+                        { value: 'Adolescentes Wolf', label: 'Adolescentes Wolf' },
+                        { value: 'Leadership Wolf', label: 'Leadership Wolf' },
+                        { value: 'Fighter Wolf', label: 'Fighter Wolf' },
+                      ]}
+                    />
+                  </div>
+                  <div>
+                    <label className={cx.label}>Cinturón actual</label>
+                    <SpaceSelect
+                      value={form.cinturon_actual}
+                      onChange={v => patch('cinturon_actual', v)}
+                      placeholder="Seleccionar cinturón"
+                      options={CINTURONES_DB.map(c => ({ value: c, label: c }))}
+                    />
                   </div>
                   <div>
                     <label className={cx.label}>Estado</label>
-                    <select value={form.estado} onChange={e => patch('estado', e.target.value)} className={cx.select}>
-                      <option value="activo">Activo</option>
-                      <option value="inactivo">Inactivo</option>
-                      <option value="congelado">Congelado</option>
-                    </select>
+                    <SpaceSelect
+                      value={form.estado}
+                      onChange={v => patch('estado', v)}
+                      options={[
+                        { value: 'activo', label: 'Activo' },
+                        { value: 'inactivo', label: 'Inactivo' },
+                        { value: 'congelado', label: 'Congelado' },
+                      ]}
+                    />
                   </div>
                 </>
               ) : (
