@@ -313,6 +313,11 @@ export function SpaceTorneos({ token }: { token: string }) {
     setCatalogoImplementos([
       { id: 16, nombre: 'Guantes', categoria: 'protector' },
       { id: 17, nombre: 'Zapatos', categoria: 'protector' },
+      { id: 24, nombre: 'Cabezal', categoria: 'protector' },
+      { id: 25, nombre: 'Face Mask', categoria: 'protector' },
+      { id: 26, nombre: 'Pechera', categoria: 'protector' },
+      { id: 27, nombre: 'Bucal', categoria: 'protector' },
+      { id: 28, nombre: 'Inguinal', categoria: 'protector' },
       { id: 18, nombre: 'Bo Staff', categoria: 'arma' },
       { id: 19, nombre: 'Combat Weapon', categoria: 'arma' },
       { id: 20, nombre: 'Nunchaku', categoria: 'arma' },
