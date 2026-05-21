@@ -147,22 +147,28 @@ const parseSpanishDate = (dateStr: string): Date | null => {
         return null;
     }
 };
-// Belt progression order (matches cinturones DB orden)
+// Sistema de rangos oficial (PDF "Sistema de rangos")
 const BELT_PROGRESSION = [
   'Blanco',
   'Blanco con tira dorada',
-  'Blanco con tira camuflada delgada',
-  'Blanco con tira camuflada gruesa',
-  'Blanco con tira amarilla delgada',
-  'Blanco con tira amarilla gruesa',
   'Blanco con tira naranja delgada',
   'Blanco con tira naranja gruesa',
-  'Blanco con tira morada delgada',
-  'Blanco con tira morada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira camuflada gruesa',
   'Blanco con tira verde delgada',
   'Blanco con tira verde gruesa',
+  'Blanco con tira violeta delgada',
+  'Blanco con tira violeta gruesa',
   'Blanco con tira azul delgada',
   'Blanco con tira azul gruesa',
+  'Blanco con tira marrón delgada',
+  'Blanco con tira marrón gruesa',
+  'Blanco con tira rojo delgada',
+  'Blanco con tira roja gruesa',
+  'Blanco con tira rojo negro delgada',
+  'Blanco con tira rojo negro gruesa',
   'Amarillo',
   'Amarillo Camuflado',
   'Naranja',
@@ -181,8 +187,9 @@ const BELT_PROGRESSION = [
 // ── Belt display parser & colors ──
 
 const STRIPE_COLORS: Record<string, string> = {
-  dorada: '#D4AF37', amarilla: '#EAB308', naranja: '#F97316',
-  morada: '#8B5CF6', verde: '#22C55E', azul: '#3B82F6', roja: '#EF4444',
+  dorada: '#D4AF37', naranja: '#F97316', amarilla: '#EAB308',
+  verde: '#22C55E', violeta: '#8B5CF6', azul: '#3B82F6',
+  'marrón': '#8B6914', rojo: '#EF4444', roja: '#EF4444',
 };
 const FULL_COLORS: Record<string, string> = {
   amarillo: '#EAB308', naranja: '#F97316', verde: '#22C55E',
@@ -203,12 +210,17 @@ function parseBeltDisplay(name: string) {
   // Full color
   if (FULL_COLORS[n]) return { base: FULL_COLORS[n], stripe: null, thick: null as string | null, camo: false, dan: 0, white: false };
 
-  // Blanco con tira {color} {delgada|gruesa}
-  const sm = n.match(/^blanco\s+con\s+tira\s+(\w+)(?:\s+(delgada|gruesa))?$/);
-  if (sm) {
-    const c = sm[1], t = sm[2] || 'medium';
-    if (c === 'camuflada') return { base: '#FFFFFF', stripe: null, thick: t, camo: true, dan: 0, white: true };
-    return { base: '#FFFFFF', stripe: STRIPE_COLORS[c] || '#D4AF37', thick: t, camo: false, dan: 0, white: true };
+  // Blanco con tira {color(s)} {delgada|gruesa}
+  const sm = n.match(/^blanco\s+con\s+tira\s+(.+)\s+(delgada|gruesa)$/);
+  const smNoThick = !sm && n.match(/^blanco\s+con\s+tira\s+(.+)$/);
+  const colorStr = sm?.[1] || smNoThick?.[1] || null;
+  const thickness = sm?.[2] || 'medium';
+  if (colorStr) {
+    const c = colorStr.trim();
+    if (c === 'camuflada') return { base: '#FFFFFF', stripe: null, thick: thickness, camo: true, dan: 0, white: true };
+    // "rojo negro" → bicolor stripe (red left + black right)
+    if (c === 'rojo negro') return { base: '#FFFFFF', stripe: '#EF4444', thick: thickness, camo: false, dan: 0, white: true, bicolor: '#1C1917' };
+    return { base: '#FFFFFF', stripe: STRIPE_COLORS[c] || '#D4AF37', thick: thickness, camo: false, dan: 0, white: true };
   }
 
   return { base: '#FFFFFF', stripe: null, thick: null as string | null, camo: false, dan: 0, white: true };
@@ -281,8 +293,15 @@ const BeltDisplay = ({ name }: { name: string }) => {
           <path d="M111,48 L132,94 L120,94 L105,56 Z" fill={tail} />
 
           {/* ── Stripe band (clipped to full belt shape) ── */}
-          {b.stripe && (
+          {b.stripe && !('bicolor' in b && b.bicolor) && (
             <rect x="0" y={sY} width="200" height={sH} fill={b.stripe} clipPath={`url(#${uid})`} />
+          )}
+          {/* ── Bicolor stripe (rojo negro: red + black) ── */}
+          {'bicolor' in b && b.bicolor && b.stripe && (
+            <>
+              <rect x="0" y={sY} width="120" height={sH} fill={b.stripe} clipPath={`url(#${uid})`} />
+              <rect x="120" y={sY} width="80" height={sH} fill={b.bicolor as string} clipPath={`url(#${uid})`} />
+            </>
           )}
 
           {/* ── Camo overlay (stripe or full) ── */}

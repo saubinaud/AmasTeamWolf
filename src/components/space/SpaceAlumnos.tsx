@@ -86,22 +86,31 @@ const ESTADO_BADGE: Record<string, string> = {
 
 const SKELETON_KEYS = ['sk-1', 'sk-2', 'sk-3', 'sk-4', 'sk-5'] as const;
 
-// Synced with cinturones table in DB (27 rows, orden 1-27)
+// Sistema de rangos oficial (PDF "Sistema de rangos")
+// Super babys / babys / littles (1-20) + juniors/adolescentes (21-33)
 const CINTURONES_DB = [
+  // ── Babys / Littles ──
   'Blanco',
   'Blanco con tira dorada',
-  'Blanco con tira camuflada delgada',
-  'Blanco con tira camuflada gruesa',
-  'Blanco con tira amarilla delgada',
-  'Blanco con tira amarilla gruesa',
   'Blanco con tira naranja delgada',
   'Blanco con tira naranja gruesa',
-  'Blanco con tira morada delgada',
-  'Blanco con tira morada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira camuflada gruesa',
   'Blanco con tira verde delgada',
   'Blanco con tira verde gruesa',
+  'Blanco con tira violeta delgada',
+  'Blanco con tira violeta gruesa',
   'Blanco con tira azul delgada',
   'Blanco con tira azul gruesa',
+  'Blanco con tira marrón delgada',
+  'Blanco con tira marrón gruesa',
+  'Blanco con tira rojo delgada',
+  'Blanco con tira roja gruesa',
+  'Blanco con tira rojo negro delgada',
+  'Blanco con tira rojo negro gruesa',
+  // ── Juniors / Adolescentes ──
   'Amarillo',
   'Amarillo Camuflado',
   'Naranja',

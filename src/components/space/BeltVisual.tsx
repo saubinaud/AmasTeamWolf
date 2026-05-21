@@ -11,11 +11,13 @@ interface BeltVisualProps {
 // ── Color map ──
 const STRIPE_COLORS: Record<string, string> = {
   dorada: '#D4AF37',
-  amarilla: '#EAB308',
   naranja: '#F97316',
-  morada: '#8B5CF6',
+  amarilla: '#EAB308',
   verde: '#22C55E',
+  violeta: '#8B5CF6',
   azul: '#3B82F6',
+  'marrón': '#8B6914',
+  rojo: '#EF4444',
   roja: '#EF4444',
 };
 
@@ -64,13 +66,12 @@ function parseBelt(nombre: string): ParsedBelt {
     return { baseColor: FULL_BELT_COLORS[lower], isCamo: false };
   }
 
-  // Striped belts: "Blanco con tira {color} {delgada|gruesa}"
-  const stripeMatch = lower.match(/^blanco\s+con\s+tira\s+(\w+)(?:\s+(delgada|gruesa))?$/);
-  if (stripeMatch) {
-    const colorName = stripeMatch[1];
-    const thickness = stripeMatch[2];
-    const stripeColor = STRIPE_COLORS[colorName] || '#D4AF37';
-
+  // Striped belts: "Blanco con tira {color(s)} {delgada|gruesa}"
+  const stripeMatch = lower.match(/^blanco\s+con\s+tira\s+(.+)\s+(delgada|gruesa)$/);
+  const stripeNoThick = !stripeMatch && lower.match(/^blanco\s+con\s+tira\s+(.+)$/);
+  const colorName = stripeMatch?.[1]?.trim() || stripeNoThick?.[1]?.trim();
+  const thickness = stripeMatch?.[2];
+  if (colorName) {
     // "camuflada" stripe
     if (colorName === 'camuflada') {
       return {
@@ -82,6 +83,18 @@ function parseBelt(nombre: string): ParsedBelt {
       };
     }
 
+    // "rojo negro" bicolor stripe
+    if (colorName === 'rojo negro') {
+      return {
+        baseColor: '#FFFFFF',
+        isCamo: false,
+        stripeColor: '#EF4444',
+        stripeHeight: thickness === 'gruesa' ? '50%' : thickness === 'delgada' ? '33%' : '40%',
+        background: 'linear-gradient(to right, #EF4444 60%, #1C1917 60%)',
+      };
+    }
+
+    const stripeColor = STRIPE_COLORS[colorName] || '#D4AF37';
     return {
       baseColor: '#FFFFFF',
       isCamo: false,
@@ -133,7 +146,9 @@ export function BeltVisual({ nombre, size = 'sm', showLabel = false }: BeltVisua
               height: parsed.stripeHeight,
               top: '50%',
               transform: 'translateY(-50%)',
-              backgroundColor: parsed.stripeColor,
+              ...(parsed.background
+                ? { background: parsed.background }
+                : { backgroundColor: parsed.stripeColor }),
             }}
           />
         )}

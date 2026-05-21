@@ -65,22 +65,28 @@ interface SpaceGraduacionesProps {
 // Constants
 // ---------------------------------------------------------------------------
 
-// Synced with cinturones table in DB (27 rows, orden 1-27)
+// Sistema de rangos oficial (PDF "Sistema de rangos")
 const RANGOS = [
   'Blanco',
   'Blanco con tira dorada',
-  'Blanco con tira camuflada delgada',
-  'Blanco con tira camuflada gruesa',
-  'Blanco con tira amarilla delgada',
-  'Blanco con tira amarilla gruesa',
   'Blanco con tira naranja delgada',
   'Blanco con tira naranja gruesa',
-  'Blanco con tira morada delgada',
-  'Blanco con tira morada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira camuflada gruesa',
   'Blanco con tira verde delgada',
   'Blanco con tira verde gruesa',
+  'Blanco con tira violeta delgada',
+  'Blanco con tira violeta gruesa',
   'Blanco con tira azul delgada',
   'Blanco con tira azul gruesa',
+  'Blanco con tira marrón delgada',
+  'Blanco con tira marrón gruesa',
+  'Blanco con tira rojo delgada',
+  'Blanco con tira roja gruesa',
+  'Blanco con tira rojo negro delgada',
+  'Blanco con tira rojo negro gruesa',
   'Amarillo',
   'Amarillo Camuflado',
   'Naranja',
@@ -120,35 +126,7 @@ const CORRECCION_PILL: Record<string, string> = {
   rechazada: badgeColors.red,
 };
 
-const CINTURONES_BATCH = [
-  'Blanco',
-  'Blanco con tira dorada',
-  'Blanco con tira camuflada delgada',
-  'Blanco con tira camuflada gruesa',
-  'Blanco con tira amarilla delgada',
-  'Blanco con tira amarilla gruesa',
-  'Blanco con tira naranja delgada',
-  'Blanco con tira naranja gruesa',
-  'Blanco con tira morada delgada',
-  'Blanco con tira morada gruesa',
-  'Blanco con tira verde delgada',
-  'Blanco con tira verde gruesa',
-  'Blanco con tira azul delgada',
-  'Blanco con tira azul gruesa',
-  'Amarillo',
-  'Amarillo Camuflado',
-  'Naranja',
-  'Naranja Camuflado',
-  'Verde',
-  'Verde Camuflado',
-  'Azul',
-  'Azul Camuflado',
-  'Rojo',
-  'Rojo Camuflado',
-  'Negro 1 Dan',
-  'Negro 2 Dan',
-  'Negro 3 Dan',
-] as const;
+const CINTURONES_BATCH = RANGOS;
 
 interface BatchRow {
   alumno_id: number | null;
