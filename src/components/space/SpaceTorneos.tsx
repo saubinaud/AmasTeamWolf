@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Trophy, Plus, Pencil, Trash2, Users, CheckCircle, Clock, DollarSign, Search, X, ChevronLeft, ToggleLeft, ToggleRight, AlertTriangle } from 'lucide-react';
+import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
 import { formatFecha } from './dateUtils';
@@ -307,25 +308,45 @@ export function SpaceTorneos({ token }: { token: string }) {
     }
   }, [selectedTorneo, token, addModalidades, addObservaciones, loadSelecciones]);
 
-  // Load catalogo implementos
+  // New item form state
+  const [showNewItem, setShowNewItem] = useState(false);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemCat, setNewItemCat] = useState('arma');
+
+  // Load catalogo implementos from DB
   useEffect(() => {
-    // The catalogo_implementos table has the real products
-    setCatalogoImplementos([
-      { id: 16, nombre: 'Guantes', categoria: 'protector' },
-      { id: 17, nombre: 'Zapatos', categoria: 'protector' },
-      { id: 24, nombre: 'Cabezal', categoria: 'protector' },
-      { id: 25, nombre: 'Face Mask', categoria: 'protector' },
-      { id: 26, nombre: 'Pechera', categoria: 'protector' },
-      { id: 27, nombre: 'Bucal', categoria: 'protector' },
-      { id: 28, nombre: 'Inguinal', categoria: 'protector' },
-      { id: 18, nombre: 'Bo Staff', categoria: 'arma' },
-      { id: 19, nombre: 'Combat Weapon', categoria: 'arma' },
-      { id: 20, nombre: 'Nunchaku', categoria: 'arma' },
-      { id: 21, nombre: 'Parche', categoria: 'accesorio' },
-      { id: 22, nombre: 'Uniforme Completo', categoria: 'uniforme' },
-      { id: 23, nombre: 'Polo AMAS Team Wolf', categoria: 'polo' },
-    ]);
-  }, []);
+    fetch(`${API_BASE}/space/compras/catalogo`, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.json())
+      .then(data => {
+        const items = data?.data || data;
+        if (Array.isArray(items)) {
+          setCatalogoImplementos(items.filter((i: any) => i.activo !== false));
+        }
+      })
+      .catch(() => {}); // silent - UI works with empty catalog
+  }, [token]);
+
+  const handleCreateItem = async () => {
+    if (!newItemName.trim()) return;
+    try {
+      const res = await fetch(`${API_BASE}/space/compras/catalogo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ nombre: newItemName.trim(), categoria: newItemCat, precio: 0 }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCatalogoImplementos(prev => [...prev, data.data || data]);
+        setNewItemName('');
+        setShowNewItem(false);
+        toast.success('Implemento creado');
+      }
+    } catch {
+      toast.error('Error al crear implemento');
+    }
+  };
 
   // Edit modalidad modal
   useEffect(() => {
@@ -718,6 +739,22 @@ export function SpaceTorneos({ token }: { token: string }) {
               })()}
               {editModForm.implementos.length === 0 && (
                 <p className="text-stone-300 text-xs mt-1">Ningún implemento requerido</p>
+              )}
+              {showNewItem ? (
+                <div className="flex gap-2 mt-2">
+                  <input value={newItemName} onChange={e => setNewItemName(e.target.value)} placeholder="Nombre..." className={cx.input + ' flex-1 !py-1.5 !text-xs'} />
+                  <select value={newItemCat} onChange={e => setNewItemCat(e.target.value)} className={cx.select + ' !w-auto !py-1.5 !text-xs'}>
+                    <option value="arma">Arma</option>
+                    <option value="protector">Protector</option>
+                    <option value="accesorio">Accesorio</option>
+                  </select>
+                  <button onClick={handleCreateItem} className={cx.btnPrimary + ' !py-1.5 !px-3 !text-xs'}>Crear</button>
+                  <button onClick={() => setShowNewItem(false)} className={cx.btnGhost + ' !py-1.5 !text-xs'}>Cancelar</button>
+                </div>
+              ) : (
+                <button onClick={() => setShowNewItem(true)} className={cx.btnGhost + ' text-xs mt-2'}>
+                  + Agregar implemento
+                </button>
               )}
             </div>
           </div>
