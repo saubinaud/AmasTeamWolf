@@ -92,13 +92,14 @@ router.get('/consultar', async (req, res) => {
     );
     const implementos = implementosRows.map(r => r.categoria).filter(Boolean);
 
-    // Check active program (Leadership, Fighter, etc.)
-    const programaRow = await queryOne(`
+    // Check active programs (Leadership, Fighter, etc.)
+    const programasRows = await query(`
       SELECT programa FROM inscripciones
       WHERE alumno_id = $1 AND estado = 'Activo'
-      ORDER BY fecha_inicio DESC LIMIT 1
+      ORDER BY fecha_inicio DESC
     `, [alumno.id]);
-    const programa_activo = programaRow?.programa || null;
+    const programas_activos = programasRows.map(r => r.programa);
+    const programa_activo = programas_activos[0] || null;
 
     res.json({
       encontrado: true,
@@ -110,8 +111,9 @@ router.get('/consultar', async (req, res) => {
       },
       implementos,
       programa_activo,
-      es_leadership: programa_activo ? programa_activo.toLowerCase().includes('leadership') : false,
-      es_fighter: programa_activo ? programa_activo.toLowerCase().includes('fighter') : false,
+      programas_activos,
+      es_leadership: programas_activos.some(p => p?.toLowerCase().includes('leadership')),
+      es_fighter: programas_activos.some(p => p?.toLowerCase().includes('fighter')),
     });
   } catch (err) {
     console.error('Error consultando alumno torneo:', err);

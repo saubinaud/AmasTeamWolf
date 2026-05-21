@@ -96,6 +96,7 @@ interface ConsultaResult {
     alumno: AlumnoData;
     implementos: string[];
     programa_activo: string | null;
+    programas_activos: string[];
     es_leadership: boolean;
     es_fighter: boolean;
 }
@@ -731,10 +732,14 @@ export function TorneoPage({
                                             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <h4 className="text-white font-bold text-lg">{consultaResult.alumno.nombre}</h4>
-                                                    {consultaResult.programa_activo && (
-                                                        <span className="inline-flex items-center gap-1.5 bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">
-                                                            {consultaResult.programa_activo}
-                                                        </span>
+                                                    {consultaResult.programas_activos && consultaResult.programas_activos.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {consultaResult.programas_activos.map(prog => (
+                                                                <span key={prog} className="inline-flex items-center gap-1.5 bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-bold">
+                                                                    {prog}
+                                                                </span>
+                                                            ))}
+                                                        </div>
                                                     )}
                                                 </div>
                                                 {/* Implementos que tiene */}
