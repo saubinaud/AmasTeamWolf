@@ -178,19 +178,45 @@ const BELT_PROGRESSION = [
   'Negro 3 Dan',
 ] as const;
 
-// Map belt name to primary display color for the SVG
+// ── Belt display parser & colors ──
+
+const STRIPE_COLORS: Record<string, string> = {
+  dorada: '#D4AF37', amarilla: '#EAB308', naranja: '#F97316',
+  morada: '#8B5CF6', verde: '#22C55E', azul: '#3B82F6', roja: '#EF4444',
+};
+const FULL_COLORS: Record<string, string> = {
+  amarillo: '#EAB308', naranja: '#F97316', verde: '#22C55E',
+  azul: '#3B82F6', rojo: '#EF4444', negro: '#1C1917',
+};
+
+function parseBeltDisplay(name: string) {
+  const n = (name || 'Blanco').toLowerCase().trim();
+
+  // Negro X Dan
+  const dan = n.match(/^negro\s+(\d+)\s+dan$/);
+  if (dan) return { base: '#1C1917', stripe: null, thick: null as string | null, camo: false, dan: +dan[1], white: false };
+
+  // Full camuflado (Amarillo Camuflado, etc.)
+  const fc = n.match(/^(\w+)\s+camuflado$/);
+  if (fc) return { base: FULL_COLORS[fc[1]] || '#EAB308', stripe: null, thick: null as string | null, camo: true, dan: 0, white: false };
+
+  // Full color
+  if (FULL_COLORS[n]) return { base: FULL_COLORS[n], stripe: null, thick: null as string | null, camo: false, dan: 0, white: false };
+
+  // Blanco con tira {color} {delgada|gruesa}
+  const sm = n.match(/^blanco\s+con\s+tira\s+(\w+)(?:\s+(delgada|gruesa))?$/);
+  if (sm) {
+    const c = sm[1], t = sm[2] || 'medium';
+    if (c === 'camuflada') return { base: '#FFFFFF', stripe: null, thick: t, camo: true, dan: 0, white: true };
+    return { base: '#FFFFFF', stripe: STRIPE_COLORS[c] || '#D4AF37', thick: t, camo: false, dan: 0, white: true };
+  }
+
+  return { base: '#FFFFFF', stripe: null, thick: null as string | null, camo: false, dan: 0, white: true };
+}
+
 function getBeltColor(name: string): string {
-  const n = (name || 'Blanco').toLowerCase();
-  if (n.includes('negro')) return '#1C1917';
-  if (n.includes('rojo')) return '#EF4444';
-  if (n.includes('azul')) return '#3B82F6';
-  if (n.includes('verde')) return '#22C55E';
-  if (n.includes('naranja')) return '#F97316';
-  if (n.includes('amarill')) return '#EAB308';
-  if (n.includes('morada') || n.includes('violeta')) return '#8B5CF6';
-  if (n.includes('camuflad')) return '#4A7C59';
-  if (n.includes('dorada')) return '#D4AF37';
-  return '#FFFFFF'; // Blanco
+  const b = parseBeltDisplay(name);
+  return b.stripe || b.base;
 }
 
 function getNextBelt(current: string): { name: string; color: string } | null {
@@ -200,41 +226,87 @@ function getNextBelt(current: string): { name: string; color: string } | null {
   return { name: next, color: getBeltColor(next) };
 }
 
-const BeltDisplay = ({ color, name }: { color: string, name: string }) => (
-    <div className="flex flex-col items-center gap-2">
-        <div className="relative w-48 h-20 flex items-center justify-center filter drop-shadow-lg">
-            <svg viewBox="0 0 200 80" className="w-full h-full">
-                {/* Cinturón atado realista (Silhouette) */}
-                <path
-                    d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z"
-                    fill={color}
-                    className="drop-shadow-sm"
-                />
-                {/* Nudo */}
-                <path
-                    d="M85,15 L115,15 L125,65 L75,65 Z"
-                    fill={color}
-                    filter="brightness(0.9)"
-                />
-                {/* Caídas del nudo */}
-                <path
-                    d="M85,40 L60,95 L80,95 L95,60 Z"
-                    fill={color}
-                    filter="brightness(0.8)"
-                />
-                <path
-                    d="M115,40 L140,95 L120,95 L105,60 Z"
-                    fill={color}
-                    filter="brightness(0.8)"
-                />
-                {/* Textura sutil (opcional) */}
-                <path d="M10,30 L190,30" stroke="rgba(255,255,255,0.2)" strokeWidth="1" fill="none" />
-                <path d="M10,50 L190,50" stroke="rgba(0,0,0,0.1)" strokeWidth="1" fill="none" />
-            </svg>
-        </div>
-        <span className="text-sm font-medium text-white/80 uppercase tracking-widest">{name}</span>
+// Darken a hex color
+function darkenHex(hex: string, amount: number) {
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  const f = 1 - amount;
+  return `rgb(${Math.round(r * f)},${Math.round(g * f)},${Math.round(b * f)})`;
+}
+
+let beltIdCounter = 0;
+
+const BeltDisplay = ({ name }: { name: string }) => {
+  const [uid] = useState(() => `belt-${++beltIdCounter}`);
+  const b = parseBeltDisplay(name);
+
+  // Stripe band position on belt body (body y=25..55, height=30)
+  const sY = b.thick === 'gruesa' ? 31 : b.thick === 'delgada' ? 36 : 33;
+  const sH = b.thick === 'gruesa' ? 18 : b.thick === 'delgada' ? 8 : 14;
+
+  const outline = b.white ? 'rgba(255,255,255,0.25)' : 'transparent';
+  const knot = darkenHex(b.base, b.white ? 0.06 : 0.12);
+  const tail = darkenHex(b.base, b.white ? 0.1 : 0.2);
+
+  return (
+    <div className="flex flex-col items-center gap-2.5">
+      <div className="relative w-44 h-[88px]">
+        <svg viewBox="0 0 200 100" className="w-full h-full drop-shadow-lg">
+          <defs>
+            {/* Clip for stripe: covers entire belt shape */}
+            <clipPath id={uid}>
+              <path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z" />
+              <path d="M88,18 L112,18 L119,60 L81,60 Z" />
+              <path d="M89,48 L68,94 L80,94 L95,56 Z" />
+              <path d="M111,48 L132,94 L120,94 L105,56 Z" />
+            </clipPath>
+            {/* Camo pattern */}
+            <pattern id={`${uid}-camo`} patternUnits="userSpaceOnUse" width="12" height="12">
+              <rect width="12" height="12" fill="#4A7C59" />
+              <path d="M0,0 L6,0 L0,6 Z" fill="#2D5016" />
+              <path d="M6,0 L12,0 L12,6 Z" fill="#6B7F3E" />
+              <path d="M0,6 L6,12 L0,12 Z" fill="#3D6B4F" />
+              <path d="M12,6 L12,12 L6,12 Z" fill="#2D5016" />
+              <circle cx="3" cy="9" r="1.5" fill="#8B7D3C" />
+            </pattern>
+          </defs>
+
+          {/* ── Belt body ── */}
+          <path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z" fill={b.base} stroke={outline} strokeWidth="1" />
+
+          {/* ── Knot ── */}
+          <path d="M88,18 L112,18 L119,60 L81,60 Z" fill={knot} />
+
+          {/* ── Tails ── */}
+          <path d="M89,48 L68,94 L80,94 L95,56 Z" fill={tail} />
+          <path d="M111,48 L132,94 L120,94 L105,56 Z" fill={tail} />
+
+          {/* ── Stripe band (clipped to full belt shape) ── */}
+          {b.stripe && (
+            <rect x="0" y={sY} width="200" height={sH} fill={b.stripe} clipPath={`url(#${uid})`} />
+          )}
+
+          {/* ── Camo overlay (stripe or full) ── */}
+          {b.camo && b.thick && (
+            <rect x="0" y={sY} width="200" height={sH} fill={`url(#${uid}-camo)`} clipPath={`url(#${uid})`} />
+          )}
+          {b.camo && !b.thick && (
+            <rect x="0" y="0" width="200" height="100" fill={`url(#${uid}-camo)`} clipPath={`url(#${uid})`} opacity="0.5" />
+          )}
+
+          {/* ── Texture lines ── */}
+          <path d="M12,28 L85,28 M115,28 L188,28" stroke="rgba(255,255,255,0.12)" strokeWidth="0.5" fill="none" />
+          <path d="M12,52 L85,52 M115,52 L188,52" stroke="rgba(0,0,0,0.06)" strokeWidth="0.5" fill="none" />
+
+          {/* ── Dan gold bars on black belts ── */}
+          {b.dan > 0 && Array.from({ length: b.dan }).map((_, i) => (
+            <rect key={i} x={168 - i * 9} y="29" width="5" height="22" rx="1.5" fill="#D4AF37" opacity="0.9" />
+          ))}
+        </svg>
+      </div>
+      <span className="text-[13px] font-medium text-white/70 uppercase tracking-wider max-w-[180px] text-center leading-tight">{name}</span>
     </div>
-);
+  );
+};
 
 export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefreshing }: PerfilDesktopProps) {
     const [activeSection, setActiveSection] = useState<'home' | 'calendar' | 'plan' | 'messages'>('home');
@@ -924,7 +996,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                 <div className="flex items-center justify-between px-4 md:px-12">
                                                     <div className="flex flex-col items-center gap-3">
                                                         <p className="text-white/40 text-xs uppercase tracking-wider">Cinturón Actual</p>
-                                                        <BeltDisplay color={currentColor} name={currentBelt} />
+                                                        <BeltDisplay name={currentBelt} />
                                                     </div>
 
                                                     <div className="flex-1 px-4 md:px-8 flex flex-col items-center -mt-6">
@@ -943,12 +1015,12 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                     {next ? (
                                                         <div className="flex flex-col items-center gap-3">
                                                             <p className="text-white/40 text-xs uppercase tracking-wider">Siguiente Nivel</p>
-                                                            <BeltDisplay color={next.color} name={next.name} />
+                                                            <BeltDisplay name={next.name} />
                                                         </div>
                                                     ) : (
                                                         <div className="flex flex-col items-center gap-3">
                                                             <p className="text-white/40 text-xs uppercase tracking-wider">Nivel Máximo</p>
-                                                            <BeltDisplay color={currentColor} name={currentBelt} />
+                                                            <BeltDisplay name={currentBelt} />
                                                         </div>
                                                     )}
                                                 </div>
