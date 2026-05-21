@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, Users, Loader2, Pencil } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { Users, Loader2, Pencil, Check, X as XIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
-import { Modal } from './Modal';
+import { DetailPanel } from './DetailPanel';
+import { SpaceSearch } from './SpaceSearch';
+import { BeltVisual } from './BeltVisual';
 // Fechas — timeZone: America/Lima forzado
 import { formatFecha } from './dateUtils';
 
@@ -49,6 +51,7 @@ interface AlumnoDetalle extends Alumno {
   turno?: string;
   dias?: string;
   asistencias_total?: number;
+  asistencias_30d?: number;
   asistencias_recientes?: Array<{ fecha: string; hora: string; turno: string; asistio: string }>;
   inscripciones?: InscripcionMini[];
   implementos?: Implemento[];
@@ -82,6 +85,37 @@ const ESTADO_BADGE: Record<string, string> = {
 };
 
 const SKELETON_KEYS = ['sk-1', 'sk-2', 'sk-3', 'sk-4', 'sk-5'] as const;
+
+// Synced with cinturones table in DB (27 rows, orden 1-27)
+const CINTURONES_DB = [
+  'Blanco',
+  'Blanco con tira dorada',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira camuflada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira naranja delgada',
+  'Blanco con tira naranja gruesa',
+  'Blanco con tira morada delgada',
+  'Blanco con tira morada gruesa',
+  'Blanco con tira verde delgada',
+  'Blanco con tira verde gruesa',
+  'Blanco con tira azul delgada',
+  'Blanco con tira azul gruesa',
+  'Amarillo',
+  'Amarillo Camuflado',
+  'Naranja',
+  'Naranja Camuflado',
+  'Verde',
+  'Verde Camuflado',
+  'Azul',
+  'Azul Camuflado',
+  'Rojo',
+  'Rojo Camuflado',
+  'Negro 1 Dan',
+  'Negro 2 Dan',
+  'Negro 3 Dan',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -125,6 +159,9 @@ function AlumnoDetailPanel({
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingPrograma, setEditingPrograma] = useState(false);
+  const [programaValue, setProgramaValue] = useState('');
+  const [savingPrograma, setSavingPrograma] = useState(false);
   const [form, setForm] = useState({
     nombre_alumno: '', dni_alumno: '', fecha_nacimiento: '', categoria: '', estado: '',
     cinturon_actual: '',
@@ -174,14 +211,39 @@ function AlumnoDetailPanel({
     }
   };
 
+  const handleSavePrograma = async () => {
+    if (!alumno?.inscripciones) return;
+    const activa = alumno.inscripciones.find(i => i.activa);
+    if (!activa) return;
+    setSavingPrograma(true);
+    try {
+      const res = await fetch(`${API_BASE}/space/inscripciones/${activa.id}`, {
+        method: 'PUT',
+        headers: authHeaders(token),
+        body: JSON.stringify({ programa: programaValue }),
+      });
+      if (res.ok) {
+        toast.success('Programa actualizado');
+        setEditingPrograma(false);
+        onUpdated();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Error al guardar programa');
+      }
+    } catch {
+      toast.error('Error de conexion');
+    } finally {
+      setSavingPrograma(false);
+    }
+  };
+
   const patch = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
 
   return (
-    <Modal
+    <DetailPanel
       open={!!alumno || loading}
       onClose={() => { setEditing(false); onClose(); }}
       title={editing ? 'Editar alumno' : 'Detalle del alumno'}
-      size="full-right"
       footer={editing ? (
         <>
           <button onClick={() => setEditing(false)} className={cx.btnSecondary}>Cancelar</button>
@@ -208,9 +270,33 @@ function AlumnoDetailPanel({
               {/* Plan activo + clases */}
               {alumno.programa_activo && (
                 <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[var(--accent)] text-sm font-semibold">{alumno.programa_activo}</span>
-                    {alumno.estado_pago && (
+                  <div className="flex justify-between items-center gap-2">
+                    {editingPrograma ? (
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          value={programaValue}
+                          onChange={e => setProgramaValue(e.target.value)}
+                          className={cx.input + ' !py-1.5 !text-sm flex-1'}
+                          autoFocus
+                          onKeyDown={e => { if (e.key === 'Enter') handleSavePrograma(); if (e.key === 'Escape') setEditingPrograma(false); }}
+                        />
+                        <button onClick={handleSavePrograma} disabled={savingPrograma} className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors">
+                          {savingPrograma ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                        </button>
+                        <button onClick={() => setEditingPrograma(false)} className="p-1 text-stone-400 hover:bg-stone-100 rounded transition-colors">
+                          <XIcon size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { setProgramaValue(alumno.programa_activo || ''); setEditingPrograma(true); }}
+                        className="text-[var(--accent)] text-sm font-semibold hover:underline underline-offset-2 text-left"
+                        title="Click para editar programa"
+                      >
+                        {alumno.programa_activo}
+                      </button>
+                    )}
+                    {alumno.estado_pago && !editingPrograma && (
                       <span className={cx.badge(alumno.estado_pago?.toLowerCase() === 'pagado' ? badgeColors.green : badgeColors.yellow)}>
                         {alumno.estado_pago}
                       </span>
@@ -259,28 +345,7 @@ function AlumnoDetailPanel({
                   <div><label className={cx.label}>Cinturón actual</label>
                     <select value={form.cinturon_actual} onChange={e => patch('cinturon_actual', e.target.value)} className={cx.select}>
                       <option value="">Seleccionar cinturón</option>
-                      {[
-                        'Blanco',
-                        'Blanco con tira dorada',
-                        'Blanco con tira naranja delgada',
-                        'Blanco con tira naranja gruesa',
-                        'Blanco con tira amarilla delgada',
-                        'Blanco con tira amarilla gruesa',
-                        'Blanco con tira camuflada delgada',
-                        'Blanco con tira camuflada gruesa',
-                        'Blanco con tira verde delgada',
-                        'Blanco con tira verde gruesa',
-                        'Blanco con tira violeta delgada',
-                        'Blanco con tira violeta gruesa',
-                        'Blanco con tira azul delgada',
-                        'Blanco con tira azul gruesa',
-                        'Blanco con tira marrón delgada',
-                        'Blanco con tira marrón gruesa',
-                        'Blanco con tira rojo delgada',
-                        'Blanco con tira roja gruesa',
-                        'Blanco con tira rojo negro delgada',
-                        'Blanco con tira rojo negro gruesa',
-                      ].map(c => <option key={c} value={c}>{c}</option>)}
+                      {CINTURONES_DB.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                   <div>
@@ -299,13 +364,16 @@ function AlumnoDetailPanel({
                     ['DNI', alumno.dni],
                     ['Nacimiento', formatFecha(alumno.fecha_nacimiento)],
                     ['Categoria', alumno.categoria],
-                    ['Cinturón', alumno.cinturon_actual || 'Blanco'],
                   ].map(([label, value]) => (
                     <div key={label} className="flex justify-between">
                       <span className="text-stone-400 text-sm">{label}</span>
                       <span className="text-stone-900 text-sm font-medium">{value || '—'}</span>
                     </div>
                   ))}
+                  <div className="flex justify-between items-center">
+                    <span className="text-stone-400 text-sm">Cinturón</span>
+                    <BeltVisual nombre={alumno.cinturon_actual || 'Blanco'} size="md" showLabel />
+                  </div>
                   <div className="flex justify-between items-center">
                     <span className="text-stone-400 text-sm">Estado</span>
                     <span className={cx.badge(ESTADO_BADGE[alumno.estado] ?? badgeColors.gray)}>{alumno.estado}</span>
@@ -418,7 +486,7 @@ function AlumnoDetailPanel({
           )}
         </div>
       ) : null}
-    </Modal>
+    </DetailPanel>
   );
 }
 
@@ -439,13 +507,12 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
   const [detalle, setDetalle] = useState<AlumnoDetalle | null>(null);
   const [detalleLoading, setDetalleLoading] = useState(false);
 
-  // Debounced search — check if dashboard sent us here with a name
-  const [searchInput, setSearchInput] = useState(() => {
+  // Initial search from dashboard link
+  const [searchDefault] = useState(() => {
     const saved = sessionStorage.getItem('space_alumno_search');
     if (saved) { sessionStorage.removeItem('space_alumno_search'); return saved; }
     return '';
   });
-  const debouncedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const limit = 20;
 
@@ -495,21 +562,14 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
     fetchAlumnos();
   }, [fetchAlumnos]);
 
-  // Debounced search
-  useEffect(() => {
-    if (debouncedRef.current) clearTimeout(debouncedRef.current);
-    debouncedRef.current = setTimeout(() => {
-      setSearch(searchInput);
-      setPage(1);
-    }, 300);
-    return () => { if (debouncedRef.current) clearTimeout(debouncedRef.current); };
-  }, [searchInput]);
-
   // -----------------------------------------------------------------------
   // Handlers
   // -----------------------------------------------------------------------
 
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value), []);
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
 
   const handleEstadoFilter = useCallback((value: string) => {
     setFilterEstado(prev => prev === value ? '' : value);
@@ -557,22 +617,18 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
 
       {/* Search + filters */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-          <input
-            type="text"
-            placeholder="Buscar por nombre o DNI..."
-            value={searchInput}
-            onChange={handleSearchChange}
-            className={cx.input + ' pl-9'}
-          />
-        </div>
+        <SpaceSearch
+          onChange={handleSearchChange}
+          placeholder="Buscar por nombre o DNI..."
+          defaultValue={searchDefault}
+          loading={loading && !!search}
+        />
         <div className="flex gap-2 flex-wrap">
           {ESTADOS.map(e => (
             <button
               key={e}
               onClick={() => handleEstadoFilter(e)}
-              className={`transition-all duration-200 ${estadoChipClass(e)}`}
+              className={`transition-colors duration-100 ${estadoChipClass(e)}`}
             >
               {e.charAt(0).toUpperCase() + e.slice(1)}
             </button>
@@ -612,7 +668,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
                   <tr
                     key={a.id}
                     onClick={() => handleRowClick(a.id)}
-                    className={cx.tr + ' cursor-pointer'}
+                    className={`${cx.tr} cursor-pointer ${selectedId === a.id ? 'bg-[var(--accent-light)]' : ''}`}
                   >
                     <td className={cx.td + ' whitespace-nowrap'}>
                       <div>
@@ -646,7 +702,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
                       )}
                     </td>
                     <td className={cx.td + ' hidden sm:table-cell'}>
-                      <span className="text-stone-500 text-xs">{a.cinturon_actual || 'Blanco'}</span>
+                      <BeltVisual nombre={a.cinturon_actual || 'Blanco'} size="sm" />
                     </td>
                     <td className={cx.td}>
                       <span className={cx.badge(ESTADO_BADGE[a.estado] ?? badgeColors.gray)}>
@@ -684,7 +740,7 @@ export function SpaceAlumnos({ token }: SpaceAlumnosProps) {
         </div>
       )}
 
-      {/* Detail panel */}
+      {/* Detail sidebar (portal) */}
       <AlumnoDetailPanel
         alumno={detalle}
         loading={detalleLoading && selectedId !== null}
