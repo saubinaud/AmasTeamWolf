@@ -36,6 +36,7 @@ function getBeltColor(name: string): string {
   if (n.includes('naranja')) return '#F97316';
   if (n.includes('amarill')) return '#EAB308';
   if (n.includes('morada') || n.includes('violeta')) return '#8B5CF6';
+  if (n.includes('marrón') || n.includes('marron')) return '#8B6914';
   if (n.includes('camuflad')) return '#4A7C59';
   if (n.includes('dorada')) return '#D4AF37';
   return '#FFFFFF';
