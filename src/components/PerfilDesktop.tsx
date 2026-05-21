@@ -301,6 +301,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
     // Graduation
     const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
     const [graduationError, setGraduationError] = useState<string | null>(null);
+    const [graduationLoaded, setGraduationLoaded] = useState(false);
     const [userGraduation, setUserGraduation] = useState<any>(null);
 
     // Fetch Graduation Date
@@ -362,10 +363,12 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                             // No date found in graduation response
                         }
                     }
+                    setGraduationLoaded(true);
                 })
                 .catch(err => {
                     console.error('Error fetching graduation date:', err);
                     setGraduationError(err.message);
+                    setGraduationLoaded(true);
                 });
         }
     }, [activeSection, user.estudiante?.nombre]);
@@ -848,7 +851,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                     </h4>
                                                     <div className="flex flex-col">
                                                         <span className="text-4xl font-bold text-white mb-1">
-                                                            {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Cargando...'}
+                                                            {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : (graduationLoaded ? 'Sin fecha programada' : 'Cargando...')}
                                                         </span>
                                                         <span className="text-[#FCA929] text-lg capitalize font-medium">
                                                             {graduacionDate ? format(new Date(graduacionDate), "EEEE", { locale: es }) : ''}
@@ -892,7 +895,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                                                     Error de conexión
                                                                 </span>
                                                             ) : (
-                                                                graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Cargando...'
+                                                                graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : (graduationLoaded ? 'Sin fecha programada' : 'Cargando...')
                                                             )}
                                                         </span>
                                                     </div>
@@ -911,7 +914,7 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
 
                                     {/* Belt progression — reads cinturon_actual from user profile */}
                                     {(() => {
-                                        const currentBelt = user?.cinturon_actual || 'Blanco';
+                                        const currentBelt = user?.estudiante?.cinturonActual || 'Blanco';
                                         const currentColor = getBeltColor(currentBelt);
                                         const next = getNextBelt(currentBelt);
                                         const currentIdx = BELT_PROGRESSION.indexOf(currentBelt as any);
