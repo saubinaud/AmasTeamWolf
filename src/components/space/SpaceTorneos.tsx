@@ -746,7 +746,10 @@ export function SpaceTorneos({ token }: { token: string }) {
                   <select value={newItemCat} onChange={e => setNewItemCat(e.target.value)} className={cx.select + ' !w-auto !py-1.5 !text-xs'}>
                     <option value="arma">Arma</option>
                     <option value="protector">Protector</option>
+                    <option value="uniforme">Uniforme</option>
+                    <option value="polo">Polo</option>
                     <option value="accesorio">Accesorio</option>
+                    <option value="otro">Otro</option>
                   </select>
                   <button onClick={handleCreateItem} className={cx.btnPrimary + ' !py-1.5 !px-3 !text-xs'}>Crear</button>
                   <button onClick={() => setShowNewItem(false)} className={cx.btnGhost + ' !py-1.5 !text-xs'}>Cancelar</button>
