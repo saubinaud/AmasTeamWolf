@@ -147,6 +147,59 @@ const parseSpanishDate = (dateStr: string): Date | null => {
         return null;
     }
 };
+// Belt progression order (matches cinturones DB orden)
+const BELT_PROGRESSION = [
+  'Blanco',
+  'Blanco con tira dorada',
+  'Blanco con tira camuflada delgada',
+  'Blanco con tira camuflada gruesa',
+  'Blanco con tira amarilla delgada',
+  'Blanco con tira amarilla gruesa',
+  'Blanco con tira naranja delgada',
+  'Blanco con tira naranja gruesa',
+  'Blanco con tira morada delgada',
+  'Blanco con tira morada gruesa',
+  'Blanco con tira verde delgada',
+  'Blanco con tira verde gruesa',
+  'Blanco con tira azul delgada',
+  'Blanco con tira azul gruesa',
+  'Amarillo',
+  'Amarillo Camuflado',
+  'Naranja',
+  'Naranja Camuflado',
+  'Verde',
+  'Verde Camuflado',
+  'Azul',
+  'Azul Camuflado',
+  'Rojo',
+  'Rojo Camuflado',
+  'Negro 1 Dan',
+  'Negro 2 Dan',
+  'Negro 3 Dan',
+] as const;
+
+// Map belt name to primary display color for the SVG
+function getBeltColor(name: string): string {
+  const n = (name || 'Blanco').toLowerCase();
+  if (n.includes('negro')) return '#1C1917';
+  if (n.includes('rojo')) return '#EF4444';
+  if (n.includes('azul')) return '#3B82F6';
+  if (n.includes('verde')) return '#22C55E';
+  if (n.includes('naranja')) return '#F97316';
+  if (n.includes('amarill')) return '#EAB308';
+  if (n.includes('morada') || n.includes('violeta')) return '#8B5CF6';
+  if (n.includes('camuflad')) return '#4A7C59';
+  if (n.includes('dorada')) return '#D4AF37';
+  return '#FFFFFF'; // Blanco
+}
+
+function getNextBelt(current: string): { name: string; color: string } | null {
+  const idx = BELT_PROGRESSION.indexOf(current as any);
+  if (idx === -1 || idx >= BELT_PROGRESSION.length - 1) return null;
+  const next = BELT_PROGRESSION[idx + 1];
+  return { name: next, color: getBeltColor(next) };
+}
+
 const BeltDisplay = ({ color, name }: { color: string, name: string }) => (
     <div className="flex flex-col items-center gap-2">
         <div className="relative w-48 h-20 flex items-center justify-center filter drop-shadow-lg">
@@ -856,27 +909,49 @@ export function PerfilDesktop({ user, onNavigate, onLogout, onRefresh, isRefresh
                                         )}
                                     </div>
 
-                                    {/* Belt Logic - (Optional: Keep mock or hide?) Keeping mock for visual filler if user wants logic later */}
-                                    <div className="space-y-6 mt-12 bg-black/20 rounded-2xl p-6 border border-white/5">
-                                        <div className="flex items-center justify-between px-12">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <p className="text-white/40 text-xs uppercase tracking-wider">Cinturón Actual</p>
-                                                <BeltDisplay color="#ffffff" name="Blanco" />
-                                            </div>
+                                    {/* Belt progression — reads cinturon_actual from user profile */}
+                                    {(() => {
+                                        const currentBelt = user?.cinturon_actual || 'Blanco';
+                                        const currentColor = getBeltColor(currentBelt);
+                                        const next = getNextBelt(currentBelt);
+                                        const currentIdx = BELT_PROGRESSION.indexOf(currentBelt as any);
+                                        const progress = currentIdx >= 0 ? Math.round((currentIdx / (BELT_PROGRESSION.length - 1)) * 100) : 0;
+                                        return (
+                                            <div className="space-y-6 mt-12 bg-black/20 rounded-2xl p-6 border border-white/5">
+                                                <div className="flex items-center justify-between px-4 md:px-12">
+                                                    <div className="flex flex-col items-center gap-3">
+                                                        <p className="text-white/40 text-xs uppercase tracking-wider">Cinturón Actual</p>
+                                                        <BeltDisplay color={currentColor} name={currentBelt} />
+                                                    </div>
 
-                                            <div className="flex-1 px-8 flex flex-col items-center -mt-6">
-                                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative">
-                                                    <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-white to-[#FCA929] w-3/4 rounded-full shadow-[0_0_15px_rgba(252,169,41,0.5)]"></div>
+                                                    <div className="flex-1 px-4 md:px-8 flex flex-col items-center -mt-6">
+                                                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden relative">
+                                                            <div
+                                                                className="absolute inset-y-0 left-0 rounded-full shadow-[0_0_15px_rgba(252,169,41,0.5)]"
+                                                                style={{
+                                                                    width: `${Math.max(5, progress)}%`,
+                                                                    background: `linear-gradient(to right, ${currentColor}, ${next?.color || currentColor})`,
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <p className="text-white/40 text-xs mt-3 font-medium">En camino al siguiente nivel</p>
+                                                    </div>
+
+                                                    {next ? (
+                                                        <div className="flex flex-col items-center gap-3">
+                                                            <p className="text-white/40 text-xs uppercase tracking-wider">Siguiente Nivel</p>
+                                                            <BeltDisplay color={next.color} name={next.name} />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-col items-center gap-3">
+                                                            <p className="text-white/40 text-xs uppercase tracking-wider">Nivel Máximo</p>
+                                                            <BeltDisplay color={currentColor} name={currentBelt} />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                                <p className="text-white/40 text-xs mt-3 font-medium">En camino al siguiente nivel</p>
                                             </div>
-
-                                            <div className="flex flex-col items-center gap-3">
-                                                <p className="text-white/40 text-xs uppercase tracking-wider">Siguiente Nivel</p>
-                                                <BeltDisplay color="#FCA929" name="Amarillo" />
-                                            </div>
-                                        </div>
-                                    </div>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         )}
