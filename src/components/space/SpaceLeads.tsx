@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { UserPlus, Search, Download, Filter, Phone, Mail, Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { UserPlus, Download, Filter, Phone, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors, statGradients } from './tokens';
 import { Modal } from './Modal';
+import { SpaceSearch } from './SpaceSearch';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -352,9 +353,6 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
   const [editLead, setEditLead] = useState<Lead | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Debounced search
-  const [searchInput, setSearchInput] = useState('');
-  const debouncedRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // -----------------------------------------------------------------------
   // Fetch stats
@@ -423,26 +421,15 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
     fetchLeads();
   }, [fetchLeads]);
 
-  // Debounced search
-  useEffect(() => {
-    if (debouncedRef.current) clearTimeout(debouncedRef.current);
-    debouncedRef.current = setTimeout(() => {
-      setSearch(searchInput);
-      setPage(1);
-    }, 300);
-    return () => {
-      if (debouncedRef.current) clearTimeout(debouncedRef.current);
-    };
-  }, [searchInput]);
 
   // -----------------------------------------------------------------------
   // Handlers
   // -----------------------------------------------------------------------
 
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value),
-    [],
-  );
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value);
+    setPage(1);
+  }, []);
 
   const handleEstadoFilter = useCallback((value: string) => {
     setFilterEstado((prev) => (prev === value ? '' : value));
@@ -556,16 +543,11 @@ export function SpaceLeads({ token }: SpaceLeadsProps) {
 
       {/* Search */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-        <div className="relative flex-1 max-w-sm">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-          <input
-            type="text"
-            placeholder="Buscar por nombre..."
-            value={searchInput}
-            onChange={handleSearchChange}
-            className={cx.input + ' pl-9'}
-          />
-        </div>
+        <SpaceSearch
+          onChange={handleSearchChange}
+          placeholder="Buscar por nombre..."
+          loading={loading && !!search}
+        />
         <p className="text-stone-400 text-xs">
           Mostrando {showingFrom}\u2013{showingTo} de {total} leads
         </p>

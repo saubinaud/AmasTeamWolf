@@ -129,29 +129,27 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
   });
   const [isSavingApoderado, setIsSavingApoderado] = useState(false);
 
-  // Belt color mapping for visual display
-  const BELT_COLORS: Record<string, string> = {
-    'Blanco': '#FFFFFF',
-    'Blanco con tira dorada': '#FFD700',
-    'Blanco con tira naranja delgada': '#FF8C00',
-    'Blanco con tira naranja gruesa': '#FF6600',
-    'Blanco con tira amarilla delgada': '#FFEE58',
-    'Blanco con tira amarilla gruesa': '#FFD600',
-    'Blanco con tira camuflada delgada': '#4A7C59',
-    'Blanco con tira camuflada gruesa': '#3D6B4E',
-    'Blanco con tira verde delgada': '#4CAF50',
-    'Blanco con tira verde gruesa': '#2E7D32',
-    'Blanco con tira violeta delgada': '#9C27B0',
-    'Blanco con tira violeta gruesa': '#7B1FA2',
-    'Blanco con tira azul delgada': '#2196F3',
-    'Blanco con tira azul gruesa': '#1565C0',
-    'Blanco con tira marrón delgada': '#8D6E63',
-    'Blanco con tira marrón gruesa': '#6D4C41',
-    'Blanco con tira rojo delgada': '#EF5350',
-    'Blanco con tira roja gruesa': '#D32F2F',
-    'Blanco con tira rojo negro delgada': '#C62828',
-    'Blanco con tira rojo negro gruesa': '#B71C1C',
-  };
+  // Belt color resolver — works with all 27 belt names from DB
+  const BELT_COLORS: Record<string, string> = new Proxy({} as Record<string, string>, {
+    get(_target, prop: string) {
+      const n = (prop || '').toLowerCase();
+      if (n.includes('negro')) return '#1C1917';
+      if (n.includes('rojo') && !n.includes('tira')) return '#EF4444';
+      if (n.includes('azul') && !n.includes('tira')) return '#3B82F6';
+      if (n.includes('verde') && !n.includes('tira')) return '#22C55E';
+      if (n.includes('naranja') && !n.includes('tira')) return '#F97316';
+      if (n.includes('amarill') && !n.includes('tira')) return '#EAB308';
+      if (n.includes('roja') || n.includes('rojo')) return '#EF4444';
+      if (n.includes('azul')) return '#3B82F6';
+      if (n.includes('verde')) return '#22C55E';
+      if (n.includes('naranja')) return '#F97316';
+      if (n.includes('amarill')) return '#EAB308';
+      if (n.includes('morada') || n.includes('violeta')) return '#8B5CF6';
+      if (n.includes('camuflad')) return '#4A7C59';
+      if (n.includes('dorada')) return '#D4AF37';
+      return '#FFFFFF';
+    },
+  });
 
   // Touch handling for calendar swipe
   const touchStartX = useRef(0);

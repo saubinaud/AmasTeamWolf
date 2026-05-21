@@ -26,14 +26,20 @@ interface ConsultaAsistenciaPageProps {
   onNavigate: (page: string) => void;
 }
 
-const BELT_COLORS: Record<string, string> = {
-  'Blanco': '#FFFFFF',
-  'Amarillo': '#FFD700',
-  'Verde': '#22C55E',
-  'Azul': '#3B82F6',
-  'Rojo': '#EF4444',
-  'Negro': '#000000',
-};
+// Belt color resolver — works with all 27 belt names from DB
+function getBeltColor(name: string): string {
+  const n = (name || '').toLowerCase();
+  if (n.includes('negro')) return '#1C1917';
+  if (n.includes('rojo')) return '#EF4444';
+  if (n.includes('azul')) return '#3B82F6';
+  if (n.includes('verde')) return '#22C55E';
+  if (n.includes('naranja')) return '#F97316';
+  if (n.includes('amarill')) return '#EAB308';
+  if (n.includes('morada') || n.includes('violeta')) return '#8B5CF6';
+  if (n.includes('camuflad')) return '#4A7C59';
+  if (n.includes('dorada')) return '#D4AF37';
+  return '#FFFFFF';
+}
 
 function formatFechaLima(fechaStr: string): string {
   try {
@@ -117,7 +123,7 @@ export function ConsultaAsistenciaPage({ onNavigate }: ConsultaAsistenciaPagePro
     ? Math.min(100, Math.round((data.clases_asistidas / data.clases_totales) * 100))
     : 0;
 
-  const beltColor = data ? (BELT_COLORS[data.cinturon_actual] || '#FFFFFF') : '#FFFFFF';
+  const beltColor = data ? getBeltColor(data.cinturon_actual) : '#FFFFFF';
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
