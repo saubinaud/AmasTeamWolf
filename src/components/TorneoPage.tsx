@@ -188,6 +188,19 @@ export function TorneoPage({
     // FAQ accordion
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+    // Pistas en vivo
+    interface Pista { id: string; numero: number; nombre: string; }
+    interface Combate {
+        id: string; pista_id: string; hora: string; estado: string;
+        puntaje_alumno1: number | null; puntaje_alumno2: number | null;
+        alumno1_nombre: string | null; alumno2_nombre: string | null;
+        modalidad_nombre: string | null;
+    }
+    const [pistas, setPistas] = useState<Pista[]>([]);
+    const [combates, setCombates] = useState<Combate[]>([]);
+    const [pistasLoading, setPistasLoading] = useState(false);
+    const [expandedPista, setExpandedPista] = useState<string | null>(null);
+
     // ---- Step 1: Fetch active torneo ----
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -211,6 +224,32 @@ export function TorneoPage({
             }
         })();
     }, []);
+
+    // ---- Fetch pistas en vivo ----
+    useEffect(() => {
+        if (!torneoData?.torneo?.id) return;
+        const torneoId = torneoData.torneo.id;
+
+        const fetchPistas = async () => {
+            try {
+                setPistasLoading(true);
+                const res = await fetch(`${API_BASE}/torneo/pistas/${torneoId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setPistas(data.pistas || []);
+                    setCombates(data.combates || []);
+                }
+            } catch {
+                // silent fail for live section
+            } finally {
+                setPistasLoading(false);
+            }
+        };
+
+        fetchPistas();
+        const interval = setInterval(fetchPistas, 30000);
+        return () => clearInterval(interval);
+    }, [torneoData?.torneo?.id]);
 
     // ---- Derived pricing (from torneo config) ----
     const escalas = torneoData?.precios_modalidades || [{ desde: 1, hasta: 1, precio: 80 }, { desde: 2, hasta: 2, precio: 150 }, { desde: 3, hasta: 99, precio: 200 }];
@@ -929,6 +968,117 @@ export function TorneoPage({
                     </div>
                 </div>
             </section>
+
+            {/* ========== PISTAS EN VIVO ========== */}
+            {pistas.length > 0 && (
+                <section className="relative py-16 md:py-24 px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-12 animate-fade-in-up">
+                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4 flex items-center justify-center gap-3">
+                                <MapPin className="w-8 h-8 text-[#FA7B21]" />
+                                Pistas <span className="text-[#FA7B21]">en Vivo</span>
+                            </h2>
+                            <p className="text-white/60 text-lg md:text-xl">
+                                Sigue los combates en tiempo real
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {pistas.map((pista) => {
+                                const pistaCombates = combates.filter(c => c.pista_id === pista.id);
+                                const combateActivo = pistaCombates.find(c => c.estado === 'en_curso') || pistaCombates.find(c => c.estado === 'pendiente') || pistaCombates[pistaCombates.length - 1] || null;
+                                const isExpanded = expandedPista === pista.id;
+
+                                return (
+                                    <div key={pista.id} className="flex flex-col gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setExpandedPista(isExpanded ? null : pista.id)}
+                                            className="relative overflow-hidden rounded-2xl border border-white/10 min-h-[180px] bg-zinc-900/50 text-left transition-all duration-300 hover:border-[#FCA929]/30"
+                                        >
+                                            <div className="flex h-full min-h-[180px]">
+                                                {/* Left - Red */}
+                                                <div className="flex-1 bg-gradient-to-br from-rose-950/40 to-rose-900/20 p-4 flex flex-col items-center justify-center border-r border-white/10">
+                                                    <p className="text-rose-400 text-[10px] font-bold uppercase tracking-wider mb-1">Rojo</p>
+                                                    <p className="text-white text-sm font-semibold text-center">{combateActivo?.alumno1_nombre || '\u2014'}</p>
+                                                    {combateActivo?.estado === 'finalizado' && (
+                                                        <p className="text-rose-400 text-xl font-bold mt-1">{combateActivo.puntaje_alumno1}</p>
+                                                    )}
+                                                </div>
+                                                {/* Right - Blue */}
+                                                <div className="flex-1 bg-gradient-to-bl from-sky-950/40 to-sky-900/20 p-4 flex flex-col items-center justify-center">
+                                                    <p className="text-sky-400 text-[10px] font-bold uppercase tracking-wider mb-1">Azul</p>
+                                                    <p className="text-white text-sm font-semibold text-center">{combateActivo?.alumno2_nombre || 'Por definir'}</p>
+                                                    {combateActivo?.estado === 'finalizado' && (
+                                                        <p className="text-sky-400 text-xl font-bold mt-1">{combateActivo.puntaje_alumno2}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {/* Center number */}
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-zinc-800 border-2 border-[#FCA929]/50 flex items-center justify-center z-10">
+                                                <span className="text-[#FCA929] text-lg font-bold">{pista.numero}</span>
+                                            </div>
+                                            {/* Bottom bar */}
+                                            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm border-t border-white/10 px-3 py-2 flex items-center justify-between">
+                                                <span className="text-white/50 text-[10px]">{combateActivo?.hora || 'Sin combates'}</span>
+                                                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{
+                                                    backgroundColor: combateActivo?.estado === 'en_curso' ? 'rgba(251,146,60,0.2)' : combateActivo?.estado === 'finalizado' ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)',
+                                                    color: combateActivo?.estado === 'en_curso' ? '#fb923c' : combateActivo?.estado === 'finalizado' ? '#22c55e' : 'rgba(255,255,255,0.5)'
+                                                }}>
+                                                    {combateActivo?.estado === 'en_curso' ? 'En curso' : combateActivo?.estado === 'finalizado' ? 'Finalizado' : 'Pendiente'}
+                                                </span>
+                                            </div>
+                                        </button>
+
+                                        {/* Expanded: all combates for this pista */}
+                                        {isExpanded && pistaCombates.length > 0 && (
+                                            <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-3 space-y-2 animate-fade-in-up">
+                                                <p className="text-white/40 text-[10px] uppercase tracking-wider font-bold mb-1">
+                                                    Todos los combates - Pista {pista.numero}
+                                                </p>
+                                                {pistaCombates.map((c) => (
+                                                    <div key={c.id} className="flex items-center justify-between gap-2 bg-white/5 rounded-lg px-3 py-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-white text-xs font-medium truncate">
+                                                                <span className="text-rose-400">{c.alumno1_nombre || '\u2014'}</span>
+                                                                {' vs '}
+                                                                <span className="text-sky-400">{c.alumno2_nombre || '\u2014'}</span>
+                                                            </p>
+                                                            {c.modalidad_nombre && (
+                                                                <p className="text-white/30 text-[10px]">{c.modalidad_nombre}</p>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                                            {c.estado === 'finalizado' && (
+                                                                <span className="text-white text-xs font-bold">
+                                                                    {c.puntaje_alumno1} - {c.puntaje_alumno2}
+                                                                </span>
+                                                            )}
+                                                            <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{
+                                                                backgroundColor: c.estado === 'en_curso' ? 'rgba(251,146,60,0.2)' : c.estado === 'finalizado' ? 'rgba(34,197,94,0.2)' : 'rgba(255,255,255,0.1)',
+                                                                color: c.estado === 'en_curso' ? '#fb923c' : c.estado === 'finalizado' ? '#22c55e' : 'rgba(255,255,255,0.5)'
+                                                            }}>
+                                                                {c.estado === 'en_curso' ? 'En curso' : c.estado === 'finalizado' ? 'Final' : c.hora || 'Pend.'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {pistasLoading && pistas.length === 0 && (
+                            <div className="text-center py-12">
+                                <Loader2 className="w-8 h-8 text-[#FA7B21] animate-spin mx-auto mb-3" />
+                                <p className="text-white/50 text-sm">Cargando pistas...</p>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            )}
 
             {/* FOOTER */}
             <div className="relative z-20 mt-16">

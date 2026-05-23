@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ArrowLeft, Plus, Pencil, Trash2, MapPin, Swords } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
@@ -87,6 +87,32 @@ export function SpacePistas({ token }: SpacePistasProps) {
 
   useEffect(() => { loadPistas(selectedTorneoId); }, [selectedTorneoId, loadPistas]);
 
+  // All combates for the torneo (loaded with pistas for tatami cards)
+  const [allCombates, setAllCombates] = useState<Combate[]>([]);
+
+  // Load all combates for the torneo
+  const loadAllCombates = useCallback(async () => {
+    if (!selectedTorneoId) { setAllCombates([]); return; }
+    try {
+      const res = await fetch(`${API_BASE}/space/pistas/${selectedTorneoId}/combates`, { headers: authHeaders(token) });
+      const data = await res.json();
+      setAllCombates(data?.data ?? []);
+    } catch { setAllCombates([]); }
+  }, [token, selectedTorneoId]);
+
+  useEffect(() => { loadAllCombates(); }, [loadAllCombates]);
+
+  // Current combate per pista (first non-finished, or last if all finished)
+  const currentCombateByPista = useMemo(() => {
+    const map: Record<number, Combate> = {};
+    allCombates.forEach(c => {
+      if (!map[c.pista_id] || (map[c.pista_id].estado === 'finalizado' && c.estado !== 'finalizado')) {
+        map[c.pista_id] = c;
+      }
+    });
+    return map;
+  }, [allCombates]);
+
   // Load combates for selected pista
   const loadCombates = useCallback(async () => {
     if (!selectedTorneoId) return;
@@ -147,24 +173,26 @@ export function SpacePistas({ token }: SpacePistasProps) {
 
   // Create combate
   const handleCreateCombate = async () => {
-    if (!combateForm.hora || !combateForm.modalidad_id || !combateForm.alumno1_id || !combateForm.alumno2_id || !selectedPista) return;
+    if (!combateForm.hora || !combateForm.modalidad_id || !combateForm.alumno1_id || !selectedPista) return;
     try {
+      const body: Record<string, unknown> = {
+        torneo_id: parseInt(selectedTorneoId),
+        pista_id: selectedPista.id,
+        modalidad_id: parseInt(combateForm.modalidad_id),
+        hora: combateForm.hora,
+        alumno1_id: parseInt(combateForm.alumno1_id),
+      };
+      if (combateForm.alumno2_id) body.alumno2_id = parseInt(combateForm.alumno2_id);
       const res = await fetch(`${API_BASE}/space/pistas/combates`, {
         method: 'POST', headers: authHeaders(token),
-        body: JSON.stringify({
-          torneo_id: parseInt(selectedTorneoId),
-          pista_id: selectedPista.id,
-          modalidad_id: parseInt(combateForm.modalidad_id),
-          hora: combateForm.hora,
-          alumno1_id: parseInt(combateForm.alumno1_id),
-          alumno2_id: parseInt(combateForm.alumno2_id),
-        }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e?.error ?? 'Error'); }
       toast.success('Combate creado');
       setShowCreateCombate(false);
       setCombateForm({ hora: '08:00', modalidad_id: '', alumno1_id: '', alumno2_id: '' });
       loadCombates();
+      loadAllCombates();
       loadPistas(selectedTorneoId);
     } catch (err: any) { toast.error(err?.message ?? 'Error al crear combate'); }
   };
@@ -200,6 +228,7 @@ export function SpacePistas({ token }: SpacePistasProps) {
       toast.success('Combate actualizado');
       setEditingCombate(null);
       loadCombates();
+      loadAllCombates();
       loadPistas(selectedTorneoId);
     } catch { toast.error('Error al actualizar combate'); }
   };
@@ -212,6 +241,7 @@ export function SpacePistas({ token }: SpacePistasProps) {
       if (!res.ok) throw new Error();
       toast.success('Combate eliminado');
       loadCombates();
+      loadAllCombates();
       loadPistas(selectedTorneoId);
     } catch { toast.error('Error al eliminar combate'); }
   };
@@ -273,12 +303,16 @@ export function SpacePistas({ token }: SpacePistasProps) {
                 <div className="w-px h-10 bg-stone-200" />
                 {/* Match info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-stone-900 text-sm font-medium">
-                    {combate.alumno1_nombre} <span className="text-stone-400 font-normal">vs</span> {combate.alumno2_nombre}
+                  <p className="text-stone-900 text-sm font-medium flex items-center gap-1.5 flex-wrap">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block shrink-0" />
+                    <span>{combate.alumno1_nombre}</span>
+                    <span className="text-stone-400 font-normal">vs</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block shrink-0" />
+                    <span>{combate.alumno2_nombre || 'Por definir'}</span>
                   </p>
                   <p className="text-stone-400 text-xs mt-0.5">
                     {combate.modalidad_nombre}
-                    {combate.estado === 'finalizado' && ` · ${combate.puntaje_alumno1}-${combate.puntaje_alumno2}`}
+                    {combate.estado === 'finalizado' && ` \u00b7 ${combate.puntaje_alumno1}-${combate.puntaje_alumno2}`}
                   </p>
                 </div>
                 {/* Estado badge */}
@@ -305,7 +339,7 @@ export function SpacePistas({ token }: SpacePistasProps) {
 
         {/* Create combate modal */}
         <Modal open={showCreateCombate} onClose={() => setShowCreateCombate(false)} title="Nuevo combate"
-          footer={<button onClick={handleCreateCombate} disabled={!combateForm.alumno1_id || !combateForm.alumno2_id || !combateForm.modalidad_id} className={cx.btnPrimary}>Crear combate</button>}
+          footer={<button onClick={handleCreateCombate} disabled={!combateForm.alumno1_id || !combateForm.modalidad_id} className={cx.btnPrimary}>Crear combate</button>}
         >
           <div className="space-y-4">
             <div>
@@ -331,12 +365,12 @@ export function SpacePistas({ token }: SpacePistasProps) {
               />
             </div>
             <div>
-              <label className={cx.label}>Alumno 2</label>
+              <label className={cx.label}>Alumno 2 (opcional)</label>
               <SpaceSelect
                 value={combateForm.alumno2_id}
                 onChange={v => setCombateForm(f => ({ ...f, alumno2_id: v }))}
                 options={alumno2Options}
-                placeholder="Seleccionar alumno..."
+                placeholder="Seleccionar (opcional)"
               />
             </div>
           </div>
@@ -442,21 +476,70 @@ export function SpacePistas({ token }: SpacePistasProps) {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {pistas.map(pista => (
-            <div
-              key={pista.id}
-              onClick={() => setSelectedPista(pista)}
-              className={cx.card + ' p-6 flex flex-col items-center justify-center gap-3 cursor-pointer hover:shadow-md transition-shadow min-h-[160px]'}
-            >
-              <div className="w-16 h-16 rounded-2xl bg-[var(--accent-light)] border-2 border-[var(--accent)]/20 flex items-center justify-center">
-                <span className="text-[var(--accent)] text-2xl font-bold">{pista.numero}</span>
+          {pistas.map(pista => {
+            const currentCombate = currentCombateByPista[pista.id] || null;
+            return (
+              <div
+                key={pista.id}
+                onClick={() => setSelectedPista(pista)}
+                className="relative overflow-hidden rounded-2xl border border-stone-200 cursor-pointer hover:shadow-lg transition-shadow min-h-[180px] bg-white"
+              >
+                {/* Two halves */}
+                <div className="flex h-full min-h-[180px]">
+                  {/* Left half - Red/Coral */}
+                  <div className="flex-1 bg-gradient-to-br from-rose-50 to-rose-100/50 p-4 flex flex-col items-center justify-center border-r border-stone-200">
+                    {currentCombate ? (
+                      <>
+                        <p className="text-rose-700 text-xs font-bold uppercase tracking-wider mb-1">Rojo</p>
+                        <p className="text-stone-800 text-sm font-semibold text-center leading-tight">{currentCombate.alumno1_nombre || '\u2014'}</p>
+                        {currentCombate.estado === 'finalizado' && (
+                          <p className="text-rose-600 text-lg font-bold mt-1">{currentCombate.puntaje_alumno1}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-stone-300 text-xs">&mdash;</p>
+                    )}
+                  </div>
+
+                  {/* Right half - Blue */}
+                  <div className="flex-1 bg-gradient-to-bl from-sky-50 to-sky-100/50 p-4 flex flex-col items-center justify-center">
+                    {currentCombate ? (
+                      <>
+                        <p className="text-sky-700 text-xs font-bold uppercase tracking-wider mb-1">Azul</p>
+                        <p className="text-stone-800 text-sm font-semibold text-center leading-tight">{currentCombate.alumno2_nombre || 'Por definir'}</p>
+                        {currentCombate.estado === 'finalizado' && (
+                          <p className="text-sky-600 text-lg font-bold mt-1">{currentCombate.puntaje_alumno2}</p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-stone-300 text-xs">&mdash;</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Center circle with pista number */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white border-2 border-stone-300 shadow-md flex items-center justify-center z-10">
+                  <span className="text-stone-800 text-lg font-bold">{pista.numero}</span>
+                </div>
+
+                {/* Bottom info bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-stone-200 px-3 py-2 flex items-center justify-between">
+                  <span className="text-stone-500 text-[10px] font-medium">
+                    {currentCombate?.hora || 'Sin combates'}
+                  </span>
+                  <span className={cx.badge(
+                    currentCombate?.estado === 'finalizado' ? badgeColors.green :
+                    currentCombate?.estado === 'en_curso' ? badgeColors.orange :
+                    pista.total_combates > 0 ? badgeColors.yellow : badgeColors.gray
+                  )}>
+                    {currentCombate?.estado === 'en_curso' ? 'En curso' :
+                     currentCombate?.estado === 'finalizado' ? 'Finalizado' :
+                     pista.total_combates > 0 ? `${pista.total_combates} combate${pista.total_combates !== 1 ? 's' : ''}` : 'Vac\u00eda'}
+                  </span>
+                </div>
               </div>
-              <p className="text-stone-700 text-sm font-medium">{pista.nombre || `Pista ${pista.numero}`}</p>
-              <span className={cx.badge(pista.total_combates > 0 ? badgeColors.green : badgeColors.gray)}>
-                {pista.total_combates} combate{pista.total_combates !== 1 ? 's' : ''}
-              </span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
