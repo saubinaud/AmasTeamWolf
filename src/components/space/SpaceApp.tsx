@@ -20,6 +20,7 @@ import { SpaceProfesores } from './SpaceProfesores';
 import { SpaceClasesPrueba } from './SpaceClasesPrueba';
 import { SpaceAsistenciaProfesores } from './SpaceAsistenciaProfesores';
 import { SpaceTorneos } from './SpaceTorneos';
+import { SpacePistas } from './SpacePistas';
 import { SpaceReferidos } from './SpaceReferidos';
 
 export type SpacePage =
@@ -39,6 +40,7 @@ export type SpacePage =
   | 'asistencia-profesores'
   | 'clases-prueba'
   | 'torneos'
+  | 'pistas'
   | 'referidos'
   | 'config';
 
@@ -210,6 +212,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'asistencia-profesores' && <SpaceAsistenciaProfesores token={token} />}
       {currentPage === 'clases-prueba' && <SpaceClasesPrueba token={token} />}
       {currentPage === 'torneos' && <SpaceTorneos token={token} />}
+      {currentPage === 'pistas' && <SpacePistas token={token} />}
       {currentPage === 'referidos' && <SpaceReferidos token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
