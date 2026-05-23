@@ -78,6 +78,7 @@ const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m =
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
 const ConsultaAsistenciaPage = lazy(() => import('./components/ConsultaAsistenciaPage').then(m => ({ default: m.ConsultaAsistenciaPage })));
 const SpaceApp = lazy(() => import('./components/space/SpaceApp').then(m => ({ default: m.SpaceApp })));
+const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({ default: m.MarcadorPage })));
 
 // SEO configs
 import { seoConfigs } from './components/SEO';
@@ -345,6 +346,15 @@ function ConsultaAsistenciaRoute() {
   );
 }
 
+function MarcadorRoute() {
+  const { onNavigate } = useLayoutContext();
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <MarcadorPage onNavigate={onNavigate} />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 function SpaceRoute() {
   const { onNavigate } = useLayoutContext();
   return (
@@ -382,6 +392,7 @@ export const router = createBrowserRouter([
       { path: '/asistencia/panel', element: <AsistenciaPanelRoute /> },
       { path: '/asistencia/profesora', element: <AsistenciaPanelRoute /> },
       { path: '/consulta-asistencia', element: <ConsultaAsistenciaRoute /> },
+      { path: '/marcador', element: <MarcadorRoute /> },
       { path: '/space/*', element: <SpaceRoute /> },
       // Redirect aliases
       { path: '/renovar', element: <Navigate to="/renovacion" replace /> },
