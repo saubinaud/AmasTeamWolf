@@ -245,4 +245,36 @@ router.post('/inscribir', async (req, res) => {
   }
 });
 
+// GET /api/torneo/pistas/:torneoId — Public: list pistas with current combate
+router.get('/pistas/:torneoId', async (req, res) => {
+  try {
+    const { torneoId } = req.params;
+    const pistas = await query(`
+      SELECT p.id, p.numero, p.nombre
+      FROM torneo_pistas p
+      WHERE p.torneo_id = $1 AND p.activa = true
+      ORDER BY p.numero
+    `, [torneoId]);
+
+    const combates = await query(`
+      SELECT c.id, c.pista_id, c.hora, c.estado,
+        c.puntaje_alumno1, c.puntaje_alumno2,
+        a1.nombre_alumno AS alumno1_nombre,
+        a2.nombre_alumno AS alumno2_nombre,
+        m.nombre AS modalidad_nombre
+      FROM torneo_combates c
+      LEFT JOIN alumnos a1 ON a1.id = c.alumno1_id
+      LEFT JOIN alumnos a2 ON a2.id = c.alumno2_id
+      LEFT JOIN torneo_modalidades m ON m.id = c.modalidad_id
+      WHERE c.torneo_id = $1
+      ORDER BY c.hora
+    `, [torneoId]);
+
+    res.json({ pistas, combates });
+  } catch (err) {
+    console.error('GET /torneo/pistas error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 module.exports = router;
