@@ -277,4 +277,70 @@ router.get('/pistas/:torneoId', async (req, res) => {
   }
 });
 
+// PUT /combates/:combateId/puntaje — Public: update match score
+router.put('/combates/:combateId/puntaje', async (req, res) => {
+  try {
+    const { combateId } = req.params;
+    const { puntaje_alumno1, puntaje_alumno2 } = req.body;
+
+    if (puntaje_alumno1 == null && puntaje_alumno2 == null) {
+      return res.status(400).json({ error: 'Se requiere al menos un puntaje' });
+    }
+
+    const sets = [];
+    const params = [];
+    let idx = 1;
+
+    if (puntaje_alumno1 != null) { sets.push(`puntaje_alumno1 = $${idx++}`); params.push(puntaje_alumno1); }
+    if (puntaje_alumno2 != null) { sets.push(`puntaje_alumno2 = $${idx++}`); params.push(puntaje_alumno2); }
+
+    params.push(combateId);
+
+    const result = await queryOne(
+      `UPDATE torneo_combates SET ${sets.join(', ')} WHERE id = $${idx} RETURNING *`,
+      params
+    );
+
+    if (!result) return res.status(404).json({ error: 'Combate no encontrado' });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('PUT /combates/puntaje error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// PUT /combates/:combateId/estado — Public: change match state
+router.put('/combates/:combateId/estado', async (req, res) => {
+  try {
+    const { combateId } = req.params;
+    const { estado, ganador_id } = req.body;
+
+    if (!estado || !['pendiente', 'en_curso', 'finalizado'].includes(estado)) {
+      return res.status(400).json({ error: 'Estado inválido' });
+    }
+
+    // If finalizing, auto-determine winner from scores
+    let finalGanador = ganador_id || null;
+    if (estado === 'finalizado' && !finalGanador) {
+      const combate = await queryOne('SELECT alumno1_id, alumno2_id, puntaje_alumno1, puntaje_alumno2 FROM torneo_combates WHERE id = $1', [combateId]);
+      if (combate) {
+        if (combate.puntaje_alumno1 > combate.puntaje_alumno2) finalGanador = combate.alumno1_id;
+        else if (combate.puntaje_alumno2 > combate.puntaje_alumno1) finalGanador = combate.alumno2_id;
+        // If tie, ganador stays null
+      }
+    }
+
+    const result = await queryOne(
+      `UPDATE torneo_combates SET estado = $1, ganador_id = $2 WHERE id = $3 RETURNING *`,
+      [estado, finalGanador, combateId]
+    );
+
+    if (!result) return res.status(404).json({ error: 'Combate no encontrado' });
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('PUT /combates/estado error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 module.exports = router;
