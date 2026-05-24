@@ -269,23 +269,24 @@ export function TorneoPage({
 
     // ---- DNI lookup ----
     const lookupDni = async (dniValue: string) => {
-        if (dniValue.length !== 8) return;
+        if (!dniValue || dniValue.length < 6) return;
         setIsLookingUp(true);
         setDniError('');
         setDniStatus('idle');
         setConsultaResult(null);
         setSelectedModalidades([]);
         try {
-            const res = await fetch(`${API_BASE}/torneo/consultar?dni=${dniValue}`);
+            const res = await fetch(`${API_BASE}/torneo/consultar?dni=${encodeURIComponent(dniValue)}`);
             if (!res.ok) {
                 setDniStatus('not_found');
-                setDniError('Este DNI no está registrado en AMAS Team Wolf. Verifica los datos.');
+                setDniError('Alumno no encontrado. Verifica los datos.');
                 return;
             }
             const data = await res.json();
-            if (!data?.alumno) {
+            if (data?.busqueda) return; // ignore name search results
+            if (!data?.encontrado || !data?.alumno) {
                 setDniStatus('not_found');
-                setDniError('Este DNI no está registrado en AMAS Team Wolf. Verifica los datos.');
+                setDniError('Este DNI no está registrado en AMAS Team Wolf.');
                 return;
             }
             setDniStatus('found');

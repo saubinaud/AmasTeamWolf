@@ -83,7 +83,12 @@ router.get('/consultar', async (req, res) => {
     // Search by name → return list of matches
     if (q && typeof q === 'string' && q.trim().length >= 2) {
       const results = await AlumnoService.buscar(q.trim(), { limit: 10 });
-      return res.json({ busqueda: true, resultados: results });
+      return res.json({ busqueda: true, resultados: results.map(r => ({
+        id: r.id,
+        nombre: r.nombre_alumno || r.nombre,
+        dni: r.dni_alumno || r.dni,
+        categoria: r.categoria,
+      })) });
     }
 
     const alumno = await AlumnoService.buscarPorDni(dni);
