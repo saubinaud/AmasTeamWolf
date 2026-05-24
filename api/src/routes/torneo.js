@@ -360,7 +360,9 @@ router.get('/pistas/:torneoId', async (req, res) => {
 
     const combates = await query(`
       SELECT c.id, c.pista_id, c.hora, c.estado,
+        c.alumno1_id, c.alumno2_id, c.ganador_id,
         c.puntaje_alumno1, c.puntaje_alumno2,
+        c.round_actual,
         a1.nombre_alumno AS alumno1_nombre,
         a2.nombre_alumno AS alumno2_nombre,
         m.nombre AS modalidad_nombre
