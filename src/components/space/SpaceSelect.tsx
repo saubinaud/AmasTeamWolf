@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Search } from 'lucide-react';
 
 interface Option {
@@ -25,27 +26,28 @@ export function SpaceSelect({
 }: SpaceSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [flipUp, setFlipUp] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0, flipUp: false });
   const ref = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const selected = options.find(o => o.value === value);
-
-  // Auto-enable search when >8 options
   const showSearch = searchable ?? options.length > 8;
 
-  // Filter options by query
   const filtered = useMemo(() => {
     if (!query) return options;
     const q = query.toLowerCase();
     return options.filter(o => o.label.toLowerCase().includes(q));
   }, [options, query]);
 
-  // Close on outside click
+  // Close on outside click (check both trigger and dropdown)
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (ref.current?.contains(target)) return;
+      if (dropdownRef.current?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -59,12 +61,36 @@ export function SpaceSelect({
     if (!open) setQuery('');
   }, [open, showSearch]);
 
-  // Flip detection: open upward if not enough space below
+  // Calculate position when opening
   useEffect(() => {
     if (!open || !ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
-    setFlipUp(spaceBelow < 260);
+    const flipUp = spaceBelow < 260;
+    setPos({
+      top: flipUp ? rect.top : rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+      flipUp,
+    });
+  }, [open]);
+
+  // Reposition on scroll/resize
+  useEffect(() => {
+    if (!open) return;
+    const reposition = () => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const flipUp = spaceBelow < 260;
+      setPos({ top: flipUp ? rect.top : rect.bottom + 4, left: rect.left, width: rect.width, flipUp });
+    };
+    window.addEventListener('scroll', reposition, true);
+    window.addEventListener('resize', reposition);
+    return () => {
+      window.removeEventListener('scroll', reposition, true);
+      window.removeEventListener('resize', reposition);
+    };
   }, [open]);
 
   const handleSelect = (val: string) => {
@@ -85,13 +111,20 @@ export function SpaceSelect({
         <ChevronDown size={14} className={`text-stone-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && (
+      {open && createPortal(
         <div
-          className={`absolute z-[9999] left-0 right-0 bg-white border border-stone-200 rounded-xl shadow-xl overflow-hidden ${
-            flipUp ? 'bottom-full mb-1' : 'top-full mt-1'
-          }`}
+          ref={dropdownRef}
+          className="bg-white border border-stone-200 rounded-xl shadow-2xl overflow-hidden"
+          style={{
+            position: 'fixed',
+            zIndex: 999999,
+            left: pos.left,
+            width: pos.width,
+            ...(pos.flipUp
+              ? { bottom: window.innerHeight - pos.top + 4 }
+              : { top: pos.top }),
+          }}
         >
-          {/* Search */}
           {showSearch && (
             <div className="px-3 pt-3 pb-2">
               <div className="relative">
@@ -107,8 +140,6 @@ export function SpaceSelect({
               </div>
             </div>
           )}
-
-          {/* Options */}
           <div className="max-h-48 overflow-y-auto">
             {filtered.length === 0 ? (
               <p className="px-4 py-3 text-xs text-stone-400 text-center">Sin resultados</p>
@@ -129,7 +160,8 @@ export function SpaceSelect({
               ))
             )}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

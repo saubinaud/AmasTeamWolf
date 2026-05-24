@@ -245,6 +245,108 @@ router.post('/inscribir', async (req, res) => {
   }
 });
 
+// GET /activos — List active tournaments (for marcador selector)
+router.get('/activos', async (_req, res) => {
+  try {
+    const rows = await query("SELECT id, nombre, tipo, fecha, lugar, hora, config FROM torneos_config WHERE activo = true ORDER BY fecha DESC");
+    res.json(rows);
+  } catch (err) {
+    console.error('GET /torneo/activos error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// POST /combates/:combateId/punto — Register a score event
+router.post('/combates/:combateId/punto', async (req, res) => {
+  try {
+    const { combateId } = req.params;
+    const { alumno_id, tipo, valor, round, juez_id } = req.body;
+    if (!alumno_id || !tipo || valor == null) return res.status(400).json({ error: 'alumno_id, tipo y valor requeridos' });
+
+    const row = await queryOne(
+      'INSERT INTO torneo_puntaje_log (combate_id, alumno_id, tipo, valor, round, juez_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+      [combateId, alumno_id, tipo, valor, round || 1, juez_id || null]
+    );
+
+    // Recalculate totals from log
+    const totals = await query(
+      'SELECT alumno_id, SUM(valor) AS total FROM torneo_puntaje_log WHERE combate_id = $1 GROUP BY alumno_id',
+      [combateId]
+    );
+    // Get combate to know alumno1/alumno2
+    const combate = await queryOne('SELECT alumno1_id, alumno2_id FROM torneo_combates WHERE id = $1', [combateId]);
+    if (combate) {
+      const p1 = totals.find(t => t.alumno_id === combate.alumno1_id)?.total || 0;
+      const p2 = totals.find(t => t.alumno_id === combate.alumno2_id)?.total || 0;
+      await queryOne('UPDATE torneo_combates SET puntaje_alumno1=$1, puntaje_alumno2=$2 WHERE id=$3', [p1, p2, combateId]);
+    }
+
+    res.status(201).json({ success: true, data: row, totals: { puntaje_alumno1: totals.find(t => t.alumno_id === combate?.alumno1_id)?.total || 0, puntaje_alumno2: totals.find(t => t.alumno_id === combate?.alumno2_id)?.total || 0 } });
+  } catch (err) {
+    console.error('POST /combates/:id/punto error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// DELETE /puntaje-log/:id — Undo last score
+router.delete('/puntaje-log/:id', async (req, res) => {
+  try {
+    const deleted = await queryOne('DELETE FROM torneo_puntaje_log WHERE id = $1 RETURNING *', [req.params.id]);
+    if (!deleted) return res.status(404).json({ error: 'Registro no encontrado' });
+
+    // Recalculate totals
+    const totals = await query('SELECT alumno_id, SUM(valor) AS total FROM torneo_puntaje_log WHERE combate_id = $1 GROUP BY alumno_id', [deleted.combate_id]);
+    const combate = await queryOne('SELECT alumno1_id, alumno2_id FROM torneo_combates WHERE id = $1', [deleted.combate_id]);
+    if (combate) {
+      const p1 = totals.find(t => t.alumno_id === combate.alumno1_id)?.total || 0;
+      const p2 = totals.find(t => t.alumno_id === combate.alumno2_id)?.total || 0;
+      await queryOne('UPDATE torneo_combates SET puntaje_alumno1=$1, puntaje_alumno2=$2 WHERE id=$3', [p1, p2, deleted.combate_id]);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /puntaje-log/:id error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// GET /combates/:combateId/log — Score history
+router.get('/combates/:combateId/log', async (req, res) => {
+  try {
+    const rows = await query(
+      'SELECT l.*, a.nombre_alumno, j.nombre AS juez_nombre FROM torneo_puntaje_log l LEFT JOIN alumnos a ON a.id = l.alumno_id LEFT JOIN torneo_jueces j ON j.id = l.juez_id WHERE l.combate_id = $1 ORDER BY l.created_at DESC',
+      [req.params.combateId]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('GET /combates/:id/log error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// GET /:torneoId/config — Public tournament config
+router.get('/:torneoId/config', async (req, res) => {
+  try {
+    const row = await queryOne('SELECT id, nombre, config FROM torneos_config WHERE id = $1', [req.params.torneoId]);
+    if (!row) return res.status(404).json({ error: 'Torneo no encontrado' });
+    res.json(row);
+  } catch (err) {
+    console.error('GET /torneo/:id/config error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
+// GET /:torneoId/jueces — Public judges list
+router.get('/:torneoId/jueces', async (req, res) => {
+  try {
+    const rows = await query('SELECT id, nombre, pista_id FROM torneo_jueces WHERE torneo_id = $1 AND activo = true ORDER BY nombre', [req.params.torneoId]);
+    res.json(rows);
+  } catch (err) {
+    console.error('GET /torneo/:id/jueces error:', err);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+});
+
 // GET /api/torneo/pistas/:torneoId — Public: list pistas with current combate
 router.get('/pistas/:torneoId', async (req, res) => {
   try {
