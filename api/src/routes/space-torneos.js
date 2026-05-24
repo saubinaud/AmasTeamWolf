@@ -97,6 +97,37 @@ router.post('/', async (req, res) => {
   }
 });
 
+// PUT /jueces/:id — Update judge
+router.put('/jueces/:id', async (req, res) => {
+  try {
+    const { nombre, pista_id, activo } = req.body;
+    const fields = []; const vals = []; let idx = 1;
+    if (nombre !== undefined) { fields.push(`nombre=$${idx++}`); vals.push(nombre); }
+    if (pista_id !== undefined) { fields.push(`pista_id=$${idx++}`); vals.push(pista_id); }
+    if (activo !== undefined) { fields.push(`activo=$${idx++}`); vals.push(activo); }
+    if (!fields.length) return res.status(400).json({ success: false, error: 'Nada que actualizar' });
+    vals.push(req.params.id);
+    const row = await queryOne(`UPDATE torneo_jueces SET ${fields.join(',')} WHERE id=$${idx} RETURNING *`, vals);
+    if (!row) return res.status(404).json({ success: false, error: 'Juez no encontrado' });
+    res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('PUT /torneos/jueces/:id error:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// DELETE /jueces/:id — Delete judge
+router.delete('/jueces/:id', async (req, res) => {
+  try {
+    const row = await queryOne('UPDATE torneo_jueces SET activo=false WHERE id=$1 RETURNING *', [req.params.id]);
+    if (!row) return res.status(404).json({ success: false, error: 'Juez no encontrado' });
+    res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('DELETE /torneos/jueces/:id error:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
 // PUT /:id — update tournament
 router.put('/:id', async (req, res) => {
   try {
@@ -309,6 +340,45 @@ router.delete('/selecciones/:id', async (req, res) => {
   } catch (err) {
     console.error('DELETE /selecciones/:id error:', err);
     res.status(500).json({ success: false, error: 'Error al eliminar selección' });
+  }
+});
+
+// PUT /:id/config — Save tournament config JSONB
+router.put('/:id/config', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { config } = req.body;
+    if (!config) return res.status(400).json({ success: false, error: 'config requerido' });
+    const row = await queryOne('UPDATE torneos_config SET config = $1 WHERE id = $2 RETURNING id, config', [JSON.stringify(config), id]);
+    if (!row) return res.status(404).json({ success: false, error: 'Torneo no encontrado' });
+    res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('PUT /torneos/:id/config error:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// GET /:id/jueces — List judges
+router.get('/:id/jueces', async (req, res) => {
+  try {
+    const rows = await query('SELECT j.*, p.numero AS pista_numero FROM torneo_jueces j LEFT JOIN torneo_pistas p ON p.id = j.pista_id WHERE j.torneo_id = $1 AND j.activo = true ORDER BY j.nombre', [req.params.id]);
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    console.error('GET /torneos/:id/jueces error:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
+// POST /:id/jueces — Create judge
+router.post('/:id/jueces', async (req, res) => {
+  try {
+    const { nombre, pista_id } = req.body;
+    if (!nombre) return res.status(400).json({ success: false, error: 'nombre requerido' });
+    const row = await queryOne('INSERT INTO torneo_jueces (torneo_id, nombre, pista_id) VALUES ($1, $2, $3) RETURNING *', [req.params.id, nombre, pista_id || null]);
+    res.status(201).json({ success: true, data: row });
+  } catch (err) {
+    console.error('POST /torneos/:id/jueces error:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
 

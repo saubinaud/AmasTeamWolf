@@ -51,6 +51,10 @@ export function SpacePistas({ token }: SpacePistasProps) {
   const [combates, setCombates] = useState<Combate[]>([]);
   const [loadingCombates, setLoadingCombates] = useState(false);
 
+  // Jueces
+  const [jueces, setJueces] = useState<Array<{id: number; nombre: string; pista_id: number|null; pista_numero?: number}>>([]);
+  const [newJuezNombre, setNewJuezNombre] = useState('');
+
   // Modals
   const [showCreatePista, setShowCreatePista] = useState(false);
   const [pistaForm, setPistaForm] = useState({ numero: '', nombre: '' });
@@ -86,6 +90,53 @@ export function SpacePistas({ token }: SpacePistasProps) {
   }, [token]);
 
   useEffect(() => { loadPistas(selectedTorneoId); }, [selectedTorneoId, loadPistas]);
+
+  // Jueces
+  const loadJueces = useCallback(async () => {
+    if (!selectedTorneoId) { setJueces([]); return; }
+    try {
+      const res = await fetch(`${API_BASE}/space/torneos/${selectedTorneoId}/jueces`, { headers: authHeaders(token) });
+      const data = await res.json();
+      if (data.success) setJueces(data.data);
+    } catch { setJueces([]); }
+  }, [selectedTorneoId, token]);
+
+  useEffect(() => { loadJueces(); }, [loadJueces]);
+
+  const createJuez = async () => {
+    if (!newJuezNombre.trim() || !selectedTorneoId) return;
+    try {
+      const res = await fetch(`${API_BASE}/space/torneos/${selectedTorneoId}/jueces`, {
+        method: 'POST', headers: authHeaders(token),
+        body: JSON.stringify({ nombre: newJuezNombre.trim() }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success('Juez agregado');
+      setNewJuezNombre('');
+      loadJueces();
+    } catch { toast.error('Error al agregar juez'); }
+  };
+
+  const deleteJuez = async (id: number) => {
+    if (!confirm('Eliminar este juez?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/space/torneos/jueces/${id}`, { method: 'DELETE', headers: authHeaders(token) });
+      if (!res.ok) throw new Error();
+      toast.success('Juez eliminado');
+      loadJueces();
+    } catch { toast.error('Error al eliminar juez'); }
+  };
+
+  const assignJuezToPista = async (juezId: number, pistaId: number | null) => {
+    try {
+      const res = await fetch(`${API_BASE}/space/torneos/jueces/${juezId}`, {
+        method: 'PUT', headers: authHeaders(token),
+        body: JSON.stringify({ pista_id: pistaId }),
+      });
+      if (!res.ok) throw new Error();
+      loadJueces();
+    } catch { toast.error('Error al asignar juez'); }
+  };
 
   // All combates for the torneo (loaded with pistas for tatami cards)
   const [allCombates, setAllCombates] = useState<Combate[]>([]);
@@ -540,6 +591,32 @@ export function SpacePistas({ token }: SpacePistasProps) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Jueces */}
+      {selectedTorneoId && !selectedPista && (
+        <div className="mt-8">
+          <h3 className="text-stone-900 text-sm font-semibold mb-3">Jueces del torneo</h3>
+          <div className={cx.card + ' divide-y divide-stone-100'}>
+            {jueces.map(j => (
+              <div key={j.id} className="flex items-center gap-3 px-4 py-3">
+                <span className="text-stone-800 text-sm font-medium flex-1">{j.nombre}</span>
+                <SpaceSelect
+                  value={String(j.pista_id || '')}
+                  onChange={(v: string) => assignJuezToPista(j.id, v ? parseInt(v) : null)}
+                  options={[{ value: '', label: 'Sin asignar' }, ...pistas.map(p => ({ value: String(p.id), label: `Pista ${p.numero}` }))]}
+                  placeholder="Asignar pista"
+                />
+                <button onClick={() => deleteJuez(j.id)} className={cx.btnIcon + ' text-rose-400'}><Trash2 size={14} /></button>
+              </div>
+            ))}
+            {jueces.length === 0 && <p className="px-4 py-6 text-stone-400 text-sm text-center">Sin jueces registrados</p>}
+          </div>
+          <div className="flex gap-2 mt-3">
+            <input value={newJuezNombre} onChange={e => setNewJuezNombre(e.target.value)} placeholder="Nombre del juez..." className={cx.input + ' flex-1'} />
+            <button onClick={createJuez} disabled={!newJuezNombre.trim()} className={cx.btnPrimary + ' disabled:opacity-50'}>Agregar</button>
+          </div>
         </div>
       )}
 

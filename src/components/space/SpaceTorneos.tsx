@@ -128,6 +128,16 @@ export function SpaceTorneos({ token }: { token: string }) {
     nombre: '', descripcion: '', tipo: 'regional', fecha: '', hora: '', lugar: '', precio_entrada: '25',
     precios: [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }],
     descuentos: [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }],
+    config: {
+      rounds: 2,
+      duracion_round_seg: 120,
+      descanso_seg: 60,
+      jueces_por_pista: 1,
+      tipos_puntaje: [
+        { id: 'punto', nombre: 'Punto', valor: 1, color: '#22c55e' },
+        { id: 'falta', nombre: 'Falta', valor: -1, color: '#ef4444' },
+      ] as Array<{ id: string; nombre: string; valor: number; color: string }>,
+    },
   });
   const [saving, setSaving] = useState(false);
 
@@ -196,12 +206,24 @@ export function SpaceTorneos({ token }: { token: string }) {
   }, [loadTorneos]);
 
   // Create / Edit tournament
+  const defaultConfig = {
+    rounds: 2,
+    duracion_round_seg: 120,
+    descanso_seg: 60,
+    jueces_por_pista: 1,
+    tipos_puntaje: [
+      { id: 'punto', nombre: 'Punto', valor: 1, color: '#22c55e' },
+      { id: 'falta', nombre: 'Falta', valor: -1, color: '#ef4444' },
+    ] as Array<{ id: string; nombre: string; valor: number; color: string }>,
+  };
+
   const openCreateModal = useCallback(() => {
     setEditingTorneo(null);
     setForm({
       nombre: '', descripcion: '', tipo: 'regional', fecha: '', hora: '', lugar: '', precio_entrada: '25',
       precios: [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }],
       descuentos: [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }],
+      config: { ...defaultConfig, tipos_puntaje: [...defaultConfig.tipos_puntaje] },
     });
     setShowModal(true);
   }, []);
@@ -210,6 +232,7 @@ export function SpaceTorneos({ token }: { token: string }) {
     setEditingTorneo(t);
     const defPrecios = [{ desde: 1, hasta: 1, precio: '80' }, { desde: 2, hasta: 2, precio: '150' }, { desde: 3, hasta: 99, precio: '200' }];
     const defDescuentos = [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: '20' }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: '30' }];
+    const loadedConfig = (t as any).config ?? {};
     setForm({
       nombre: t.nombre ?? '',
       descripcion: t.descripcion ?? '',
@@ -220,6 +243,16 @@ export function SpaceTorneos({ token }: { token: string }) {
       precio_entrada: String(t.precio_entrada ?? 25),
       precios: ((t as any).precios_modalidades || defPrecios).map((p: any) => ({ ...p, precio: String(p.precio) })),
       descuentos: ((t as any).descuentos_programa || defDescuentos).map((d: any) => ({ ...d, porcentaje: String(d.porcentaje) })),
+      config: {
+        rounds: loadedConfig.rounds ?? 2,
+        duracion_round_seg: loadedConfig.duracion_round_seg ?? 120,
+        descanso_seg: loadedConfig.descanso_seg ?? 60,
+        jueces_por_pista: loadedConfig.jueces_por_pista ?? 1,
+        tipos_puntaje: loadedConfig.tipos_puntaje ?? [
+          { id: 'punto', nombre: 'Punto', valor: 1, color: '#22c55e' },
+          { id: 'falta', nombre: 'Falta', valor: -1, color: '#ef4444' },
+        ],
+      },
     });
     setShowModal(true);
   }, []);
@@ -238,6 +271,7 @@ export function SpaceTorneos({ token }: { token: string }) {
         precio_entrada: parseFloat(form.precio_entrada) || 25,
         precios_modalidades: form.precios.map(p => ({ desde: p.desde, hasta: p.hasta, precio: parseFloat(String(p.precio)) || 0 })),
         descuentos_programa: form.descuentos.map(d => ({ programa: d.programa, label: d.label, porcentaje: parseFloat(String(d.porcentaje)) || 0 })),
+        config: form.config,
       };
       if (editingTorneo) {
         await apiFetch(`/${editingTorneo.id}`, token, { method: 'PUT', body: JSON.stringify(body) });
@@ -878,6 +912,46 @@ export function SpaceTorneos({ token }: { token: string }) {
                   <span className="text-stone-400 text-xs">%</span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Configuración de combate */}
+          <div className="space-y-4 border-t border-stone-200 pt-4 mt-4">
+            <h3 className="text-stone-900 text-sm font-semibold">Configuración de combate</h3>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={cx.label}>Rounds</label>
+                <input type="number" min={1} max={5} value={form.config.rounds} onChange={e => setForm(f => ({ ...f, config: { ...f.config, rounds: parseInt(e.target.value) || 1 } }))} className={cx.input} />
+              </div>
+              <div>
+                <label className={cx.label}>Duración por round (seg)</label>
+                <input type="number" min={30} max={600} value={form.config.duracion_round_seg} onChange={e => setForm(f => ({ ...f, config: { ...f.config, duracion_round_seg: parseInt(e.target.value) || 120 } }))} className={cx.input} />
+              </div>
+              <div>
+                <label className={cx.label}>Descanso entre rounds (seg)</label>
+                <input type="number" min={0} max={120} value={form.config.descanso_seg} onChange={e => setForm(f => ({ ...f, config: { ...f.config, descanso_seg: parseInt(e.target.value) || 0 } }))} className={cx.input} />
+              </div>
+              <div>
+                <label className={cx.label}>Jueces por pista</label>
+                <input type="number" min={1} max={5} value={form.config.jueces_por_pista} onChange={e => setForm(f => ({ ...f, config: { ...f.config, jueces_por_pista: parseInt(e.target.value) || 1 } }))} className={cx.input} />
+              </div>
+            </div>
+
+            {/* Score types */}
+            <div>
+              <label className={cx.label}>Tipos de puntaje</label>
+              <div className="space-y-2">
+                {form.config.tipos_puntaje.map((tipo, i) => (
+                  <div key={i} className="flex gap-2 items-center">
+                    <input value={tipo.nombre} onChange={e => { const nt = [...form.config.tipos_puntaje]; nt[i] = { ...nt[i], nombre: e.target.value, id: e.target.value.toLowerCase().replace(/\s+/g, '_') }; setForm(f => ({ ...f, config: { ...f.config, tipos_puntaje: nt } })); }} className={cx.input + ' flex-1 !py-1.5 !text-xs'} placeholder="Nombre" />
+                    <input type="number" value={tipo.valor} onChange={e => { const nt = [...form.config.tipos_puntaje]; nt[i] = { ...nt[i], valor: parseInt(e.target.value) || 0 }; setForm(f => ({ ...f, config: { ...f.config, tipos_puntaje: nt } })); }} className={cx.input + ' w-20 !py-1.5 !text-xs'} />
+                    <input type="color" value={tipo.color} onChange={e => { const nt = [...form.config.tipos_puntaje]; nt[i] = { ...nt[i], color: e.target.value }; setForm(f => ({ ...f, config: { ...f.config, tipos_puntaje: nt } })); }} className="w-8 h-8 rounded border border-stone-300 cursor-pointer" />
+                    <button onClick={() => { const nt = form.config.tipos_puntaje.filter((_, idx) => idx !== i); setForm(f => ({ ...f, config: { ...f.config, tipos_puntaje: nt } })); }} className={cx.btnIcon + ' text-rose-400'}><Trash2 size={14} /></button>
+                  </div>
+                ))}
+                <button onClick={() => { const nt = [...form.config.tipos_puntaje, { id: `tipo_${Date.now()}`, nombre: '', valor: 1, color: '#6b7280' }]; setForm(f => ({ ...f, config: { ...f.config, tipos_puntaje: nt } })); }} className={cx.btnGhost + ' text-xs'}>+ Agregar tipo</button>
+              </div>
             </div>
           </div>
         </div>
