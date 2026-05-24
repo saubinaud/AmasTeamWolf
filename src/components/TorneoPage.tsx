@@ -170,12 +170,15 @@ export function TorneoPage({
     const [loadingTorneo, setLoadingTorneo] = useState(true);
     const [torneoError, setTorneoError] = useState('');
 
-    // Step 2: DNI lookup
+    // Step 2: Search (DNI or name)
     const [dni, setDni] = useState('');
     const [isLookingUp, setIsLookingUp] = useState(false);
     const [consultaResult, setConsultaResult] = useState<ConsultaResult | null>(null);
     const [dniStatus, setDniStatus] = useState<'idle' | 'found' | 'not_found'>('idle');
     const [dniError, setDniError] = useState('');
+    const [nameResults, setNameResults] = useState<Array<{ id: number; nombre: string; dni: string; categoria: string }>>([]);
+    const [showNameResults, setShowNameResults] = useState(false);
+    const nameSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Step 3: Modalidades selection
     const [selectedModalidades, setSelectedModalidades] = useState<string[]>([]);
@@ -295,18 +298,58 @@ export function TorneoPage({
         }
     };
 
+    // ---- Search by name ----
+    const searchByName = async (q: string) => {
+        try {
+            const res = await fetch(`${API_BASE}/torneo/consultar?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            if (data?.busqueda && Array.isArray(data.resultados)) {
+                setNameResults(data.resultados);
+                setShowNameResults(data.resultados.length > 0);
+            }
+        } catch {}
+    };
+
+    const selectFromNameResults = (alumno: { dni: string }) => {
+        setShowNameResults(false);
+        setNameResults([]);
+        setDni(alumno.dni);
+        lookupDni(alumno.dni);
+    };
+
     // ---- Handlers ----
     const handleDniChange = (value: string) => {
-        const cleaned = value.replace(/\D/g, '').slice(0, 8);
-        setDni(cleaned);
-        if (cleaned.length < 8) {
+        const isNumericOnly = /^\d*$/.test(value);
+
+        if (isNumericOnly) {
+            // DNI mode: only digits, max 8
+            const cleaned = value.slice(0, 8);
+            setDni(cleaned);
+            setShowNameResults(false);
+            setNameResults([]);
+            if (cleaned.length < 8) {
+                setDniStatus('idle');
+                setDniError('');
+                setConsultaResult(null);
+                setSelectedModalidades([]);
+            }
+            if (cleaned.length === 8) {
+                lookupDni(cleaned);
+            }
+        } else {
+            // Name mode: search by name with debounce
+            setDni(value);
             setDniStatus('idle');
             setDniError('');
             setConsultaResult(null);
             setSelectedModalidades([]);
-        }
-        if (cleaned.length === 8) {
-            lookupDni(cleaned);
+            if (nameSearchRef.current) clearTimeout(nameSearchRef.current);
+            if (value.trim().length >= 3) {
+                nameSearchRef.current = setTimeout(() => searchByName(value.trim()), 400);
+            } else {
+                setShowNameResults(false);
+                setNameResults([]);
+            }
         }
     };
 
@@ -663,7 +706,7 @@ export function TorneoPage({
 
                     <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
                         {[
-                            { step: 1, text: 'Ingresa el DNI del alumno para verificar sus datos', Icon: Search },
+                            { step: 1, text: 'Busca al alumno por DNI o nombre para verificar sus datos', Icon: Search },
                             { step: 2, text: 'Elige las modalidades en las que participara', Icon: CheckCircle2 },
                             { step: 3, text: 'Confirma la inscripcion y listo', Icon: Send },
                         ].map((item, i) => (
@@ -715,7 +758,7 @@ export function TorneoPage({
                                         Registro al Torneo
                                     </h2>
                                     <p className="text-white/60 text-sm md:text-base">
-                                        Ingresa el DNI del alumno para comenzar
+                                        Busca por DNI o nombre del alumno
                                     </p>
                                 </div>
 
@@ -723,16 +766,14 @@ export function TorneoPage({
 
                                     {/* ===== STEP 2: DNI INPUT ===== */}
                                     <div className="space-y-2">
-                                        <Label>DNI del Alumno *</Label>
+                                        <Label>Buscar alumno *</Label>
                                         <div className="relative">
                                             <Input
                                                 type="text"
-                                                inputMode="numeric"
-                                                pattern="[0-9]*"
-                                                placeholder="Ingresa los 8 digitos del DNI"
-                                                maxLength={8}
+                                                placeholder="DNI (8 digitos) o nombre del alumno"
                                                 value={dni}
                                                 onChange={(e: any) => handleDniChange(e.target.value)}
+                                                onFocus={() => nameResults.length > 0 && setShowNameResults(true)}
                                                 className={`${dniStatus === 'not_found' ? 'border-red-500 ring-4 ring-red-500/30' : ''} ${dniStatus === 'found' ? 'border-green-500 ring-4 ring-green-500/30' : ''}`}
                                             />
                                             {isLookingUp && (
@@ -746,7 +787,26 @@ export function TorneoPage({
                                                 </div>
                                             )}
                                         </div>
-                                        {dni.length > 0 && dni.length < 8 && (
+                                        {/* Name search results dropdown */}
+                                        {showNameResults && nameResults.length > 0 && (
+                                            <div className="bg-zinc-900 border border-white/20 rounded-xl shadow-2xl overflow-hidden mt-1">
+                                                {nameResults.map(a => (
+                                                    <button
+                                                        key={a.id}
+                                                        type="button"
+                                                        onClick={() => selectFromNameResults(a)}
+                                                        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                                                    >
+                                                        <div>
+                                                            <p className="text-white text-sm font-medium">{a.nombre}</p>
+                                                            <p className="text-white/40 text-xs">{a.categoria}</p>
+                                                        </div>
+                                                        <span className="text-white/30 text-xs font-mono">{a.dni}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                        {/^\d*$/.test(dni) && dni.length > 0 && dni.length < 8 && (
                                             <p className="text-white/40 text-sm ml-2">
                                                 {8 - dni.length} digitos restantes
                                             </p>

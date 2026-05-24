@@ -75,9 +75,15 @@ router.get('/activo', async (req, res) => {
 // GET /api/torneo/consultar?dni=X — Student lookup with implementos + leadership check
 router.get('/consultar', async (req, res) => {
   try {
-    const { dni } = req.query;
-    if (!dni || typeof dni !== 'string') {
-      return res.status(400).json({ success: false, error: 'dni es requerido' });
+    const { dni, q } = req.query;
+    if (!dni && !q) {
+      return res.status(400).json({ success: false, error: 'dni o q (nombre) es requerido' });
+    }
+
+    // Search by name → return list of matches
+    if (q && typeof q === 'string' && q.trim().length >= 2) {
+      const results = await AlumnoService.buscar(q.trim(), { limit: 10 });
+      return res.json({ busqueda: true, resultados: results });
     }
 
     const alumno = await AlumnoService.buscarPorDni(dni);
