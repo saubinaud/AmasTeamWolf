@@ -61,13 +61,14 @@ router.post('/', async (req, res) => {
     await client.query('BEGIN');
 
     const { rows: [torneo] } = await client.query(`
-      INSERT INTO torneos_config (nombre, tipo, fecha, hora, lugar, descripcion, precio_entrada, precios_modalidades, descuentos_programa)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      INSERT INTO torneos_config (nombre, tipo, fecha, hora, lugar, descripcion, precio_entrada, precios_modalidades, descuentos_programa, config)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `, [nombre, tipoFinal, fecha || null, hora || null, lugar || null, descripcion || null,
         precio_entrada || 25,
         JSON.stringify(precios_modalidades || [{ desde: 1, hasta: 1, precio: 80 }, { desde: 2, hasta: 2, precio: 150 }, { desde: 3, hasta: 99, precio: 200 }]),
         JSON.stringify(descuentos_programa || [{ programa: 'leadership', label: 'Leadership Wolf', porcentaje: 20 }, { programa: 'fighter', label: 'Fighter Wolf', porcentaje: 30 }]),
+        JSON.stringify(req.body.config || {}),
     ]);
 
     // Auto-create default modalidades
@@ -142,6 +143,7 @@ router.put('/:id', async (req, res) => {
     const tiposValidos = ['regional', 'nacional', 'interescuelas', 'panamericano', 'mundial'];
     const tipoFinal = tipo && tiposValidos.includes(tipo) ? tipo : undefined;
 
+    const { config } = req.body;
     const row = await queryOne(`
       UPDATE torneos_config
       SET nombre = COALESCE($1, nombre),
@@ -152,8 +154,9 @@ router.put('/:id', async (req, res) => {
           descripcion = COALESCE($6, descripcion),
           precio_entrada = COALESCE($7, precio_entrada),
           precios_modalidades = COALESCE($8, precios_modalidades),
-          descuentos_programa = COALESCE($9, descuentos_programa)
-      WHERE id = $10
+          descuentos_programa = COALESCE($9, descuentos_programa),
+          config = COALESCE($10, config)
+      WHERE id = $11
       RETURNING *
     `, [nombre || null, tipoFinal || null, fecha || null, hora !== undefined ? hora : null,
         lugar || null,
@@ -161,6 +164,7 @@ router.put('/:id', async (req, res) => {
         precio_entrada !== undefined ? precio_entrada : null,
         precios_modalidades ? JSON.stringify(precios_modalidades) : null,
         descuentos_programa ? JSON.stringify(descuentos_programa) : null,
+        config ? JSON.stringify(config) : null,
         id]);
     res.json({ success: true, data: row });
   } catch (err) {
