@@ -576,7 +576,7 @@ router.post('/batch', async (req, res) => {
             (nombre_alumno, apellido_alumno, rango, cinturon_desde, cinturon_hasta,
              horario, turno, fecha_graduacion, alumno_id, observaciones,
              estado, aprobado, created_by)
-           VALUES ($1, '', $2, $3, $4, $5, $6, $7, $8, $9, 'completada', TRUE, $10)
+           VALUES ($1, '', $2, $3, $4, $5, $6, $7, $8, $9, 'programada', FALSE, $10)
            RETURNING id`,
           [
             alumno.nombre_alumno,
