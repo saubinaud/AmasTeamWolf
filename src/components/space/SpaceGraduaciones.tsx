@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Check, Loader2, GraduationCap, Upload, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, Loader2, GraduationCap, Upload, X, CalendarCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors } from './tokens';
@@ -210,58 +210,97 @@ function GraduacionesTable({
     );
   }
 
+  // Group by fecha
+  const grouped = graduaciones.reduce<Record<string, typeof graduaciones>>((acc, g) => {
+    const key = g.fecha_graduacion || g.fecha || 'sin-fecha';
+    const dateKey = key.split('T')[0];
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(g);
+    return acc;
+  }, {});
+
+  // Sort date keys descending (newest first)
+  const dateKeys = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-stone-200">
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Alumno</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Rango</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider hidden md:table-cell">Turno</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider hidden sm:table-cell">Fecha</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Estado</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {graduaciones.map(g => (
-              <tr key={g.id} className="border-b border-stone-200 last:border-0">
-                <td className="px-5 py-3.5 text-stone-900 font-medium whitespace-nowrap">
-                  {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
-                </td>
-                <td className="px-5 py-3.5">
-                  <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-[var(--accent)]">
-                    {g.rango}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5 text-stone-600 hidden md:table-cell">{turnoLabel(g.turno)}</td>
-                <td className="px-5 py-3.5 text-stone-600 hidden sm:table-cell">{formatFecha(g.fecha_graduacion || g.fecha)}</td>
-                <td className="px-5 py-3.5">
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${ESTADO_PILL[g.estado] ?? 'text-stone-500'}`}>
-                    {g.estado}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5 text-right">
-                  <div className="inline-flex gap-1">
-                    {g.estado === 'programada' && (
-                      <button onClick={() => onAprobar(g)} className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-50 transition-colors" title="Aprobar graduación">
-                        <Check size={15} />
-                      </button>
-                    )}
-                    <button onClick={() => onEdit(g)} className={cx.btnIcon} title="Editar">
-                      <Pencil size={15} />
-                    </button>
-                    <button onClick={() => onDelete(g.id)} className={cx.btnDanger} title="Eliminar">
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="space-y-4">
+      {dateKeys.map(dateKey => {
+        const items = grouped[dateKey];
+        const programadas = items.filter(g => g.estado === 'programada').length;
+        const completadas = items.filter(g => g.estado === 'completada').length;
+        const total = items.length;
+
+        return (
+          <div key={dateKey} className={cx.card + ' overflow-hidden'}>
+            {/* Date block header */}
+            <div className="flex items-center justify-between px-5 py-4 bg-stone-50 border-b border-stone-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[var(--accent-light)] border border-[var(--accent)]/20 flex items-center justify-center">
+                  <CalendarCheck size={18} className="text-[var(--accent)]" />
+                </div>
+                <div>
+                  <p className="text-stone-900 text-sm font-semibold">{formatFecha(dateKey)}</p>
+                  <p className="text-stone-400 text-[11px]">{total} alumno{total !== 1 ? 's' : ''}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {programadas > 0 && <span className={cx.badge(badgeColors.yellow)}>{programadas} programada{programadas !== 1 ? 's' : ''}</span>}
+                {completadas > 0 && <span className={cx.badge(badgeColors.green)}>{completadas} completada{completadas !== 1 ? 's' : ''}</span>}
+              </div>
+            </div>
+
+            {/* Students table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-stone-100">
+                    <th className={cx.th}>Alumno</th>
+                    <th className={cx.th}>Rango</th>
+                    <th className={cx.th + ' hidden md:table-cell'}>Turno</th>
+                    <th className={cx.th}>Estado</th>
+                    <th className={cx.th + ' text-right'}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.map(g => (
+                    <tr key={g.id} className={cx.tr}>
+                      <td className={cx.td + ' text-stone-900 font-medium whitespace-nowrap'}>
+                        {g.nombre_alumno || g.nombre} {g.apellido_alumno || g.apellido}
+                      </td>
+                      <td className={cx.td}>
+                        <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-[var(--accent)]">
+                          {g.rango}
+                        </span>
+                      </td>
+                      <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>{turnoLabel(g.turno)}</td>
+                      <td className={cx.td}>
+                        <span className={cx.badge(ESTADO_PILL[g.estado] ?? badgeColors.gray)}>
+                          {g.estado}
+                        </span>
+                      </td>
+                      <td className={cx.td + ' text-right'}>
+                        <div className="inline-flex gap-1">
+                          {g.estado === 'programada' && (
+                            <button onClick={() => onAprobar(g)} className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-emerald-600 hover:bg-emerald-50 transition-colors" title="Aprobar">
+                              <Check size={15} />
+                            </button>
+                          )}
+                          <button onClick={() => onEdit(g)} className={cx.btnIcon} title="Editar">
+                            <Pencil size={15} />
+                          </button>
+                          <button onClick={() => onDelete(g.id)} className={cx.btnDanger} title="Eliminar">
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
