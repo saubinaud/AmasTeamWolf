@@ -25,7 +25,20 @@ const LOCALE = 'es-PE';
 export function formatFecha(iso: string | Date | undefined | null): string {
   if (!iso) return '—';
   try {
-    const d = iso instanceof Date ? iso : new Date(iso);
+    // Dates from PostgreSQL DATE columns come as "YYYY-MM-DDT00:00:00.000Z" or "YYYY-MM-DD"
+    // Parsing at midnight UTC shifts to previous day in Lima (UTC-5).
+    // Fix: if the time portion is midnight or missing, use noon UTC instead.
+    let d: Date;
+    if (typeof iso === 'string') {
+      const isMidnightOrDateOnly = /^\d{4}-\d{2}-\d{2}(T00:00:00|$)/.test(iso);
+      if (isMidnightOrDateOnly) {
+        d = new Date(iso.split('T')[0] + 'T12:00:00Z');
+      } else {
+        d = new Date(iso);
+      }
+    } else {
+      d = iso instanceof Date ? iso : new Date(iso);
+    }
     if (isNaN(d.getTime())) return String(iso);
     return d.toLocaleDateString(LOCALE, {
       day: '2-digit',
