@@ -155,7 +155,10 @@ function authHeaders(token: string) {
 
 function formatFecha(iso: string): string {
   try {
-    return new Date(iso).toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'America/Lima' });
+    // Parse date-only as noon UTC to avoid timezone shift (UTC midnight → previous day in Lima)
+    const dateOnly = iso.split('T')[0];
+    const d = new Date(dateOnly + 'T12:00:00Z');
+    return d.toLocaleDateString('es-PE', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'America/Lima' });
   } catch {
     return iso;
   }
