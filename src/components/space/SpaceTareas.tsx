@@ -54,7 +54,8 @@ export function SpaceTareas({ token }: SpaceTareasProps) {
     try {
       const res = await fetch(`${API_BASE}/space/tareas`, { headers: authHeaders(token) });
       if (!res.ok) throw new Error('Error al cargar tareas');
-      setTareas(await res.json());
+      const json = await res.json();
+      setTareas(Array.isArray(json) ? json : json.data || []);
     } catch (e: any) { toast.error(e.message || 'Error al cargar tareas'); }
     finally { setLoading(false); }
   }, [token]);
