@@ -22,6 +22,7 @@ import { SpaceAsistenciaProfesores } from './SpaceAsistenciaProfesores';
 import { SpaceTorneos } from './SpaceTorneos';
 import { SpacePistas } from './SpacePistas';
 import { SpaceReferidos } from './SpaceReferidos';
+import { SpaceTareas } from './SpaceTareas';
 
 export type SpacePage =
   | 'dashboard'
@@ -42,6 +43,7 @@ export type SpacePage =
   | 'torneos'
   | 'pistas'
   | 'referidos'
+  | 'tareas'
   | 'config';
 
 export type Academia = 'amas' | 'dk';
@@ -214,6 +216,7 @@ export function SpaceApp({ onNavigate }: { onNavigate: (page: string) => void })
       {currentPage === 'torneos' && <SpaceTorneos token={token} />}
       {currentPage === 'pistas' && <SpacePistas token={token} />}
       {currentPage === 'referidos' && <SpaceReferidos token={token} />}
+      {currentPage === 'tareas' && <SpaceTareas token={token} />}
       {currentPage === 'config' && <SpaceConfig token={token} />}
     </SpaceLayout>
     <Toaster theme="light" position="bottom-right" richColors />
