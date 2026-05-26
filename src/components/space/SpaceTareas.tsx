@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Plus, Check, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
-import { DndContext, DragOverlay, closestCenter, PointerSensor, useSensor, useSensors, type DragStartEvent, type DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, useDroppable, type DragStartEvent, type DragOverEvent, type DragEndEvent } from '@dnd-kit/core';
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { API_BASE } from '../../config/api';
@@ -86,21 +86,22 @@ function SortableCard({ tarea, onEdit, onToggle, onDelete }: { tarea: Tarea; onE
 }
 
 // ── Droppable Column ──
-function KanbanColumn({ col, items, onEdit, onToggle, onDelete }: {
-  col: typeof COLUMNS[0]; items: Tarea[];
+function KanbanColumn({ col, items, isOver, onEdit, onToggle, onDelete }: {
+  col: typeof COLUMNS[0]; items: Tarea[]; isOver: boolean;
   onEdit: (t: Tarea) => void; onToggle: (t: Tarea) => void; onDelete: (id: number) => void;
 }) {
+  const { setNodeRef } = useDroppable({ id: col.key });
   return (
-    <div className="flex-1 min-w-[220px] bg-stone-50/80 rounded-xl p-3">
+    <div ref={setNodeRef} className={`flex-1 min-w-[220px] rounded-xl p-3 transition-colors ${isOver ? 'bg-[var(--accent-light)] ring-2 ring-[var(--accent)]/20' : 'bg-stone-50/80'}`}>
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className={`w-2 h-2 rounded-full ${col.color}`} />
         <h3 className="text-stone-600 text-xs font-semibold uppercase tracking-wider">{col.title}</h3>
         <span className="text-stone-300 text-xs">{items.length}</span>
       </div>
       <SortableContext items={items.map(t => t.id)} strategy={verticalListSortingStrategy}>
-        <div className="space-y-2 min-h-[60px]">
+        <div className="space-y-2 min-h-[80px]">
           {items.map(t => <SortableCard key={t.id} tarea={t} onEdit={onEdit} onToggle={onToggle} onDelete={onDelete} />)}
-          {items.length === 0 && <p className="text-stone-300 text-xs text-center py-8">Sin tareas</p>}
+          {items.length === 0 && <p className="text-stone-300 text-xs text-center py-8">Arrastra tareas aqui</p>}
         </div>
       </SortableContext>
     </div>
@@ -119,6 +120,7 @@ export function SpaceTareas({ token }: SpaceTareasProps) {
   const [hideCompleted, setHideCompleted] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [activeId, setActiveId] = useState<number | null>(null);
+  const [overColumn, setOverColumn] = useState<string | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -193,35 +195,33 @@ export function SpaceTareas({ token }: SpaceTareasProps) {
 
   // DnD handlers
   const handleDragStart = (event: DragStartEvent) => setActiveId(event.active.id as number);
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setActiveId(null);
-    const { active, over } = event;
-    if (!over) return;
 
-    const draggedTarea = tareas.find(t => t.id === active.id);
-    if (!draggedTarea) return;
-
-    // Determine target column from where it was dropped
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    if (!over) { setOverColumn(null); return; }
+    // over.id can be a column key (string) or a tarea id (number)
+    const colKey = COLUMNS.find(c => c.key === over.id)?.key;
+    if (colKey) { setOverColumn(colKey); return; }
+    // If over a tarea, find its column
     const overTarea = tareas.find(t => t.id === over.id);
-    const targetEstado = overTarea?.estado || (over.id as string);
+    setOverColumn(overTarea?.estado || null);
+  };
 
-    // Check if it's a column ID (string) or a tarea ID (number)
-    let newEstado: string;
-    if (typeof over.id === 'string' && COLUMNS.some(c => c.key === over.id)) {
-      newEstado = over.id;
-    } else if (overTarea) {
-      newEstado = overTarea.estado;
-    } else {
-      return;
-    }
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const targetCol = overColumn;
+    setActiveId(null);
+    setOverColumn(null);
 
-    if (draggedTarea.estado !== newEstado) {
-      setTareas(prev => prev.map(t => t.id === active.id ? { ...t, estado: newEstado as Tarea['estado'] } : t));
-      await fetch(`${API_BASE}/space/tareas/${active.id}`, {
-        method: 'PUT', headers: authHeaders(token), body: JSON.stringify({ estado: newEstado }),
-      });
-      fetchTareas();
-    }
+    const { active } = event;
+    const draggedTarea = tareas.find(t => t.id === active.id);
+    if (!draggedTarea || !targetCol || draggedTarea.estado === targetCol) return;
+
+    // Optimistic update
+    setTareas(prev => prev.map(t => t.id === active.id ? { ...t, estado: targetCol as Tarea['estado'] } : t));
+    await fetch(`${API_BASE}/space/tareas/${active.id}`, {
+      method: 'PUT', headers: authHeaders(token), body: JSON.stringify({ estado: targetCol }),
+    });
+    fetchTareas();
   };
 
   const activeTarea = activeId ? tareas.find(t => t.id === activeId) : null;
@@ -288,11 +288,12 @@ export function SpaceTareas({ token }: SpaceTareasProps) {
 
       {/* Kanban View */}
       {view === 'kanban' && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+        <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
           <div className="flex gap-4 overflow-x-auto pb-2">
             {COLUMNS.map(col => (
               <KanbanColumn key={col.key} col={col}
                 items={filtered.filter(t => t.estado === col.key)}
+                isOver={overColumn === col.key}
                 onEdit={openEditModal} onToggle={toggleComplete} onDelete={deleteTarea}
               />
             ))}
