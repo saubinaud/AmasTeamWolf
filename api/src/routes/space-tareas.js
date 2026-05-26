@@ -59,16 +59,16 @@ router.get('/', async (req, res) => {
 // POST / — create task
 router.post('/', async (req, res) => {
   try {
-    const { titulo, descripcion, prioridad, fecha_limite } = req.body;
+    const { titulo, descripcion, prioridad, fecha_limite, asignado_a, imagen_url } = req.body;
     if (!titulo) {
       return res.status(400).json({ success: false, error: 'El titulo es requerido' });
     }
 
     const row = await queryOne(`
-      INSERT INTO space_tareas (titulo, descripcion, prioridad, fecha_limite, created_by)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO space_tareas (titulo, descripcion, prioridad, fecha_limite, created_by, asignado_a, imagen_url)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *
-    `, [titulo, descripcion || null, prioridad || 'media', fecha_limite || null, null]);
+    `, [titulo, descripcion || null, prioridad || 'media', fecha_limite || null, null, asignado_a || null, imagen_url || null]);
 
     res.status(201).json({ success: true, data: row });
   } catch (err) {
@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, descripcion, estado, prioridad, fecha_limite, orden } = req.body;
+    const { titulo, descripcion, estado, prioridad, fecha_limite, orden, asignado_a, imagen_url } = req.body;
 
     const fields = [];
     const values = [];
@@ -93,6 +93,8 @@ router.put('/:id', async (req, res) => {
     if (prioridad !== undefined) { fields.push(`prioridad = $${idx++}`); values.push(prioridad); }
     if (fecha_limite !== undefined) { fields.push(`fecha_limite = $${idx++}`); values.push(fecha_limite); }
     if (orden !== undefined) { fields.push(`orden = $${idx++}`); values.push(orden); }
+    if (asignado_a !== undefined) { fields.push(`asignado_a = $${idx++}`); values.push(asignado_a); }
+    if (imagen_url !== undefined) { fields.push(`imagen_url = $${idx++}`); values.push(imagen_url); }
 
     if (fields.length === 0) {
       return res.status(400).json({ success: false, error: 'No hay campos para actualizar' });
@@ -105,6 +107,13 @@ router.put('/:id', async (req, res) => {
     `, values);
 
     if (!row) return res.status(404).json({ success: false, error: 'Tarea no encontrada' });
+
+    // After the update, if estado changed to completada, clear image
+    if (req.body.estado === 'completada') {
+      await queryOne('UPDATE space_tareas SET imagen_url = NULL WHERE id = $1', [req.params.id]);
+      row.imagen_url = null;
+    }
+
     res.json({ success: true, data: row });
   } catch (err) {
     console.error('PUT /tareas/:id error:', err);
