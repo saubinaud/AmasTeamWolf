@@ -45,6 +45,7 @@ interface Correccion {
   grad_apellido?: string;
   rango?: string;
   fecha_graduacion?: string;
+  created_at?: string;
 }
 
 interface AlumnoBusqueda {
@@ -356,7 +357,7 @@ function CorreccionesTable({
             <div className="bg-stone-50 rounded-xl p-4 space-y-2 border border-stone-200">
               <div className="flex justify-between"><span className="text-stone-400 text-sm">Nombre</span><span className="text-stone-900 text-sm font-medium">{selected.nombre} {selected.apellido || ''}</span></div>
               {selected.correo && <div className="flex justify-between"><span className="text-stone-400 text-sm">Correo</span><span className="text-stone-900 text-sm">{selected.correo}</span></div>}
-              <div className="flex justify-between"><span className="text-stone-400 text-sm">Fecha envio</span><span className="text-stone-500 text-sm">{formatFecha(selected.fecha)}</span></div>
+              <div className="flex justify-between"><span className="text-stone-400 text-sm">Fecha envio</span><span className="text-stone-500 text-sm">{formatFecha(selected.fecha || selected.created_at)}</span></div>
             </div>
           </section>
 
@@ -409,7 +410,7 @@ function CorreccionesTable({
                 <td className={cx.td + ' hidden sm:table-cell'}>
                   {c.rango && <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-[var(--accent)]">{c.rango}</span>}
                 </td>
-                <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>{formatFecha(c.fecha)}</td>
+                <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>{formatFecha(c.fecha || c.created_at)}</td>
                 <td className={cx.td}>
                   <span className={cx.badge(CORRECCION_PILL[c.estado] ?? badgeColors.gray)}>{c.estado}</span>
                 </td>
@@ -1119,7 +1120,7 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   const fetchCorrecciones = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/space/graduaciones/correcciones`, { headers: authHeaders(token) });
+      const res = await fetch(`${API_BASE}/space/graduaciones/correcciones?estado=todas`, { headers: authHeaders(token) });
       const data = await res.json();
       if (Array.isArray(data.data)) setCorrecciones(data.data);
       else if (Array.isArray(data)) setCorrecciones(data);
