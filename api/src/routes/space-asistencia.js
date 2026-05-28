@@ -418,4 +418,16 @@ router.post('/historica/batch', async (req, res) => {
   }
 });
 
+// DELETE /api/space/asistencia/:id — Eliminar un registro de asistencia
+router.delete('/:id', async (req, res) => {
+  try {
+    const row = await queryOne('DELETE FROM asistencias WHERE id = $1 RETURNING *', [req.params.id]);
+    if (!row) return res.status(404).json({ success: false, error: 'Registro no encontrado' });
+    res.json({ success: true, data: row });
+  } catch (err) {
+    console.error('DELETE /asistencia/:id error:', err);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
+  }
+});
+
 module.exports = router;

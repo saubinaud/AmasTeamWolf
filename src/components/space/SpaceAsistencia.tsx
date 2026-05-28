@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { CalendarCheck, Download, Users, Clock, QrCode, ExternalLink } from 'lucide-react';
+import { CalendarCheck, Download, Users, Clock, QrCode, ExternalLink, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../../config/api';
 import { cx, badgeColors, statGradients } from './tokens';
@@ -209,6 +209,18 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
     }
   }, [token, desde, hasta]);
 
+  const handleDeleteAsistencia = useCallback(async (id: number) => {
+    if (!confirm('¿Eliminar este registro de asistencia?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/space/asistencia/${id}`, { method: 'DELETE', headers: authHeaders(token) });
+      if (res.ok) {
+        toast.success('Asistencia eliminada');
+        setAsistencias(prev => prev.filter(a => a.id !== id));
+        fetchStats();
+      } else toast.error('Error al eliminar');
+    } catch { toast.error('Error de conexion'); }
+  }, [token, fetchStats]);
+
   useEffect(() => {
     fetchStats();
     fetchHoy();
@@ -377,6 +389,7 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
                     <th className={cx.th + ' hidden sm:table-cell'}>Turno</th>
                     <th className={cx.th + ' hidden md:table-cell'}>Programa</th>
                     <th className={cx.th}>Asistio</th>
+                    <th className={cx.th + ' text-right'}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -396,6 +409,11 @@ export function SpaceAsistencia({ token }: SpaceAsistenciaProps) {
                         <span className={cx.badge(a.asistio === 'Sí' ? badgeColors.green : badgeColors.red)}>
                           {a.asistio || 'No'}
                         </span>
+                      </td>
+                      <td className={cx.td + ' text-right'}>
+                        <button onClick={() => handleDeleteAsistencia(a.id)} className={cx.btnIcon + ' text-stone-300 hover:text-rose-400'} title="Eliminar asistencia">
+                          <Trash2 size={14} />
+                        </button>
                       </td>
                     </tr>
                   ))}
