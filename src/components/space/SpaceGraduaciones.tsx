@@ -35,9 +35,16 @@ interface GraduacionStats {
 interface Correccion {
   id: number;
   nombre: string;
+  apellido?: string;
+  correo?: string;
   comentario: string;
   fecha: string;
   estado: 'pendiente' | 'resuelta' | 'rechazada';
+  graduacion_id?: number;
+  grad_nombre?: string;
+  grad_apellido?: string;
+  rango?: string;
+  fecha_graduacion?: string;
 }
 
 interface AlumnoBusqueda {
@@ -315,6 +322,8 @@ function CorreccionesTable({
   onResolve: (id: number) => void;
   onReject: (id: number) => void;
 }) {
+  const [selected, setSelected] = useState<Correccion | null>(null);
+
   if (correcciones.length === 0) {
     return (
       <div className="bg-white border border-stone-200 rounded-2xl py-16 text-center">
@@ -325,44 +334,84 @@ function CorreccionesTable({
   }
 
   return (
+    <>
+    {/* Detail Modal */}
+    {selected && (
+      <Modal open onClose={() => setSelected(null)} title="Detalle de corrección"
+        footer={selected.estado === 'pendiente' ? (
+          <>
+            <button onClick={() => { onReject(selected.id); setSelected(null); }} className={cx.btnDanger + ' flex items-center gap-2'}>
+              <X size={14} /> Rechazar
+            </button>
+            <button onClick={() => { onResolve(selected.id); setSelected(null); }} className={cx.btnPrimary + ' flex items-center gap-2'}>
+              <Check size={14} /> Resolver corrección
+            </button>
+          </>
+        ) : undefined}
+      >
+        <div className="space-y-5">
+          {/* Quien envio */}
+          <section>
+            <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Enviado por</h3>
+            <div className="bg-stone-50 rounded-xl p-4 space-y-2 border border-stone-200">
+              <div className="flex justify-between"><span className="text-stone-400 text-sm">Nombre</span><span className="text-stone-900 text-sm font-medium">{selected.nombre} {selected.apellido || ''}</span></div>
+              {selected.correo && <div className="flex justify-between"><span className="text-stone-400 text-sm">Correo</span><span className="text-stone-900 text-sm">{selected.correo}</span></div>}
+              <div className="flex justify-between"><span className="text-stone-400 text-sm">Fecha envio</span><span className="text-stone-500 text-sm">{formatFecha(selected.fecha)}</span></div>
+            </div>
+          </section>
+
+          {/* Graduacion relacionada */}
+          {(selected.grad_nombre || selected.rango) && (
+            <section>
+              <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Graduación</h3>
+              <div className="bg-stone-50 rounded-xl p-4 space-y-2 border border-stone-200">
+                {selected.grad_nombre && <div className="flex justify-between"><span className="text-stone-400 text-sm">Alumno</span><span className="text-stone-900 text-sm font-medium">{selected.grad_nombre} {selected.grad_apellido || ''}</span></div>}
+                {selected.rango && <div className="flex justify-between"><span className="text-stone-400 text-sm">Rango</span><span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-[var(--accent)]">{selected.rango}</span></div>}
+                {selected.fecha_graduacion && <div className="flex justify-between"><span className="text-stone-400 text-sm">Fecha graduación</span><span className="text-stone-500 text-sm">{formatFecha(selected.fecha_graduacion)}</span></div>}
+              </div>
+            </section>
+          )}
+
+          {/* Comentario / Correccion solicitada */}
+          <section>
+            <h3 className="text-stone-500 text-xs font-medium uppercase tracking-wider mb-3">Corrección solicitada</h3>
+            <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+              <p className="text-stone-800 text-sm whitespace-pre-wrap">{selected.comentario}</p>
+            </div>
+          </section>
+
+          {/* Estado actual */}
+          <div className="flex justify-between items-center">
+            <span className="text-stone-400 text-sm">Estado</span>
+            <span className={cx.badge(CORRECCION_PILL[selected.estado] ?? badgeColors.gray)}>{selected.estado}</span>
+          </div>
+        </div>
+      </Modal>
+    )}
+
     <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-stone-200">
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Nombre</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Comentario</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider">Estado</th>
-              <th className="px-5 py-3 text-stone-400 font-medium text-xs uppercase tracking-wider text-right">Accion</th>
+              <th className={cx.th}>Alumno</th>
+              <th className={cx.th}>Corrección</th>
+              <th className={cx.th + ' hidden sm:table-cell'}>Rango</th>
+              <th className={cx.th + ' hidden md:table-cell'}>Fecha</th>
+              <th className={cx.th}>Estado</th>
             </tr>
           </thead>
           <tbody>
             {correcciones.map(c => (
-              <tr key={c.id} className="border-b border-stone-200 last:border-0">
-                <td className="px-5 py-3.5 text-stone-900 font-medium">{c.nombre}</td>
-                <td className="px-5 py-3.5 text-stone-600 max-w-xs truncate">{c.comentario}</td>
-                <td className="px-5 py-3.5">
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${CORRECCION_PILL[c.estado] ?? 'text-stone-500'}`}>
-                    {c.estado}
-                  </span>
+              <tr key={c.id} onClick={() => setSelected(c)} className={cx.tr + ' cursor-pointer'}>
+                <td className={cx.td + ' text-stone-900 font-medium'}>{c.grad_nombre || c.nombre} {c.grad_apellido || c.apellido || ''}</td>
+                <td className={cx.td + ' text-stone-600 max-w-[200px] truncate'}>{c.comentario}</td>
+                <td className={cx.td + ' hidden sm:table-cell'}>
+                  {c.rango && <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-[var(--accent)]">{c.rango}</span>}
                 </td>
-                <td className="px-5 py-3.5 text-right">
-                  {c.estado === 'pendiente' && (
-                    <div className="inline-flex gap-2">
-                      <button
-                        onClick={() => onResolve(c.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-emerald-400 hover:bg-emerald-50 transition-colors"
-                      >
-                        Resolver
-                      </button>
-                      <button
-                        onClick={() => onReject(c.id)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-red-400 hover:bg-rose-50 transition-colors"
-                      >
-                        Rechazar
-                      </button>
-                    </div>
-                  )}
+                <td className={cx.td + ' text-stone-500 hidden md:table-cell'}>{formatFecha(c.fecha)}</td>
+                <td className={cx.td}>
+                  <span className={cx.badge(CORRECCION_PILL[c.estado] ?? badgeColors.gray)}>{c.estado}</span>
                 </td>
               </tr>
             ))}
@@ -370,6 +419,7 @@ function CorreccionesTable({
         </table>
       </div>
     </div>
+    </>
   );
 }
 
