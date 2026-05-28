@@ -1128,12 +1128,8 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchGraduaciones(), fetchStats()]).finally(() => setLoading(false));
-  }, [fetchGraduaciones, fetchStats]);
-
-  useEffect(() => {
-    if (tab === 'correcciones') fetchCorrecciones();
-  }, [tab, fetchCorrecciones]);
+    Promise.all([fetchGraduaciones(), fetchStats(), fetchCorrecciones()]).finally(() => setLoading(false));
+  }, [fetchGraduaciones, fetchStats, fetchCorrecciones]);
 
 
   // Close autocomplete on outside click
@@ -1382,6 +1378,21 @@ export function SpaceGraduaciones({ token }: SpaceGraduacionesProps) {
           Correcciones
         </button>
       </div>
+
+      {/* Correcciones pendientes — siempre visibles si hay */}
+      {correcciones.filter(c => c.estado === 'pendiente').length > 0 && tab === 'graduaciones' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <h3 className="text-stone-900 text-sm font-semibold">Correcciones pendientes ({correcciones.filter(c => c.estado === 'pendiente').length})</h3>
+          </div>
+          <CorreccionesTable
+            correcciones={correcciones.filter(c => c.estado === 'pendiente')}
+            onResolve={handleResolve}
+            onReject={handleReject}
+          />
+        </div>
+      )}
 
       {tab === 'graduaciones' && (
         <>
