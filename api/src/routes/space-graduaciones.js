@@ -45,14 +45,21 @@ router.get('/correcciones', async (req, res) => {
   try {
     const estado = req.query.estado || 'pendiente';
 
+    const params = [];
+    let where = '';
+    if (estado && estado !== 'todas') {
+      params.push(estado);
+      where = `WHERE gc.estado = $1`;
+    }
     const rows = await query(
-      `SELECT gc.*, g.nombre_alumno AS grad_nombre, g.apellido_alumno AS grad_apellido, g.rango, g.fecha_graduacion
+      `SELECT gc.*, gc.created_at AS fecha,
+              g.nombre_alumno AS grad_nombre, g.apellido_alumno AS grad_apellido, g.rango, g.fecha_graduacion
        FROM graduacion_correcciones gc
        LEFT JOIN graduaciones g ON g.id = gc.graduacion_id
-       WHERE gc.estado = $1
+       ${where}
        ORDER BY gc.created_at DESC
        LIMIT 100`,
-      [estado]
+      params
     );
 
     return res.json({ success: true, data: rows });
