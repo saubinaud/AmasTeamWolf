@@ -77,7 +77,6 @@ const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ def
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
 const ConsultaAsistenciaPage = lazy(() => import('./components/ConsultaAsistenciaPage').then(m => ({ default: m.ConsultaAsistenciaPage })));
-const SpaceApp = lazy(() => import('./components/space/SpaceApp').then(m => ({ default: m.SpaceApp })));
 const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({ default: m.MarcadorPage })));
 
 // SEO configs
@@ -355,15 +354,12 @@ function MarcadorRoute() {
   );
 }
 
-function SpaceRoute() {
-  const { onNavigate } = useLayoutContext();
-  return (
-    <LazyErrorBoundary>
-      <Suspense fallback={<LoadingPage />}>
-        <SpaceApp onNavigate={onNavigate} />
-      </Suspense>
-    </LazyErrorBoundary>
-  );
+// Redirect /space to the standalone Space app
+function SpaceRedirect() {
+  React.useEffect(() => {
+    window.location.href = 'https://space.amasteamwolf.com';
+  }, []);
+  return <LoadingPage />;
 }
 
 // --- Router definition ---
@@ -393,7 +389,7 @@ export const router = createBrowserRouter([
       { path: '/asistencia/profesora', element: <AsistenciaPanelRoute /> },
       { path: '/consulta-asistencia', element: <ConsultaAsistenciaRoute /> },
       { path: '/marcador', element: <MarcadorRoute /> },
-      { path: '/space/*', element: <SpaceRoute /> },
+      { path: '/space/*', element: <SpaceRedirect /> },
       // Redirect aliases
       { path: '/renovar', element: <Navigate to="/renovacion" replace /> },
       { path: '/renueva-diciembre', element: <Navigate to="/renovacion-navidad" replace /> },
