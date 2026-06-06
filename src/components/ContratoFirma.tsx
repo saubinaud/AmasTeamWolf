@@ -211,7 +211,20 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     const canvas = fullscreenCanvasRef.current;
     if (!canvas || !hasStrokes) return;
 
-    const firmaBase64 = canvas.toDataURL('image/png');
+    // Escalar firma a max 400px de ancho para reducir tamaño (de ~1-2MB a ~10-30KB)
+    const maxW = 400;
+    const scale = Math.min(1, maxW / canvas.width);
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = canvas.width * scale;
+    exportCanvas.height = canvas.height * scale;
+    const ctx = exportCanvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    }
+    const firmaBase64 = exportCanvas.toDataURL('image/jpeg', 0.7);
+
     setFullscreenMode(false);
     setFirmado(true);
     onFirmaCompleta(firmaBase64);
@@ -240,7 +253,20 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
     const canvas = canvasRef.current;
     if (!canvas || !hasStrokes) return;
 
-    const firmaBase64 = canvas.toDataURL('image/png');
+    // Escalar firma para reducir payload
+    const maxW = 400;
+    const scale = Math.min(1, maxW / canvas.width);
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = canvas.width * scale;
+    exportCanvas.height = canvas.height * scale;
+    const ctx = exportCanvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
+    }
+    const firmaBase64 = exportCanvas.toDataURL('image/jpeg', 0.7);
+
     setFirmado(true);
     onFirmaCompleta(firmaBase64);
 
