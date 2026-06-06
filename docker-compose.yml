@@ -1,3 +1,4 @@
+# Local PostgreSQL for development. API is now in amas-api repo.
 version: '3.8'
 
 services:
