@@ -50,29 +50,8 @@ import { PerfilDesktop } from './PerfilDesktop';
 import { AccountLinkingStep } from './AccountLinkingStep';
 import { HeaderMain } from './HeaderMain';
 import { DayPicker, DateRange } from 'react-day-picker';
-import { eachDayOfInterval, getDay } from 'date-fns';
-
-// Helper functions for Freeze Logic
-function esFeriado(fecha: Date): boolean {
-  const feriados = [
-    "2025-01-01", "2025-04-17", "2025-04-18", "2025-05-01", "2025-06-29",
-    "2025-07-28", "2025-07-29", "2025-08-06", "2025-08-30", "2025-10-08",
-    "2025-11-01", "2025-12-08", "2025-12-25",
-    "2026-01-01", "2026-04-02", "2026-04-03" // Semana Santa 2026 estimada
-  ];
-  return feriados.includes(format(fecha, 'yyyy-MM-dd'));
-}
-
-function esCierreVacacionalAMAS(fecha: Date): boolean {
-  const mes = fecha.getMonth() + 1; // 1-12
-  const dia = fecha.getDate();
-  // Del 20 de Dic al 4 de Enero
-  return (mes === 12 && dia >= 20) || (mes === 1 && dia <= 4);
-}
-
-function isDiaHabil(fecha: Date): boolean {
-  return getDay(fecha) !== 0 && !esFeriado(fecha) && !esCierreVacacionalAMAS(fecha);
-}
+import { eachDayOfInterval } from 'date-fns';
+import { esFeriado, esCierreVacacionalAMAS, isDiaHabil } from '../shared/constants';
 
 interface PerfilPageProps {
   onNavigate: (page: string) => void;

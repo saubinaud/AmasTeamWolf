@@ -5,65 +5,14 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { toast } from 'sonner';
 import { ContratoFirma } from './ContratoFirma';
-
-// ========== CONSTANTES ==========
-
-// Feriados fijos de Perú
-const FERIADOS_FIJOS_PERU = [
-  { mes: 1, dia: 1, nombre: "Año Nuevo" },
-  { mes: 5, dia: 1, nombre: "Día del Trabajo" },
-  { mes: 6, dia: 7, nombre: "Batalla de Arica y Día de la Bandera" },
-  { mes: 6, dia: 29, nombre: "San Pedro y San Pablo" },
-  { mes: 7, dia: 23, nombre: "Día de la Fuerza Aérea del Perú" },
-  { mes: 7, dia: 28, nombre: "Fiestas Patrias - Independencia" },
-  { mes: 7, dia: 29, nombre: "Fiestas Patrias" },
-  { mes: 8, dia: 6, nombre: "Batalla de Junín" },
-  { mes: 8, dia: 30, nombre: "Santa Rosa de Lima" },
-  { mes: 10, dia: 8, nombre: "Combate de Angamos" },
-  { mes: 11, dia: 1, nombre: "Todos los Santos" },
-  { mes: 12, dia: 8, nombre: "Inmaculada Concepción" },
-  { mes: 12, dia: 9, nombre: "Batalla de Ayacucho" },
-  { mes: 12, dia: 25, nombre: "Navidad" }
-];
-
-// Feriados móviles por año
-const FERIADOS_MOVILES: Record<number, Array<{ fecha: string; nombre: string }>> = {
-  2025: [
-    { fecha: "2025-04-17", nombre: "Jueves Santo" },
-    { fecha: "2025-04-18", nombre: "Viernes Santo" }
-  ],
-  2026: [
-    { fecha: "2026-04-02", nombre: "Jueves Santo" },
-    { fecha: "2026-04-03", nombre: "Viernes Santo" }
-  ]
-};
-
-// Clases por programa
-const PROGRAMA_CLASES: Record<string, number> = {
-  "1mes": 8,
-  "full": 24,
-  "6meses": 48,
-  "12meses_sin": 96,
-  "12meses_con": 96
-};
-
-// Precios base por programa
-const PRECIOS_BASE: Record<string, number> = {
-  "1mes": 330,
-  "full": 869,
-  "6meses": 1699,
-  "12meses_sin": 2999,
-  "12meses_con": 3699
-};
-
-// Nombres de programas
-const NOMBRES_PROGRAMA: Record<string, string> = {
-  "1mes": "1 Mes",
-  "full": "3 Meses Full (2 veces x semana)",
-  "6meses": "6 Meses Full (2 veces x semana)",
-  "12meses_sin": "12 Meses Full (Sin Implementos)",
-  "12meses_con": "WOLF ELITE 365"
-};
+import {
+  esFeriado,
+  esCierreVacacionalAMAS,
+  PROGRAMA_CLASES,
+  PRECIOS_BASE,
+  NOMBRES_PROGRAMA,
+  CODIGOS_PROMOCIONALES,
+} from '../shared/constants';
 
 // Información de planes
 const PLANES_INFO = {
@@ -129,73 +78,6 @@ const PLANES_INFO = {
   }
 };
 
-// Códigos promocionales
-interface CodigoPromocional {
-  tipo: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'desbloquear_1mes';
-  valor: number;
-  descripcion: string;
-  programasAplicables: string[];
-  activo: boolean;
-}
-
-const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
-  // Código especial para desbloquear 1 mes
-  "RENOVAR1MES": {
-    tipo: "desbloquear_1mes",
-    valor: 0,
-    descripcion: "Desbloquea el programa de 1 mes",
-    programasAplicables: ["1mes"],
-    activo: true
-  },
-
-  // Descuentos en dinero
-  "AMAS-DESC50": {
-    tipo: "descuento_dinero",
-    valor: 50,
-    descripcion: "Descuento de S/ 50",
-    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
-    activo: true
-  },
-  "AMAS-DESC100": {
-    tipo: "descuento_dinero",
-    valor: 100,
-    descripcion: "Descuento de S/ 100",
-    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
-    activo: true
-  },
-  "RENUEVA100": {
-    tipo: "descuento_dinero",
-    valor: 100,
-    descripcion: "S/ 100 descuento por renovación anticipada",
-    programasAplicables: ["full", "6meses", "12meses_sin", "12meses_con"],
-    activo: true
-  },
-
-  // Descuentos porcentuales
-  "AMAS10OFF": {
-    tipo: "descuento_porcentaje",
-    valor: 10,
-    descripcion: "10% de descuento",
-    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
-    activo: true
-  },
-  "AMAS15OFF": {
-    tipo: "descuento_porcentaje",
-    valor: 15,
-    descripcion: "15% de descuento",
-    programasAplicables: ["full", "6meses", "12meses_sin", "12meses_con"],
-    activo: true
-  },
-
-  // Polos gratis
-  "POLO1GRATIS": {
-    tipo: "polo_gratis",
-    valor: 1,
-    descripcion: "+1 polo oficial gratis (S/ 60)",
-    programasAplicables: ["1mes", "full", "6meses", "12meses_sin", "12meses_con"],
-    activo: true
-  }
-};
 
 // ========== INTERFACES ==========
 
@@ -278,29 +160,6 @@ function calcularHorarios(fechaNacimiento: string): HorariosInfo {
   }
 
   return { horarioSemana, horarioSabado, horarioManana, diasSemana, categoria };
-}
-
-function esFeriado(fecha: Date): boolean {
-  const anio = fecha.getFullYear();
-  const mes = fecha.getMonth() + 1;
-  const dia = fecha.getDate();
-
-  const esFeriadoFijo = FERIADOS_FIJOS_PERU.some(f => f.mes === mes && f.dia === dia);
-  if (esFeriadoFijo) return true;
-
-  const fechaStr = fecha.toISOString().split('T')[0];
-  const moviles = FERIADOS_MOVILES[anio] || [];
-  return moviles.some(f => f.fecha === fechaStr);
-}
-
-function esCierreVacacionalAMAS(fecha: Date): boolean {
-  const mes = fecha.getMonth() + 1;
-  const dia = fecha.getDate();
-
-  if (mes === 12 && dia >= 20) return true;
-  if (mes === 1 && dia <= 4) return true;
-
-  return false;
 }
 
 function obtenerFechasDisponiblesInicio(): Date[] {
