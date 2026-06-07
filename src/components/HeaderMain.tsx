@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, X, ChevronDown, ShoppingCart, User, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, ShoppingCart, User } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useAuth } from '../contexts/AuthContext';
@@ -14,12 +14,12 @@ interface HeaderMainProps {
 }
 
 export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount, currentPage }: HeaderMainProps) {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProgramasOpen, setIsProgramasOpen] = useState(false);
   const [isProgramasDesktopOpen, setIsProgramasDesktopOpen] = useState(false);
-  const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [closeTimeout, setCloseTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {

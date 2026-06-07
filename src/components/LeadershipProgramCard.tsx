@@ -1,6 +1,6 @@
 import { Badge } from './ui/badge';
 import { Check } from 'lucide-react';
-import { programImplements, TOTAL_PROGRAM_PRICE } from '../data/implements';
+import { programImplements } from '../data/implements';
 
 interface LeadershipProgramCardProps {
   onEnrollClick: () => void;

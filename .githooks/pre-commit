@@ -17,7 +17,7 @@ ERRORS=0
 PATTERNS=(
   "sshpass|sshpass usage detected"
   "Aubinaud|Known password detected"
-  "dkoocok3j|Cloudinary cloud name detected"
+  # dkoocok3j is the PUBLIC Cloudinary cloud name used in image URLs — not a secret
   "897671266851952|Cloudinary API key detected"
   "8NHcelAPYazZNiRKg4G0nmV0Ouo|Cloudinary API secret detected"
   "95\.111\.254\.27|Hardcoded VPS IP detected"

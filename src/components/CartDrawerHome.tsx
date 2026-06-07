@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetClose } from './ui/sheet';
 import { Button } from './ui/button';
 import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';

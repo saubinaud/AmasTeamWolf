@@ -7,7 +7,8 @@ export interface Implement {
   description?: string;
   longDescription?: string;
   colors?: string[];
-  images?: string[]; // Array de imágenes para el carrusel
+  images?: string[];
+  isNew?: boolean;
 }
 
 export const programImplements: Implement[] = [

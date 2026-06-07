@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { FileText, Eraser, CheckCircle, ChevronDown, ChevronUp, User, GraduationCap, Calendar, DollarSign, Pen, Maximize2, X } from 'lucide-react';
+import { FileText, Eraser, CheckCircle, ChevronDown, ChevronUp, User, GraduationCap, Calendar, DollarSign, Pen, X } from 'lucide-react';
 import { Button } from './ui/button';
 import { API_BASE } from '../config/api';
 
@@ -40,11 +40,6 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
   const [clausulasAbiertas, setClausulasAbiertas] = useState(false);
   const [generandoPDF, setGenerandoPDF] = useState(false);
   const [fullscreenMode, setFullscreenMode] = useState(false);
-
-  // Track which canvas is active (inline vs fullscreen)
-  const activeCanvasRef = useCallback(() => {
-    return fullscreenMode ? fullscreenCanvasRef.current : canvasRef.current;
-  }, [fullscreenMode]);
 
   // ── CANVAS SETUP (High-DPI) ──
   const initCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
@@ -248,45 +243,6 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
         setGenerandoPDF(false);
       });
   }, [hasStrokes, datos, onFirmaCompleta, onContratoGenerado]);
-
-  const confirmarFirma = async () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !hasStrokes) return;
-
-    // Escalar firma para reducir payload
-    const maxW = 400;
-    const scale = Math.min(1, maxW / canvas.width);
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = canvas.width * scale;
-    exportCanvas.height = canvas.height * scale;
-    const ctx = exportCanvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
-    }
-    const firmaBase64 = exportCanvas.toDataURL('image/jpeg', 0.7);
-
-    setFirmado(true);
-    onFirmaCompleta(firmaBase64);
-
-    setGenerandoPDF(true);
-    try {
-      const resp = await fetch(`${API_BASE}/contratos/generar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ datos, firma_base64: firmaBase64 }),
-      });
-      const result = await resp.json();
-      if (result.success && onContratoGenerado) {
-        onContratoGenerado(result.pdf_base64);
-      }
-    } catch (err) {
-      console.error('Error generando PDF:', err);
-    } finally {
-      setGenerandoPDF(false);
-    }
-  };
 
   const d = datos;
   const hoy = new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });

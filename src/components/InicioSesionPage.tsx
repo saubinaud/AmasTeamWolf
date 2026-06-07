@@ -51,9 +51,11 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
 
     if (result.success) {
       // Store credentials for browser auto-fill (fingerprint/Face ID)
-      if (window.PasswordCredential && password) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((window as any).PasswordCredential && password) {
         try {
-          const cred = new PasswordCredential({ id: dni, password, name: `AMAS ${dni}` });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const cred = new (window as any).PasswordCredential({ id: dni, password, name: `AMAS ${dni}` });
           await navigator.credentials.store(cred);
         } catch { /* silent */ }
       }

@@ -107,7 +107,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   // Search by name (client-side)
   const [busquedaNombre, setBusquedaNombre] = useState('');
   const [resultadosBusqueda, setResultadosBusqueda] = useState<AlumnoBusqueda[]>([]);
-  const [buscando, setBuscando] = useState(false);
+  const [buscando, _setBuscando] = useState(false);
   const [registrandoPorNombre, setRegistrandoPorNombre] = useState(false);
   const [todosAlumnos, setTodosAlumnos] = useState<AlumnoBusqueda[]>([]);
 

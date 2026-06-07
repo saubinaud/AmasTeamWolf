@@ -13,8 +13,6 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
   const precioAnteriorFull = 1199;
   const precio6Meses = 1699;
   const precio1Mes = 330;
-  const fechaValidez = '30/10/25';
-
   const beneficiosFull = [
     'Uniforme completo',
     'Graduación y nuevo cinturón',
