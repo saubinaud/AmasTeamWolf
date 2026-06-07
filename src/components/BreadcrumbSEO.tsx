@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Home, ChevronRight } from 'lucide-react';
 
 interface BreadcrumbItem {
   name: string;
@@ -11,7 +10,7 @@ interface BreadcrumbSEOProps {
   currentPage: string;
 }
 
-export function BreadcrumbSEO({ items, currentPage }: BreadcrumbSEOProps) {
+export function BreadcrumbSEO({ items }: BreadcrumbSEOProps) {
   useEffect(() => {
     // Add JSON-LD structured data for breadcrumbs
     const scriptId = 'breadcrumb-structured-data';

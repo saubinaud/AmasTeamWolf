@@ -65,7 +65,7 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
             {/* Carrusel de thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-2 sm:gap-3 mt-4 sm:mt-6">
-                {images.map((img, index) => (
+                {images.map((img: string, index: number) => (
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
@@ -124,7 +124,7 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
                     Colores:
                   </p>
                   <div className="flex gap-3 sm:gap-4">
-                    {product.colors.map((color) => (
+                    {product.colors.map((color: string) => (
                       <div
                         key={color}
                         className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full border-2 border-white/20 hover:border-white/40 transition-colors cursor-pointer"

@@ -6,7 +6,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
-import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, MessageSquare, Clock, Users, Sparkles } from 'lucide-react';
+import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, Clock, Users, Sparkles } from 'lucide-react';
 
 interface RenovacionNavidadPageProps {
   onNavigate: (page: string, sectionId?: string) => void;

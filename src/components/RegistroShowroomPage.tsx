@@ -9,7 +9,6 @@ import {
   Sparkles,
   Calendar,
   Gift,
-  Users,
   MapPin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

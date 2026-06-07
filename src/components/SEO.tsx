@@ -91,8 +91,8 @@ export function SEO({
 
     // JSON-LD Structured Data
     const scriptId = 'structured-data';
-    let script = document.getElementById(scriptId);
-    
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+
     if (!script) {
       script = document.createElement('script');
       script.id = scriptId;

@@ -39,7 +39,7 @@ const DEFAULT_CONFIG: TorneoConfig = {
 
 // ── Component ──
 
-export function MarcadorPage({ onNavigate }: MarcadorPageProps) {
+export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
   // Auth
   const [authed, setAuthed] = useState(() => sessionStorage.getItem(AUTH_KEY) === 'true');
   const [pin, setPin] = useState('');

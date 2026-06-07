@@ -1,6 +1,5 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Outlet, useOutletContext, ScrollRestoration } from 'react-router-dom';
-import { toast } from 'sonner';
 import { Toaster } from '../components/ui/sonner';
 import type { CartItem } from '../components/CartDrawerHome';
 import { useAppNavigate } from '../hooks/useAppNavigate';

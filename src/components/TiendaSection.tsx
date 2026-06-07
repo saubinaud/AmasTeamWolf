@@ -14,13 +14,11 @@ interface TiendaSectionProps {
 export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
   const [selectedProduct, setSelectedProduct] = useState<Implement | null>(null);
   const [selectedColor, setSelectedColor] = useState('');
-  const [quantity, setQuantity] = useState(1);
 
   const handleOpenProduct = (product: Implement) => {
     setSelectedProduct(product);
     const firstColor = product.colors?.[0] || '';
     setSelectedColor(firstColor);
-    setQuantity(1);
   };
 
   const handleAddToCart = (product: Implement) => {
@@ -134,10 +132,6 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
             handleAddToCart(selectedProduct);
             setSelectedProduct(null);
           }}
-          selectedColor={selectedColor}
-          onColorChange={setSelectedColor}
-          quantity={quantity}
-          onQuantityChange={setQuantity}
         />
       )}
     </section>

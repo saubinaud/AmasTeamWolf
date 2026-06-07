@@ -6,7 +6,7 @@ import { useDataSaver } from '../hooks/useNetworkStatus';
 
 export function HeroLeadershipFinal() {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [_isMobile, setIsMobile] = useState(false);
   const isDataSaver = useDataSaver();
   const shouldDisableHeavyAnimations = isDataSaver;
 

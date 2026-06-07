@@ -14,6 +14,7 @@ import {
   PRECIOS_BASE,
   NOMBRES_PROGRAMA,
   CODIGOS_PROMOCIONALES,
+  type TipoPromocion,
 } from '../shared/constants';
 
 // ========== INTERFACES ==========
@@ -23,12 +24,12 @@ interface HorariosInfo {
   horarioSabado: string;
   diasSemana: string;
   categoria: string;
-  horarioManana: string; // Nuevo campo para horario de mañana
+  horarioManana: string;
 }
 
 interface CodigoAplicado {
   valido: boolean;
-  tipo?: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'uniforme_gratis';
+  tipo?: TipoPromocion;
   valor?: number;
   descripcion?: string;
   codigo?: string;
@@ -233,7 +234,7 @@ const INITIAL_FORM_STATE = {
   fechaFin: ''
 };
 
-export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, onClose, programa, onSuccess }: FormularioMatriculaProps) {
+export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, onClose, programa, onSuccess: _onSuccess }: FormularioMatriculaProps) {
   // Umami analytics
   const { trackFormSubmit } = useUmami();
 
@@ -254,7 +255,7 @@ export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, o
   const [diasTentativos, setDiasTentativos] = useState<string[]>([]);
   const [codigoPromocional, setCodigoPromocional] = useState<string>('');
   const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
-  const [contratoExpanded, setContratoExpanded] = useState(false);
+  const [_contratoExpanded, setContratoExpanded] = useState(false);
   const [fechaFinCalculada, setFechaFinCalculada] = useState<string>('');
   const [detallesFechaFin, setDetallesFechaFin] = useState<{
     clasesTotales: number;

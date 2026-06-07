@@ -3,7 +3,6 @@ import { Button } from './ui/button';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import { OptimizedImage } from './OptimizedImage';
-import { useDataSaver } from '../hooks/useNetworkStatus';
 import { toast } from 'sonner';
 import { allStoreProducts, Implement } from '../data/implements';
 import { HeaderMain } from './HeaderMain';
@@ -19,12 +18,10 @@ interface TiendaPageProps {
 
 export function TiendaPage({ onNavigate }: TiendaPageProps) {
   // Umami analytics
-  const { trackAddToCart, trackEvent } = useUmami();
+  const { trackEvent } = useUmami();
 
-  const [isMobile, setIsMobile] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Implement | null>(null);
   const [selectedColor, setSelectedColor] = useState('');
-  const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isPagoOpen, setIsPagoOpen] = useState(false);
@@ -32,20 +29,11 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
   
-  const isDataSaver = useDataSaver();
-  const shouldDisableAnimations = isMobile || isDataSaver;
 
   // Scroll to top when component mounts
   useEffect(() => {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-  }, []);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Load cart from localStorage
@@ -89,43 +77,6 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
     setSelectedProduct(product);
     const firstColor = product.colors?.[0] || '';
     setSelectedColor(firstColor);
-    setQuantity(1);
-  };
-
-  const handleAddToCart = () => {
-    if (!selectedProduct) {
-      toast.error('Error al añadir producto');
-      return;
-    }
-    
-    const variant = selectedColor || 'Único';
-    
-    const existingItemIndex = cartItems.findIndex(
-      item => item.id === selectedProduct.id && item.variant === variant
-    );
-
-    if (existingItemIndex >= 0) {
-      const newCart = [...cartItems];
-      newCart[existingItemIndex].quantity += quantity;
-      setCartItems(newCart);
-    } else {
-      const newItem: CartItem = {
-        id: selectedProduct.id,
-        name: selectedProduct.name,
-        price: selectedProduct.price,
-        image: selectedProduct.image,
-        variant: variant,
-        quantity: quantity
-      };
-      setCartItems([...cartItems, newItem]);
-    }
-    
-    toast.success(`${selectedProduct.name} añadido al carrito`);
-
-    // Track add to cart with Umami
-    trackAddToCart(selectedProduct.name, selectedProduct.price * quantity);
-
-    setSelectedProduct(null);
   };
 
   const handleUpdateQuantity = (id: string, variant: string, quantity: number) => {

@@ -8,6 +8,7 @@ interface OptimizedImageProps {
   priority?: boolean;
   aspectRatio?: string;
   objectFit?: 'cover' | 'contain';
+  loading?: 'lazy' | 'eager';
 }
 
 export function OptimizedImage({ 

@@ -1,5 +1,5 @@
 import { useState, useCallback, memo, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
-import { Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Calendar, Gift, Heart, Trophy, Users } from 'lucide-react';
+import { Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Gift, Heart, Trophy } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -12,6 +12,7 @@ import {
   PRECIOS_BASE,
   NOMBRES_PROGRAMA,
   CODIGOS_PROMOCIONALES,
+  type TipoPromocion,
 } from '../shared/constants';
 
 // Información de planes
@@ -91,7 +92,7 @@ interface HorariosInfo {
 
 interface CodigoAplicado {
   valido: boolean;
-  tipo?: 'descuento_dinero' | 'descuento_porcentaje' | 'clases_extra' | 'mes_gratis' | 'polo_gratis' | 'desbloquear_1mes';
+  tipo?: TipoPromocion;
   valor?: number;
   descripcion?: string;
   codigo?: string;
@@ -281,7 +282,7 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
   const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [fileBase64, setFileBase64] = useState<string>('');
+  const [_fileBase64, setFileBase64] = useState<string>('');
   const [formData, setFormData] = useState(INITIAL_FORM_STATE);
 
   const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
