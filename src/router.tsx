@@ -51,7 +51,7 @@ class LazyErrorBoundary extends React.Component<
 const HomePage = lazy(() => import('./components/HomePage').then(m => ({ default: m.HomePage })));
 const HeaderMain = lazy(() => import('./components/HeaderMain').then(m => ({ default: m.HeaderMain })));
 const FooterMain = lazy(() => import('./components/FooterMain').then(m => ({ default: m.FooterMain })));
-const LandingConversion = lazy(() => import('./components/LandingConversion').then(m => ({ default: m.LandingConversion })));
+const LandingConversion = lazy(() => import('./components/landing').then(m => ({ default: m.LandingConversion })));
 const InicioSesionPage = lazy(() => import('./components/InicioSesionPage').then(m => ({ default: m.InicioSesionPage })));
 const AuthGuard = lazy(() => import('./components/AuthGuard').then(m => ({ default: m.AuthGuard })));
 const HeroLeadershipFinal = lazy(() => import('./components/HeroLeadershipFinal').then(m => ({ default: m.HeroLeadershipFinal })));
@@ -67,7 +67,7 @@ const RegistroSeisMesesPage = lazy(() => import('./components/RegistroSeisMesesP
 const RegistroMensualPage = lazy(() => import('./components/RegistroMensualPage').then(m => ({ default: m.RegistroMensualPage })));
 const RegistroLeadershipPage = lazy(() => import('./components/RegistroLeadershipPage').then(m => ({ default: m.RegistroLeadershipPage })));
 const GraduacionPage = lazy(() => import('./components/GraduacionPage').then(m => ({ default: m.GraduacionPage })));
-const PerfilPage = lazy(() => import('./components/PerfilPage').then(m => ({ default: m.PerfilPage })));
+const PerfilPage = lazy(() => import('./components/perfil').then(m => ({ default: m.PerfilPage })));
 const RenovacionNavidadPage = lazy(() => import('./components/RenovacionNavidadPage').then(m => ({ default: m.RenovacionNavidadPage })));
 const RegistroActividadNavidadPage = lazy(() => import('./components/RegistroActividadNavidadPage').then(m => ({ default: m.RegistroActividadNavidadPage })));
 const RegistroShowroomPage = lazy(() => import('./components/RegistroShowroomPage').then(m => ({ default: m.RegistroShowroomPage })));
@@ -159,7 +159,7 @@ function TiendaRoute() {
 }
 
 function RegistroTresMesesRoute() {
-  const { onNavigate, onRegistrationSuccess, isPagoOpen, setIsPagoOpen, totalAmount } = useLayoutContext();
+  const { onNavigate, onRegistrationSuccess } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
       <SEO title="Matrícula Programa 3 Meses - AMAS Team Wolf" description="Matricúlate en el Programa Full de 3 meses de AMAS Team Wolf." keywords="matrícula taekwondo, inscripción artes marciales Lima" url="https://amasteamwolf.com/registro-3-meses" />
