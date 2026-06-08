@@ -16,6 +16,7 @@ export function EnviarVideo({ claseId, onSuccess }: EnviarVideoProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const [comentario, setComentario] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,47 +64,75 @@ export function EnviarVideo({ claseId, onSuccess }: EnviarVideoProps) {
 
     setLoading(true);
     setError('');
+    setUploadProgress(0);
 
     try {
       const token = localStorage.getItem('amasToken');
 
-      // Determine the video_url to send
-      let url: string;
       if (mode === 'link') {
-        url = videoUrl.trim();
-      } else if (file) {
-        // For file uploads, create a placeholder description
-        // Real R2 upload will replace this in the future
-        url = `file://${file.name}`;
-      } else {
-        setError('Selecciona un video o pega un enlace');
+        // Link flow — JSON body
+        const res = await fetch(`${API_BASE}/clases/clase/${claseId}/enviar`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            video_url: videoUrl.trim(),
+            comentario: comentario.trim() || undefined,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          setError(data.error || 'Error al enviar el video');
+        } else {
+          setSuccess(true);
+          setTimeout(() => onSuccess(), 1500);
+        }
         setLoading(false);
-        return;
-      }
+      } else if (file) {
+        // File upload — multipart FormData with progress
+        const formData = new FormData();
+        formData.append('video', file);
+        if (comentario.trim()) formData.append('comentario', comentario.trim());
 
-      const res = await fetch(`${API_BASE}/clases/clase/${claseId}/enviar`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          video_url: url,
-          comentario: comentario.trim() || undefined,
-        }),
-      });
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_BASE}/clases/clase/${claseId}/upload-video`);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
 
-      const data = await res.json();
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
 
-      if (!res.ok || !data.success) {
-        setError(data.error || 'Error al enviar el video');
-      } else {
-        setSuccess(true);
-        setTimeout(() => onSuccess(), 1500);
+        xhr.onload = () => {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (xhr.status === 200 && data.success) {
+              setSuccess(true);
+              setTimeout(() => onSuccess(), 1500);
+            } else {
+              setError(data.error || 'Error al subir');
+            }
+          } catch {
+            setError('Error procesando respuesta');
+          }
+          setLoading(false);
+        };
+
+        xhr.onerror = () => {
+          setError('Error de conexion');
+          setLoading(false);
+        };
+
+        xhr.send(formData);
+        return; // Don't set loading=false yet (xhr handles it)
       }
     } catch {
       setError('Error de conexion');
-    } finally {
       setLoading(false);
     }
   };
@@ -229,6 +258,20 @@ export function EnviarVideo({ claseId, onSuccess }: EnviarVideoProps) {
         rows={2}
         className="w-full bg-zinc-800/50 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none placeholder:text-white/20 resize-none focus:border-[#FA7B21]/50 transition-colors"
       />
+
+      {loading && mode === 'file' && uploadProgress > 0 && (
+        <div className="flex flex-col gap-1">
+          <div className="w-full bg-zinc-800 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] h-2 rounded-full transition-all"
+              style={{ width: `${uploadProgress}%` }}
+            />
+          </div>
+          <p className="text-white/40 text-xs text-center">
+            {uploadProgress < 100 ? `Subiendo... ${uploadProgress}%` : 'Procesando...'}
+          </p>
+        </div>
+      )}
 
       {error && <p className="text-red-400 text-sm px-1">{error}</p>}
 
