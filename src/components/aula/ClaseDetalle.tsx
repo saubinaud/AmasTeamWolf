@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, Check, Loader2, Send, Key } from 'lucide-react';
+import { ArrowLeft, Clock, Check, Loader2, Send, Key, BookOpen, AlertTriangle, Trophy } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { VideoPlayer } from './VideoPlayer';
 import { EnviarVideo } from './EnviarVideo';
@@ -110,20 +110,12 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
   }
 
   const estado = progreso?.estado || 'disponible';
-
-  const estadoLabel = {
-    bloqueado: { text: 'Bloqueada', icon: <Clock className="w-4 h-4" />, color: 'text-zinc-500' },
-    disponible: { text: 'Disponible', icon: <Send className="w-4 h-4" />, color: 'text-[#FA7B21]' },
-    video_enviado: { text: 'Video enviado - En revision', icon: <Clock className="w-4 h-4 animate-spin-slow" />, color: 'text-amber-400' },
-    completado: { text: 'Completada', icon: <Check className="w-4 h-4" />, color: 'text-green-400' },
-  }[estado] || { text: estado, icon: null, color: 'text-white/60' };
-
   const canSubmitVideo = estado === 'disponible';
   const canUseCodigo = estado === 'disponible';
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      {/* Header */}
+      {/* Sticky header */}
       <div className="sticky top-0 z-20 bg-zinc-950/90 backdrop-blur-lg border-b border-white/5">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <button
@@ -141,8 +133,25 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6 pb-24">
-        {/* Video */}
-        <VideoPlayer youtubeId={clase.video_youtube_id} />
+        {/* Completed celebration banner */}
+        {estado === 'completado' && (
+          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-5 flex items-center gap-4 animate-fade-in">
+            <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+              <Trophy className="w-6 h-6 text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-green-400 font-bold text-sm">Clase completada!</h3>
+              <p className="text-green-400/60 text-xs mt-0.5">
+                {progreso?.puntos_ganados ? `+${progreso.puntos_ganados} puntos ganados` : 'Buen trabajo, guerrero!'}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Video — full width, rounded */}
+        <div className="rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20">
+          <VideoPlayer youtubeId={clase.video_youtube_id} />
+        </div>
 
         {/* Title + Description */}
         <div>
@@ -152,10 +161,11 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
           )}
         </div>
 
-        {/* Instructions */}
+        {/* Instructions — visually distinct section */}
         {clase.instrucciones && (
-          <div className="bg-zinc-900/50 border border-white/5 rounded-xl p-4">
-            <h3 className="text-white/80 font-semibold text-sm mb-2 flex items-center gap-2">
+          <div className="bg-zinc-900/60 border border-white/5 rounded-2xl p-5">
+            <h3 className="text-white/80 font-semibold text-sm mb-3 flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-[#FA7B21]" />
               Tu tarea:
             </h3>
             <p className="text-white/50 text-sm leading-relaxed whitespace-pre-line">
@@ -164,25 +174,56 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
           </div>
         )}
 
-        {/* Status */}
-        <div className={`flex items-center gap-2 ${estadoLabel.color}`}>
-          {estadoLabel.icon}
-          <span className="text-sm font-medium">{estadoLabel.text}</span>
+        {/* Status section */}
+        <div className="rounded-2xl overflow-hidden">
+          {estado === 'video_enviado' && (
+            <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-amber-400 animate-spin-slow" />
+              </div>
+              <div>
+                <p className="text-amber-400 text-sm font-semibold">Esperando revision</p>
+                <p className="text-amber-400/50 text-xs mt-0.5">Tu profesor revisara tu video pronto</p>
+              </div>
+            </div>
+          )}
+
+          {estado === 'disponible' && (
+            <div className="flex items-center gap-2 text-[#FA7B21]">
+              <Send className="w-4 h-4" />
+              <span className="text-sm font-medium">Disponible — completa tu tarea!</span>
+            </div>
+          )}
+
+          {estado === 'rechazado' && (
+            <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <div>
+                <p className="text-red-400 text-sm font-semibold">Necesita mejorar</p>
+                <p className="text-red-400/50 text-xs mt-0.5">Lee el feedback de tu profesor y vuelve a intentar</p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Feedback from teacher */}
+        {/* Teacher feedback */}
         {envio?.feedback_profesor && (
-          <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4">
-            <h3 className="text-green-400 font-semibold text-sm mb-1">Feedback del profesor:</h3>
+          <div className="bg-green-500/5 border border-green-500/20 rounded-2xl p-5">
+            <h3 className="text-green-400 font-semibold text-sm mb-2 flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              Feedback del profesor:
+            </h3>
             <p className="text-white/70 text-sm leading-relaxed">{envio.feedback_profesor}</p>
           </div>
         )}
 
-        {/* Action buttons */}
+        {/* Action buttons — visually distinct */}
         {canSubmitVideo && !showEnviar && !showCodigo && (
           <button
             onClick={() => setShowEnviar(true)}
-            className="h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-[#FA7B21]/20"
+            className="h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-[#FA7B21]/20"
           >
             <Send className="w-5 h-5" />
             Enviar mi video
@@ -192,21 +233,24 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
         {canUseCodigo && !showEnviar && !showCodigo && (
           <button
             onClick={() => setShowCodigo(true)}
-            className="h-14 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            className="h-14 bg-zinc-800/80 hover:bg-zinc-700 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-white/5"
           >
-            <Key className="w-5 h-5" />
+            <Key className="w-5 h-5 text-[#FCA929]" />
             Tengo un codigo
           </button>
         )}
 
-        {/* Inline forms */}
+        {/* Inline forms — visually distinct containers */}
         {showEnviar && (
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-4">
+          <div className="bg-zinc-900 border border-[#FA7B21]/20 rounded-2xl p-5 shadow-lg shadow-[#FA7B21]/5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Enviar video</h3>
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <Send className="w-4 h-4 text-[#FA7B21]" />
+                Enviar video
+              </h3>
               <button
                 onClick={() => setShowEnviar(false)}
-                className="text-white/40 hover:text-white text-sm"
+                className="text-white/40 hover:text-white text-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 Cancelar
               </button>
@@ -216,12 +260,15 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
         )}
 
         {showCodigo && (
-          <div className="bg-zinc-900 border border-white/10 rounded-2xl p-4">
+          <div className="bg-zinc-900 border border-[#FCA929]/20 rounded-2xl p-5 shadow-lg shadow-[#FCA929]/5">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-semibold">Codigo de desbloqueo</h3>
+              <h3 className="text-white font-semibold flex items-center gap-2">
+                <Key className="w-4 h-4 text-[#FCA929]" />
+                Codigo de desbloqueo
+              </h3>
               <button
                 onClick={() => setShowCodigo(false)}
-                className="text-white/40 hover:text-white text-sm"
+                className="text-white/40 hover:text-white text-sm min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 Cancelar
               </button>

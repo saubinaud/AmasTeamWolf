@@ -8,3 +8,4 @@ export { VideoPlayer } from './VideoPlayer';
 export { EnviarVideo } from './EnviarVideo';
 export { InputCodigo } from './InputCodigo';
 export { ProgresoBar } from './ProgresoBar';
+export { AnimacionDesbloqueo } from './AnimacionDesbloqueo';
