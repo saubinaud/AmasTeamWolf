@@ -44,7 +44,7 @@ export function NodoClase({ clase, color, position, onClick, isCurrent, viewWidt
   return (
     <g
       onClick={handleClick}
-      style={{ cursor: isLocked ? 'default' : 'pointer', opacity }}
+      style={{ cursor: isLocked ? 'default' : 'pointer', opacity, pointerEvents: isLocked ? 'none' : 'auto' }}
       className="transition-opacity duration-300"
     >
       {/* Glow for current/available */}
