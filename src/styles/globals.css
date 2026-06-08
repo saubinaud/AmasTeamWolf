@@ -403,6 +403,63 @@ html {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* Confetti falling animation */
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Pulse glow for current map node */
+@keyframes pulse-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(250, 123, 33, 0.3)); }
+  50% { filter: drop-shadow(0 0 24px rgba(250, 123, 33, 0.7)); }
+}
+
+/* SVG-friendly pulse glow (uses opacity + stroke-width) */
+@keyframes pulseGlowSvg {
+  0%, 100% { opacity: 0.2; stroke-width: 2; }
+  50% { opacity: 0.6; stroke-width: 3; }
+}
+
+/* Floating animation for background particles */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Float for background stars */
+@keyframes floatStar {
+  0%, 100% { transform: translateY(0px); opacity: var(--star-opacity, 0.2); }
+  50% { transform: translateY(-8px); opacity: calc(var(--star-opacity, 0.2) + 0.15); }
+}
+
+/* Unlock animation: shake the lock */
+@keyframes unlockShake {
+  0%, 100% { transform: rotate(0deg); }
+  10%, 30%, 50%, 70%, 90% { transform: rotate(-8deg); }
+  20%, 40%, 60%, 80% { transform: rotate(8deg); }
+}
+
+/* Unlock animation: burst/scale out */
+@keyframes unlockBurst {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.5; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+/* Burst particles flying outward */
+@keyframes burstParticle {
+  0% { transform: rotate(var(--angle, 0deg)) translateY(0) scale(1); opacity: 1; }
+  100% { transform: rotate(var(--angle, 0deg)) translateY(-50px) scale(0); opacity: 0; }
+}
+
+/* Star appear with bounce */
+@keyframes starAppear {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
 .animate-pulse-slow {
   animation: pulseSlow 2s ease-in-out infinite;
 }
@@ -417,6 +474,42 @@ html {
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out both;
+}
+
+.animate-confetti-fall {
+  animation: confetti-fall 2.5s ease-in forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-pulse-glow-svg {
+  animation: pulseGlowSvg 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-float-star {
+  animation: floatStar 4s ease-in-out infinite;
+}
+
+.animate-unlock-shake {
+  animation: unlockShake 0.6s ease-in-out;
+}
+
+.animate-unlock-burst {
+  animation: unlockBurst 0.6s ease-out forwards;
+}
+
+.animate-burst-particle {
+  animation: burstParticle 0.6s ease-out forwards;
+}
+
+.animate-star-appear {
+  animation: starAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 /* Prevenir zoom en inputs iOS */

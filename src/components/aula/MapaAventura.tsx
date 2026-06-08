@@ -5,6 +5,16 @@ import { NodoClase } from './NodoClase';
 import { CaminoAnimado } from './CaminoAnimado';
 import { ProgresoBar } from './ProgresoBar';
 
+// Background floating stars for atmosphere
+const bgStars = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: 1 + Math.random() * 2,
+  opacity: 0.1 + Math.random() * 0.3,
+  duration: 3 + Math.random() * 4,
+}));
+
 interface ClaseNodo {
   id: number;
   titulo: string;
@@ -103,18 +113,21 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: MapaAventuraProp
   // Auto-scroll to current node
   useEffect(() => {
     if (!ruta || !scrollRef.current) return;
-    const currentIdx = ruta.clases.findIndex(c => c.estado === 'disponible');
-    if (currentIdx < 0) return;
-
-    const positions = generatePositions(ruta.clases.length);
-    const targetY = positions[currentIdx].y;
-    const containerH = scrollRef.current.clientHeight;
+    const currentClase = ruta.clases.find(c => c.estado === 'disponible');
+    if (!currentClase) return;
 
     requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({
-        top: targetY - containerH / 2,
-        behavior: 'smooth',
-      });
+      const el = document.getElementById(`nodo-${currentClase.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } else {
+        // Fallback: manual scroll calc
+        const idx = ruta.clases.findIndex(c => c.estado === 'disponible');
+        const positions = generatePositions(ruta.clases.length);
+        const targetY = positions[idx].y;
+        const containerH = scrollRef.current?.clientHeight || 0;
+        scrollRef.current?.scrollTo({ top: targetY - containerH / 2, behavior: 'smooth' });
+      }
     });
   }, [ruta]);
 
@@ -177,7 +190,24 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: MapaAventuraProp
       </div>
 
       {/* Map */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-y-contain">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto overscroll-y-contain relative">
+        {/* Floating background stars */}
+        {bgStars.map(star => (
+          <div
+            key={star.id}
+            className="absolute rounded-full bg-white animate-float-star pointer-events-none"
+            style={{
+              left: `${star.x}%`,
+              top: `${star.y}%`,
+              width: star.size,
+              height: star.size,
+              opacity: star.opacity,
+              animationDuration: `${star.duration}s`,
+              animationDelay: `${star.duration * 0.3}s`,
+            }}
+          />
+        ))}
+
         <div className="max-w-md mx-auto relative">
           <svg
             viewBox={`0 0 ${viewWidth} ${svgHeight}`}
@@ -190,6 +220,10 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: MapaAventuraProp
                 <stop offset="0%" stopColor="#FCA929" />
                 <stop offset="100%" stopColor="#FA7B21" />
               </linearGradient>
+              <filter id="goldGlow">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
             </defs>
 
             {/* Paths between nodes */}

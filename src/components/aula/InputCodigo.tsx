@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
-import { Key, Loader2, Check } from 'lucide-react';
+import { Key, Loader2 } from 'lucide-react';
 import { API_BASE } from '../../config/api';
+import { AnimacionDesbloqueo } from './AnimacionDesbloqueo';
 
 interface InputCodigoProps {
   onSuccess: () => void;
@@ -10,7 +11,8 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
   const [codigo, setCodigo] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [unlockedTitle, setUnlockedTitle] = useState('');
   const [shake, setShake] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -66,8 +68,8 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
         setShake(true);
         setTimeout(() => setShake(false), 500);
       } else {
-        setSuccess(true);
-        setTimeout(() => onSuccess(), 1200);
+        setUnlockedTitle(data.claseTitulo || data.titulo || 'Nueva clase');
+        setShowAnimation(true);
       }
     } catch {
       setError('Error de conexion');
@@ -78,18 +80,15 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
     }
   };
 
-  if (success) {
-    return (
-      <div className="flex flex-col items-center gap-3 py-6 animate-fade-in">
-        <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
-          <Check className="w-8 h-8 text-green-400" />
-        </div>
-        <p className="text-green-400 font-semibold">Clase desbloqueada!</p>
-      </div>
-    );
-  }
-
   return (
+    <>
+    {showAnimation && (
+      <AnimacionDesbloqueo
+        claseTitulo={unlockedTitle}
+        onComplete={onSuccess}
+      />
+    )}
+
     <div className="flex flex-col gap-3">
       <div
         className={`flex items-center gap-2 bg-zinc-800/50 border border-white/10 rounded-xl px-4 h-14 transition-transform ${
@@ -129,5 +128,6 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
         )}
       </button>
     </div>
+    </>
   );
 }
