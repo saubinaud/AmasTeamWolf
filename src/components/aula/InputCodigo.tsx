@@ -15,11 +15,19 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const formatCode = (raw: string): string => {
-    const clean = raw.replace(/[^A-Z0-9]/g, '').slice(0, 8);
-    if (clean.length > 4) {
-      return `${clean.slice(0, 4)}-${clean.slice(4)}`;
+    // Remove WOLF prefix if user typed it (we handle it automatically)
+    let clean = raw.replace(/[^A-Z0-9]/g, '');
+    if (clean.startsWith('WOLF')) {
+      clean = clean.slice(4);
     }
-    return clean;
+    clean = clean.slice(0, 8);
+    if (clean.length > 4) {
+      return `WOLF-${clean.slice(0, 4)}-${clean.slice(4)}`;
+    }
+    if (clean.length > 0) {
+      return `WOLF-${clean}`;
+    }
+    return '';
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,7 +38,8 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
   };
 
   const handleSubmit = async () => {
-    const raw = codigo.replace(/-/g, '');
+    // Strip formatting: remove "WOLF-" prefix and dashes, send just the raw code
+    const raw = codigo.replace(/^WOLF-?/i, '').replace(/-/g, '');
     if (raw.length < 4) {
       setError('El codigo es muy corto');
       return;
@@ -52,7 +61,7 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
 
       const data = await res.json();
 
-      if (!res.ok || !data.ok) {
+      if (!res.ok || !data.success) {
         setError(data.error || 'Codigo invalido');
         setShake(true);
         setTimeout(() => setShake(false), 500);
@@ -95,7 +104,7 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
           onChange={handleChange}
           placeholder="WOLF-A3K9"
           className="flex-1 bg-transparent text-white font-mono text-lg tracking-wider outline-none placeholder:text-white/20"
-          maxLength={9}
+          maxLength={14}
           autoCapitalize="characters"
           disabled={loading}
         />
@@ -107,7 +116,7 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
 
       <button
         onClick={handleSubmit}
-        disabled={loading || codigo.replace(/-/g, '').length < 4}
+        disabled={loading || codigo.replace(/^WOLF-?/i, '').replace(/-/g, '').length < 4}
         className="h-14 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
       >
         {loading ? (

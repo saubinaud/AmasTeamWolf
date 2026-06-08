@@ -10,12 +10,27 @@ interface ClaseData {
   titulo: string;
   descripcion: string;
   instrucciones: string;
-  youtube_id: string;
+  video_youtube_id: string;
+  duracion_minutos: number;
   orden: number;
   puntos: number;
+  requiere_video: boolean;
+  ruta_id: number;
+  ruta_nombre: string;
+  color_primario: string;
+}
+
+interface ProgresoData {
   estado: string;
-  feedback: string | null;
-  video_alumno_url: string | null;
+  completado_at?: string;
+  puntos_ganados?: number;
+}
+
+interface EnvioData {
+  id: number;
+  estado: string;
+  feedback_profesor: string | null;
+  created_at: string;
 }
 
 interface ClaseDetalleProps {
@@ -28,6 +43,8 @@ interface ClaseDetalleProps {
 
 export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }: ClaseDetalleProps) {
   const [clase, setClase] = useState<ClaseData | null>(null);
+  const [progreso, setProgreso] = useState<ProgresoData | null>(null);
+  const [envio, setEnvio] = useState<EnvioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showEnviar, setShowEnviar] = useState(false);
@@ -40,9 +57,12 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
       const res = await fetch(`${API_BASE}/clases/clase/${claseId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al cargar clase');
-      setClase(data.clase || data);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al cargar clase');
+      const data = json.data || json;
+      setClase(data.clase);
+      setProgreso(data.progreso || { estado: 'disponible' });
+      setEnvio(data.envio || null);
       setError('');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error de conexion');
@@ -89,15 +109,17 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
     );
   }
 
+  const estado = progreso?.estado || 'disponible';
+
   const estadoLabel = {
     bloqueado: { text: 'Bloqueada', icon: <Clock className="w-4 h-4" />, color: 'text-zinc-500' },
     disponible: { text: 'Disponible', icon: <Send className="w-4 h-4" />, color: 'text-[#FA7B21]' },
     video_enviado: { text: 'Video enviado - En revision', icon: <Clock className="w-4 h-4 animate-spin-slow" />, color: 'text-amber-400' },
     completado: { text: 'Completada', icon: <Check className="w-4 h-4" />, color: 'text-green-400' },
-  }[clase.estado] || { text: clase.estado, icon: null, color: 'text-white/60' };
+  }[estado] || { text: estado, icon: null, color: 'text-white/60' };
 
-  const canSubmitVideo = clase.estado === 'disponible';
-  const canUseCodigo = clase.estado === 'disponible' || clase.estado === 'bloqueado';
+  const canSubmitVideo = estado === 'disponible';
+  const canUseCodigo = estado === 'disponible';
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -120,7 +142,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6 pb-24">
         {/* Video */}
-        <VideoPlayer youtubeId={clase.youtube_id} />
+        <VideoPlayer youtubeId={clase.video_youtube_id} />
 
         {/* Title + Description */}
         <div>
@@ -149,10 +171,10 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
         </div>
 
         {/* Feedback from teacher */}
-        {clase.feedback && (
+        {envio?.feedback_profesor && (
           <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4">
             <h3 className="text-green-400 font-semibold text-sm mb-1">Feedback del profesor:</h3>
-            <p className="text-white/70 text-sm leading-relaxed">{clase.feedback}</p>
+            <p className="text-white/70 text-sm leading-relaxed">{envio.feedback_profesor}</p>
           </div>
         )}
 

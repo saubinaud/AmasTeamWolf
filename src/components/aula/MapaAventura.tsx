@@ -26,6 +26,16 @@ interface RutaData {
   };
 }
 
+interface RutaApiResponse {
+  id: number;
+  nombre: string;
+  slug: string;
+  descripcion: string;
+  cinturon_asociado: string;
+  imagen_portada: string;
+  color_primario: string;
+}
+
 interface MapaAventuraProps {
   rutaId: number;
   onSelectClase: (claseId: number) => void;
@@ -55,9 +65,29 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: MapaAventuraProp
       const res = await fetch(`${API_BASE}/clases/ruta/${rutaId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al cargar ruta');
-      setRuta(data.ruta || data);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al cargar ruta');
+      const payload = json.data || json;
+      const apiRuta: RutaApiResponse = payload.ruta;
+      const apiClases: ClaseNodo[] = (payload.clases || []).map((c: ClaseNodo) => ({
+        ...c,
+        estado: c.estado || 'bloqueado',
+      }));
+      const puntosTotales: number = payload.puntosTotales || 0;
+
+      const rutaData: RutaData = {
+        id: apiRuta.id,
+        nombre: apiRuta.nombre,
+        color: apiRuta.color_primario || '#FA7B21',
+        cinturon: apiRuta.cinturon_asociado || '',
+        clases: apiClases,
+        progreso: {
+          completadas: apiClases.filter(c => c.estado === 'completado').length,
+          total: apiClases.length,
+          puntos: puntosTotales,
+        },
+      };
+      setRuta(rutaData);
       setError('');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error de conexion');
