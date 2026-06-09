@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate, useParams, useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, LogOut, User } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_BASE } from '../../config/api';
 import { MisRutas } from './MisRutas';
@@ -19,7 +19,7 @@ interface RutaResumen {
 }
 
 export function RutaGuerrero() {
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const params = useParams<{ rutaId?: string; claseId?: string }>();
   const navigate = useNavigate();
 
@@ -83,7 +83,7 @@ export function RutaGuerrero() {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/inicio-sesion" replace />;
+    return <Navigate to="/inicio-sesion?redirect=clases" replace />;
   }
 
   // Loading rutas
@@ -112,16 +112,39 @@ export function RutaGuerrero() {
     );
   }
 
+  // User bar component (reusable)
+  const userName = user?.alumno_nombre || user?.nombre_alumno || 'Alumno';
+  const UserBar = () => (
+    <div className="bg-zinc-950 border-b border-white/5 px-4 py-3">
+      <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-[#FA7B21]/15 flex items-center justify-center shrink-0">
+            <User className="w-4 h-4 text-[#FA7B21]" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-white/80 text-sm font-medium truncate">{userName}</p>
+            <p className="text-white/30 text-[11px]">Ruta del Guerrero</p>
+          </div>
+        </div>
+        <button onClick={() => { logout(); navigate('/inicio-sesion'); }}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors text-xs">
+          <LogOut className="w-4 h-4" />
+          <span className="hidden sm:inline">Salir</span>
+        </button>
+      </div>
+    </div>
+  );
+
   if (rutas.length === 0) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4 px-6">
-        <p className="text-white/60 text-center">No tienes rutas asignadas todavia.</p>
-        <button
-          onClick={() => navigate('/')}
-          className="text-[#FA7B21] font-medium hover:underline"
-        >
-          Volver al inicio
-        </button>
+      <div className="min-h-screen bg-zinc-950 flex flex-col">
+        <UserBar />
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-6">
+          <p className="text-white/60 text-center">No tienes rutas asignadas todavia.</p>
+          <button onClick={() => navigate('/')} className="text-[#FA7B21] font-medium hover:underline">
+            Volver al inicio
+          </button>
+        </div>
       </div>
     );
   }
@@ -156,9 +179,12 @@ export function RutaGuerrero() {
 
   // Route: /clases → MisRutas (list)
   return (
-    <MisRutas
-      rutas={rutas}
-      onSelectRuta={(id) => navigate(`/clases/${id}`)}
-    />
+    <div className="min-h-screen bg-zinc-950">
+      <UserBar />
+      <MisRutas
+        rutas={rutas}
+        onSelectRuta={(id) => navigate(`/clases/${id}`)}
+      />
+    </div>
   );
 }

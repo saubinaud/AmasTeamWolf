@@ -59,7 +59,14 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
           await navigator.credentials.store(cred);
         } catch { /* silent */ }
       }
-      onNavigate('perfil');
+      // Redirect to /clases if came from there, otherwise perfil
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect');
+      if (redirectTo === 'clases') {
+        window.location.href = '/clases';
+      } else {
+        onNavigate('perfil');
+      }
     } else {
       setError(result.error || 'Error al iniciar sesión');
     }
@@ -75,7 +82,13 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     setLoading(false);
 
     if (result.success) {
-      onNavigate('perfil');
+      const params = new URLSearchParams(window.location.search);
+      const redirectTo = params.get('redirect');
+      if (redirectTo === 'clases') {
+        window.location.href = '/clases';
+      } else {
+        onNavigate('perfil');
+      }
     } else {
       setError(result.error || 'Error al crear contraseña');
     }
