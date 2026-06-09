@@ -12,6 +12,9 @@ interface RutaResumen {
   nombre: string;
   color: string;
   cinturon: string;
+  mundo_id?: number | null;
+  mundo_nombre?: string | null;
+  mundo_color?: string | null;
   progreso: { completadas: number; total: number; puntos: number };
 }
 
@@ -33,9 +36,24 @@ export function RutaGuerrero() {
       const res = await fetch(`${API_BASE}/clases/mis-rutas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Error al cargar rutas');
-      setRutas(data.rutas || []);
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al cargar rutas');
+      // API returns { success, data: [...] } — map to RutaResumen format
+      const rawRutas = json.data || json.rutas || [];
+      setRutas(rawRutas.map((r: Record<string, unknown>) => ({
+        id: r.id as number,
+        nombre: r.nombre as string,
+        color: (r.color_primario as string) || '#FA7B21',
+        cinturon: (r.cinturon_asociado as string) || '',
+        mundo_id: r.mundo_id as number | null,
+        mundo_nombre: r.mundo_nombre as string | null,
+        mundo_color: r.mundo_color as string | null,
+        progreso: {
+          completadas: Number(r.clases_completadas) || 0,
+          total: Number(r.total_clases) || 0,
+          puntos: Number(r.puntos_totales) || 0,
+        },
+      })));
       setError('');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error de conexion');
