@@ -1,11 +1,28 @@
-import { Lock, Star, Clock, Zap, Check, Trophy } from 'lucide-react';
+import { Lock, Star, Clock, Zap, Trophy } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════
-   NodoClase — Game-like node following AMAS visual identity.
-   Orange/gold gradients, bold, vibrant, child-friendly.
+   NodoClase — Shows belt SVG if assigned, orange circle otherwise.
    ═══════════════════════════════════════════════════════════════ */
 
-interface ClaseNodo { id: number; titulo: string; orden: number; estado: string; puntos: number }
+// Map belt name → SVG filename in /cinturones/
+const BELT_FILES: Record<string, string> = {};
+const BELT_LIST = [
+  "Blanco","Blanco con tira dorada","Blanco con tira naranja delgada","Blanco con tira naranja gruesa",
+  "Blanco con tira amarilla delgada","Blanco con tira amarilla gruesa","Blanco con tira camuflada delgada",
+  "Blanco con tira camuflada gruesa","Blanco con tira verde delgada","Blanco con tira verde gruesa",
+  "Blanco con tira violeta delgada","Blanco con tira violeta gruesa","Blanco con tira azul delgada",
+  "Blanco con tira azul gruesa","Blanco con tira marrón delgada","Blanco con tira marrón gruesa",
+  "Blanco con tira rojo delgada","Blanco con tira roja gruesa","Blanco con tira rojo negro delgada",
+  "Blanco con tira rojo negro gruesa","Amarillo","Amarillo Camuflado","Naranja","Naranja Camuflado",
+  "Verde","Verde Camuflado","Azul","Azul Camuflado","Rojo","Rojo Camuflado",
+  "Negro 1 Dan","Negro 2 Dan","Negro 3 Dan",
+];
+BELT_LIST.forEach((name, i) => {
+  const fn = `${String(i + 1).padStart(2, '0')}-${name.toLowerCase().replace(/\s+/g, '-').replace(/ó/g, 'o')}.svg`;
+  BELT_FILES[name] = `/cinturones/${fn}`;
+});
+
+interface ClaseNodo { id: number; titulo: string; orden: number; estado: string; puntos: number; cinturon_nombre?: string | null }
 
 interface Props {
   clase: ClaseNodo;
@@ -85,12 +102,20 @@ export function NodoClase({ clase, color, position, onClick, isCurrent }: Props)
             style={{ background: 'linear-gradient(160deg, rgba(255,255,255,0.2) 0%, transparent 50%)' }} />
         )}
 
-        {/* Icon */}
-        <div className="relative text-white">
-          {locked && <Lock className="w-5 h-5 opacity-40" />}
-          {done && <Trophy className="w-7 h-7 drop-shadow-lg" />}
-          {pending && <Clock className="w-6 h-6" style={{ animation: 'pulse 2s ease-in-out infinite' }} />}
-          {available && <Zap className="w-7 h-7 drop-shadow-lg" />}
+        {/* Icon or Belt SVG */}
+        <div className="relative text-white flex items-center justify-center">
+          {clase.cinturon_nombre && BELT_FILES[clase.cinturon_nombre] && !locked ? (
+            <img src={BELT_FILES[clase.cinturon_nombre]} alt={clase.cinturon_nombre}
+              className="w-[85%] h-auto drop-shadow-md" draggable={false}
+              style={{ filter: done ? 'drop-shadow(0 0 4px rgba(255,215,0,0.5))' : undefined }} />
+          ) : (
+            <>
+              {locked && <Lock className="w-5 h-5 opacity-40" />}
+              {done && <Trophy className="w-7 h-7 drop-shadow-lg" />}
+              {pending && <Clock className="w-6 h-6" style={{ animation: 'pulse 2s ease-in-out infinite' }} />}
+              {available && <Zap className="w-7 h-7 drop-shadow-lg" />}
+            </>
+          )}
         </div>
 
         {/* Order badge */}

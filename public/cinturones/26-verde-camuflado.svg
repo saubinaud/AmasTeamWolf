@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100">
+<defs><clipPath id="belt"><path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z"/><path d="M88,18 L112,18 L119,60 L81,60 Z"/><path d="M89,48 L68,94 L80,94 L95,56 Z"/><path d="M111,48 L132,94 L120,94 L105,56 Z"/></clipPath><pattern id="camo" patternUnits="userSpaceOnUse" width="12" height="12">
+  <rect width="12" height="12" fill="#4A7C59"/>
+  <path d="M0,0 L6,0 L0,6 Z" fill="#2D5016"/>
+  <path d="M6,0 L12,0 L12,6 Z" fill="#6B7F3E"/>
+  <path d="M0,6 L6,12 L0,12 Z" fill="#3D6B4F"/>
+  <path d="M12,6 L12,12 L6,12 Z" fill="#2D5016"/>
+  <circle cx="3" cy="9" r="1.5" fill="#8B7D3C"/>
+</pattern></defs>
+<path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z" fill="#22C55E" stroke="transparent" stroke-width="1"/>
+<path d="M88,18 L112,18 L119,60 L81,60 Z" fill="rgb(29,173,82)"/>
+<path d="M89,48 L68,94 L80,94 L95,56 Z" fill="rgb(27,157,75)"/>
+<path d="M111,48 L132,94 L120,94 L105,56 Z" fill="rgb(27,157,75)"/>
+<rect x="0" y="0" width="200" height="100" fill="url(#camo)" clip-path="url(#belt)" opacity="0.5"/>
+<path d="M12,28 L85,28 M115,28 L188,28" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" fill="none"/>
+<path d="M12,52 L85,52 M115,52 L188,52" stroke="rgba(0,0,0,0.06)" stroke-width="0.5" fill="none"/>
+</svg>

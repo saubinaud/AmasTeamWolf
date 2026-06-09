@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" width="200" height="100">
+<defs><clipPath id="belt"><path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z"/><path d="M88,18 L112,18 L119,60 L81,60 Z"/><path d="M89,48 L68,94 L80,94 L95,56 Z"/><path d="M111,48 L132,94 L120,94 L105,56 Z"/></clipPath></defs>
+<path d="M10,25 Q5,25 5,35 L5,45 Q5,55 10,55 L190,55 Q195,55 195,45 L195,35 Q195,25 190,25 Z" fill="#3B82F6" stroke="transparent" stroke-width="1"/>
+<path d="M88,18 L112,18 L119,60 L81,60 Z" fill="rgb(51,114,216)"/>
+<path d="M89,48 L68,94 L80,94 L95,56 Z" fill="rgb(47,104,196)"/>
+<path d="M111,48 L132,94 L120,94 L105,56 Z" fill="rgb(47,104,196)"/>
+<path d="M12,28 L85,28 M115,28 L188,28" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" fill="none"/>
+<path d="M12,52 L85,52 M115,52 L188,52" stroke="rgba(0,0,0,0.06)" stroke-width="0.5" fill="none"/>
+</svg>
