@@ -133,10 +133,11 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
       </div>
 
       {/* Content */}
-      <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col gap-6 pb-24">
+      <div className={`mx-auto px-4 py-6 pb-24 ${isVertical ? 'max-w-5xl' : 'max-w-2xl'}`}>
+
         {/* Completed celebration banner */}
         {estado === 'completado' && (
-          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-5 flex items-center gap-4 animate-fade-in">
+          <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-2xl p-5 flex items-center gap-4 animate-fade-in mb-6">
             <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
               <Trophy className="w-6 h-6 text-green-400" />
             </div>
@@ -149,23 +150,26 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
           </div>
         )}
 
-        {/* Content layout — 2 columns for vertical video on desktop */}
-        <div className={isVertical ? 'md:grid md:grid-cols-[1fr_1.2fr] md:gap-6 md:items-start space-y-5 md:space-y-0' : 'space-y-5'}>
-          {/* Video */}
-          <div className={`rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20 ${isVertical ? 'md:sticky md:top-20' : ''}`}>
-            <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} />
-          </div>
-
-          {/* Right column (or below on mobile) */}
-          <div className="space-y-5">
-            {/* Title + Description */}
-            <div>
-              <h1 className="text-xl font-bold text-white mb-2">{clase.titulo}</h1>
+        {/* Layout: vertical video = 2 cols on desktop, horizontal = single col */}
+        <div className={isVertical
+          ? 'grid grid-cols-1 lg:grid-cols-[minmax(280px,400px)_1fr] gap-6 items-start'
+          : 'flex flex-col gap-6'
+        }>
+          {/* LEFT: Video + title */}
+          <div className={isVertical ? 'lg:sticky lg:top-20' : ''}>
+            <div className="rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20">
+              <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} />
+            </div>
+            <div className="mt-4">
+              <h1 className="text-xl font-bold text-white">{clase.titulo}</h1>
               {clase.descripcion && (
-                <p className="text-white/60 text-sm leading-relaxed">{clase.descripcion}</p>
+                <p className="text-white/60 text-sm leading-relaxed mt-2">{clase.descripcion}</p>
               )}
             </div>
+          </div>
 
+          {/* RIGHT: Everything else */}
+          <div className="flex flex-col gap-5">
             {/* Instructions */}
             {clase.instrucciones && (
               <div className="bg-zinc-900/60 border border-white/5 rounded-2xl p-5">
@@ -178,8 +182,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
                 </p>
               </div>
             )}
-          </div>
-        </div>
+            {/* --- All remaining content goes in right column --- */}
 
         {/* Status section */}
         <div className="rounded-2xl overflow-hidden">
@@ -283,7 +286,10 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
             <InputCodigo onSuccess={handleCodeSuccess} />
           </div>
         )}
-      </div>
+
+          </div>{/* close right column */}
+        </div>{/* close grid/flex layout */}
+      </div>{/* close max-w container */}
     </div>
   );
 }
