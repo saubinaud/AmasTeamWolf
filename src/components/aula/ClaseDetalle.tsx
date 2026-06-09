@@ -158,7 +158,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
           {/* LEFT: Video + title */}
           <div className={isVertical ? 'lg:sticky lg:top-20' : ''}>
             <div className="rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20">
-              <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} />
+              <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} orientacion={clase.video_orientacion} />
             </div>
             <div className="mt-4">
               <h1 className="text-xl font-bold text-white">{clase.titulo}</h1>
