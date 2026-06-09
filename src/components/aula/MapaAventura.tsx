@@ -22,23 +22,17 @@ interface ClaseNodo { id: number; titulo: string; orden: number; estado: string;
 interface RutaData { id: number; nombre: string; color: string; cinturon: string; clases: ClaseNodo[]; progreso: { completadas: number; total: number; puntos: number } }
 interface Props { rutaId: number; onSelectClase: (id: number) => void; onBack: () => void }
 
-const SCALE_MIN = 0.4;
-const SCALE_MAX = 2.5;
-const NODE_GAP = 240;
+const SCALE_MIN = 0.3;
+const SCALE_MAX = 3;
+const NODE_GAP = 350; // big gap = room for decorations
+const CW = 2000; // huge world
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
-// Canvas width adapts to viewport — fills the screen
-function getCanvasWidth() {
-  if (typeof window === 'undefined') return 800;
-  return Math.max(800, window.innerWidth * 1.5); // 1.5x viewport so you can pan a bit
-}
-
-function buildPositions(n: number, cw: number) {
-  const h = Math.max(1200, n * NODE_GAP + 600);
-  const amplitude = Math.min(cw * 0.22, 200);
+function buildPositions(n: number) {
+  const h = Math.max(2000, n * NODE_GAP + 800);
   const pts = Array.from({ length: n }, (_, i) => {
     const t = n <= 1 ? 0.5 : i / (n - 1);
-    return { x: cw / 2 + Math.sin(t * Math.PI * 2.2) * amplitude, y: h - 280 - t * (h - 560) };
+    return { x: CW / 2 + Math.sin(t * Math.PI * 2.2) * 350, y: h - 400 - t * (h - 800) };
   });
   return { pts, h };
 }
@@ -139,15 +133,15 @@ function Ember({ x, y, delay }: { x: number; y: number; delay: number }) {
   );
 }
 
-// Stars — use large range, will be modulo'd by actual canvas size
-const STARS = Array.from({ length: 60 }, (_, i) => ({
-  k: i, xPct: Math.random(), y: Math.random() * 4000,
-  r: 0.4 + Math.random() * 1.5, o: 0.04 + Math.random() * 0.12, d: 3 + Math.random() * 6,
+// Stars across the entire world
+const STARS = Array.from({ length: 100 }, (_, i) => ({
+  k: i, x: Math.random() * CW, y: Math.random() * 6000,
+  r: 0.5 + Math.random() * 2, o: 0.04 + Math.random() * 0.15, d: 3 + Math.random() * 6,
 }));
 
-// Fire particles
-const EMBERS = Array.from({ length: 30 }, (_, i) => ({
-  k: i, xPct: Math.random(), y: 200 + Math.random() * 2000, delay: Math.random() * 5,
+// Fire embers everywhere
+const EMBERS = Array.from({ length: 40 }, (_, i) => ({
+  k: i, x: Math.random() * CW, y: 200 + Math.random() * 4000, delay: Math.random() * 5,
 }));
 
 // SVG trail between nodes
@@ -239,7 +233,6 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: Props) {
   const [tx, setTx] = useState(0);
   const [ty, setTy] = useState(0);
   const [sc, setSc] = useState(1);
-  const [cw] = useState(() => getCanvasWidth());
 
   const vpRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ on: false, sx: 0, sy: 0, otx: 0, oty: 0 });
@@ -265,18 +258,18 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: Props) {
     return () => { c = true; };
   }, [rutaId]);
 
-  const layout = useMemo(() => ruta ? buildPositions(ruta.clases.length, cw) : null, [ruta?.clases.length, cw]);
+  const layout = useMemo(() => ruta ? buildPositions(ruta.clases.length) : null, [ruta?.clases.length]);
   const decorations = useMemo(() => layout ? generateDecorations(layout.pts, layout.h) : [], [layout]);
 
-  // Center — scale to fit viewport nicely
+  // Center — zoom in close to the current node (immersive, not overview)
   const centerCurrent = () => {
     if (!ruta || !layout || !vpRef.current) return;
     const i = ruta.clases.findIndex(c => c.estado === 'disponible');
     const pos = layout.pts[i >= 0 ? i : ruta.clases.length - 1];
     if (!pos) return;
     const rect = vpRef.current.getBoundingClientRect();
-    // Calculate scale so nodes are comfortably sized: aim for ~80% of viewport width
-    const idealScale = clamp(rect.width / cw * 1.2, 0.6, 1.3);
+    // Scale so viewport width shows ~500px of the 2000px canvas = close-up view
+    const idealScale = clamp(rect.width / 500, 0.6, 1.5);
     setSc(idealScale);
     setTx(rect.width / 2 - pos.x * idealScale);
     setTy(rect.height / 2 - pos.y * idealScale);
@@ -383,9 +376,9 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: Props) {
         </div>
 
         {/* Transformed world canvas */}
-        <div style={{ transform: `translate(${tx}px,${ty}px) scale(${sc})`, transformOrigin: '0 0', willChange: 'transform', position: 'relative', width: cw, height: CH }}>
+        <div style={{ transform: `translate(${tx}px,${ty}px) scale(${sc})`, transformOrigin: '0 0', willChange: 'transform', position: 'relative', width: CW, height: CH }}>
 
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${cw} ${CH}`} style={{ overflow: 'visible' }}>
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 ${CW} ${CH}`} style={{ overflow: 'visible' }}>
             <defs>
               <linearGradient id="gld" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#FCA929" /><stop offset="100%" stopColor="#FA7B21" />
@@ -396,24 +389,24 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: Props) {
             </defs>
 
             {/* ── Deep background mountains ── */}
-            <path d={`M-50,${CH * 0.6} Q${cw * 0.1},${CH * 0.35} ${cw * 0.25},${CH * 0.48} T${cw * 0.5},${CH * 0.4} T${cw * 0.75},${CH * 0.45} T${cw + 50},${CH * 0.38} L${cw + 50},${CH + 50} L-50,${CH + 50}Z`}
+            <path d={`M-50,${CH * 0.6} Q${CW * 0.1},${CH * 0.35} ${CW * 0.25},${CH * 0.48} T${CW * 0.5},${CH * 0.4} T${CW * 0.75},${CH * 0.45} T${CW + 50},${CH * 0.38} L${CW + 50},${CH + 50} L-50,${CH + 50}Z`}
               fill="rgba(250,123,33,0.018)" />
-            <path d={`M-50,${CH * 0.72} Q${cw * 0.2},${CH * 0.55} ${cw * 0.4},${CH * 0.64} T${cw * 0.65},${CH * 0.58} T${cw + 50},${CH * 0.62} L${cw + 50},${CH + 50} L-50,${CH + 50}Z`}
+            <path d={`M-50,${CH * 0.72} Q${CW * 0.2},${CH * 0.55} ${CW * 0.4},${CH * 0.64} T${CW * 0.65},${CH * 0.58} T${CW + 50},${CH * 0.62} L${CW + 50},${CH + 50} L-50,${CH + 50}Z`}
               fill="rgba(250,123,33,0.012)" />
-            <path d={`M-50,${CH * 0.85} Q${cw * 0.3},${CH * 0.72} ${cw * 0.55},${CH * 0.78} T${cw + 50},${CH * 0.74} L${cw + 50},${CH + 50} L-50,${CH + 50}Z`}
+            <path d={`M-50,${CH * 0.85} Q${CW * 0.3},${CH * 0.72} ${CW * 0.55},${CH * 0.78} T${CW + 50},${CH * 0.74} L${CW + 50},${CH + 50} L-50,${CH + 50}Z`}
               fill="rgba(250,123,33,0.008)" />
 
             {/* ── Stars ── */}
             {STARS.map(s => (
-              <circle key={s.k} cx={s.xPct * cw} cy={s.y % CH} r={s.r} fill="#FCA929" opacity={s.o}>
+              <circle key={s.k} cx={s.x} cy={s.y % CH} r={s.r} fill="#FCA929" opacity={s.o}>
                 <animate attributeName="opacity" values={`${s.o};${s.o * 0.15};${s.o}`} dur={`${s.d}s`} repeatCount="indefinite" />
               </circle>
             ))}
 
             {/* ── Fog layers ── */}
             {[0.3, 0.5, 0.7].map((t, i) => (
-              <ellipse key={`fog-${i}`} cx={cw * (0.3 + i * 0.2)} cy={CH * t} rx={200} ry={60} fill="url(#fogA)">
-                <animate attributeName="cx" values={`${cw * (0.2 + i * 0.2)};${cw * (0.4 + i * 0.2)};${cw * (0.2 + i * 0.2)}`}
+              <ellipse key={`fog-${i}`} cx={CW * (0.3 + i * 0.2)} cy={CH * t} rx={300} ry={80} fill="url(#fogA)">
+                <animate attributeName="cx" values={`${CW * (0.2 + i * 0.2)};${CW * (0.4 + i * 0.2)};${CW * (0.2 + i * 0.2)}`}
                   dur={`${8 + i * 3}s`} repeatCount="indefinite" />
               </ellipse>
             ))}
@@ -434,7 +427,7 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: Props) {
             {decorations}
 
             {/* ── Fire particles / embers ── */}
-            {EMBERS.map(e => <Ember key={e.k} x={e.xPct * cw} y={e.y % CH} delay={e.delay} />)}
+            {EMBERS.map(e => <Ember key={e.k} x={e.x} y={e.y % CH} delay={e.delay} />)}
 
             {/* ── Trails between nodes ── */}
             {pts.map((p, i) => {
