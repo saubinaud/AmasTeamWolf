@@ -14,40 +14,37 @@ interface NodoClaseProps {
   position: { x: number; y: number };
   onClick: () => void;
   isCurrent: boolean;
-  viewWidth: number;
 }
 
-export function NodoClase({ clase, color, position, onClick, isCurrent, viewWidth }: NodoClaseProps) {
+export function NodoClase({ clase, color, position, onClick, isCurrent }: NodoClaseProps) {
   const isLocked = clase.estado === 'bloqueado';
   const isCompleted = clase.estado === 'completado';
   const isPending = clase.estado === 'video_enviado';
   const isAvailable = clase.estado === 'disponible';
 
-  const cx = (position.x / 100) * viewWidth;
+  const cx = position.x;
   const cy = position.y;
 
-  // Size varies by state: current is larger, locked is smaller
-  const r = isCurrent ? 32 : isLocked ? 24 : 28;
+  // Larger game-like nodes — current is biggest, locked smallest
+  const r = isCurrent ? 36 : isLocked ? 26 : 30;
 
   const fillColor = isLocked
-    ? '#27272a'
+    ? '#1c1c20'
     : isCompleted
-    ? '#FCA929'
-    : isPending
-    ? color
-    : color;
+      ? '#FCA929'
+      : color;
 
   const strokeColor = isCompleted
     ? '#FFD700'
     : isLocked
-    ? '#3f3f46'
-    : isPending
-    ? color
-    : color;
+      ? '#2a2a30'
+      : color;
 
-  const opacity = isLocked ? 0.35 : 1;
+  const opacity = isLocked ? 0.32 : 1;
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Prevent click from triggering if it was really a drag
+    e.stopPropagation();
     if (!isLocked) onClick();
   };
 
@@ -55,157 +52,170 @@ export function NodoClase({ clase, color, position, onClick, isCurrent, viewWidt
     <g
       id={`nodo-${clase.id}`}
       onClick={handleClick}
-      style={{ cursor: isLocked ? 'default' : 'pointer', opacity, pointerEvents: isLocked ? 'none' : 'auto' }}
-      className="transition-opacity duration-300"
+      style={{
+        cursor: isLocked ? 'default' : 'pointer',
+        opacity,
+        pointerEvents: isLocked ? 'none' : 'auto',
+      }}
     >
-      {/* Pulsing glow for current/available node */}
+      {/* === Outer effects === */}
+
+      {/* Current node: double pulsing glow rings */}
       {isCurrent && (
         <>
           <circle
-            cx={cx}
-            cy={cy}
-            r={r + 14}
-            fill="none"
-            stroke={color}
-            strokeWidth={2}
-            opacity={0.2}
+            cx={cx} cy={cy} r={r + 18}
+            fill="none" stroke={color} strokeWidth={1.5}
+            opacity={0.15}
             className="animate-pulse-glow-svg"
           />
           <circle
-            cx={cx}
-            cy={cy}
-            r={r + 8}
-            fill="none"
-            stroke={color}
-            strokeWidth={2.5}
-            opacity={0.4}
+            cx={cx} cy={cy} r={r + 10}
+            fill="none" stroke={color} strokeWidth={2.5}
+            opacity={0.35}
             className="animate-pulse-glow-svg"
           />
         </>
       )}
 
-      {/* Available but not current — subtle ring */}
+      {/* Available (not current): subtle breathing ring */}
       {isAvailable && !isCurrent && (
         <circle
-          cx={cx}
-          cy={cy}
-          r={r + 8}
-          fill="none"
-          stroke={color}
-          strokeWidth={1.5}
-          opacity={0.25}
+          cx={cx} cy={cy} r={r + 10}
+          fill="none" stroke={color} strokeWidth={1.5}
+          opacity={0.2}
           className="animate-pulse-slow"
         />
       )}
 
-      {/* Completed golden glow ring */}
+      {/* Completed: golden halo */}
       {isCompleted && (
         <circle
-          cx={cx}
-          cy={cy}
-          r={r + 6}
-          fill="none"
-          stroke="#FFD700"
-          strokeWidth={2}
-          opacity={0.5}
-          style={{ filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.5))' }}
+          cx={cx} cy={cy} r={r + 8}
+          fill="none" stroke="#FFD700" strokeWidth={2}
+          opacity={0.45}
+          style={{ filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.5))' }}
         />
       )}
 
-      {/* Pending — belt color ring with dashes */}
+      {/* Pending: spinning dashed ring */}
       {isPending && (
         <circle
-          cx={cx}
-          cy={cy}
-          r={r + 6}
-          fill="none"
-          stroke={color}
-          strokeWidth={2}
-          strokeDasharray="6 4"
+          cx={cx} cy={cy} r={r + 8}
+          fill="none" stroke={color} strokeWidth={2}
+          strokeDasharray="7 5"
           opacity={0.5}
           className="animate-spin-slow"
           style={{ transformOrigin: `${cx}px ${cy}px` }}
         />
       )}
 
-      {/* Main circle */}
+      {/* Locked: chain-link dashed ring */}
+      {isLocked && (
+        <circle
+          cx={cx} cy={cy} r={r + 6}
+          fill="none" stroke="#27272a" strokeWidth={1.5}
+          strokeDasharray="3 5"
+          opacity={0.3}
+        />
+      )}
+
+      {/* === Main circle === */}
       <circle
-        cx={cx}
-        cy={cy}
-        r={r}
+        cx={cx} cy={cy} r={r}
         fill={fillColor}
         stroke={strokeColor}
-        strokeWidth={isCompleted ? 3.5 : isCurrent ? 3.5 : 2.5}
+        strokeWidth={isCompleted || isCurrent ? 3.5 : 2.5}
         style={
           isCompleted
-            ? { filter: 'drop-shadow(0 0 12px rgba(255, 215, 0, 0.5))' }
+            ? { filter: 'drop-shadow(0 0 14px rgba(255, 215, 0, 0.5))' }
             : isCurrent
-            ? { filter: `drop-shadow(0 0 14px ${color}90)` }
-            : undefined
+              ? { filter: `drop-shadow(0 0 16px ${color}90)` }
+              : undefined
         }
       />
 
-      {/* Icon in the center */}
+      {/* Inner darker ring for depth on active nodes */}
+      {!isLocked && (
+        <circle
+          cx={cx} cy={cy} r={r - 5}
+          fill="none"
+          stroke="rgba(0,0,0,0.2)"
+          strokeWidth={1}
+        />
+      )}
+
+      {/* === Icon area === */}
       <foreignObject
-        x={cx - 12}
-        y={cy - 12}
-        width={24}
-        height={24}
+        x={cx - 14} y={cy - 14}
+        width={28} height={28}
         style={{ pointerEvents: 'none' }}
       >
-        <div className="w-6 h-6 flex items-center justify-center text-white">
-          {isLocked && <Lock className="w-4 h-4 opacity-60" />}
-          {isCompleted && <Check className="w-5 h-5 text-white drop-shadow-sm" />}
-          {isPending && <Clock className="w-4 h-4 animate-spin-slow" />}
+        <div className="w-7 h-7 flex items-center justify-center text-white">
+          {isLocked && <Lock className="w-4 h-4 opacity-50" />}
+          {isCompleted && <Check className="w-5 h-5 text-white drop-shadow-sm" strokeWidth={3} />}
+          {isPending && <Clock className="w-5 h-5 animate-pulse-slow" />}
           {isAvailable && <Zap className="w-5 h-5" />}
         </div>
       </foreignObject>
 
-      {/* Completed badge — small star at top-right */}
-      {isCompleted && (
-        <foreignObject
-          x={cx + r * 0.5}
-          y={cy - r - 4}
-          width={20}
-          height={20}
-          style={{ pointerEvents: 'none' }}
-        >
-          <div className="w-5 h-5 rounded-full bg-[#FFD700] flex items-center justify-center shadow-lg">
-            <Star className="w-3 h-3 text-white fill-white" />
-          </div>
-        </foreignObject>
-      )}
-
-      {/* Order number */}
+      {/* === Order number — prominent below the node === */}
       <text
-        x={cx}
-        y={cy + r + 18}
+        x={cx} y={cy + r + 20}
         textAnchor="middle"
-        fill={isLocked ? 'rgba(255,255,255,0.15)' : isCompleted ? '#FFD700' : 'rgba(255,255,255,0.7)'}
-        fontSize={11}
-        fontWeight={700}
+        fill={
+          isLocked
+            ? 'rgba(255,255,255,0.1)'
+            : isCompleted
+              ? '#FFD700'
+              : 'rgba(255,255,255,0.75)'
+        }
+        fontSize={13}
+        fontWeight={800}
+        fontFamily="system-ui, sans-serif"
         className="select-none"
       >
         {clase.orden}
       </text>
 
-      {/* Title label (for current, completed, pending) */}
-      {(isCurrent || isCompleted || isPending) && (
+      {/* === Title label — always visible for non-locked === */}
+      {!isLocked && (
         <foreignObject
-          x={cx - 65}
-          y={cy + r + 24}
-          width={130}
-          height={36}
+          x={cx - 70} y={cy + r + 28}
+          width={140} height={36}
           style={{ pointerEvents: 'none' }}
         >
           <p
-            className="text-[10px] text-center leading-tight truncate px-1 font-medium"
+            className="text-[11px] text-center leading-tight px-1 font-semibold select-none"
             style={{
-              color: isCompleted ? '#FCA929' : isCurrent ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.5)',
+              color: isCompleted
+                ? '#FCA929'
+                : isCurrent
+                  ? 'rgba(255,255,255,0.85)'
+                  : isPending
+                    ? 'rgba(255,255,255,0.55)'
+                    : 'rgba(255,255,255,0.5)',
+              textShadow: '0 1px 4px rgba(0,0,0,0.6)',
             }}
           >
             {clase.titulo}
           </p>
+        </foreignObject>
+      )}
+
+      {/* === Completed badge: gold star === */}
+      {isCompleted && (
+        <foreignObject
+          x={cx + r * 0.5} y={cy - r - 6}
+          width={22} height={22}
+          style={{ pointerEvents: 'none' }}
+        >
+          <div
+            className="w-[22px] h-[22px] rounded-full bg-[#FFD700] flex items-center justify-center"
+            style={{ boxShadow: '0 0 10px rgba(255, 215, 0, 0.6)' }}
+          >
+            <Star className="w-3.5 h-3.5 text-white fill-white" />
+          </div>
         </foreignObject>
       )}
     </g>
