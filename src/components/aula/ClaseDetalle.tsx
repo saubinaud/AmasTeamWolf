@@ -150,7 +150,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
 
         {/* Video — full width, rounded */}
         <div className="rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20">
-          <VideoPlayer youtubeId={clase.video_youtube_id} />
+          <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} />
         </div>
 
         {/* Title + Description */}
