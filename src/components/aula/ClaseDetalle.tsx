@@ -112,6 +112,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
   const estado = progreso?.estado || 'disponible';
   const canSubmitVideo = estado === 'disponible';
   const canUseCodigo = estado === 'disponible';
+  const isVertical = clase.video_orientacion === 'vertical';
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -148,31 +149,37 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
           </div>
         )}
 
-        {/* Video — full width, rounded */}
-        <div className="rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20">
-          <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} />
-        </div>
-
-        {/* Title + Description */}
-        <div>
-          <h1 className="text-xl font-bold text-white mb-2">{clase.titulo}</h1>
-          {clase.descripcion && (
-            <p className="text-white/60 text-sm leading-relaxed">{clase.descripcion}</p>
-          )}
-        </div>
-
-        {/* Instructions — visually distinct section */}
-        {clase.instrucciones && (
-          <div className="bg-zinc-900/60 border border-white/5 rounded-2xl p-5">
-            <h3 className="text-white/80 font-semibold text-sm mb-3 flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-[#FA7B21]" />
-              Tu tarea:
-            </h3>
-            <p className="text-white/50 text-sm leading-relaxed whitespace-pre-line">
-              {clase.instrucciones}
-            </p>
+        {/* Content layout — 2 columns for vertical video on desktop */}
+        <div className={isVertical ? 'md:grid md:grid-cols-[1fr_1.2fr] md:gap-6 md:items-start space-y-5 md:space-y-0' : 'space-y-5'}>
+          {/* Video */}
+          <div className={`rounded-2xl overflow-hidden border border-white/5 shadow-lg shadow-black/20 ${isVertical ? 'md:sticky md:top-20' : ''}`}>
+            <VideoPlayer youtubeId={clase.video_youtube_id} videoUrl={clase.video_url} />
           </div>
-        )}
+
+          {/* Right column (or below on mobile) */}
+          <div className="space-y-5">
+            {/* Title + Description */}
+            <div>
+              <h1 className="text-xl font-bold text-white mb-2">{clase.titulo}</h1>
+              {clase.descripcion && (
+                <p className="text-white/60 text-sm leading-relaxed">{clase.descripcion}</p>
+              )}
+            </div>
+
+            {/* Instructions */}
+            {clase.instrucciones && (
+              <div className="bg-zinc-900/60 border border-white/5 rounded-2xl p-5">
+                <h3 className="text-white/80 font-semibold text-sm mb-3 flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-[#FA7B21]" />
+                  Tu tarea:
+                </h3>
+                <p className="text-white/50 text-sm leading-relaxed whitespace-pre-line">
+                  {clase.instrucciones}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Status section */}
         <div className="rounded-2xl overflow-hidden">
