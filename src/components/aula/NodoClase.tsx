@@ -1,4 +1,11 @@
-import { Lock, Star, Clock, Zap, Check } from 'lucide-react';
+import { Lock, Star, Clock, Zap, Check, Trophy } from 'lucide-react';
+
+/* ═══════════════════════════════════════════════════════════════
+   NodoClase — A game-like node on the adventure map.
+
+   Pure HTML/CSS positioned absolute (no SVG foreignObject).
+   States: bloqueado | disponible | video_enviado | completado
+   ═══════════════════════════════════════════════════════════════ */
 
 interface ClaseNodo {
   id: number;
@@ -22,202 +29,159 @@ export function NodoClase({ clase, color, position, onClick, isCurrent }: NodoCl
   const isPending = clase.estado === 'video_enviado';
   const isAvailable = clase.estado === 'disponible';
 
-  const cx = position.x;
-  const cy = position.y;
-
-  // Larger game-like nodes — current is biggest, locked smallest
-  const r = isCurrent ? 36 : isLocked ? 26 : 30;
-
-  const fillColor = isLocked
-    ? '#1c1c20'
-    : isCompleted
-      ? '#FCA929'
-      : color;
-
-  const strokeColor = isCompleted
-    ? '#FFD700'
-    : isLocked
-      ? '#2a2a30'
-      : color;
-
-  const opacity = isLocked ? 0.32 : 1;
-
-  const handleClick = (e: React.MouseEvent) => {
-    // Prevent click from triggering if it was really a drag
-    e.stopPropagation();
-    if (!isLocked) onClick();
-  };
+  const size = isCurrent ? 72 : isLocked ? 56 : 64;
+  const half = size / 2;
 
   return (
-    <g
+    <div
       id={`nodo-${clase.id}`}
-      onClick={handleClick}
+      className="absolute flex flex-col items-center"
       style={{
-        cursor: isLocked ? 'default' : 'pointer',
-        opacity,
-        pointerEvents: isLocked ? 'none' : 'auto',
+        left: position.x - half,
+        top: position.y - half,
+        width: size,
+        zIndex: isCurrent ? 10 : isLocked ? 1 : 5,
       }}
     >
-      {/* === Outer effects === */}
-
-      {/* Current node: double pulsing glow rings */}
+      {/* ── Beacon pulse for current node ── */}
       {isCurrent && (
         <>
-          <circle
-            cx={cx} cy={cy} r={r + 18}
-            fill="none" stroke={color} strokeWidth={1.5}
-            opacity={0.15}
-            className="animate-pulse-glow-svg"
+          <div className="absolute rounded-full"
+            style={{
+              width: size + 40, height: size + 40,
+              left: -20, top: -20,
+              border: `2px solid ${color}`,
+              opacity: 0.15,
+              animation: 'beacon 2s ease-out infinite',
+            }}
           />
-          <circle
-            cx={cx} cy={cy} r={r + 10}
-            fill="none" stroke={color} strokeWidth={2.5}
-            opacity={0.35}
-            className="animate-pulse-glow-svg"
+          <div className="absolute rounded-full"
+            style={{
+              width: size + 24, height: size + 24,
+              left: -12, top: -12,
+              border: `2.5px solid ${color}`,
+              opacity: 0.3,
+              animation: 'beacon 2s ease-out 0.4s infinite',
+            }}
           />
         </>
       )}
 
-      {/* Available (not current): subtle breathing ring */}
-      {isAvailable && !isCurrent && (
-        <circle
-          cx={cx} cy={cy} r={r + 10}
-          fill="none" stroke={color} strokeWidth={1.5}
-          opacity={0.2}
-          className="animate-pulse-slow"
-        />
-      )}
-
-      {/* Completed: golden halo */}
+      {/* ── Completed glow halo ── */}
       {isCompleted && (
-        <circle
-          cx={cx} cy={cy} r={r + 8}
-          fill="none" stroke="#FFD700" strokeWidth={2}
-          opacity={0.45}
-          style={{ filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.5))' }}
+        <div className="absolute rounded-full"
+          style={{
+            width: size + 16, height: size + 16,
+            left: -8, top: -8,
+            background: 'radial-gradient(circle, rgba(255,215,0,0.15) 0%, transparent 70%)',
+          }}
         />
       )}
 
-      {/* Pending: spinning dashed ring */}
+      {/* ── Pending spinner ring ── */}
       {isPending && (
-        <circle
-          cx={cx} cy={cy} r={r + 8}
-          fill="none" stroke={color} strokeWidth={2}
-          strokeDasharray="7 5"
-          opacity={0.5}
-          className="animate-spin-slow"
-          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        <div className="absolute rounded-full"
+          style={{
+            width: size + 12, height: size + 12,
+            left: -6, top: -6,
+            border: `2px dashed ${color}`,
+            opacity: 0.4,
+            animation: 'spin 8s linear infinite',
+          }}
         />
       )}
 
-      {/* Locked: chain-link dashed ring */}
-      {isLocked && (
-        <circle
-          cx={cx} cy={cy} r={r + 6}
-          fill="none" stroke="#27272a" strokeWidth={1.5}
-          strokeDasharray="3 5"
-          opacity={0.3}
-        />
-      )}
-
-      {/* === Main circle === */}
-      <circle
-        cx={cx} cy={cy} r={r}
-        fill={fillColor}
-        stroke={strokeColor}
-        strokeWidth={isCompleted || isCurrent ? 3.5 : 2.5}
-        style={
-          isCompleted
-            ? { filter: 'drop-shadow(0 0 14px rgba(255, 215, 0, 0.5))' }
-            : isCurrent
-              ? { filter: `drop-shadow(0 0 16px ${color}90)` }
-              : undefined
-        }
-      />
-
-      {/* Inner darker ring for depth on active nodes */}
-      {!isLocked && (
-        <circle
-          cx={cx} cy={cy} r={r - 5}
-          fill="none"
-          stroke="rgba(0,0,0,0.2)"
-          strokeWidth={1}
-        />
-      )}
-
-      {/* === Icon area === */}
-      <foreignObject
-        x={cx - 14} y={cy - 14}
-        width={28} height={28}
-        style={{ pointerEvents: 'none' }}
-      >
-        <div className="w-7 h-7 flex items-center justify-center text-white">
-          {isLocked && <Lock className="w-4 h-4 opacity-50" />}
-          {isCompleted && <Check className="w-5 h-5 text-white drop-shadow-sm" strokeWidth={3} />}
-          {isPending && <Clock className="w-5 h-5 animate-pulse-slow" />}
-          {isAvailable && <Zap className="w-5 h-5" />}
-        </div>
-      </foreignObject>
-
-      {/* === Order number — prominent below the node === */}
-      <text
-        x={cx} y={cy + r + 20}
-        textAnchor="middle"
-        fill={
-          isLocked
-            ? 'rgba(255,255,255,0.1)'
+      {/* ── Main circle button ── */}
+      <button
+        onClick={isLocked ? undefined : onClick}
+        disabled={isLocked}
+        className="relative rounded-full flex items-center justify-center transition-transform active:scale-90"
+        style={{
+          width: size,
+          height: size,
+          background: isLocked
+            ? 'linear-gradient(145deg, #18181b, #0f0f12)'
             : isCompleted
-              ? '#FFD700'
-              : 'rgba(255,255,255,0.75)'
-        }
-        fontSize={13}
-        fontWeight={800}
-        fontFamily="system-ui, sans-serif"
-        className="select-none"
+              ? 'linear-gradient(145deg, #f59e0b, #d97706)'
+              : `linear-gradient(145deg, ${color}, ${color}cc)`,
+          boxShadow: isLocked
+            ? 'inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.3)'
+            : isCompleted
+              ? '0 0 24px rgba(245,158,11,0.35), inset 0 2px 4px rgba(255,255,255,0.15)'
+              : isCurrent
+                ? `0 0 28px ${color}50, inset 0 2px 4px rgba(255,255,255,0.12)`
+                : `0 4px 16px ${color}25, inset 0 2px 4px rgba(255,255,255,0.08)`,
+          border: isLocked
+            ? '2px solid rgba(255,255,255,0.04)'
+            : isCompleted
+              ? '3px solid #fbbf24'
+              : isCurrent
+                ? `3px solid ${color}`
+                : `2.5px solid ${color}90`,
+          cursor: isLocked ? 'default' : 'pointer',
+          opacity: isLocked ? 0.35 : 1,
+        }}
       >
-        {clase.orden}
-      </text>
+        {/* Inner icon */}
+        <div className="text-white">
+          {isLocked && <Lock className="w-5 h-5 opacity-50" />}
+          {isCompleted && <Trophy className="w-6 h-6 text-white drop-shadow-md" />}
+          {isPending && <Clock className="w-6 h-6" style={{ animation: 'pulse 2s ease-in-out infinite' }} />}
+          {isAvailable && <Zap className="w-6 h-6 drop-shadow-sm" />}
+        </div>
 
-      {/* === Title label — always visible for non-locked === */}
-      {!isLocked && (
-        <foreignObject
-          x={cx - 70} y={cy + r + 28}
-          width={140} height={36}
-          style={{ pointerEvents: 'none' }}
-        >
-          <p
-            className="text-[11px] text-center leading-tight px-1 font-semibold select-none"
+        {/* Order badge — top-left */}
+        {!isLocked && (
+          <span className="absolute -top-1 -left-1 min-w-[22px] h-[22px] rounded-full flex items-center justify-center text-[10px] font-black"
             style={{
-              color: isCompleted
-                ? '#FCA929'
-                : isCurrent
-                  ? 'rgba(255,255,255,0.85)'
-                  : isPending
-                    ? 'rgba(255,255,255,0.55)'
-                    : 'rgba(255,255,255,0.5)',
-              textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+              background: isCompleted ? '#FFD700' : '#1a1a2e',
+              color: isCompleted ? '#1a1a2e' : 'white',
+              border: isCompleted ? '2px solid #fbbf24' : '2px solid rgba(255,255,255,0.1)',
+              boxShadow: isCompleted ? '0 0 8px rgba(255,215,0,0.4)' : '0 2px 4px rgba(0,0,0,0.5)',
             }}
           >
-            {clase.titulo}
-          </p>
-        </foreignObject>
-      )}
+            {clase.orden}
+          </span>
+        )}
 
-      {/* === Completed badge: gold star === */}
-      {isCompleted && (
-        <foreignObject
-          x={cx + r * 0.5} y={cy - r - 6}
-          width={22} height={22}
-          style={{ pointerEvents: 'none' }}
-        >
-          <div
-            className="w-[22px] h-[22px] rounded-full bg-[#FFD700] flex items-center justify-center"
-            style={{ boxShadow: '0 0 10px rgba(255, 215, 0, 0.6)' }}
+        {/* Completed star badge — top-right */}
+        {isCompleted && (
+          <div className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center shadow-lg"
+            style={{ boxShadow: '0 0 10px rgba(255,215,0,0.5)' }}
           >
             <Star className="w-3.5 h-3.5 text-white fill-white" />
           </div>
-        </foreignObject>
-      )}
-    </g>
+        )}
+      </button>
+
+      {/* ── Label ── */}
+      <div className="mt-2 text-center max-w-[120px]" style={{ opacity: isLocked ? 0.15 : 1 }}>
+        <p className="text-[11px] font-semibold leading-tight"
+          style={{
+            color: isCompleted ? '#fbbf24'
+              : isCurrent ? 'rgba(255,255,255,0.9)'
+              : isPending ? 'rgba(255,255,255,0.5)'
+              : isLocked ? 'rgba(255,255,255,0.2)'
+              : 'rgba(255,255,255,0.6)',
+            textShadow: '0 1px 6px rgba(0,0,0,0.8)',
+          }}
+        >
+          {clase.titulo}
+        </p>
+        {isCompleted && (
+          <p className="text-[9px] text-amber-400/60 mt-0.5 font-medium">+{clase.puntos} pts</p>
+        )}
+        {isPending && (
+          <p className="text-[9px] text-white/30 mt-0.5">Esperando revisión</p>
+        )}
+        {isCurrent && (
+          <p className="text-[9px] mt-1 font-bold uppercase tracking-wider"
+            style={{ color, textShadow: `0 0 12px ${color}60` }}
+          >
+            ¡Toca para empezar!
+          </p>
+        )}
+      </div>
+    </div>
   );
 }
