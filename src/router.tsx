@@ -79,6 +79,7 @@ const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage'
 const ConsultaAsistenciaPage = lazy(() => import('./components/ConsultaAsistenciaPage').then(m => ({ default: m.ConsultaAsistenciaPage })));
 const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({ default: m.MarcadorPage })));
 const RutaGuerrero = lazy(() => import('./components/aula').then(m => ({ default: m.RutaGuerrero })));
+const FormularioPublicoPage = lazy(() => import('./components/FormularioPublicoPage'));
 
 // SEO configs
 import { seoConfigs } from './components/SEO';
@@ -363,6 +364,14 @@ function ClasesRoute() {
   );
 }
 
+function FormularioRoute() {
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <FormularioPublicoPage />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 // Redirect /space to the standalone Space app
 function SpaceRedirect() {
   React.useEffect(() => {
@@ -401,6 +410,7 @@ export const router = createBrowserRouter([
       { path: '/clases', element: <ClasesRoute /> },
       { path: '/clases/:rutaId', element: <ClasesRoute /> },
       { path: '/clases/:rutaId/:claseId', element: <ClasesRoute /> },
+      { path: '/formulario/:slug', element: <FormularioRoute /> },
       { path: '/space/*', element: <SpaceRedirect /> },
       // Redirect aliases
       { path: '/renovar', element: <Navigate to="/renovacion" replace /> },
