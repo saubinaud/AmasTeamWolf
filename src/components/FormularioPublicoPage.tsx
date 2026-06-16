@@ -6,12 +6,13 @@ import { API_BASE } from '../config/api';
 
 interface Bloque {
   id: string;
-  tipo: 'text' | 'email' | 'phone' | 'select' | 'checkbox' | 'date' | 'textarea' | 'number' | 'heading' | 'paragraph' | 'image' | 'divider' | 'map';
+  tipo: 'text' | 'email' | 'phone' | 'select' | 'checkbox' | 'date' | 'textarea' | 'number' | 'heading' | 'paragraph' | 'image' | 'divider' | 'map' | 'rating' | 'file' | 'spacer' | 'video';
   etiqueta?: string;
   placeholder?: string;
   requerido?: boolean;
   contenido?: string;
   opciones?: string[];
+  config?: Record<string, string>;
 }
 
 interface Formulario {
@@ -30,7 +31,12 @@ interface FormData {
 
 // --- Helpers ---
 
-const INPUT_TYPES: Bloque['tipo'][] = ['text', 'email', 'phone', 'select', 'checkbox', 'date', 'textarea', 'number'];
+function extractYouTubeId(url: string): string {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : url;
+}
+
+const INPUT_TYPES: Bloque['tipo'][] = ['text', 'email', 'phone', 'select', 'checkbox', 'date', 'textarea', 'number', 'rating', 'file'];
 function isInputBlock(tipo: Bloque['tipo']): boolean {
   return INPUT_TYPES.includes(tipo);
 }
@@ -479,6 +485,26 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
     );
   }
 
+  if (tipo === 'spacer') {
+    return <div style={{ height: parseInt(bloque.config?.height || '40', 10) }} />;
+  }
+
+  if (tipo === 'video') {
+    const videoId = contenido ? extractYouTubeId(contenido) : '';
+    if (!videoId) return null;
+    return (
+      <div className="rounded-xl overflow-hidden border border-white/10">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${videoId}`}
+          className="w-full aspect-video border-0"
+          allowFullScreen
+          loading="lazy"
+          title="Video"
+        />
+      </div>
+    );
+  }
+
   // --- Input blocks ---
 
   const inputBaseClass = `w-full bg-zinc-800 border rounded-xl px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 transition-all duration-200 ${
@@ -557,6 +583,58 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
           rows={4}
           className={inputBaseClass + ' resize-y'}
           style={{ fontSize: '16px', minHeight: '100px' }}
+        />
+        {errorEl}
+      </div>
+    );
+  }
+
+  if (tipo === 'rating') {
+    const currentRating = parseInt(value) || 0;
+    return (
+      <div id={`field-${bloque.id}`}>
+        {labelEl}
+        <div className="flex gap-2">
+          {[1, 2, 3, 4, 5].map(star => (
+            <button
+              key={star}
+              type="button"
+              onClick={() => onChange(String(star))}
+              className="p-1 transition-transform active:scale-90"
+            >
+              <svg
+                className={`w-8 h-8 transition-colors ${star <= currentRating ? 'text-yellow-400 fill-yellow-400' : 'text-white/20'}`}
+                fill={star <= currentRating ? 'currentColor' : 'none'}
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" />
+              </svg>
+            </button>
+          ))}
+        </div>
+        {errorEl}
+      </div>
+    );
+  }
+
+  if (tipo === 'file') {
+    return (
+      <div id={`field-${bloque.id}`}>
+        {labelEl}
+        <input
+          id={`input-${bloque.id}`}
+          type="file"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            onChange(file ? file.name : '');
+          }}
+          className="w-full bg-zinc-800 border border-white/20 rounded-xl px-4 py-3 text-white file:mr-4 file:rounded-lg file:border-0 file:bg-white/10 file:px-4 file:py-1.5 file:text-white/70 file:text-sm file:cursor-pointer focus:outline-none focus:ring-2"
+          style={{
+            fontSize: '16px',
+            ...(!error ? { '--tw-ring-color': `${accent}40` } as React.CSSProperties : {}),
+          }}
         />
         {errorEl}
       </div>
