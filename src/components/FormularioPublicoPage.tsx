@@ -4,20 +4,25 @@ import { API_BASE } from '../config/api';
 import {
   Mail, Phone, Type, Hash, Calendar, FileText, ChevronDown,
   Upload, MapPin, Star, Play, Minus, CheckCircle2, Lock, Zap,
-  AlertCircle, Loader2, ArrowLeft
+  AlertCircle, Loader2, ArrowLeft, ChevronRight
 } from 'lucide-react';
 
 // --- Types ---
 
+type BloqueType =
+  | 'text' | 'email' | 'phone' | 'select' | 'checkbox' | 'date' | 'textarea' | 'number'
+  | 'heading' | 'paragraph' | 'image' | 'divider' | 'map' | 'rating' | 'file' | 'spacer' | 'video'
+  | 'hero' | 'cards_grid' | 'testimonial' | 'faq' | 'cta' | 'stats' | 'gallery';
+
 interface Bloque {
   id: string;
-  tipo: 'text' | 'email' | 'phone' | 'select' | 'checkbox' | 'date' | 'textarea' | 'number' | 'heading' | 'paragraph' | 'image' | 'divider' | 'map' | 'rating' | 'file' | 'spacer' | 'video';
+  tipo: BloqueType;
   etiqueta?: string;
   placeholder?: string;
   requerido?: boolean;
   contenido?: string;
   opciones?: string[];
-  config?: Record<string, string>;
+  config?: Record<string, any>;
 }
 
 interface Formulario {
@@ -41,9 +46,13 @@ function extractYouTubeId(url: string): string {
   return match ? match[1] : url;
 }
 
-const INPUT_TYPES: Bloque['tipo'][] = ['text', 'email', 'phone', 'select', 'checkbox', 'date', 'textarea', 'number', 'rating', 'file'];
-function isInputBlock(tipo: Bloque['tipo']): boolean {
+const INPUT_TYPES: BloqueType[] = ['text', 'email', 'phone', 'select', 'checkbox', 'date', 'textarea', 'number', 'rating', 'file'];
+const RICH_TYPES: BloqueType[] = ['hero', 'cards_grid', 'testimonial', 'faq', 'cta', 'stats', 'gallery'];
+function isInputBlock(tipo: BloqueType): boolean {
   return INPUT_TYPES.includes(tipo);
+}
+function isRichBlock(tipo: BloqueType): boolean {
+  return RICH_TYPES.includes(tipo);
 }
 
 const DEFAULT_BG = 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1920/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg';
@@ -469,78 +478,155 @@ export default function FormularioPublicoPage() {
         </div>
       </section>
 
-      {/* ======= FORM CARD ======= */}
-      <section className="relative px-4 -mt-8 pb-16">
+      {/* ======= CONTENT SECTIONS ======= */}
+      <section className="relative pb-16">
         {/* Subtle background texture */}
         <div className="fixed inset-0 opacity-[0.02] pointer-events-none" style={{
           backgroundImage: 'radial-gradient(circle, #FA7B21 1px, transparent 1px)',
           backgroundSize: '50px 50px',
         }} />
 
-        <div className="max-w-xl mx-auto relative z-10">
-          {/* Main card */}
-          <div
-            className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 fp-animate-up fp-animate-up-4"
-            style={{ boxShadow: `0 8px 40px rgba(0,0,0,0.5), 0 0 80px ${accent}08` }}
-          >
-            {/* Global form error */}
-            {validationErrors._form && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
-                <p className="text-red-400 text-sm">{validationErrors._form}</p>
-              </div>
-            )}
+        <form onSubmit={handleSubmit} noValidate>
+          {(() => {
+            // Group bloques: consecutive non-rich blocks go into a "form-card" group,
+            // each rich block is its own group
+            const groups: { type: 'card' | 'rich'; bloques: Bloque[] }[] = [];
+            let currentCard: Bloque[] = [];
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="space-y-6">
-                {bloques.map((bloque, idx) => (
-                  <div key={bloque.id} style={{ animationDelay: `${0.4 + idx * 0.04}s` }} className="fp-animate-up">
-                    <BlockRenderer
-                      bloque={bloque}
-                      value={datos[bloque.id] || ''}
-                      onChange={(val) => handleChange(bloque.id, val)}
-                      error={validationErrors[bloque.id]}
-                      accent={accent}
-                    />
+            for (const b of bloques) {
+              if (isRichBlock(b.tipo)) {
+                if (currentCard.length > 0) {
+                  groups.push({ type: 'card', bloques: currentCard });
+                  currentCard = [];
+                }
+                groups.push({ type: 'rich', bloques: [b] });
+              } else {
+                currentCard.push(b);
+              }
+            }
+            if (currentCard.length > 0) {
+              groups.push({ type: 'card', bloques: currentCard });
+            }
+
+            // If there are no form-card groups at all (only rich blocks), add an empty one for the submit button
+            const hasFormCard = groups.some(g => g.type === 'card');
+
+            return (
+              <div className="space-y-0">
+                {groups.map((group, gIdx) => {
+                  if (group.type === 'rich') {
+                    const bloque = group.bloques[0];
+                    return (
+                      <div key={`rich-${bloque.id}`} className="fp-animate-up" style={{ animationDelay: `${0.3 + gIdx * 0.08}s` }}>
+                        <RichBlockRenderer bloque={bloque} accent={accent} />
+                      </div>
+                    );
+                  }
+
+                  // Form card group
+                  const isLastCardGroup = !groups.slice(gIdx + 1).some(g => g.type === 'card');
+                  return (
+                    <div key={`card-${gIdx}`} className="px-4 py-4">
+                      <div className="max-w-xl mx-auto relative z-10">
+                        <div
+                          className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 fp-animate-up"
+                          style={{ boxShadow: `0 8px 40px rgba(0,0,0,0.5), 0 0 80px ${accent}08`, animationDelay: `${0.3 + gIdx * 0.08}s` }}
+                        >
+                          {/* Global form error on first card */}
+                          {gIdx === 0 && validationErrors._form && (
+                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-3">
+                              <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                              <p className="text-red-400 text-sm">{validationErrors._form}</p>
+                            </div>
+                          )}
+
+                          <div className="space-y-6">
+                            {group.bloques.map((bloque, idx) => (
+                              <div key={bloque.id} style={{ animationDelay: `${0.4 + idx * 0.04}s` }} className="fp-animate-up">
+                                <BlockRenderer
+                                  bloque={bloque}
+                                  value={datos[bloque.id] || ''}
+                                  onChange={(val) => handleChange(bloque.id, val)}
+                                  error={validationErrors[bloque.id]}
+                                  accent={accent}
+                                />
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Submit button on last card group */}
+                          {isLastCardGroup && (
+                            <div className="mt-10">
+                              <button
+                                type="submit"
+                                disabled={submitting}
+                                className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                                style={{
+                                  background: `linear-gradient(135deg, ${accent}, #FCA929)`,
+                                  fontSize: '16px',
+                                  minHeight: '52px',
+                                  boxShadow: `0 4px 20px ${accent}30`,
+                                }}
+                              >
+                                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{
+                                  backgroundSize: '200% 100%',
+                                  animation: 'fp-shimmer 2s linear infinite',
+                                }} />
+                                <span className="relative z-10">
+                                  {submitting ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                      <Loader2 className="w-5 h-5 animate-spin" />
+                                      Enviando...
+                                    </span>
+                                  ) : (
+                                    'Enviar respuesta'
+                                  )}
+                                </span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Submit button if there are no card groups */}
+                {!hasFormCard && bloques.some(b => isInputBlock(b.tipo)) && (
+                  <div className="px-4 py-4">
+                    <div className="max-w-xl mx-auto">
+                      <button
+                        type="submit"
+                        disabled={submitting}
+                        className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                        style={{
+                          background: `linear-gradient(135deg, ${accent}, #FCA929)`,
+                          fontSize: '16px',
+                          minHeight: '52px',
+                          boxShadow: `0 4px 20px ${accent}30`,
+                        }}
+                      >
+                        <span className="relative z-10">
+                          {submitting ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Enviando...
+                            </span>
+                          ) : (
+                            'Enviar respuesta'
+                          )}
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
+            );
+          })()}
+        </form>
 
-              {/* Submit button */}
-              <div className="mt-10">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
-                  style={{
-                    background: `linear-gradient(135deg, ${accent}, #FCA929)`,
-                    fontSize: '16px',
-                    minHeight: '52px',
-                    boxShadow: `0 4px 20px ${accent}30`,
-                  }}
-                >
-                  {/* Hover shine */}
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{
-                    backgroundSize: '200% 100%',
-                    animation: 'fp-shimmer 2s linear infinite',
-                  }} />
-                  <span className="relative z-10">
-                    {submitting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        Enviando...
-                      </span>
-                    ) : (
-                      'Enviar respuesta'
-                    )}
-                  </span>
-                </button>
-              </div>
-            </form>
-          </div>
-
-          {/* Trust signals */}
+        {/* Trust signals */}
+        <div className="max-w-xl mx-auto px-4">
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 fp-animate-up" style={{ animationDelay: '0.6s' }}>
             <span className="flex items-center gap-2 text-white/30 text-xs">
               <Lock className="w-3.5 h-3.5" />
@@ -907,5 +993,284 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
       />
       {errorEl}
     </div>
+  );
+}
+
+// --- Rich Block Renderer ---
+
+interface RichBlockRendererProps {
+  bloque: Bloque;
+  accent: string;
+}
+
+function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
+  const { tipo, contenido, config } = bloque;
+
+  if (tipo === 'hero') {
+    const bgUrl = config?.background_url || '';
+    return (
+      <section className="relative min-h-[40vh] md:min-h-[50vh] flex items-center overflow-hidden">
+        {bgUrl && (
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url('${bgUrl}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }} />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-black" />
+        <div className="absolute inset-0 opacity-[0.06]" style={{
+          backgroundImage: 'radial-gradient(circle, #FA7B21 1px, transparent 1px)',
+          backgroundSize: '50px 50px',
+        }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] opacity-15" style={{
+          background: `radial-gradient(circle, ${accent}, transparent 70%)`,
+        }} />
+        <div className="relative z-10 w-full px-4 py-16 max-w-3xl mx-auto text-center">
+          {config?.badge && (
+            <div className="mb-5 fp-animate-up fp-animate-up-1">
+              <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white px-5 py-2 rounded-full text-xs md:text-sm font-semibold">
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} />
+                {config.badge}
+              </span>
+            </div>
+          )}
+          {contenido && (
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-tight fp-animate-up fp-animate-up-2" style={{
+              backgroundImage: `linear-gradient(135deg, #ffffff 0%, ${accent} 50%, #FCA929 100%)`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              {contenido}
+            </h2>
+          )}
+          {config?.subtitle && (
+            <p className="text-white/50 text-sm md:text-lg max-w-xl mx-auto leading-relaxed mb-6 fp-animate-up fp-animate-up-3">
+              {config.subtitle}
+            </p>
+          )}
+          {config?.cta_text && (
+            <div className="fp-animate-up" style={{ animationDelay: '0.4s' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const formEl = document.querySelector('form');
+                  const firstInput = formEl?.querySelector('input, select, textarea');
+                  if (firstInput) (firstInput as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }}
+                className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                style={{
+                  background: `linear-gradient(135deg, ${accent}, #FCA929)`,
+                  boxShadow: `0 4px 25px ${accent}40`,
+                }}
+              >
+                {config.cta_text}
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+    );
+  }
+
+  if (tipo === 'cards_grid') {
+    const cards = (config?.cards as any[]) || [];
+    return (
+      <section className="px-4 py-12 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cards.map((card: any, idx: number) => (
+              <div
+                key={idx}
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all duration-300 hover:border-orange-500/40 hover:scale-[1.03] hover:bg-white/[0.07] group"
+                style={{ animationDelay: `${idx * 0.08}s` }}
+              >
+                <span className="text-3xl block mb-3">{card.emoji || ''}</span>
+                <h3 className="text-white font-bold text-base mb-2 group-hover:text-orange-300 transition-colors">
+                  {card.title}
+                </h3>
+                <p className="text-white/50 text-sm leading-relaxed">
+                  {card.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (tipo === 'testimonial') {
+    return (
+      <section className="px-4 py-10 md:py-14">
+        <div className="max-w-2xl mx-auto">
+          <div
+            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 relative overflow-hidden"
+            style={{ boxShadow: `0 4px 30px rgba(0,0,0,0.3)` }}
+          >
+            {/* Decorative quote mark */}
+            <span className="absolute top-4 left-6 text-6xl md:text-8xl font-serif leading-none opacity-10" style={{ color: accent }}>
+              &ldquo;
+            </span>
+            <div className="relative z-10">
+              <p className="text-white/80 text-base md:text-lg italic leading-relaxed mb-6 pl-4 border-l-2" style={{ borderColor: `${accent}40` }}>
+                {contenido}
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{
+                  background: `linear-gradient(135deg, ${accent}, #FCA929)`,
+                }}>
+                  {(config?.name || '?')[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-white font-semibold text-sm">{config?.name}</p>
+                  {config?.role && <p className="text-white/40 text-xs">{config.role}</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (tipo === 'faq') {
+    return <FaqBlock contenido={contenido} config={config} accent={accent} />;
+  }
+
+  if (tipo === 'cta') {
+    return (
+      <section className="px-4 py-10 md:py-14">
+        <div className="max-w-3xl mx-auto">
+          <div
+            className="rounded-3xl p-8 md:p-12 text-center relative overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, ${accent}20, ${accent}08)`,
+              border: `1px solid ${accent}25`,
+            }}
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 opacity-10 rounded-full blur-3xl" style={{
+              background: `radial-gradient(circle, ${accent}, transparent)`,
+            }} />
+            <div className="relative z-10">
+              <h3 className="text-white text-2xl md:text-3xl font-bold mb-3">{contenido}</h3>
+              {config?.subtitle && (
+                <p className="text-white/50 text-sm md:text-base max-w-lg mx-auto mb-6 leading-relaxed">
+                  {config.subtitle}
+                </p>
+              )}
+              {config?.button_text && (
+                <a
+                  href={config?.button_url || '#'}
+                  target={config?.button_url?.startsWith('http') ? '_blank' : undefined}
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                  style={{
+                    background: `linear-gradient(135deg, ${accent}, #FCA929)`,
+                    boxShadow: `0 4px 25px ${accent}40`,
+                  }}
+                >
+                  {config.button_text}
+                  <ChevronRight className="w-5 h-5" />
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (tipo === 'stats') {
+    const items = (config?.items as any[]) || [];
+    return (
+      <section className="px-4 py-10 md:py-14">
+        <div className="max-w-4xl mx-auto">
+          <div
+            className="rounded-2xl p-6 md:p-8"
+            style={{
+              background: `linear-gradient(135deg, ${accent}15, ${accent}05)`,
+              border: `1px solid ${accent}20`,
+            }}
+          >
+            <div className={`grid gap-6 ${items.length <= 2 ? 'grid-cols-2' : items.length === 3 ? 'grid-cols-3' : 'grid-cols-2 md:grid-cols-4'}`}>
+              {items.map((item: any, idx: number) => (
+                <div key={idx} className="text-center">
+                  <p className="text-3xl md:text-4xl font-bold mb-1" style={{
+                    backgroundImage: `linear-gradient(135deg, ${accent}, #FCA929)`,
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>
+                    {item.number}
+                  </p>
+                  <p className="text-white/50 text-xs md:text-sm font-medium">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (tipo === 'gallery') {
+    const images = (config?.images as string[]) || [];
+    return (
+      <section className="px-4 py-10 md:py-14">
+        <div className="max-w-4xl mx-auto">
+          <div className={`grid gap-3 ${images.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'}`}>
+            {images.map((src: string, idx: number) => (
+              <div
+                key={idx}
+                className="relative rounded-2xl overflow-hidden border border-white/10 group"
+                style={{ aspectRatio: '4/3' }}
+              >
+                <img
+                  src={src}
+                  alt=""
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return null;
+}
+
+// --- FAQ Accordion Block ---
+
+function FaqBlock({ contenido, config, accent }: { contenido?: string; config?: Record<string, any>; accent: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <section className="px-4 py-2">
+      <div className="max-w-2xl mx-auto">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="w-full flex items-center justify-between bg-white/5 backdrop-blur-sm border rounded-2xl px-6 py-5 text-left transition-all duration-200 hover:bg-white/[0.07]"
+          style={{ borderColor: open ? `${accent}40` : 'rgba(255,255,255,0.1)' }}
+        >
+          <span className="text-white font-semibold text-sm md:text-base pr-4">{contenido}</span>
+          <ChevronDown
+            className="w-5 h-5 flex-shrink-0 transition-transform duration-300"
+            style={{ color: open ? accent : 'rgba(255,255,255,0.3)', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          />
+        </button>
+        {open && (
+          <div className="px-6 py-4 text-white/60 text-sm leading-relaxed" style={{ animation: 'fp-fade-up 0.3s ease-out' }}>
+            {config?.answer}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
