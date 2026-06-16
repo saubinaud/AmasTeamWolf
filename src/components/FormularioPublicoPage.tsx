@@ -450,7 +450,7 @@ export default function FormularioPublicoPage() {
         }} />
 
         {/* Hero content */}
-        <div className="relative z-10 w-full px-4 pb-16 pt-20 max-w-2xl mx-auto text-center">
+        <div className="relative z-10 w-full px-4 pb-16 pt-20 max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] text-center">
           {/* Badge */}
           <div className="fp-animate-up fp-animate-up-1 mb-6">
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white px-5 py-2 rounded-full text-xs md:text-sm font-semibold">
@@ -527,7 +527,7 @@ export default function FormularioPublicoPage() {
                   const isLastCardGroup = !groups.slice(gIdx + 1).some(g => g.type === 'card');
                   return (
                     <div key={`card-${gIdx}`} className="px-4 py-4">
-                      <div className="max-w-xl mx-auto relative z-10">
+                      <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] relative z-10">
                         <div
                           className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 fp-animate-up"
                           style={{ boxShadow: `0 8px 40px rgba(0,0,0,0.5), 0 0 80px ${accent}08`, animationDelay: `${0.3 + gIdx * 0.08}s` }}
@@ -594,7 +594,7 @@ export default function FormularioPublicoPage() {
                 {/* Submit button if there are no card groups */}
                 {!hasFormCard && bloques.some(b => isInputBlock(b.tipo)) && (
                   <div className="px-4 py-4">
-                    <div className="max-w-xl mx-auto">
+                    <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px]">
                       <button
                         type="submit"
                         disabled={submitting}
@@ -626,7 +626,7 @@ export default function FormularioPublicoPage() {
         </form>
 
         {/* Trust signals */}
-        <div className="max-w-xl mx-auto px-4">
+        <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px]">
           <div className="flex flex-wrap justify-center gap-4 md:gap-6 mt-6 fp-animate-up" style={{ animationDelay: '0.6s' }}>
             <span className="flex items-center gap-2 text-white/30 text-xs">
               <Lock className="w-3.5 h-3.5" />
@@ -1025,7 +1025,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] opacity-15" style={{
           background: `radial-gradient(circle, ${accent}, transparent 70%)`,
         }} />
-        <div className="relative z-10 w-full px-4 py-16 max-w-3xl mx-auto text-center">
+        <div className="relative z-10 w-full px-4 py-16 max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] text-center">
           {config?.badge && (
             <div className="mb-5 fp-animate-up fp-animate-up-1">
               <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white px-5 py-2 rounded-full text-xs md:text-sm font-semibold">
@@ -1077,7 +1077,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
   if (tipo === 'cards_grid') {
     const cards = (config?.cards as any[]) || [];
     return (
-      <section className="px-4 py-12 md:py-16">
+      <section className="px-5 md:px-20 lg:px-[100px] py-12 md:py-16">
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {cards.map((card: any, idx: number) => (
@@ -1103,8 +1103,8 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
 
   if (tipo === 'testimonial') {
     return (
-      <section className="px-4 py-10 md:py-14">
-        <div className="max-w-2xl mx-auto">
+      <section className="px-5 md:px-20 lg:px-[100px] py-10 md:py-14">
+        <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px]">
           <div
             className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 md:p-10 relative overflow-hidden"
             style={{ boxShadow: `0 4px 30px rgba(0,0,0,0.3)` }}
@@ -1141,7 +1141,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
 
   if (tipo === 'cta') {
     return (
-      <section className="px-4 py-10 md:py-14">
+      <section className="px-5 md:px-20 lg:px-[100px] py-10 md:py-14">
         <div className="max-w-3xl mx-auto">
           <div
             className="rounded-3xl p-8 md:p-12 text-center relative overflow-hidden"
@@ -1185,7 +1185,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
   if (tipo === 'stats') {
     const items = (config?.items as any[]) || [];
     return (
-      <section className="px-4 py-10 md:py-14">
+      <section className="px-5 md:px-20 lg:px-[100px] py-10 md:py-14">
         <div className="max-w-4xl mx-auto">
           <div
             className="rounded-2xl p-6 md:p-8"
@@ -1218,7 +1218,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
   if (tipo === 'gallery') {
     const images = (config?.images as string[]) || [];
     return (
-      <section className="px-4 py-10 md:py-14">
+      <section className="px-5 md:px-20 lg:px-[100px] py-10 md:py-14">
         <div className="max-w-4xl mx-auto">
           <div className={`grid gap-3 ${images.length <= 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'}`}>
             {images.map((src: string, idx: number) => (
@@ -1251,8 +1251,8 @@ function FaqBlock({ contenido, config, accent }: { contenido?: string; config?: 
   const [open, setOpen] = useState(false);
 
   return (
-    <section className="px-4 py-2">
-      <div className="max-w-2xl mx-auto">
+    <section className="px-5 md:px-20 lg:px-[100px] py-2">
+      <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px]">
         <button
           type="button"
           onClick={() => setOpen(!open)}
