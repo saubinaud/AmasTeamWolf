@@ -31,8 +31,6 @@ interface FormData {
 // --- Helpers ---
 
 const INPUT_TYPES: Bloque['tipo'][] = ['text', 'email', 'phone', 'select', 'checkbox', 'date', 'textarea', 'number'];
-const CONTENT_TYPES: Bloque['tipo'][] = ['heading', 'paragraph', 'image', 'divider', 'map'];
-
 function isInputBlock(tipo: Bloque['tipo']): boolean {
   return INPUT_TYPES.includes(tipo);
 }
@@ -86,7 +84,7 @@ export default function FormularioPublicoPage() {
           const initial: Record<string, string> = {};
           for (const b of bloquesData) {
             if (isInputBlock(b.tipo)) {
-              initial[b.id] = b.tipo === 'checkbox' ? '' : '';
+              initial[b.id] = b.tipo === 'checkbox' ? 'false' : '';
             }
           }
           setDatos(initial);
@@ -130,7 +128,7 @@ export default function FormularioPublicoPage() {
 
       const val = (datos[b.id] || '').trim();
 
-      if (b.requerido && !val) {
+      if (b.requerido && (!val || (b.tipo === 'checkbox' && val !== 'true'))) {
         errors[b.id] = 'Este campo es obligatorio';
         continue;
       }
@@ -149,7 +147,15 @@ export default function FormularioPublicoPage() {
     }
 
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+
+    // Scroll to first error
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      const el = document.getElementById(`field-${errorKeys[0]}`);
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    return errorKeys.length === 0;
   }
 
   // Submit
@@ -157,12 +163,6 @@ export default function FormularioPublicoPage() {
     e.preventDefault();
 
     if (!validate()) {
-      // Scroll to first error
-      const firstErrorId = Object.keys(validationErrors)[0];
-      if (firstErrorId) {
-        const el = document.getElementById(`field-${firstErrorId}`);
-        el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
       return;
     }
 
@@ -266,7 +266,7 @@ export default function FormularioPublicoPage() {
               </div>
 
               <h2 className="text-2xl font-bold text-white mb-3">
-                {formConfig.mensaje_exito || 'Respuesta enviada con exito'}
+                {formConfig.mensaje_exito || 'Respuesta enviada con \u00e9xito'}
               </h2>
               <p className="text-white/60 text-sm mb-6">Gracias por completar el formulario.</p>
 
@@ -493,10 +493,6 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
     ...(!error ? { '--tw-ring-color': `${accent}40` } as React.CSSProperties : {}),
   };
 
-  const focusRingStyle = !error
-    ? { focusBorderColor: accent }
-    : {};
-
   const labelEl = etiqueta ? (
     <label htmlFor={`field-${bloque.id}`} className="block text-white/80 text-sm font-medium mb-1.5">
       {etiqueta}
@@ -515,7 +511,7 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
           type="checkbox"
           id={`input-${bloque.id}`}
           checked={value === 'true'}
-          onChange={(e) => onChange(e.target.checked ? 'true' : '')}
+          onChange={(e) => onChange(e.target.checked ? 'true' : 'false')}
           className="mt-0.5 w-5 h-5 rounded border-white/20 bg-zinc-800 accent-[#FA7B21] cursor-pointer flex-shrink-0"
           style={{ accentColor: accent }}
         />
@@ -539,9 +535,9 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
           className={inputBaseClass}
           style={inputStyle}
         >
-          <option value="">{placeholder || 'Seleccionar...'}</option>
+          <option value="" className="bg-zinc-800 text-white">{placeholder || 'Seleccionar...'}</option>
           {(opciones || []).map((opt) => (
-            <option key={opt} value={opt}>{opt}</option>
+            <option key={opt} value={opt} className="bg-zinc-800 text-white">{opt}</option>
           ))}
         </select>
         {errorEl}
