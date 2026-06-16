@@ -450,7 +450,7 @@ export default function FormularioPublicoPage() {
         }} />
 
         {/* Hero content */}
-        <div className="relative z-10 w-full px-4 pb-16 pt-20 max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] text-center">
+        <div className="relative z-10 w-full pb-16 pt-20 max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] text-center">
           {/* Badge */}
           <div className="fp-animate-up fp-animate-up-1 mb-6">
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white px-5 py-2 rounded-full text-xs md:text-sm font-semibold">
@@ -526,7 +526,7 @@ export default function FormularioPublicoPage() {
                   // Form card group
                   const isLastCardGroup = !groups.slice(gIdx + 1).some(g => g.type === 'card');
                   return (
-                    <div key={`card-${gIdx}`} className="px-4 py-4">
+                    <div key={`card-${gIdx}`} className="py-4">
                       <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] relative z-10">
                         <div
                           className="bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 md:p-8 fp-animate-up"
@@ -593,7 +593,7 @@ export default function FormularioPublicoPage() {
 
                 {/* Submit button if there are no card groups */}
                 {!hasFormCard && bloques.some(b => isInputBlock(b.tipo)) && (
-                  <div className="px-4 py-4">
+                  <div className="py-4">
                     <div className="max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px]">
                       <button
                         type="submit"
@@ -1025,7 +1025,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] opacity-15" style={{
           background: `radial-gradient(circle, ${accent}, transparent 70%)`,
         }} />
-        <div className="relative z-10 w-full px-4 py-16 max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] text-center">
+        <div className="relative z-10 w-full py-16 max-w-3xl mx-auto px-5 md:px-20 lg:px-[100px] text-center">
           {config?.badge && (
             <div className="mb-5 fp-animate-up fp-animate-up-1">
               <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/15 text-white px-5 py-2 rounded-full text-xs md:text-sm font-semibold">
