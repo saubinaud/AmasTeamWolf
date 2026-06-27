@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
 import { Search, User, Award, BookOpen, CheckCircle, XCircle, Clock, ArrowLeft, Loader2 } from 'lucide-react';
-
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? '/api'
-  : 'https://amas-api.s6hx3x.easypanel.host/api';
+import { API_BASE } from '../config/api';
 
 interface Asistencia {
   fecha: string;
@@ -101,7 +98,7 @@ export function ConsultaAsistenciaPage({ onNavigate }: ConsultaAsistenciaPagePro
     setData(null);
 
     try {
-      const res = await fetch(`${API_URL}/consulta-asistencia?dni=${encodeURIComponent(dniClean)}`);
+      const res = await fetch(`${API_BASE}/consulta-asistencia?dni=${encodeURIComponent(dniClean)}`);
       const json = await res.json();
 
       if (!json.success) {
