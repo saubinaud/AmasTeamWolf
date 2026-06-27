@@ -1,117 +1,32 @@
-// ========== CONSTANTES ==========
-
-// Feriados fijos de Perú
-export const FERIADOS_FIJOS_PERU = [
-  { mes: 1, dia: 1, nombre: "Año Nuevo" },
-  { mes: 5, dia: 1, nombre: "Día del Trabajo" },
-  { mes: 6, dia: 29, nombre: "San Pedro y San Pablo" },
-  { mes: 7, dia: 28, nombre: "Fiestas Patrias" },
-  { mes: 7, dia: 29, nombre: "Fiestas Patrias" },
-  { mes: 8, dia: 30, nombre: "Santa Rosa de Lima" },
-  { mes: 10, dia: 8, nombre: "Combate de Angamos" },
-  { mes: 11, dia: 1, nombre: "Todos los Santos" },
-  { mes: 12, dia: 8, nombre: "Inmaculada Concepción" },
-  { mes: 12, dia: 25, nombre: "Navidad" }
-];
-
-// Feriados móviles por año
-export const FERIADOS_MOVILES: Record<number, Array<{ fecha: string; nombre: string }>> = {
-  2025: [
-    { fecha: "2025-04-17", nombre: "Jueves Santo" },
-    { fecha: "2025-04-18", nombre: "Viernes Santo" }
-  ],
-  2026: [
-    { fecha: "2026-04-02", nombre: "Jueves Santo" },
-    { fecha: "2026-04-03", nombre: "Viernes Santo" }
-  ]
-};
-
-// Clases por programa
-export const PROGRAMA_CLASES: Record<string, number> = {
-  "1mes": 8,
-  "full": 24 // 3 meses
-};
-
-// Precios base por programa
-export const PRECIOS_BASE: Record<string, number> = {
-  "1mes": 330,
-  "full": 869
-};
-
-// Nombres de programas
-export const NOMBRES_PROGRAMA: Record<string, string> = {
-  "1mes": "Programa 1 Mes",
-  "full": "Programa 3 Meses FULL"
-};
-
-// Códigos promocionales
-export interface CodigoPromocional {
-  tipo: 'descuento_dinero' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
-  valor: number;
-  descripcion: string;
-  programasAplicables: string[];
-  activo: boolean;
-}
-
-export const CODIGOS_PROMOCIONALES: Record<string, CodigoPromocional> = {
-  "AMAS-DESC100-2025": {
-    tipo: "descuento_dinero",
-    valor: 100,
-    descripcion: "Descuento de S/ 100",
-    programasAplicables: ["1mes", "full"],
-    activo: true
-  },
-  "AMAS-DESC150-2025": {
-    tipo: "descuento_dinero",
-    valor: 150,
-    descripcion: "Descuento de S/ 150",
-    programasAplicables: ["full"],
-    activo: true
-  },
-  "AMAS-4CLASES-2025": {
-    tipo: "clases_extra",
-    valor: 4,
-    descripcion: "+4 clases gratis",
-    programasAplicables: ["1mes", "full"],
-    activo: true
-  },
-  "AMAS-MESGRATIS-2025": {
-    tipo: "mes_gratis",
-    valor: 8,
-    descripcion: "+1 mes gratis (8 clases)",
-    programasAplicables: ["full"],
-    activo: true
-  },
-  "AMAS-POLO-2025": {
-    tipo: "polo_gratis",
-    valor: 1,
-    descripcion: "+1 polo oficial gratis",
-    programasAplicables: ["1mes", "full"],
-    activo: true
-  }
-};
-
-// ========== INTERFACES ==========
+// Funciones de cálculo de matrícula/renovación (fuente única, compartida por
+// FormularioMatricula y FormularioRenovacion). Las constantes de negocio vienen
+// de shared/constants — aquí no se hardcodea ninguna.
+import {
+  esFeriado,
+  esCierreVacacionalAMAS,
+  PROGRAMA_CLASES,
+  CODIGOS_PROMOCIONALES,
+  type TipoPromocion,
+} from '../shared/constants';
 
 export interface HorariosInfo {
   horarioSemana: string;
   horarioSabado: string;
   diasSemana: string;
   categoria: string;
+  horarioManana: string;
 }
 
 export interface CodigoAplicado {
   valido: boolean;
-  tipo?: 'descuento_dinero' | 'clases_extra' | 'mes_gratis' | 'polo_gratis';
+  tipo?: TipoPromocion;
   valor?: number;
   descripcion?: string;
   codigo?: string;
   mensaje?: string;
 }
 
-// ========== FUNCIONES AUXILIARES ==========
-
-// Calcular horarios según edad
+// Calcular horarios y categoría según la edad (en meses) del alumno.
 export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
   const hoy = new Date();
   const nacimiento = new Date(fechaNacimiento);
@@ -120,80 +35,56 @@ export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
 
   let horarioSemana = "";
   let horarioSabado = "";
+  let horarioManana = "";
   let diasSemana = "Lunes a Viernes";
   let categoria = "";
 
   if (edadMeses >= 11 && edadMeses <= 15) {
     horarioSemana = "3:00 PM";
     horarioSabado = "9:00 AM";
+    horarioManana = "9:00 AM";
   } else if (edadMeses >= 16 && edadMeses <= 20) {
     horarioSemana = "3:30 PM";
     horarioSabado = "9:30 AM";
+    horarioManana = "9:30 AM";
   } else if (edadMeses >= 21 && edadMeses <= 26) {
     horarioSemana = "4:00 PM";
     horarioSabado = "10:00 AM";
+    horarioManana = "10:00 AM";
   } else if (edadMeses >= 27 && edadMeses <= 32) {
     horarioSemana = "4:30 PM";
     horarioSabado = "10:30 AM";
+    horarioManana = "10:30 AM";
   } else if (edadMeses >= 33 && edadMeses <= 38) {
     horarioSemana = "5:00 PM";
     horarioSabado = "11:00 AM";
+    horarioManana = "11:00 AM";
   } else if (edadMeses >= 39 && edadMeses <= 48) {
     horarioSemana = "5:30 PM";
     horarioSabado = "11:30 AM";
+    horarioManana = "11:30 AM";
   } else if (edadMeses >= 49 && edadMeses <= 71) {
     horarioSemana = "6:00 PM";
     horarioSabado = "12:00 PM";
+    horarioManana = "12:00 PM";
   } else if (edadAnios >= 6 && edadAnios <= 11) {
     horarioSemana = "6:30 PM";
     horarioSabado = "12:30 PM";
+    horarioManana = "12:30 PM";
     diasSemana = "Lunes, Miércoles y Viernes";
     categoria = "Juniors";
   } else if (edadAnios >= 12 && edadAnios <= 17) {
     horarioSemana = "6:30 PM";
     horarioSabado = "1:30 PM";
+    horarioManana = "1:30 PM";
     diasSemana = "Martes y Jueves";
     categoria = "Adolescentes";
-  } else {
-    horarioSemana = "Por definir";
-    horarioSabado = "Por definir";
-    diasSemana = "Consultar en academia";
   }
 
-  return {
-    horarioSemana,
-    horarioSabado,
-    diasSemana,
-    categoria
-  };
+  return { horarioSemana, horarioSabado, horarioManana, diasSemana, categoria };
 }
 
-// Verificar si una fecha es feriado
-export function esFeriado(fecha: Date): boolean {
-  const anio = fecha.getFullYear();
-  const mes = fecha.getMonth() + 1;
-  const dia = fecha.getDate();
-
-  const esFeriadoFijo = FERIADOS_FIJOS_PERU.some(f => f.mes === mes && f.dia === dia);
-  if (esFeriadoFijo) return true;
-
-  const fechaStr = fecha.toISOString().split('T')[0];
-  const moviles = FERIADOS_MOVILES[anio] || [];
-  return moviles.some(f => f.fecha === fechaStr);
-}
-
-// Verificar si es cierre vacacional de AMAS
-export function esCierreVacacionalAMAS(fecha: Date): boolean {
-  const mes = fecha.getMonth() + 1;
-  const dia = fecha.getDate();
-
-  if (mes === 12 && dia >= 20) return true;
-  if (mes === 1 && dia <= 3) return true;
-
-  return false;
-}
-
-// Obtener fechas disponibles para inicio (5 días hábiles)
+// Próximas 5 fechas hábiles para iniciar (omite domingos y cierre vacacional).
 export function obtenerFechasDisponiblesInicio(): Date[] {
   const hoy = new Date();
   const fechasDisponibles: Date[] = [];
@@ -203,11 +94,6 @@ export function obtenerFechasDisponiblesInicio(): Date[] {
 
   while (diasHabilesContados < 5) {
     if (fechaIteracion.getDay() === 0) {
-      fechaIteracion.setDate(fechaIteracion.getDate() + 1);
-      continue;
-    }
-
-    if (esFeriado(fechaIteracion)) {
       fechaIteracion.setDate(fechaIteracion.getDate() + 1);
       continue;
     }
@@ -225,19 +111,19 @@ export function obtenerFechasDisponiblesInicio(): Date[] {
   return fechasDisponibles;
 }
 
-// Obtener nombre del día
 export function obtenerNombreDia(fecha: Date): string {
   const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
   return dias[fecha.getDay()];
 }
 
-// Calcular fecha de fin
+// Calcula la fecha de fin contando las clases del programa: omite domingos,
+// cierre vacacional, y feriados que caen en días de clase.
 export function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: string[], clasesExtra: number = 0): {
   fechaFin: Date;
   clasesTotales: number;
   semanasAproximadas: number;
 } {
-  let clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
+  const clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
 
   const fechaActual = new Date(fechaInicio);
   let clasesContadas = 1; // La primera clase cuenta
@@ -245,14 +131,13 @@ export function calcularFechaFin(fechaInicio: Date, programa: string, diasTentat
   while (clasesContadas < clasesTotales) {
     fechaActual.setDate(fechaActual.getDate() + 1);
 
-    if (fechaActual.getDay() === 0) continue;
-
-    if (esFeriado(fechaActual)) continue;
-
+    if (fechaActual.getDay() === 0) continue;  // Domingo
     if (esCierreVacacionalAMAS(fechaActual)) continue;
 
     const nombreDia = obtenerNombreDia(fechaActual);
     if (diasTentativos.includes(nombreDia)) {
+      // Solo omitir feriados que caen en días de clase
+      if (esFeriado(fechaActual)) continue;
       clasesContadas++;
     }
   }
@@ -264,7 +149,7 @@ export function calcularFechaFin(fechaInicio: Date, programa: string, diasTentat
   };
 }
 
-// Validar código promocional
+// Valida un código promocional contra el programa seleccionado.
 export function validarCodigoPromocional(codigo: string, programaActual: string): CodigoAplicado {
   const codigoUpper = codigo.toUpperCase().trim();
   const promo = CODIGOS_PROMOCIONALES[codigoUpper];
@@ -293,12 +178,12 @@ export function validarCodigoPromocional(codigo: string, programaActual: string)
   };
 }
 
-// Obtener clases extra de un código promo
+// Clases extra que otorga un código (clases_extra / mes_gratis).
 export function obtenerClasesExtraDePromo(codigo: string): number {
   const promo = CODIGOS_PROMOCIONALES[codigo];
   if (!promo) return 0;
 
   if (promo.tipo === "clases_extra") return promo.valor;
-  if (promo.tipo === "mes_gratis") return 8;
+  if (promo.tipo === "mes_gratis") return promo.valor;
   return 0;
 }
