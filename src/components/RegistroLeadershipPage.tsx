@@ -106,6 +106,7 @@ interface CodigoAplicado {
 const INITIAL_FORM_STATE = {
   nombrePadre: '',
   nombreAlumno: '',
+  dniAlumno: '',
   correo: ''
 };
 
@@ -188,8 +189,12 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nombrePadre || !formData.nombreAlumno || !formData.correo) {
+    if (!formData.nombrePadre || !formData.nombreAlumno || !formData.dniAlumno || !formData.correo) {
       toast.error('Por favor completa todos los campos');
+      return;
+    }
+    if (formData.dniAlumno.trim().length < 6) {
+      toast.error('Ingresa un DNI válido del alumno');
       return;
     }
 
@@ -209,6 +214,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
     const webhookData = {
       nombre_padre: formData.nombrePadre,
       nombre_alumno: formData.nombreAlumno,
+      dni_alumno: formData.dniAlumno,
       correo: formData.correo,
       programa: 'Leadership Wolf',
       precio_base: BASE_PRICE,
@@ -319,6 +325,22 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
                   required
                   autoComplete="name"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="dniAlumno" className="text-white">
+                  DNI del Alumno *
+                </Label>
+                <Input
+                  id="dniAlumno"
+                  inputMode="numeric"
+                  value={formData.dniAlumno}
+                  onChange={(e) => handleInputChange('dniAlumno', e.target.value.replace(/\D/g, ''))}
+                  placeholder="DNI del alumno ya inscrito"
+                  className="bg-zinc-800 border-zinc-700 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
+                  required
+                />
+                <p className="text-zinc-400 text-xs mt-1">Leadership es adicional a tu programa actual: usa el mismo DNI con el que ya estás inscrito.</p>
               </div>
             </div>
 
