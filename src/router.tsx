@@ -77,6 +77,7 @@ const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ def
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
 const ConsultaAsistenciaPage = lazy(() => import('./components/ConsultaAsistenciaPage').then(m => ({ default: m.ConsultaAsistenciaPage })));
+const ProfesorAsistenciaPage = lazy(() => import('./components/ProfesorAsistenciaPage').then(m => ({ default: m.ProfesorAsistenciaPage })));
 const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({ default: m.MarcadorPage })));
 const RutaGuerrero = lazy(() => import('./components/aula').then(m => ({ default: m.RutaGuerrero })));
 const FormularioPublicoPage = lazy(() => import('./components/FormularioPublicoPage'));
@@ -356,6 +357,16 @@ function MarcadorRoute() {
   );
 }
 
+function ProfesorRoute() {
+  const { onNavigate } = useLayoutContext();
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <SEO title="Asistencia de Profesores - AMAS Team Wolf" description="Registro de entrada y salida de profesores." keywords="asistencia profesores amas" url="https://amasteamwolf.com/profesor" />
+      <ProfesorAsistenciaPage onNavigate={onNavigate} />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 function ClasesRoute() {
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
@@ -406,6 +417,7 @@ export const router = createBrowserRouter([
       { path: '/asistencia/panel', element: <AsistenciaPanelRoute /> },
       { path: '/asistencia/profesora', element: <AsistenciaPanelRoute /> },
       { path: '/consulta-asistencia', element: <ConsultaAsistenciaRoute /> },
+      { path: '/profesor', element: <ProfesorRoute /> },
       { path: '/marcador', element: <MarcadorRoute /> },
       { path: '/clases', element: <ClasesRoute /> },
       { path: '/clases/:rutaId', element: <ClasesRoute /> },
