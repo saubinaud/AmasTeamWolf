@@ -1,7 +1,25 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Loader2, Trophy, User, ShieldCheck, Lock, Medal, Users2, Sparkles, X } from 'lucide-react';
+import { Search, Loader2, Trophy, User, ShieldCheck, Lock, Medal, Users2, Sparkles, X, Plus, Send, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../config/api';
+
+// --- Opciones del formulario de inscripción (fieles al Google Form original) ---
+const DUENOS_ESCUELA = [
+  'Profesor K. Oganes', 'Profesor A. Vasquez', 'Master Candidata R. Moretti',
+  'Profesor J. Neyra', 'Master Candidato M. Cabral', 'Profesora J. Won',
+];
+const CATEGORIAS = [
+  'Baby - Little', 'Junior Sámurai (7 - 12 años)', 'Adolescentes (13 - 17 años)', 'Warrior (18+ Adultos)',
+];
+const RANGOS = [
+  'BLANCO', 'NARANJA', 'AMARILLO', 'CAMUFLADO', 'VERDE', 'VIOLETA', 'AZUL', 'MARRÓN',
+  'ROJO', 'ROJO/NEGRO', 'I DAN', 'II DAN', 'III DAN', '4to DAN', '5to DAN',
+];
+const MODALIDADES_FORM: { grupo: string; titulo: string; opciones: string[] }[] = [
+  { grupo: 'tradicional', titulo: 'Competencia Tradicional', opciones: ['Defensa Personal', 'Técnicas Form', 'Rompimiento Madera', 'Form', 'Form Weapon', 'Combat Sword', 'Combat Weapons Simple', 'Doble Combat Weapons', 'Sparring'] },
+  { grupo: 'team', titulo: 'Team Fighters', opciones: ['Team Combat Weapon', 'Team Doble Combat Weapon', 'Team sparring'] },
+  { grupo: 'especial', titulo: 'Especial', opciones: ['Formula Acrobática', 'Formula Acrobática Armas', 'Estilo Libre Acrobatico', 'Estilo Libre Acrobatico Armas'] },
+];
 
 interface Modalidad { modalidad: string; grupo: string | null }
 interface Competidor {
@@ -58,6 +76,7 @@ export function PadronPage(_props: PadronPageProps) {
   const [resultados, setResultados] = useState<Competidor[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [buscado, setBuscado] = useState(false);
+  const [showForm, setShowForm] = useState(false);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Carga config inicial
@@ -259,6 +278,231 @@ export function PadronPage(_props: PadronPageProps) {
           {!buscando && resultados.map((c) => (
             <CompetidorCard key={c.id} c={c} />
           ))}
+        </div>
+      </div>
+
+      {/* Botón flotante: inscribir nuevo competidor */}
+      <button
+        onClick={() => setShowForm(true)}
+        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full text-black shadow-lg shadow-black/40 transition active:scale-95 sm:h-16 sm:w-16"
+        style={{ backgroundColor: NARANJA }}
+        aria-label="Inscribir nuevo competidor"
+        title="Inscribir nuevo competidor"
+      >
+        <Plus className="h-7 w-7" strokeWidth={2.5} />
+      </button>
+
+      {showForm && (
+        <InscribirModal
+          torneos={torneos}
+          torneoPreseleccionado={torneoId}
+          onClose={() => setShowForm(false)}
+          onSuccess={() => {
+            setShowForm(false);
+            if (q.trim().length >= 2) buscar(q, torneoId);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function InscribirModal({ torneos, torneoPreseleccionado, onClose, onSuccess }: {
+  torneos: Torneo[];
+  torneoPreseleccionado: number | null;
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [torneoId, setTorneoId] = useState<number | ''>(torneoPreseleccionado ?? (torneos.length === 1 ? torneos[0].id : ''));
+  const [nombre, setNombre] = useState('');
+  const [edad, setEdad] = useState('');
+  const [genero, setGenero] = useState<'M' | 'F' | ''>('');
+  const [esJuez, setEsJuez] = useState<boolean | null>(null);
+  const [categoria, setCategoria] = useState('');
+  const [rango, setRango] = useState('');
+  const [duenoEscuela, setDuenoEscuela] = useState('');
+  const [duenoOtro, setDuenoOtro] = useState('');
+  const [mods, setMods] = useState<Record<string, boolean>>({});
+  const [enviando, setEnviando] = useState(false);
+
+  const toggleMod = (grupo: string, opcion: string) => {
+    const key = `${grupo}::${opcion}`;
+    setMods((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const enviar = useCallback(async () => {
+    // Validación en cliente (igual que campos obligatorios del form)
+    if (!torneoId) return toast.error('Selecciona un torneo');
+    if (nombre.trim().length < 3) return toast.error('Ingresa nombres y apellidos');
+    if (!genero) return toast.error('Selecciona el género');
+    if (esJuez === null) return toast.error('Indica si es juez');
+    if (!categoria) return toast.error('Selecciona la categoría');
+    if (!rango) return toast.error('Selecciona el rango');
+    const dueno = duenoEscuela === '__otro__' ? duenoOtro.trim() : duenoEscuela;
+    if (!dueno) return toast.error('Indica el dueño de escuela');
+
+    const modalidades = Object.entries(mods)
+      .filter(([, v]) => v)
+      .map(([k]) => { const [grupo, modalidad] = k.split('::'); return { grupo, modalidad }; });
+    if (modalidades.length === 0) return toast.error('Selecciona al menos una modalidad');
+
+    setEnviando(true);
+    try {
+      const res = await fetch(`${API_BASE}/padron/inscribir`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          torneo_id: torneoId, nombre_completo: nombre.trim(), edad: edad.trim(),
+          genero, es_juez: esJuez, categoria, rango,
+          dueno_escuela: duenoEscuela === '__otro__' ? dueno : duenoEscuela,
+          academia: duenoEscuela === '__otro__' ? dueno : '',
+          modalidades,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        toast.success(`¡${json.data.nombre_completo} inscrito!`);
+        onSuccess();
+      } else {
+        toast.error(json.error || 'No se pudo inscribir');
+      }
+    } catch {
+      toast.error('Error de conexión. Intenta de nuevo.');
+    } finally {
+      setEnviando(false);
+    }
+  }, [torneoId, nombre, edad, genero, esJuez, categoria, rango, duenoEscuela, duenoOtro, mods, onSuccess]);
+
+  const selectCls = 'w-full appearance-none rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-zinc-600';
+  const inputCls = 'w-full rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-white outline-none focus:border-zinc-600';
+  const labelCls = 'mb-1.5 block text-sm font-semibold text-white';
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 sm:items-center" onClick={onClose}>
+      <div
+        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-zinc-800 bg-zinc-950 sm:rounded-3xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-900 bg-zinc-950/95 px-5 py-4 backdrop-blur">
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ backgroundColor: NARANJA }}>
+              <Plus className="h-5 w-5 text-black" strokeWidth={2.5} />
+            </div>
+            <h2 className="font-bold text-white">Inscribir competidor</h2>
+          </div>
+          <button onClick={onClose} className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-white">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="space-y-5 p-5">
+          {/* Torneo */}
+          <div>
+            <label className={labelCls}>Torneo <span style={{ color: NARANJA }}>*</span></label>
+            <select className={selectCls} value={torneoId} onChange={(e) => setTorneoId(e.target.value ? Number(e.target.value) : '')}>
+              <option value="">Elegir…</option>
+              {torneos.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
+            </select>
+          </div>
+
+          {/* Dueño de escuela */}
+          <div>
+            <label className={labelCls}>Dueño de Escuela <span style={{ color: NARANJA }}>*</span></label>
+            <select className={selectCls} value={duenoEscuela} onChange={(e) => setDuenoEscuela(e.target.value)}>
+              <option value="">Elegir…</option>
+              {DUENOS_ESCUELA.map((d) => <option key={d} value={d}>{d}</option>)}
+              <option value="__otro__">Otra escuela / academia…</option>
+            </select>
+            {duenoEscuela === '__otro__' && (
+              <input className={`${inputCls} mt-2`} value={duenoOtro} onChange={(e) => setDuenoOtro(e.target.value)} placeholder="Nombre de la escuela / academia" />
+            )}
+          </div>
+
+          {/* Nombres */}
+          <div>
+            <label className={labelCls}>Nombres y apellidos <span style={{ color: NARANJA }}>*</span></label>
+            <input className={inputCls} value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Juan Pérez García" />
+          </div>
+
+          {/* Edad + Género */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Edad</label>
+              <input className={inputCls} value={edad} onChange={(e) => setEdad(e.target.value)} inputMode="numeric" placeholder="Ej. 12" />
+            </div>
+            <div>
+              <label className={labelCls}>Género <span style={{ color: NARANJA }}>*</span></label>
+              <div className="flex gap-2">
+                {(['M', 'F'] as const).map((g) => (
+                  <button key={g} type="button" onClick={() => setGenero(g)}
+                    className={`flex-1 rounded-xl border py-3 text-sm font-medium transition ${genero === g ? 'border-transparent text-black' : 'border-zinc-800 text-zinc-400'}`}
+                    style={genero === g ? { backgroundColor: NARANJA } : undefined}>{g}</button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Juez */}
+          <div>
+            <label className={labelCls}>¿Es juez? <span style={{ color: NARANJA }}>*</span></label>
+            <div className="flex gap-2">
+              {[{ v: true, l: 'Sí' }, { v: false, l: 'No' }].map((o) => (
+                <button key={o.l} type="button" onClick={() => setEsJuez(o.v)}
+                  className={`flex-1 rounded-xl border py-3 text-sm font-medium transition ${esJuez === o.v ? 'border-transparent text-black' : 'border-zinc-800 text-zinc-400'}`}
+                  style={esJuez === o.v ? { backgroundColor: NARANJA } : undefined}>{o.l}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Categoría */}
+          <div>
+            <label className={labelCls}>Categoría <span style={{ color: NARANJA }}>*</span></label>
+            <select className={selectCls} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+              <option value="">Elegir…</option>
+              {CATEGORIAS.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          {/* Rango */}
+          <div>
+            <label className={labelCls}>Rango <span style={{ color: NARANJA }}>*</span></label>
+            <select className={selectCls} value={rango} onChange={(e) => setRango(e.target.value)}>
+              <option value="">Elegir…</option>
+              {RANGOS.map((r) => <option key={r} value={r}>{r}</option>)}
+            </select>
+          </div>
+
+          {/* Modalidades por grupo */}
+          {MODALIDADES_FORM.map(({ grupo, titulo, opciones }) => (
+            <div key={grupo}>
+              <label className={labelCls}>{titulo}{grupo === 'tradicional' && <span style={{ color: NARANJA }}> *</span>}</label>
+              <div className="space-y-1.5">
+                {opciones.map((op) => {
+                  const key = `${grupo}::${op}`;
+                  const on = !!mods[key];
+                  return (
+                    <button key={op} type="button" onClick={() => toggleMod(grupo, op)}
+                      className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left text-sm transition ${on ? 'border-orange-500/40 bg-orange-500/10 text-white' : 'border-zinc-800 text-zinc-300'}`}>
+                      <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${on ? 'border-transparent' : 'border-zinc-600'}`} style={on ? { backgroundColor: NARANJA } : undefined}>
+                        {on && <Check className="h-3.5 w-3.5 text-black" strokeWidth={3} />}
+                      </span>
+                      {op}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="sticky bottom-0 border-t border-zinc-900 bg-zinc-950/95 p-4 backdrop-blur">
+          <button onClick={enviar} disabled={enviando}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 font-semibold text-black transition active:scale-[0.99] disabled:opacity-50"
+            style={{ backgroundColor: NARANJA }}>
+            {enviando ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Send className="h-4.5 w-4.5" /> Inscribir competidor</>}
+          </button>
         </div>
       </div>
     </div>
