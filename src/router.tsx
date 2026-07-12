@@ -81,6 +81,7 @@ const ProfesorAsistenciaPage = lazy(() => import('./components/ProfesorAsistenci
 const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({ default: m.MarcadorPage })));
 const RutaGuerrero = lazy(() => import('./components/aula').then(m => ({ default: m.RutaGuerrero })));
 const FormularioPublicoPage = lazy(() => import('./components/FormularioPublicoPage'));
+const PadronPage = lazy(() => import('./components/PadronPage').then(m => ({ default: m.PadronPage })));
 
 // SEO configs
 import { seoConfigs } from './components/SEO';
@@ -383,6 +384,16 @@ function FormularioRoute() {
   );
 }
 
+function PadronRoute() {
+  const { onNavigate } = useLayoutContext();
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <SEO title="Padrón de Torneos - AMAS Team Wolf" description="Consulta de competidores inscritos por torneo: modalidades, categoría y rango. Acceso para jueces y planilleros." keywords="torneo taekwondo, padrón competidores, modalidades, AMAS Team Wolf" url="https://amasteamwolf.com/padron" />
+      <PadronPage onNavigate={onNavigate} />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 // Redirect /space to the standalone Space app
 function SpaceRedirect() {
   React.useEffect(() => {
@@ -423,6 +434,7 @@ export const router = createBrowserRouter([
       { path: '/clases/:rutaId', element: <ClasesRoute /> },
       { path: '/clases/:rutaId/:claseId', element: <ClasesRoute /> },
       { path: '/formulario/:slug', element: <FormularioRoute /> },
+      { path: '/padron', element: <PadronRoute /> },
       { path: '/space/*', element: <SpaceRedirect /> },
       // Redirect aliases
       { path: '/renovar', element: <Navigate to="/renovacion" replace /> },
