@@ -28,7 +28,7 @@
 |----------|-------|
 | Rate limiting 100/min general, 20/min POST | Prevenir spam de matrículas/leads. |
 | CORS con URL específica (no regex) | El regex *.easypanel.host era demasiado amplio. |
-| Password de BD sin fallback hardcodeado | El fallback 'Aubinaud2' estaba en git. Eliminado. |
+| Password de BD sin fallback hardcodeado | El fallback 'REDACTED-VER-CEREBRO-LOCAL' estaba en git. Eliminado. |
 | Env vars validadas al startup | Warn si faltan, no crash (para permitir arranque parcial). |
 
 ## UX
