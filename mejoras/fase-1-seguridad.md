@@ -6,7 +6,7 @@
 
 ### 1.1 Quitar password hardcodeado de db.js
 - **Archivo:** `api/src/db.js:8`
-- **Problema:** `password: process.env.DB_PASS || 'Aubinaud2'` expone password en código
+- **Problema:** `password: process.env.DB_PASS || 'REDACTED-VER-CEREBRO-LOCAL'` expone password en código
 - **Fix:** Quitar fallback, requerir env var
 
 ### 1.2 Eliminar console.logs de producción
