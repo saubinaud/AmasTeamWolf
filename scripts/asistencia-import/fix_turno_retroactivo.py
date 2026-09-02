@@ -25,7 +25,7 @@ from pathlib import Path
 SCRIPT_DIR = Path('/Users/sebastien/Documents/AmasTeamWolf/scripts/asistencia-import')
 
 DB_SSH = [
-    'sshpass', '-p', 'Aubinaud919',
+    'sshpass', '-p', 'REDACTED-VER-CEREBRO-LOCAL',
     'ssh', '-o', 'StrictHostKeyChecking=no', '-o', 'PubkeyAuthentication=no',
     'root@95.111.254.27',
 ]
