@@ -59,8 +59,8 @@ Push a `main` → Easypanel auto-build (1-2 min).
 
 ### Backend
 ```bash
-cat api/src/routes/ARCHIVO.js | sshpass -p 'Aubinaud919' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@95.111.254.27 "docker exec -i amas-api tee /app/src/routes/ARCHIVO.js > /dev/null"
-sshpass -p 'Aubinaud919' ssh root@95.111.254.27 "docker restart amas-api"
+cat api/src/routes/ARCHIVO.js | sshpass -p 'REDACTED-VER-CEREBRO-LOCAL' ssh -o StrictHostKeyChecking=no -o PubkeyAuthentication=no root@95.111.254.27 "docker exec -i amas-api tee /app/src/routes/ARCHIVO.js > /dev/null"
+sshpass -p 'REDACTED-VER-CEREBRO-LOCAL' ssh root@95.111.254.27 "docker restart amas-api"
 # VERIFICAR después:
 curl -s https://amas-api.s6hx3x.easypanel.host/health
 curl -s -X POST https://amas-api.s6hx3x.easypanel.host/api/auth/login -H 'Content-Type: application/json' -d '{"dni":"47702188","password":"test"}'
@@ -68,7 +68,7 @@ curl -s -X POST https://amas-api.s6hx3x.easypanel.host/api/auth/login -H 'Conten
 
 ### BD
 ```bash
-sshpass -p 'Aubinaud919' ssh root@95.111.254.27 "docker exec pallium_amas-db.1.\$(docker service ps pallium_amas-db -q --no-trunc | head -1) psql -U amas_user -d amas_database -c \"SQL_AQUI\""
+sshpass -p 'REDACTED-VER-CEREBRO-LOCAL' ssh root@95.111.254.27 "docker exec pallium_amas-db.1.\$(docker service ps pallium_amas-db -q --no-trunc | head -1) psql -U amas_user -d amas_database -c \"SQL_AQUI\""
 ```
 
 ## Fases pendientes (3 de 14)
