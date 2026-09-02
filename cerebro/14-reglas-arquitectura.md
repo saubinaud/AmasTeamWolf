@@ -17,7 +17,7 @@ Paso 2: Solo después, actualizar el código que usa la columna nueva
 
 **Verificación obligatoria** después de cada ALTER TABLE:
 ```bash
-sshpass -p 'Aubinaud919' ssh ... "docker exec pallium_amas-db.1.$(docker service ps pallium_amas-db -q --no-trunc | head -1) psql -U amas_user -d amas_database -c \"SELECT column_name FROM information_schema.columns WHERE table_name='TABLA' AND column_name='COLUMNA'\""
+sshpass -p 'REDACTED-VER-CEREBRO-LOCAL' ssh ... "docker exec pallium_amas-db.1.$(docker service ps pallium_amas-db -q --no-trunc | head -1) psql -U amas_user -d amas_database -c \"SELECT column_name FROM information_schema.columns WHERE table_name='TABLA' AND column_name='COLUMNA'\""
 ```
 
 Si devuelve 0 rows → la migración FALLÓ. No continuar.
