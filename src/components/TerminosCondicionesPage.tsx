@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
 interface TerminosCondicionesPageProps {
@@ -5,6 +6,10 @@ interface TerminosCondicionesPageProps {
 }
 
 export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageProps) {
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
         <div className="min-h-screen bg-zinc-950 py-12 px-4 sm:px-6 md:px-8 lg:px-8 animate-fadeIn">
             {/* Background decorative elements */}

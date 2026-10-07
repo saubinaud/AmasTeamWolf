@@ -190,10 +190,20 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 text-center">
+        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
           <p className="text-white/40 text-sm">
             © 2025 JMA Team Wolf. Todos los derechos reservados.
           </p>
+          <a
+            href="/terminos"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('terminos');
+            }}
+            className="text-white/60 text-sm underline underline-offset-4 hover:text-[#FCA929] transition-colors py-2"
+          >
+            Términos y condiciones
+          </a>
         </div>
       </div>
     </footer>
