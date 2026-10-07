@@ -269,7 +269,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
             <h1 className="text-2xl font-bold text-white mb-1">
               Registro de Asistencia
             </h1>
-            <p className="text-white/50 text-sm">AMAS Team Wolf</p>
+            <p className="text-white/50 text-sm">JMA Team Wolf</p>
             <div className="mt-3 inline-flex items-center gap-1.5 bg-zinc-800/80 rounded-full px-3 py-1 text-xs text-white/60">
               <Clock className="w-3 h-3" />
               Turno {turno}

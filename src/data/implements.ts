@@ -94,7 +94,7 @@ export const programImplements: Implement[] = [
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761500577/7_r4zzrq.png',
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761500577/7_r4zzrq.png'
     ],
-    longDescription: 'Distintivo oficial del programa Leadership AMAS Team Wolf. Representa disciplina, compromiso y orgullo de pertenecer al equipo. Diseño bordado de alta calidad, resistente al uso y al lavado. Obligatorio para uniformes de entrenamiento y presentaciones oficiales.'
+    longDescription: 'Distintivo oficial del programa Leadership JMA Team Wolf. Representa disciplina, compromiso y orgullo de pertenecer al equipo. Diseño bordado de alta calidad, resistente al uso y al lavado. Obligatorio para uniformes de entrenamiento y presentaciones oficiales.'
   },
   {
     id: 'membership',
@@ -106,7 +106,7 @@ export const programImplements: Implement[] = [
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761500578/AMAS_WOLF_LEADERSHIP_Mesa_de_trabajo_1_pdwtiu.png',
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761500578/AMAS_WOLF_LEADERSHIP_Mesa_de_trabajo_1_pdwtiu.png'
     ],
-    longDescription: 'Acceso completo al programa Leadership AMAS Team Wolf. Incluye formación continua, certificaciones y beneficios exclusivos. Exclusivo para quienes ya cuentan con todos los implementos físicos. (guantes, bo-staf, combat wepon, zapatos, nunchakus y parche) Permite avanzar en el plan de desarrollo (exclusivo del programa leadership) y acceder a actividades oficiales del programa.'
+    longDescription: 'Acceso completo al programa Leadership JMA Team Wolf. Incluye formación continua, certificaciones y beneficios exclusivos. Exclusivo para quienes ya cuentan con todos los implementos físicos. (guantes, bo-staf, combat wepon, zapatos, nunchakus y parche) Permite avanzar en el plan de desarrollo (exclusivo del programa leadership) y acceder a actividades oficiales del programa.'
   }
 ];
 
@@ -126,12 +126,12 @@ export const storeOnlyProducts: Implement[] = [
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761933232/21_l8mw1d.png'
       
     ],
-    longDescription: 'El uniforme oficial de AMAS Team Wolf representa disciplina, respeto y orgullo por el camino marcial. Diseñado para acompañar cada etapa del aprendizaje, combina comodidad, durabilidad y elegancia. Su confección en tela ligera y resistente permite libertad de movimiento en cada técnica, manteniendo la presencia y el estándar profesional que distingue a nuestros alumnos. Disponible en tallas 2, 4, 6, 8, 10, 12, 14, S, M, L, XL.',
+    longDescription: 'El uniforme oficial de JMA Team Wolf representa disciplina, respeto y orgullo por el camino marcial. Diseñado para acompañar cada etapa del aprendizaje, combina comodidad, durabilidad y elegancia. Su confección en tela ligera y resistente permite libertad de movimiento en cada técnica, manteniendo la presencia y el estándar profesional que distingue a nuestros alumnos. Disponible en tallas 2, 4, 6, 8, 10, 12, 14, S, M, L, XL.',
     colors: ['#FFFFFF']
   },
   {
     id: 'polo',
-    name: 'Polo AMAS Team Wolf',
+    name: 'Polo JMA Team Wolf',
     price: 60,
     icon: '👕',
     image: 'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761934028/23_eimzcf.png',
@@ -139,7 +139,7 @@ export const storeOnlyProducts: Implement[] = [
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761934028/23_eimzcf.png',
       'https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1080/v1761934028/22_qihajf.png'
     ],
-    longDescription: 'El polo oficial de AMAS Team Wolf simboliza pertenencia y compromiso. Fabricado en materiales frescos y resistentes, es ideal para uso diario o entrenamientos ligeros. Su diseño combina sobriedad y estilo, reflejando los valores del equipo dentro y fuera del tatami. Perfecto para representar con orgullo la identidad Team Wolf en todo momento. Disponible en tallas 2, 4, 6, 8, 10, 12, 14, S, M, L, XL.',
+    longDescription: 'El polo oficial de JMA Team Wolf simboliza pertenencia y compromiso. Fabricado en materiales frescos y resistentes, es ideal para uso diario o entrenamientos ligeros. Su diseño combina sobriedad y estilo, reflejando los valores del equipo dentro y fuera del tatami. Perfecto para representar con orgullo la identidad Team Wolf en todo momento. Disponible en tallas 2, 4, 6, 8, 10, 12, 14, S, M, L, XL.',
     colors: ['#FFFFFF', '#222222']
   },
 ];

@@ -133,7 +133,7 @@ interface TorneoPageProps {
 const FAQ_ITEMS = [
     {
         q: '¿Quiénes pueden participar?',
-        a: 'Todos los alumnos registrados en AMAS Team Wolf pueden inscribirse en el torneo.'
+        a: 'Todos los alumnos registrados en JMA Team Wolf pueden inscribirse en el torneo.'
     },
     {
         q: '¿Puedo inscribirme en varias modalidades?',
@@ -286,7 +286,7 @@ export function TorneoPage({
             if (data?.busqueda) return; // ignore name search results
             if (!data?.encontrado || !data?.alumno) {
                 setDniStatus('not_found');
-                setDniError('Este DNI no está registrado en AMAS Team Wolf.');
+                setDniError('Este DNI no está registrado en JMA Team Wolf.');
                 return;
             }
             setDniStatus('found');

@@ -207,7 +207,7 @@ export function PadronPage(_props: PadronPageProps) {
             </div>
             <div>
               <h1 className="text-lg font-bold leading-tight">{config?.titulo || 'Consulta de competidores'}</h1>
-              <p className="text-xs text-zinc-500">Padrón de torneos · AMAS Team Wolf</p>
+              <p className="text-xs text-zinc-500">Padrón de torneos · JMA Team Wolf</p>
             </div>
           </div>
           {config?.mensaje && <p className="mt-3 text-sm text-zinc-400">{config.mensaje}</p>}
@@ -527,7 +527,7 @@ function CompetidorCard({ c }: { c: Competidor }) {
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           {c.es_amas && (
-            <span className="rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[10px] font-semibold text-orange-300">AMAS</span>
+            <span className="rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[10px] font-semibold text-orange-300">JMA</span>
           )}
           {c.es_juez && (
             <span className="flex items-center gap-1 rounded-full border border-violet-500/30 bg-violet-500/15 px-2 py-0.5 text-[10px] font-semibold text-violet-300">

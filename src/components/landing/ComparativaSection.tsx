@@ -17,10 +17,10 @@ export function ComparativaSection() {
         <ScrollReveal>
           <div className="text-center mb-12 md:mb-20">
             <span className="inline-block bg-white/5 border border-white/10 text-white/70 px-4 py-2 md:px-6 md:py-2 rounded-full text-xs md:text-sm font-semibold mb-4 md:mb-6">
-              La diferencia AMAS
+              La diferencia JMA
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-6xl text-white mb-4 md:mb-6 font-bold px-2">
-              ¿Por qué elegir <span className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">AMAS</span>?
+              ¿Por qué elegir <span className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">JMA</span>?
             </h2>
           </div>
         </ScrollReveal>
@@ -33,7 +33,7 @@ export function ComparativaSection() {
                   <tr className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929]">
                     <th className="px-3 py-3 md:px-6 md:py-6 text-left text-white text-sm md:text-lg"></th>
                     <th className="px-3 py-3 md:px-6 md:py-6 text-center text-white/80 text-sm md:text-lg whitespace-nowrap">Otras academias</th>
-                    <th className="px-3 py-3 md:px-6 md:py-6 text-center text-white text-sm md:text-lg font-bold whitespace-nowrap">AMAS Team Wolf</th>
+                    <th className="px-3 py-3 md:px-6 md:py-6 text-center text-white text-sm md:text-lg font-bold whitespace-nowrap">JMA Team Wolf</th>
                   </tr>
                 </thead>
                 <tbody>

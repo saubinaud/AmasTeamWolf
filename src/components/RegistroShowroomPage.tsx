@@ -504,7 +504,7 @@ export function RegistroShowroomPage({
         <div className="absolute inset-0 z-0">
           <img
             src={HERO_IMG}
-            alt="AMAS Team Wolf"
+            alt="JMA Team Wolf"
             className="w-full h-full object-cover scale-110"
             loading="lazy"
             decoding="async"
@@ -927,7 +927,7 @@ export function RegistroShowroomPage({
               Familias
             </h2>
             <p className="text-white/70 text-lg md:text-xl">
-              Testimonios reales de padres que confiaron en AMAS
+              Testimonios reales de padres que confiaron en JMA
             </p>
           </motion.div>
 

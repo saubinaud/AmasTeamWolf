@@ -8,7 +8,7 @@ interface ProcesoSectionProps {
 const steps = [
   { num: 1, icon: <CalendarCheck className="w-5 h-5 md:w-6 md:h-6" />, title: 'AGENDAS', desc: 'Clase de prueba individual', price: 'Inversión: S/40' },
   { num: 2, icon: <Users className="w-5 h-5 md:w-6 md:h-6" />, title: 'VIENES', desc: 'Conoces instalaciones y profesoras', price: 'Sin compromiso' },
-  { num: 3, icon: <Heart className="w-5 h-5 md:w-6 md:h-6" />, title: 'DECIDES', desc: 'Evalúas si AMAS es para tu familia', price: 'Sin presión' },
+  { num: 3, icon: <Heart className="w-5 h-5 md:w-6 md:h-6" />, title: 'DECIDES', desc: 'Evalúas si JMA es para tu familia', price: 'Sin presión' },
   { num: 4, icon: <Target className="w-5 h-5 md:w-6 md:h-6" />, title: 'TE INSCRIBES', desc: 'Los S/40 se descuentan al 100%', price: '¡Clase GRATIS!' }
 ];
 

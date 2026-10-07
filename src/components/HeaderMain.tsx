@@ -104,7 +104,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                   backgroundClip: 'text'
                 }}
               >
-                AMAS Team Wolf
+                JMA Team Wolf
               </span>
             </div>
           </button>

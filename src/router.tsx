@@ -166,7 +166,7 @@ function RegistroTresMesesRoute() {
   const { onNavigate, onRegistrationSuccess } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Matrícula Programa 3 Meses - AMAS Team Wolf" description="Matricúlate en el Programa Full de 3 meses de AMAS Team Wolf." keywords="matrícula taekwondo, inscripción artes marciales Lima" url="https://amasteamwolf.com/registro-3-meses" />
+      <SEO title="Matrícula Programa 3 Meses - JMA Team Wolf" description="Matricúlate en el Programa Full de 3 meses de JMA Team Wolf." keywords="matrícula taekwondo, inscripción artes marciales Lima" url="https://amasteamwolf.com/registro-3-meses" />
       <RegistroTresMesesPage onNavigateHome={() => onNavigate('home')} onSuccess={onRegistrationSuccess} />
     </Suspense></LazyErrorBoundary>
   );
@@ -176,7 +176,7 @@ function RegistroSeisMesesRoute() {
   const { onNavigate, onRegistrationSuccess } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Matrícula Programa 6 Meses - AMAS Team Wolf" description="Matricúlate en el Programa de 6 meses de AMAS Team Wolf." keywords="matrícula taekwondo, programa 6 meses AMAS" url="https://amasteamwolf.com/registro-6-meses" />
+      <SEO title="Matrícula Programa 6 Meses - JMA Team Wolf" description="Matricúlate en el Programa de 6 meses de JMA Team Wolf." keywords="matrícula taekwondo, programa 6 meses JMA" url="https://amasteamwolf.com/registro-6-meses" />
       <RegistroSeisMesesPage onNavigateHome={() => onNavigate('home')} onSuccess={onRegistrationSuccess} />
     </Suspense></LazyErrorBoundary>
   );
@@ -186,7 +186,7 @@ function RegistroMensualRoute() {
   const { onNavigate, onRegistrationSuccess } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Matrícula Programa Mensual - AMAS Team Wolf" description="Matricúlate en el Programa Mensual de AMAS Team Wolf." keywords="matrícula mensual taekwondo" url="https://amasteamwolf.com/registro-mensual" />
+      <SEO title="Matrícula Programa Mensual - JMA Team Wolf" description="Matricúlate en el Programa Mensual de JMA Team Wolf." keywords="matrícula mensual taekwondo" url="https://amasteamwolf.com/registro-mensual" />
       <RegistroMensualPage onNavigateHome={() => onNavigate('home')} onSuccess={onRegistrationSuccess} />
     </Suspense></LazyErrorBoundary>
   );
@@ -196,7 +196,7 @@ function RegistroLeadershipRoute() {
   const { onNavigate, onRegistrationSuccess } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Matrícula Leadership Wolf - AMAS Team Wolf" description="Inscríbete en el programa Leadership Wolf." keywords="matrícula leadership wolf" url="https://amasteamwolf.com/registro-leadership" />
+      <SEO title="Matrícula Leadership Wolf - JMA Team Wolf" description="Inscríbete en el programa Leadership Wolf." keywords="matrícula leadership wolf" url="https://amasteamwolf.com/registro-leadership" />
       <RegistroLeadershipPage onNavigateHome={() => onNavigate('home')} onSuccess={onRegistrationSuccess} />
     </Suspense></LazyErrorBoundary>
   );
@@ -228,7 +228,7 @@ function InicioSesionRoute() {
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
       <AuthGuard onNavigate={onNavigate} redirectIfAuth={true}>
         <>
-          <SEO title="Iniciar Sesión - AMAS Team Wolf" description="Acceso para familias de AMAS Team Wolf." keywords="login amas" url="https://amasteamwolf.com/inicio-sesion" />
+          <SEO title="Iniciar Sesión - JMA Team Wolf" description="Acceso para familias de JMA Team Wolf." keywords="login amas" url="https://amasteamwolf.com/inicio-sesion" />
           <InicioSesionPage onNavigate={onNavigate} />
         </>
       </AuthGuard>
@@ -242,7 +242,7 @@ function PerfilRoute() {
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
       <AuthGuard onNavigate={onNavigate} requireAuth={true}>
         <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-          <SEO title="Mi Perfil - AMAS Team Wolf" description="Panel de familia AMAS Team Wolf." keywords="perfil amas" url="https://amasteamwolf.com/perfil" />
+          <SEO title="Mi Perfil - JMA Team Wolf" description="Panel de familia JMA Team Wolf." keywords="perfil amas" url="https://amasteamwolf.com/perfil" />
           <PerfilPage onNavigate={onNavigate} />
         </Suspense></LazyErrorBoundary>
       </AuthGuard>
@@ -254,7 +254,7 @@ function RenovacionNavidadRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Renovación Navidad - AMAS Team Wolf" description="Renueva tu membresía anticipadamente." keywords="renovación navidad" url="https://amasteamwolf.com/renovacion-navidad" />
+      <SEO title="Renovación Navidad - JMA Team Wolf" description="Renueva tu membresía anticipadamente." keywords="renovación navidad" url="https://amasteamwolf.com/renovacion-navidad" />
       <RenovacionNavidadPage onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} />
     </Suspense></LazyErrorBoundary>
   );
@@ -264,7 +264,7 @@ function RegistroActividadNavidadRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Gran Clausura Navideña - AMAS Team Wolf" description="Celebra con nosotros el cierre del año." keywords="navidad amas team wolf" url="https://amasteamwolf.com/navidad" image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg" />
+      <SEO title="Gran Clausura Navideña - JMA Team Wolf" description="Celebra con nosotros el cierre del año." keywords="navidad amas team wolf" url="https://amasteamwolf.com/navidad" image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg" />
       <RegistroActividadNavidadPage onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} />
     </Suspense></LazyErrorBoundary>
   );
@@ -274,7 +274,7 @@ function RegistroShowroomRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Showroom AMAS Team Wolf" description="Regístrate para asistir al Showroom de AMAS Team Wolf." keywords="showroom amas team wolf" url="https://amasteamwolf.com/showroom" image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg" />
+      <SEO title="Showroom JMA Team Wolf" description="Regístrate para asistir al Showroom de JMA Team Wolf." keywords="showroom amas team wolf" url="https://amasteamwolf.com/showroom" image="https://res.cloudinary.com/dkoocok3j/image/upload/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg" />
       <RegistroShowroomPage onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} />
     </Suspense></LazyErrorBoundary>
   );
@@ -284,7 +284,7 @@ function RenovacionRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Renovación de Membresía - AMAS Team Wolf" description="Renueva tu membresía de AMAS Team Wolf." keywords="renovación membresía" url="https://amasteamwolf.com/renovacion" />
+      <SEO title="Renovación de Membresía - JMA Team Wolf" description="Renueva tu membresía de JMA Team Wolf." keywords="renovación membresía" url="https://amasteamwolf.com/renovacion" />
       <RenovacionPage
         onNavigateHome={() => onNavigate('home')}
         onNavigate={onNavigate}
@@ -303,7 +303,7 @@ function TerminosRoute() {
   const { onNavigate } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Términos y Condiciones - AMAS Team Wolf" description="Términos y condiciones de uso." keywords="terminos condiciones" url="https://amasteamwolf.com/terminos" />
+      <SEO title="Términos y Condiciones - JMA Team Wolf" description="Términos y condiciones de uso." keywords="terminos condiciones" url="https://amasteamwolf.com/terminos" />
       <TerminosCondicionesPage onNavigate={onNavigate} />
     </Suspense></LazyErrorBoundary>
   );
@@ -313,7 +313,7 @@ function TorneoRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Torneo de Taekwondo - AMAS Team Wolf" description="Inscribe a tu hijo en el próximo torneo de taekwondo." keywords="torneo taekwondo Lima" url="https://amasteamwolf.com/torneo" />
+      <SEO title="Torneo de Taekwondo - JMA Team Wolf" description="Inscribe a tu hijo en el próximo torneo de taekwondo." keywords="torneo taekwondo Lima" url="https://amasteamwolf.com/torneo" />
       <TorneoPage onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} />
     </Suspense></LazyErrorBoundary>
   );
@@ -323,7 +323,7 @@ function AsistenciaRoute() {
   const { onNavigate } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Registro de Asistencia - AMAS Team Wolf" description="Registra tu asistencia escaneando el código QR." keywords="asistencia amas" url="https://amasteamwolf.com/asistencia" />
+      <SEO title="Registro de Asistencia - JMA Team Wolf" description="Registra tu asistencia escaneando el código QR." keywords="asistencia amas" url="https://amasteamwolf.com/asistencia" />
       <AsistenciaPage onNavigate={onNavigate} />
     </Suspense></LazyErrorBoundary>
   );
@@ -333,7 +333,7 @@ function AsistenciaPanelRoute() {
   const { onNavigate } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Panel de Asistencia - AMAS Team Wolf" description="Panel de control de asistencias para profesoras." keywords="panel asistencia amas" url="https://amasteamwolf.com/asistencia/panel" />
+      <SEO title="Panel de Asistencia - JMA Team Wolf" description="Panel de control de asistencias para profesoras." keywords="panel asistencia amas" url="https://amasteamwolf.com/asistencia/panel" />
       <AsistenciaPanelPage onNavigate={onNavigate} />
     </Suspense></LazyErrorBoundary>
   );
@@ -343,7 +343,7 @@ function ConsultaAsistenciaRoute() {
   const { onNavigate } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Consulta de Asistencia - AMAS Team Wolf" description="Consulta el registro de asistencias de tu hijo." keywords="consulta asistencia" url="https://amasteamwolf.com/consulta-asistencia" />
+      <SEO title="Consulta de Asistencia - JMA Team Wolf" description="Consulta el registro de asistencias de tu hijo." keywords="consulta asistencia" url="https://amasteamwolf.com/consulta-asistencia" />
       <ConsultaAsistenciaPage onNavigate={onNavigate} />
     </Suspense></LazyErrorBoundary>
   );
@@ -362,7 +362,7 @@ function ProfesorRoute() {
   const { onNavigate } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Asistencia de Profesores - AMAS Team Wolf" description="Registro de entrada y salida de profesores." keywords="asistencia profesores amas" url="https://amasteamwolf.com/profesor" />
+      <SEO title="Asistencia de Profesores - JMA Team Wolf" description="Registro de entrada y salida de profesores." keywords="asistencia profesores amas" url="https://amasteamwolf.com/profesor" />
       <ProfesorAsistenciaPage onNavigate={onNavigate} />
     </Suspense></LazyErrorBoundary>
   );
@@ -388,7 +388,7 @@ function PadronRoute() {
   const { onNavigate } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Padrón de Torneos - AMAS Team Wolf" description="Consulta de competidores inscritos por torneo: modalidades, categoría y rango. Acceso para jueces y planilleros." keywords="torneo taekwondo, padrón competidores, modalidades, AMAS Team Wolf" url="https://amasteamwolf.com/padron" />
+      <SEO title="Padrón de Torneos - JMA Team Wolf" description="Consulta de competidores inscritos por torneo: modalidades, categoría y rango. Acceso para jueces y planilleros." keywords="torneo taekwondo, padrón competidores, modalidades, JMA Team Wolf" url="https://amasteamwolf.com/padron" />
       <PadronPage onNavigate={onNavigate} />
     </Suspense></LazyErrorBoundary>
   );

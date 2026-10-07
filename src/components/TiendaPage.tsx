@@ -172,7 +172,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
                 backgroundClip: 'text'
               }}
             >
-              Tienda AMAS
+              Tienda JMA
             </h1>
             <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-2xl mx-auto px-4">
               Todo el equipamiento profesional para tu entrenamiento

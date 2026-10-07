@@ -116,7 +116,7 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
                             <Users className="w-10 h-10 text-white" />
                         </div>
                         <h1 className="text-2xl font-bold text-white mb-2">
-                            ¡Bienvenido a AMAS!
+                            ¡Bienvenido a JMA!
                         </h1>
                         <p className="text-white/60 text-sm">
                             Para ver tu información, vincula tu cuenta con tu perfil de alumno

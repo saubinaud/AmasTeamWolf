@@ -416,7 +416,7 @@ export default function FormularioPublicoPage() {
           <div className="flex justify-center mt-6">
             <span className="text-white/30 text-xs flex items-center gap-1.5">
               <Lock className="w-3 h-3" />
-              Formulario seguro por AMAS
+              Formulario seguro por JMA
             </span>
           </div>
         </div>
@@ -648,7 +648,7 @@ export default function FormularioPublicoPage() {
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-          }}>AMAS</span>
+          }}>JMA</span>
           {' '}&copy; {new Date().getFullYear()}. Todos los derechos reservados.
         </p>
       </footer>

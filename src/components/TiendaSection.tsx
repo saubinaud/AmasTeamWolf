@@ -54,7 +54,7 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
               backgroundClip: 'text'
             }}
           >
-            Tienda AMAS
+            Tienda JMA
           </h2>
           <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
             Equípate con lo mejor. Productos de calidad para tu entrenamiento.

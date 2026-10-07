@@ -145,7 +145,7 @@ export function VincularCuentaPage({ onNavigate }: VincularCuentaPageProps) {
                             Vincular mi Cuenta
                         </h1>
                         <p className="text-white/60 text-sm">
-                            Conecta tu nueva cuenta con tu perfil de alumno existente en AMAS
+                            Conecta tu nueva cuenta con tu perfil de alumno existente en JMA
                         </p>
                     </div>
 

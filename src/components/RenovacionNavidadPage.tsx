@@ -242,7 +242,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                       backgroundClip: 'text'
                     }}
                   >
-                    AMAS Team Wolf
+                    JMA Team Wolf
                   </span>
                 </h1>
 
@@ -622,7 +622,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
 
                     {/* Legal text */}
                     <p className="text-white/50 text-sm text-center">
-                      Al enviar este formulario, autorizas a AMAS Team Wolf
+                      Al enviar este formulario, autorizas a JMA Team Wolf
                       a contactarte para coordinar tu renovación.
                     </p>
                   </div>

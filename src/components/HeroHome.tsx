@@ -51,7 +51,7 @@ export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FCA929]" />
-            <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Academia AMAS Team Wolf</span>
+            <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Academia JMA Team Wolf</span>
           </div>
 
           {/* Main Title */}

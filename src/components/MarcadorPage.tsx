@@ -251,7 +251,7 @@ export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">AMAS</h1>
+          <h1 className="text-2xl font-bold text-white">JMA</h1>
           <p className="text-white/60 mt-1">Marcador de Torneo</p>
         </div>
         <div className="w-full max-w-xs space-y-4">

@@ -350,7 +350,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                   backgroundClip: 'text'
                 }}
               >
-                Graduaciones AMAS Team Wolf 🐺
+                Graduaciones JMA Team Wolf 🐺
               </h1>
               
               <p className="text-base sm:text-lg md:text-xl text-white/70 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
@@ -699,7 +699,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                     Los alumnos deben asistir con su <span className="text-[#FCA929]">uniforme completo: chaqueta, pantalón y cinturón</span>.
                   </p>
                   <p>
-                    Si cuentan con su polo AMAS, pueden usarlo debajo del uniforme.
+                    Si cuentan con su polo JMA, pueden usarlo debajo del uniforme.
                   </p>
                 </div>
               </div>

@@ -742,8 +742,8 @@ export const FormularioRenovacion = memo(function FormularioRenovacion({ onSucce
                         </div>
                         <ul className="space-y-4">
                           {[
-                            { name: "Guantes AMAS", price: "S/ 250" },
-                            { name: "Zapatos AMAS", price: "S/ 250" },
+                            { name: "Guantes JMA", price: "S/ 250" },
+                            { name: "Zapatos JMA", price: "S/ 250" },
                             { name: "Bo Staff", price: "S/ 180" },
                             { name: "Combat Weapon", price: "S/ 220" },
                             { name: "Nunchaku", price: "S/ 350" },

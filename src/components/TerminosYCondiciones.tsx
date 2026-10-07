@@ -116,7 +116,7 @@ export default function TerminosPage({ onNavigate }: TerminosPageProps) {
           <span className="text-base font-medium">Volver</span>
         </button>
         <div className="hidden sm:block text-xs text-white/30 uppercase tracking-widest">
-            Academia AMAS
+            Academia JMA
         </div>
       </div>
 
@@ -136,7 +136,7 @@ export default function TerminosPage({ onNavigate }: TerminosPageProps) {
             Términos y <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FA7B21] to-[#E65C0F]">Condiciones</span>
           </h1>
           <p className="text-neutral-400 max-w-2xl mx-auto">
-            Por favor, lee detenidamente las normas que rigen el uso de nuestro portal y servicios digitales en la Academia de Artes Marciales AMAS.
+            Por favor, lee detenidamente las normas que rigen el uso de nuestro portal y servicios digitales en la Academia de Artes Marciales JMA.
           </p>
         </motion.div>
 
@@ -150,7 +150,7 @@ export default function TerminosPage({ onNavigate }: TerminosPageProps) {
                 icon={<ShieldCheck className="h-5 w-5" />}
                 content={
                     <p>
-                        Este documento regula el acceso y uso del sitio web de AMAS. Al navegar, el usuario (padre, madre o tutor) 
+                        Este documento regula el acceso y uso del sitio web de JMA. Al navegar, el usuario (padre, madre o tutor) 
                         acepta estos términos. Si no estás de acuerdo, debes abstenerte de usar el portal.
                     </p>
                 }
@@ -209,7 +209,7 @@ export default function TerminosPage({ onNavigate }: TerminosPageProps) {
                 icon={<Copyright className="h-5 w-5" />}
                 content={
                     <p>
-                        Todo el contenido (logos AMAS, fotos de alumnos, metodologías y videos) es propiedad exclusiva de la Academia. 
+                        Todo el contenido (logos JMA, fotos de alumnos, metodologías y videos) es propiedad exclusiva de la Academia. 
                         Queda prohibida su copia o distribución sin autorización expresa.
                     </p>
                 }
@@ -264,7 +264,7 @@ export default function TerminosPage({ onNavigate }: TerminosPageProps) {
             className="mt-12 text-center border-t border-white/10 pt-8"
         >
             <p className="text-xs text-neutral-500">
-                Última actualización: Diciembre 2025 · Academia AMAS
+                Última actualización: Diciembre 2025 · Academia JMA
             </p>
         </motion.div>
 

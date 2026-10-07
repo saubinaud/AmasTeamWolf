@@ -248,19 +248,19 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
   const hoy = new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const clausulas = [
-    'OBJETO DEL CONTRATO. AMAS Team Wolf se compromete a brindar al alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado.',
+    'OBJETO DEL CONTRATO. JMA Team Wolf se compromete a brindar al alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado.',
     'VIGENCIA. El contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado.',
     'PAGO. El monto total deberá abonarse antes del inicio de clases. No se iniciará ningún programa sin confirmación del pago.',
-    'POLITICA DE NO CANCELACIONES Y NO REEMBOLSOS. Una vez realizado el pago, no se aceptarán cancelaciones ni se realizarán devoluciones. La inasistencia no genera derecho a clases de recuperación en membresías menores a 3 meses.',
-    'EXCEPCIONES. AMAS Team Wolf podrá ofrecer congelamiento temporal por razones de salud con certificado médico, sujeto a aprobación de la dirección.',
+    'POLITICA DE CANCELACIONES Y DEVOLUCIONES. Toda devolución descuenta el periodo ya transcurrido desde la fecha de inicio, en proporción al precio pagado; la inasistencia no reduce ese periodo ni genera clases de recuperación. Los beneficios gratuitos (p. ej. un mes o 15 días de clases) se aplican al final del periodo pagado y no son reembolsables. De los instrumentos u objetos regalados se descuenta el 50 % de su precio en la Tienda JMA al momento de la devolución.',
+    'EXCEPCIONES. JMA Team Wolf podrá ofrecer congelamiento temporal por razones de salud con certificado médico, sujeto a aprobación de la dirección.',
     'HORARIOS. La academia puede modificar horarios en cualquier momento. Los padres de familia deben respetar los horarios asignados a su categoría.',
     'UNIFORMIDAD. El alumno debe asistir correctamente uniformado: pantalón, chaqueta, cinturón y polo de la academia. No se permite asistir con otra vestimenta que no sea la reglamentaria.',
-    'IMPLEMENTOS. Únicamente está permitido el uso de implementos reglamentarios proporcionados por la organización AMAS o la Academia Team Wolf.',
+    'IMPLEMENTOS. Únicamente está permitido el uso de implementos reglamentarios proporcionados por la organización JMA o la Academia Team Wolf.',
     'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra apto para la práctica de artes marciales.',
     'CONDUCTA Y CONVIVENCIA. No está permitido ningún tipo de maltrato ni conflicto dentro de la academia. No se permite la venta de productos o servicios dentro de las instalaciones.',
     'RESPONSABILIDAD. La academia no se responsabiliza por objetos olvidados en las instalaciones ni por daños físicos que el alumno se ocasione fuera del horario de clase.',
     `AUTORIZACION DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales${autorizaImagen ? ' y promocionales' : ' (NO se autoriza el uso promocional)'}.`,
-    'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología ni información interna de AMAS Team Wolf.',
+    'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología ni información interna de JMA Team Wolf.',
     'LEY APLICABLE. Las partes se someten a la legislación civil peruana y tribunales de Lima.',
   ];
 
@@ -378,9 +378,9 @@ export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: Co
           Yo, <strong className="text-white">{d.nombrePadre || '___'}</strong>, con DNI{' '}
           <strong className="text-white">{d.dniPadre || '___'}</strong>, declaro haber leido y aceptado
           todas las condiciones del presente contrato, incluyendo la <strong className="text-amber-400">Clausula 4
-          (no cancelaciones y no reembolsos)</strong>, para la inscripcion de{' '}
+          (cancelaciones y devoluciones)</strong>, para la inscripcion de{' '}
           <strong className="text-white">{d.nombreAlumno || '___'}</strong> en el programa{' '}
-          <strong className="text-white">{d.programa || '___'}</strong> de AMAS Team Wolf.
+          <strong className="text-white">{d.programa || '___'}</strong> de JMA Team Wolf.
         </p>
       </div>
 

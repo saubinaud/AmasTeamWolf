@@ -116,7 +116,7 @@ export function ProfesorAsistenciaPage(_props: ProfesorAsistenciaPageProps) {
             <Clock className="w-7 h-7 text-[#FA7B21]" />
           </div>
           <h1 className="text-2xl font-bold">Asistencia de profesores</h1>
-          <p className="text-zinc-400 text-sm mt-1">AMAS Team Wolf</p>
+          <p className="text-zinc-400 text-sm mt-1">JMA Team Wolf</p>
         </div>
 
         {/* Paso 1: ingresar DNI */}

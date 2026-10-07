@@ -62,7 +62,7 @@ export function NosotrosSection() {
             Nosotros
           </h2>
           <p className="text-white/80 text-sm sm:text-base md:text-lg max-w-3xl mx-auto px-4 leading-relaxed">
-            En <span className="text-[#FCA929] font-semibold">AMAS Team Wolf</span> creemos que el taekwondo va más allá del deporte:
+            En <span className="text-[#FCA929] font-semibold">JMA Team Wolf</span> creemos que el taekwondo va más allá del deporte:
             Es una herramienta para forjar carácter, disciplina y propósito.
             Cada entrenamiento es una oportunidad para aprender a superarse,
             liderar con el ejemplo y crecer como persona dentro y fuera del tatami.

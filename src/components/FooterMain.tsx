@@ -29,7 +29,7 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
                     backgroundClip: 'text'
                   }}
                 >
-                  AMAS
+                  JMA
                 </span>
                 <span className="text-white text-sm -mt-1 tracking-wide">Team Wolf</span>
               </div>
@@ -192,7 +192,7 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 text-center">
           <p className="text-white/40 text-sm">
-            © 2025 AMAS Team Wolf. Todos los derechos reservados.
+            © 2025 JMA Team Wolf. Todos los derechos reservados.
           </p>
         </div>
       </div>

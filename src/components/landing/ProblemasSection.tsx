@@ -64,7 +64,7 @@ export function ProblemasSection() {
           <div className="text-center mt-12 md:mt-16">
             <p className="text-lg sm:text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed px-2">
               Si tu hijo tiene <strong className="text-[#FA7B21]">alguno</strong> de estos comportamientos,{' '}
-              <strong className="text-[#FA7B21]">AMAS puede ayudarte</strong>.
+              <strong className="text-[#FA7B21]">JMA puede ayudarte</strong>.
             </p>
           </div>
         </ScrollReveal>

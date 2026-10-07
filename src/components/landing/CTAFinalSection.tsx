@@ -31,7 +31,7 @@ export function CTAFinalSection({ onOpenTrialModal }: CTAFinalSectionProps) {
 
         <ScrollReveal delay={100}>
           <p className="text-2xl md:text-3xl text-white/95 mb-12 font-semibold">
-            Únete a las +300 familias que ya confían en AMAS
+            Únete a las +300 familias que ya confían en JMA
           </p>
         </ScrollReveal>
 

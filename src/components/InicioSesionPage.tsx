@@ -55,7 +55,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
       if ((window as any).PasswordCredential && password) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const cred = new (window as any).PasswordCredential({ id: dni, password, name: `AMAS ${dni}` });
+          const cred = new (window as any).PasswordCredential({ id: dni, password, name: `JMA ${dni}` });
           await navigator.credentials.store(cred);
         } catch { /* silent */ }
       }

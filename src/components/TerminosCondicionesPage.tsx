@@ -34,7 +34,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                             Términos y Condiciones
                         </h1>
                         <p className="text-white/60">
-                            Academia de Artes Marciales AMAS
+                            Academia de Artes Marciales JMA
                         </p>
                     </div>
 
@@ -45,7 +45,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                         <section>
                             <h2 className="text-xl font-bold text-[#FCA929] mb-4">1. OBJETO Y ACEPTACIÓN</h2>
                             <p className="text-white/80 leading-relaxed">
-                                El presente documento establece las condiciones que regulan el acceso y uso del sitio web de la Academia de Artes Marciales AMAS. Al navegar o utilizar nuestros servicios digitales, el usuario (padre, madre o tutor) acepta estos términos en su totalidad. Si no está de acuerdo con alguna cláusula, deberá abstenerse de utilizar el portal.
+                                El presente documento establece las condiciones que regulan el acceso y uso del sitio web de la Academia de Artes Marciales JMA. Al navegar o utilizar nuestros servicios digitales, el usuario (padre, madre o tutor) acepta estos términos en su totalidad. Si no está de acuerdo con alguna cláusula, deberá abstenerse de utilizar el portal.
                             </p>
                         </section>
 
@@ -73,7 +73,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                                     <strong className="text-white">Pasarela de Pagos:</strong> Todos los pagos realizados a través de la web por conceptos de membresía, programas o implementos están sujetos a verificación.
                                 </li>
                                 <li>
-                                    <strong className="text-white">Política de No Reembolso:</strong> Siguiendo la política estricta de la academia, no se realizarán devoluciones de dinero por pagos efectuados a través de la plataforma web bajo ningún concepto.
+                                    <strong className="text-white">Devoluciones:</strong> Las solicitudes de devolución se rigen por lo establecido en la sección 9 de este documento.
                                 </li>
                                 <li>
                                     <strong className="text-white">Precios:</strong> La academia se reserva el derecho de modificar los precios de los programas y promociones sin previo aviso, respetando los montos ya pagados por membresías activas.
@@ -101,7 +101,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                         <section>
                             <h2 className="text-xl font-bold text-[#FCA929] mb-4">5. PROPIEDAD INTELECTUAL</h2>
                             <p className="text-white/80 leading-relaxed">
-                                Todo el contenido del sitio web (logotipos de AMAS, fotografías de alumnos, videos de entrenamiento, textos y metodologías) es propiedad exclusiva de la Academia AMAS o cuenta con las autorizaciones correspondientes. Queda prohibida su reproducción, copia o distribución sin autorización expresa.
+                                Todo el contenido del sitio web (logotipos de JMA, fotografías de alumnos, videos de entrenamiento, textos y metodologías) es propiedad exclusiva de la Academia JMA o cuenta con las autorizaciones correspondientes. Queda prohibida su reproducción, copia o distribución sin autorización expresa.
                             </p>
                         </section>
 
@@ -142,12 +142,37 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                             </p>
                         </section>
 
+                        {/* Section 9 */}
+                        <section>
+                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">9. DEVOLUCIONES, BENEFICIOS PROMOCIONALES Y OBSEQUIOS</h2>
+                            <ul className="space-y-3 text-white/80">
+                                <li>
+                                    <strong className="text-white">Devolución proporcional:</strong> Toda devolución se calcula descontando el periodo ya transcurrido del programa contratado, contado desde su fecha de inicio hasta la fecha en que se presenta la solicitud. El periodo transcurrido se valoriza en proporción al precio efectivamente pagado por el programa. Las inasistencias del alumno no reducen el periodo transcurrido.
+                                </li>
+                                <li>
+                                    <strong className="text-white">Beneficios promocionales al final del programa:</strong> Todo beneficio otorgado sin costo (por ejemplo, un mes de clases o 15 días de clases gratis) se aplica al término del periodo pagado. Ejemplo: en un plan de 3 meses con 1 mes de regalo, el alumno cursa primero los 3 meses pagados y luego inicia su mes gratuito.
+                                </li>
+                                <li>
+                                    <strong className="text-white">Los beneficios no son reembolsables:</strong> Por tratarse de beneficios sin costo, no tienen valor monetario, no se devuelven en dinero y se pierden si el programa pagado se deja sin efecto antes de que el beneficio comience.
+                                </li>
+                                <li>
+                                    <strong className="text-white">Instrumentos y objetos obsequiados:</strong> Si junto con el programa se entregó un instrumento u otro objeto de regalo, al realizar una devolución se descuenta el 50 % de su valor de mercado al momento de la devolución. Como valor de mercado se toma el precio de venta del mismo artículo en la Tienda JMA en esa fecha.
+                                </li>
+                                <li>
+                                    <strong className="text-white">Saldo a devolver:</strong> El monto a devolver es el precio pagado menos el periodo transcurrido y, de corresponder, el descuento por obsequios. Si estos descuentos igualan o superan lo pagado, no hay monto que devolver.
+                                </li>
+                                <li>
+                                    <strong className="text-white">Vigencia:</strong> Estas condiciones se aplican a las matrículas, renovaciones y promociones contratadas desde el 1 de abril de 2026.
+                                </li>
+                            </ul>
+                        </section>
+
                     </div>
 
                     {/* Footer */}
                     <div className="mt-10 pt-8 border-t border-white/10 text-center">
                         <p className="text-white/40 text-sm">
-                            Última actualización: Enero 2026
+                            Última actualización: Octubre 2026
                         </p>
                         <button
                             onClick={() => onNavigate('home')}
