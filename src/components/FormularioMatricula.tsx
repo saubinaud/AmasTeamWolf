@@ -1,1301 +1,277 @@
-import React, { useState, useCallback, memo, useEffect } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from './ui/dialog';
-import { X, Loader2 } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+// Matrícula pública (/registro-3-meses, /registro-6-meses, /registro-mensual).
+// Programa, polos y uniforme salen del catálogo del API; el total lo devuelve
+// POST /api/config/cotizar y al enviar el servidor vuelve a cotizar las mismas
+// líneas (lo que manda el navegador como precio no se guarda).
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useUmami } from '../hooks/useUmami';
+import { API_BASE } from '../config/api';
+import { useCatalogoPublico, useCotizacion } from '../hooks/useCatalogoPublico';
 import { ContratoFirma } from './ContratoFirma';
-import { PROGRAMA_CLASES, PRECIOS_BASE, NOMBRES_PROGRAMA } from '../shared/constants';
+import { cx } from './matricula/tokens';
 import {
-  calcularHorarios,
-  obtenerFechasDisponiblesInicio,
-  obtenerNombreDia,
-  calcularFechaFin,
-  validarCodigoPromocional,
-  obtenerClasesExtraDePromo,
-  type HorariosInfo,
-  type CodigoAplicado,
-} from '../utils/matricula';
+  CabeceraJMA, Portada, Seccion, Campo, CampoFechaNacimiento, SelectorTalla, SelectorPolos, Casilla, Exito, irA,
+} from './matricula/piezas';
+import { CampoCodigo, ResumenCotizacion, BarraTotal, EspacioBarra } from './matricula/Resumen';
+import { SeccionFechas, useFechasPrograma } from './matricula/SeccionFechas';
+import {
+  lineasMatricula, piezasRopa, programaPorCodigo, itemPolos, soles,
+  type CantidadPolos, type PedidoCotizacion,
+} from '../utils/catalogo';
+
+export interface PortadaPrograma {
+  etiqueta: string;
+  titulo: string;
+  bajada: string;
+  incluye: string[];
+  notaPrecio?: string;
+}
 
 interface FormularioMatriculaProps {
-  isOpen: boolean;
-  onClose: () => void;
+  /** Código del programa en el catálogo */
   programa: 'full' | '1mes' | '6meses';
+  portada: PortadaPrograma;
+  onVolver: () => void;
   onSuccess: (total: number) => void;
 }
 
-const INITIAL_FORM_STATE = {
-  nombreAlumno: '',
-  dniAlumno: '',
-  fechaNacimiento: '',
-  tallaUniforme: '',
-  nombrePadre: '',
-  dniPadre: '',
-  telefono: '',
-  direccion: '',
-  email: '',
-  fechaInicio: '',
-  fechaFin: ''
+const PERSONAS = {
+  nombreAlumno: '', dniAlumno: '', fechaNacimiento: '',
+  nombrePadre: '', dniPadre: '', telefono: '', email: '', direccion: '',
 };
 
-export const FormularioMatricula = memo(function FormularioMatricula({ isOpen, onClose, programa, onSuccess: _onSuccess }: FormularioMatriculaProps) {
-  // Umami analytics
+const soloDigitos = (v: string, max: number) => v.replace(/\D/g, '').slice(0, max);
+
+export function FormularioMatricula({ programa: codigoPrograma, portada, onVolver, onSuccess }: FormularioMatriculaProps) {
   const { trackFormSubmit } = useUmami();
+  const { items, estado } = useCatalogoPublico();
+  const respaldo = estado === 'respaldo';
 
-  // Estados existentes
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [firmaBase64, setFirmaBase64] = useState<string | null>(null);
-  const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
-  const [includeUniform, setIncludeUniform] = useState(false);
+  const [p, setP] = useState(PERSONAS);
+  const [tallaUniforme, setTallaUniforme] = useState('');
+  const [conUniforme, setConUniforme] = useState(false);
+  const [polos, setPolos] = useState<CantidadPolos>('0');
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
-  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [codigo, setCodigo] = useState('');
+  const [firma, setFirma] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [registrado, setRegistrado] = useState<number | null>(null);
 
-  // Estados nuevos para funcionalidades adicionales
-  const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
-  const [categoriaAlumno, setCategoriaAlumno] = useState<string>('');
-  const [diasTentativos, setDiasTentativos] = useState<string[]>([]);
-  const [codigoPromocional, setCodigoPromocional] = useState<string>('');
-  const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
-  const [_contratoExpanded, setContratoExpanded] = useState(false);
-  const [fechaFinCalculada, setFechaFinCalculada] = useState<string>('');
-  const [detallesFechaFin, setDetallesFechaFin] = useState<{
-    clasesTotales: number;
-    semanasAproximadas: number;
-  } | null>(null);
-  const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
-  const [mostrarOtraFecha, setMostrarOtraFecha] = useState(false);
-  const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
-  const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
+  useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // Recalcular fechas disponibles cuando cambia la fecha de nacimiento o el turno
-  useEffect(() => {
-    if (isOpen && formData.fechaNacimiento) {
-      const todasLasFechas = obtenerFechasDisponiblesInicio();
-      const horarios = calcularHorarios(formData.fechaNacimiento);
+  // ── Catálogo ──
+  const programa = useMemo(() => programaPorCodigo(items, codigoPrograma), [items, codigoPrograma]);
+  const ropa = useMemo(() => piezasRopa(items), [items]);
+  const sinUniforme = !!programa?.sin_uniforme;
 
-      // Filtrar fechas según el turno seleccionado
-      let diasPermitidos: string[] = [];
+  // ── Cotización (la hace el servidor) ──
+  const pedido = useMemo<PedidoCotizacion | null>(() => {
+    if (!programa || respaldo) return null;
+    return { lineas: lineasMatricula(programa, polos, conUniforme, ropa), codigo: codigo || undefined };
+  }, [programa, respaldo, polos, conUniforme, ropa, codigo]);
+  const { cotizacion, alDia, cargando, error } = useCotizacion(pedido);
 
-      if (turnoSeleccionado === 'manana') {
-        // Mañana: siempre martes, jueves y sábado
-        diasPermitidos = ['Martes', 'Jueves', 'Sábado'];
-      } else {
-        // Tarde: según categoría
-        if (horarios.categoria === 'Juniors') {
-          diasPermitidos = ['Lunes', 'Miércoles', 'Viernes'];
-        } else if (horarios.categoria === 'Adolescentes') {
-          diasPermitidos = ['Martes', 'Jueves'];
-        } else {
-          // Para bebés y niños pequeños, todos los días excepto domingo
-          diasPermitidos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        }
-      }
+  const clasesBase = programa?.clases ?? 0;
+  const clasesTotales = clasesBase + (alDia ? cotizacion?.clases_extra ?? 0 : 0);
+  const fechas = useFechasPrograma(p.fechaNacimiento, clasesTotales);
 
-      const fechasFiltradas = todasLasFechas.filter(fecha => {
-        const nombreDia = obtenerNombreDia(fecha);
-        return diasPermitidos.includes(nombreDia);
-      });
+  const regaloUniforme = !!cotizacion?.regalos.some((g) => g.categoria === 'uniforme');
+  const pideTallaUniforme = !sinUniforme || conUniforme || regaloUniforme;
+  const promoAplicada = alDia && cotizacion?.promocion.aplicada ? cotizacion.promocion.codigo : null;
+  const lineaDe = (id: number | undefined) => cotizacion?.lineas.find((l) => l.item_id === id);
 
-      setFechasDisponibles(fechasFiltradas.slice(0, 5));
-    } else if (isOpen) {
-      // Si no hay fecha de nacimiento, mostrar todas las fechas
-      const fechas = obtenerFechasDisponiblesInicio();
-      setFechasDisponibles(fechas);
-    }
-  }, [isOpen, formData.fechaNacimiento, turnoSeleccionado]);
+  const cambiar = useCallback((campo: keyof typeof PERSONAS, valor: string) => setP((x) => ({ ...x, [campo]: valor })), []);
+  const cambiarPolos = (c: CantidadPolos) => { setPolos(c); setTallasPolos(new Array(Number(c)).fill('')); };
 
-  // Reset form when dialog closes
-  useEffect(() => {
-    if (!isOpen) {
-      // Reset all form state
-      setFormData(INITIAL_FORM_STATE);
-      setPolosOption('0');
-      setIncludeUniform(false);
-      setTallasPolos([]);
-      setTallasPolos([]);
-      // setUploadedFile(null); // Removed
-      // setFileBase64(''); // Removed
-      setIsSubmitting(false);
-      setHorariosInfo(null);
-      setCategoriaAlumno('');
-      setDiasTentativos([]);
-      setCodigoPromocional('');
-      setCodigoAplicado(null);
-      setContratoExpanded(false);
-      setFechaFinCalculada('');
-      setDetallesFechaFin(null);
-      setFechasDisponibles([]);
-      setMostrarOtraFecha(false);
-      setOpcionFechaSeleccionada('fechas');
-      setTurnoSeleccionado('tarde');
-    }
-  }, [isOpen]);
+  // ── Enviar ──
+  const enviar = async () => {
+    const falta = (msg: string, seccion: string) => { toast.error(msg); irA(seccion); };
+    if (!p.nombreAlumno.trim() || p.dniAlumno.length < 8 || !p.fechaNacimiento) return falta('Completa los datos del alumno (nombre, DNI de 8 dígitos y fecha de nacimiento)', 'sec-alumno');
+    if (!p.nombrePadre.trim() || p.dniPadre.length < 8 || p.telefono.length < 9 || !/\S+@\S+\.\S+/.test(p.email)) return falta('Completa los datos del apoderado (nombre, DNI, celular y correo)', 'sec-apoderado');
+    if (!fechas.completo) return falta('Elige la fecha de inicio y al menos un día de clase', 'sec-fechas');
+    if (pideTallaUniforme && !tallaUniforme) return falta('Elige la talla del uniforme', 'sec-uniforme');
+    if (tallasPolos.some((t) => !t)) return falta('Elige la talla de cada polo', 'sec-uniforme');
+    if (!cotizacion || !alDia) return toast.error('Espera a que se calcule el total');
+    if (!cotizacion.ok) return toast.error(cotizacion.errores[0] ?? 'No se pudo calcular el total');
+    if (!firma) return falta('Firma el contrato para terminar', 'sec-contrato');
+    if (!programa || !pedido) return;
 
-  // Cálculos de precio
-  const precioBase = PRECIOS_BASE[programa];
-  const preciosPolos = { '0': 0, '1': 60, '2': 110, '3': 150 };
-  let precioUniforme = programa === '1mes' && includeUniform ? 220 : 0;
-  let precioPolosAjustado = preciosPolos[polosOption];
+    const h = fechas.horarios;
+    const manana = fechas.turno === 'manana';
+    const payload = {
+      // Lo que se cotizó: el servidor vuelve a cotizar exactamente esto
+      programaCodigo: programa.codigo,
+      lineas: pedido.lineas,
+      codigoPromocional: promoAplicada ?? 'No aplicado',
 
-  // Calcular descuento de código promocional
-  let descuentoDinero = 0;
-  let descuentoPorcentaje = 0;
+      programa: programa.nombre,
+      clasesTotales: fechas.fin?.clasesTotales ?? clasesTotales,
+      nombreAlumno: p.nombreAlumno.trim(),
+      dniAlumno: p.dniAlumno,
+      fechaNacimiento: p.fechaNacimiento,
+      categoriaAlumno: fechas.categoria || 'No especificada',
+      turnoSeleccionado: manana ? 'Mañana' : 'Tarde',
+      horariosDisponibles: h ? {
+        horarioSemana: manana ? h.horarioManana : h.horarioSemana,
+        horarioSabado: h.horarioSabado,
+        horarioManana: h.horarioManana,
+        horarioTarde: h.horarioSemana,
+        diasSemana: manana ? 'Martes, Jueves y Sábado' : h.diasSemana,
+      } : null,
+      tallaUniforme: pideTallaUniforme ? tallaUniforme : 'No aplica',
+      tallasPolos,
+      nombrePadre: p.nombrePadre.trim(),
+      dniPadre: p.dniPadre,
+      telefono: p.telefono,
+      direccion: p.direccion.trim(),
+      email: p.email.trim(),
+      polos: polos === '0' ? 'No' : `${polos} polo(s)`,
+      uniformeAdicional: sinUniforme ? (conUniforme || regaloUniforme ? 'Sí' : 'No') : 'Incluido',
+      fechaInicio: fechas.fechaInicio,
+      diasTentativos: fechas.sinDefinir ? 'Aún no especificado' : fechas.dias.join(', '),
+      fechaFin: fechas.sinDefinir ? 'Por calcular' : fechas.fin?.fechaFin ?? '',
+      semanasAproximadas: fechas.fin?.semanas ?? 0,
 
-  if (codigoAplicado?.valido && codigoAplicado.valor) {
-    if (codigoAplicado.tipo === 'descuento_dinero') {
-      descuentoDinero = codigoAplicado.valor;
-    } else if (codigoAplicado.tipo === 'descuento_porcentaje') {
-      descuentoPorcentaje = codigoAplicado.valor;
-    } else if (codigoAplicado.tipo === 'polo_gratis') {
-      // Reducir precio de polos según cantidad de polos gratis
-      const valorDescuentoPolo = codigoAplicado.valor === 1 ? 60 : 110;
-      precioPolosAjustado = Math.max(0, preciosPolos[polosOption] - valorDescuentoPolo);
-    } else if (codigoAplicado.tipo === 'uniforme_gratis') {
-      precioUniforme = 0;
-    }
-  }
+      // Informativo (correo y contrato); el servidor lo reemplaza por su cotización
+      precioPrograma: lineaDe(programa.id)?.precio_unitario ?? programa.precio,
+      precioPolos: lineaDe(itemPolos(polos, ropa)?.id)?.subtotal ?? 0,
+      precioUniforme: conUniforme ? lineaDe(ropa.uniforme?.id)?.subtotal ?? 0 : 0,
+      descuentoDinero: cotizacion.descuento,
+      subtotal: cotizacion.subtotal,
+      total: cotizacion.total,
 
-  // Calcular subtotal antes de descuento porcentual
-  const subtotal = precioBase + precioPolosAjustado + precioUniforme - descuentoDinero;
+      contratoFirmado: firma,
+      fechaRegistro: new Date().toISOString(),
+    };
 
-  // Aplicar descuento porcentual
-  const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
-
-  const total = Math.max(0, subtotal - descuentoPorcentualMonto);
-
-  const needsUniformSize = programa === 'full' || programa === '6meses' || (programa === '1mes' && includeUniform);
-  const needsPoloSize = polosOption !== '0';
-
-  const handlePolosChange = useCallback((value: '0' | '1' | '2' | '3') => {
-    setPolosOption(value);
-    const numPolos = parseInt(value);
-    setTallasPolos(new Array(numPolos).fill(''));
-  }, []);
-
-  const handleTallaPoloChange = useCallback((index: number, talla: string) => {
-    setTallasPolos(prev => {
-      const newTallas = [...prev];
-      newTallas[index] = talla;
-      return newTallas;
-    });
-  }, []);
-
-  const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-
-
-
-  // ========== NUEVOS HANDLERS ==========
-
-  // Handler para cuando cambia la fecha de nacimiento
-  const handleFechaNacimientoChange = useCallback((fecha: string) => {
-    handleInputChange('fechaNacimiento', fecha);
-    if (fecha) {
-      const horarios = calcularHorarios(fecha);
-      setHorariosInfo(horarios);
-      setCategoriaAlumno(horarios.categoria);
-    } else {
-      setHorariosInfo(null);
-      setCategoriaAlumno('');
-    }
-  }, []);
-
-  // Handler para días tentativos
-  const handleDiaTentativoChange = useCallback((dia: string, checked: boolean) => {
-    setDiasTentativos(prev => {
-      if (checked) {
-        return [...prev, dia];
-      } else {
-        return prev.filter(d => d !== dia);
-      }
-    });
-  }, []);
-
-  // Handler para aplicar código promocional
-  const handleAplicarCodigo = useCallback(() => {
-    if (!codigoPromocional.trim()) {
-      toast.error('Ingrese un código promocional');
-      return;
-    }
-
-    const validacion = validarCodigoPromocional(codigoPromocional, programa);
-
-    if (!validacion.valido) {
-      toast.error(validacion.mensaje || 'Código no válido');
-      setCodigoAplicado(null);
-      return;
-    }
-
-    setCodigoAplicado(validacion);
-    toast.success(`✅ Código "${validacion.codigo}" aplicado exitosamente`);
-  }, [codigoPromocional, programa]);
-
-  // Handler para quitar código promocional
-  const handleQuitarCodigo = useCallback(() => {
-    setCodigoPromocional('');
-    setCodigoAplicado(null);
-    toast.info('Código promocional removido');
-  }, []);
-
-  // Limpiar días tentativos cuando cambia el turno
-  useEffect(() => {
-    if (turnoSeleccionado && diasTentativos.length > 0) {
-      // Filtrar días tentativos para mantener solo los válidos según el turno
-      const diasValidos = turnoSeleccionado === 'manana'
-        ? ['Martes', 'Jueves', 'Sábado']
-        : categoriaAlumno === 'Juniors'
-          ? ['Lunes', 'Miércoles', 'Viernes']
-          : categoriaAlumno === 'Adolescentes'
-            ? ['Martes', 'Jueves']
-            : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-      const diasFiltrados = diasTentativos.filter(dia => diasValidos.includes(dia));
-      if (diasFiltrados.length !== diasTentativos.length) {
-        setDiasTentativos(diasFiltrados);
-      }
-    }
-  }, [turnoSeleccionado]);
-
-  // Effect para calcular fecha de fin automáticamente
-  useEffect(() => {
-    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 1) {
-      setFechaFinCalculada('');
-      setDetallesFechaFin(null);
-      return;
-    }
-
-    const clasesExtra = codigoAplicado?.codigo ? obtenerClasesExtraDePromo(codigoAplicado.codigo) : 0;
-    const resultado = calcularFechaFin(new Date(formData.fechaInicio), programa, diasTentativos, clasesExtra);
-
-    setFechaFinCalculada(resultado.fechaFin.toISOString().split('T')[0]);
-    setDetallesFechaFin({
-      clasesTotales: resultado.clasesTotales,
-      semanasAproximadas: resultado.semanasAproximadas
-    });
-  }, [formData.fechaInicio, diasTentativos, codigoAplicado, programa]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validaciones básicas
-    if (!formData.nombreAlumno || !formData.dniAlumno || !formData.nombrePadre || !formData.dniPadre || !formData.telefono || !formData.email || !formData.fechaInicio) {
-      toast.error('Por favor complete todos los campos obligatorios');
-      return;
-    }
-
-    // Validar fecha de nacimiento
-    if (!formData.fechaNacimiento) {
-      toast.error('Por favor ingrese la fecha de nacimiento del alumno');
-      return;
-    }
-
-    // Validar días tentativos (mínimo 2) solo si la fecha no es "no-especificado"
-    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 1) {
-      toast.error('Debes seleccionar al menos 1 día de asistencia por semana');
-      return;
-    }
-
-    // Validar que la fecha de fin se haya calculado solo si la fecha no es "no-especificado"
-    if (formData.fechaInicio !== 'no-especificado' && !fechaFinCalculada) {
-      toast.error('La fecha de fin no se ha calculado correctamente. Por favor verifica los datos');
-      return;
-    }
-
-    if (needsUniformSize && !formData.tallaUniforme) {
-      toast.error('Por favor seleccione la talla de uniforme');
-      return;
-    }
-
-    if (needsPoloSize && tallasPolos.some(talla => !talla)) {
-      toast.error('Por favor seleccione todas las tallas de los polos');
-      return;
-    }
-
-    if (!firmaBase64) {
-      toast.error('Por favor firma el contrato antes de enviar');
-      return;
-    }
-
-    setIsSubmitting(true);
-
+    setEnviando(true);
     try {
-      const payload = {
-        // Información del programa
-        programa: programa === 'full' ? '3 Meses Full' : programa === '6meses' ? '6 Meses' : '1 Mes',
-        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[programa] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[programa]),
-
-        // Datos del alumno
-        nombreAlumno: formData.nombreAlumno,
-        dniAlumno: formData.dniAlumno,
-        fechaNacimiento: formData.fechaNacimiento,
-        categoriaAlumno: categoriaAlumno || 'No especificada',
-
-        // Horarios y turnos
-        turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
-        horariosDisponibles: horariosInfo ? {
-          horarioSemana: turnoSeleccionado === 'manana' ? horariosInfo.horarioManana : horariosInfo.horarioSemana,
-          horarioSabado: horariosInfo.horarioSabado,
-          horarioManana: horariosInfo.horarioManana,
-          horarioTarde: horariosInfo.horarioSemana,
-          diasSemana: turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana
-        } : null,
-
-        // Uniformes y tallas
-        tallaUniforme: needsUniformSize ? formData.tallaUniforme : 'No aplica',
-        tallasPolos: needsPoloSize ? tallasPolos : [],
-
-        // Datos del padre/tutor
-        nombrePadre: formData.nombrePadre,
-        dniPadre: formData.dniPadre,
-        telefono: formData.telefono,
-        direccion: formData.direccion,
-        email: formData.email,
-
-        // Adicionales
-        polos: polosOption === '0' ? 'No' : `${polosOption} polo(s)`,
-        precioPolos: preciosPolos[polosOption],
-        uniformeAdicional: programa === '1mes' ? (includeUniform ? 'Sí' : 'No') : 'Incluido',
-        precioUniforme: precioUniforme,
-
-        // Fechas y asistencia
-        fechaInicio: formData.fechaInicio,
-        diasTentativos: formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : diasTentativos.join(', '),
-        fechaFin: formData.fechaInicio === 'no-especificado' ? 'Por calcular' : fechaFinCalculada,
-        semanasAproximadas: formData.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas || 0),
-
-        // Códigos promocionales y descuentos
-        codigoPromocional: codigoAplicado?.codigo || 'No aplicado',
-        tipoDescuento: codigoAplicado?.tipo || 'ninguno',
-        descuentoDinero: descuentoDinero,
-        descuentoPorcentaje: descuentoPorcentaje,
-        descuentoPorcentualMonto: descuentoPorcentualMonto,
-
-        // Precios
-        precioPrograma: precioBase,
-        subtotal: subtotal,
-        total: total,
-
-        // Contrato
-        contratoFirmado: firmaBase64 || null,
-
-        fechaRegistro: new Date().toISOString()
-      };
-
-      const { API_BASE } = await import('../config/api');
-
-      const response = await fetch(`${API_BASE}/matricula`, {
+      const r = await fetch(`${API_BASE}/matricula`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        mode: 'cors'
       });
-
-      if (response.ok || response.status === 200) {
-        toast.success('¡Datos enviados correctamente! Redirigiendo...');
-
-        // Track enrollment with Umami
-        trackFormSubmit(`Formulario Matrícula ${NOMBRES_PROGRAMA[programa]}`, total);
-
-        setTimeout(() => {
-          window.location.href = 'https://amasteamwolf.com';
-        }, 1500);
-
-        // Reset form
-        setFormData({
-          nombreAlumno: '',
-          dniAlumno: '',
-          fechaNacimiento: '',
-          tallaUniforme: '',
-          nombrePadre: '',
-          dniPadre: '',
-          telefono: '',
-          direccion: '',
-          email: '',
-          fechaInicio: '',
-          fechaFin: ''
-        });
-        setPolosOption('0');
-        setTallasPolos([]);
-        setIncludeUniform(false);
-
-      } else {
-        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error completo:', error);
-      toast.error('Hubo un error al enviar los datos. Por favor intente nuevamente.');
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.success === false) throw new Error(j.error || `Error ${r.status}`);
+      const total = Number(j.total ?? cotizacion.total);
+      trackFormSubmit(`Formulario Matrícula ${programa.nombre}`, total);
+      setRegistrado(total);
+      window.scrollTo(0, 0);
+      onSuccess(total);
+    } catch (e) {
+      toast.error(`No se pudo enviar: ${(e as Error).message}. Inténtalo de nuevo.`);
     } finally {
-      setIsSubmitting(false);
+      setEnviando(false);
     }
   };
 
-  const tallasOptions = ['2', '4', '6', '8', '10', '12', '14', 'S', 'M', 'L', 'XL'];
+  if (registrado != null) {
+    return (
+      <div className={cx.pagina}>
+        <CabeceraJMA onVolver={onVolver} />
+        <Exito
+          titulo="¡Matrícula registrada!"
+          texto={`Te enviamos el contrato y los detalles a ${p.email || 'tu correo'}. Para reservar el cupo, realiza el pago.`}
+          total={registrado}
+          onPagar={() => onSuccess(registrado)}
+          onInicio={onVolver}
+        />
+      </div>
+    );
+  }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent
-        showCloseButton={false}
-        className="bg-zinc-900 border-2 border-[#FA7B21]/30 w-full max-w-[calc(100%-2rem)] sm:max-w-[95vw] md:max-w-3xl lg:max-w-4xl p-0 m-4 sm:m-6"
-        style={{
-          maxHeight: 'calc(100vh - 4rem)',
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch',
-          touchAction: 'pan-y',
-          overscrollBehavior: 'contain'
-        }}
-        onPointerDownOutside={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        {/* Header Sticky */}
-        <div className="flex items-start justify-between sticky top-0 bg-zinc-900 z-20 pb-3 sm:pb-4 border-b border-white/10 px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="flex-1 pr-4 sm:pr-8">
-            <DialogTitle className="text-white text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
-              Formulario de Matrícula
-            </DialogTitle>
-            <DialogDescription className="text-white/70 text-xs sm:text-sm">
-              Programa: <span className="text-[#FA7B21] font-semibold">
-                {programa === 'full' ? '3 Meses Full (S/ 869)' : programa === '6meses' ? '6 Meses (S/ 1699)' : '1 Mes (S/ 330)'}
-              </span>
-            </DialogDescription>
-          </div>
-          <DialogClose asChild>
-            <button
-              className="text-white/60 hover:text-white transition-colors flex-shrink-0 p-2 hover:bg-white/5 rounded-lg"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </DialogClose>
-        </div>
+    <div className={cx.pagina}>
+      <CabeceraJMA onVolver={onVolver} />
+      <main className={cx.contenedor}>
+        <Portada
+          etiqueta={portada.etiqueta}
+          titulo={portada.titulo}
+          bajada={portada.bajada}
+          precio={programa?.precio}
+          notaPrecio={portada.notaPrecio}
+          incluye={programa?.clases ? [`${programa.clases} clases`, ...portada.incluye] : portada.incluye}
+          respaldo={respaldo}
+        />
 
-        {/* Form Content */}
-        <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-7 pb-28">
-          <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 md:space-y-7">
-            {/* Datos del Alumno */}
-            <div>
-              <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                Datos del Alumno
-              </h3>
-              <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
-                <div>
-                  <Label htmlFor="nombreAlumno" className="text-white mb-2">
-                    Nombre completo *
-                  </Label>
-                  <Input
-                    id="nombreAlumno"
-                    value={formData.nombreAlumno}
-                    onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    required
-                    autoComplete="name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dniAlumno" className="text-white mb-2">
-                    DNI *
-                  </Label>
-                  <Input
-                    id="dniAlumno"
-                    value={formData.dniAlumno}
-                    onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={8}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="fechaNacimiento" className="text-white mb-2">
-                    Fecha de nacimiento *
-                  </Label>
-                  <Input
-                    id="fechaNacimiento"
-                    type="date"
-                    value={formData.fechaNacimiento}
-                    onChange={(e) => handleFechaNacimientoChange(e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    required
-                  />
+        <div className="space-y-4">
+          <Seccion id="sec-alumno" titulo="Alumno">
+            <Campo id="nombreAlumno" label="Nombre completo" autoComplete="off" value={p.nombreAlumno} onValor={(v) => cambiar('nombreAlumno', v)} />
+            <Campo id="dniAlumno" label="DNI" inputMode="numeric" value={p.dniAlumno} onValor={(v) => cambiar('dniAlumno', soloDigitos(v, 8))} placeholder="8 dígitos" />
+            <CampoFechaNacimiento id="fechaNacimiento" valor={p.fechaNacimiento} onCambio={(v) => cambiar('fechaNacimiento', v)} />
+          </Seccion>
 
-                  {/* Mostrar horarios disponibles después de ingresar fecha de nacimiento */}
-                  {horariosInfo && horariosInfo.horarioSemana && (
-                    <div className="mt-4 space-y-4">
-                      {/* Selector de Turno - Solo si hay horarios definidos */}
-                      <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                        <p className="text-white font-semibold mb-3 text-sm sm:text-base">
-                          🌅 Selecciona tu turno preferido
-                        </p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <button
-                            type="button"
-                            onClick={() => setTurnoSeleccionado('manana')}
-                            className={`p-4 rounded-lg border-2 transition-all active:scale-95 ${turnoSeleccionado === 'manana'
-                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                              : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                              }`}
-                          >
-                            <div className="text-center">
-                              <div className="text-3xl mb-2">🌄</div>
-                              <div className={`font-semibold ${turnoSeleccionado === 'manana' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                                Mañana
-                              </div>
-                              <div className="text-white/60 text-sm mt-1">
-                                {horariosInfo.horarioManana}
-                              </div>
-                            </div>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setTurnoSeleccionado('tarde')}
-                            className={`p-4 rounded-lg border-2 transition-all active:scale-95 ${turnoSeleccionado === 'tarde'
-                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                              : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                              }`}
-                          >
-                            <div className="text-center">
-                              <div className="text-3xl mb-2">🌆</div>
-                              <div className={`font-semibold ${turnoSeleccionado === 'tarde' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                                Tarde
-                              </div>
-                              <div className="text-white/60 text-sm mt-1">
-                                {horariosInfo.horarioSemana}
-                              </div>
-                            </div>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Información de horarios */}
-                      <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                        <p className="text-white font-semibold mb-3 text-sm sm:text-base">
-                          📍 Horarios disponibles{horariosInfo.categoria ? ` - Categoría ${horariosInfo.categoria}` : ''}
-                        </p>
-                        <div className="space-y-2 text-xs sm:text-sm">
-                          <p className="text-white/80">
-                            <strong className="text-white">Turno seleccionado:</strong> {turnoSeleccionado === 'manana' ? `Mañana (${horariosInfo.horarioManana})` : `Tarde (${horariosInfo.horarioSemana})`}
-                          </p>
-                          <p className="text-white/80">
-                            <strong className="text-white">Días disponibles:</strong> {turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana}
-                          </p>
-                          <p className="text-white/80">
-                            <strong className="text-white">Sábados:</strong> {horariosInfo.horarioSabado}
-                          </p>
-                          <p className="text-white/60 text-xs mt-3">
-                            ℹ️ Podrás asistir cualquier día dentro de estos horarios según tu disponibilidad.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+          <Seccion id="sec-apoderado" titulo="Madre, padre o apoderado" descripcion="A este correo llegan el contrato y los avisos.">
+            <Campo id="nombrePadre" label="Nombre completo" autoComplete="name" value={p.nombrePadre} onValor={(v) => cambiar('nombrePadre', v)} />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Campo id="dniPadre" label="DNI" inputMode="numeric" value={p.dniPadre} onValor={(v) => cambiar('dniPadre', soloDigitos(v, 8))} placeholder="8 dígitos" />
+              <Campo id="telefono" label="Celular (WhatsApp)" type="tel" inputMode="tel" autoComplete="tel" value={p.telefono} onValor={(v) => cambiar('telefono', soloDigitos(v, 9))} placeholder="9 dígitos" />
             </div>
+            <Campo id="email" label="Correo" type="email" inputMode="email" autoComplete="email" value={p.email} onValor={(v) => cambiar('email', v)} />
+            <Campo id="direccion" label="Dirección (opcional)" autoComplete="street-address" value={p.direccion} onValor={(v) => cambiar('direccion', v)} />
+          </Seccion>
 
-            {/* Datos del Padre */}
-            <div>
-              <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                Datos del Padre de Familia
-              </h3>
-              <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
-                <div>
-                  <Label htmlFor="nombrePadre" className="text-white mb-2">
-                    Nombre completo *
-                  </Label>
-                  <Input
-                    id="nombrePadre"
-                    value={formData.nombrePadre}
-                    onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    required
-                    autoComplete="name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="dniPadre" className="text-white mb-2">
-                    DNI *
-                  </Label>
-                  <Input
-                    id="dniPadre"
-                    value={formData.dniPadre}
-                    onChange={(e) => handleInputChange('dniPadre', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={8}
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="telefono" className="text-white mb-2">
-                    WhatsApp / Celular *
-                  </Label>
-                  <Input
-                    id="telefono"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={formData.telefono}
-                    onChange={(e) => handleInputChange('telefono', e.target.value)}
-                    placeholder="999 999 999"
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="email" className="text-white mb-2">
-                    Correo electrónico *
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    required
-                    autoComplete="email"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="direccion" className="text-white mb-2">
-                    Dirección
-                  </Label>
-                  <Input
-                    id="direccion"
-                    value={formData.direccion}
-                    onChange={(e) => handleInputChange('direccion', e.target.value)}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    autoComplete="street-address"
-                  />
-                </div>
-              </div>
-            </div>
+          <Seccion id="sec-fechas" titulo="Horario y fechas">
+            <SeccionFechas f={fechas} hayNacimiento={!!p.fechaNacimiento} />
+          </Seccion>
 
-            {/* Uniforme adicional para programa 1 mes */}
-            {programa === '1mes' && (
-              <div>
-                <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                  Uniforme (Adicional)
-                </h3>
-                <div className="space-y-4">
-                  <label className="flex items-start space-x-3 p-4 rounded-lg border-2 border-white/10 hover:border-[#FA7B21]/30 transition-colors cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={includeUniform}
-                      onChange={(e) => setIncludeUniform(e.target.checked)}
-                      className="mt-1 w-6 h-6 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0"
-                    />
-                    <div className="flex-1">
-                      <div className="text-white text-base mb-1">
-                        Añadir Uniforme Completo - S/ 220
-                      </div>
-                      <p className="text-sm text-white/60">
-                        El uniforme no está incluido en el programa de 1 mes
-                      </p>
-                    </div>
-                  </label>
-
-                  {includeUniform && (
-                    <div>
-                      <Label htmlFor="tallaUniforme" className="text-white mb-2">
-                        Talla de uniforme *
-                      </Label>
-                      <select
-                        id="tallaUniforme"
-                        value={formData.tallaUniforme}
-                        onChange={(e) => handleInputChange('tallaUniforme', e.target.value)}
-                        className="w-full bg-zinc-800 border border-white/20 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FA7B21] focus:border-transparent"
-                        required={includeUniform}
-                      >
-                        <option value="">Seleccione talla</option>
-                        {tallasOptions.map(talla => (
-                          <option key={talla} value={talla}>Talla {talla}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Talla de uniforme para programas 3 meses y 6 meses */}
-            {(programa === 'full' || programa === '6meses') && (
-              <div>
-                <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                  Talla de Uniforme
-                </h3>
-                <div>
-                  <Label htmlFor="tallaUniforme" className="text-white mb-2">
-                    Talla de uniforme (incluido) *
-                  </Label>
-                  <select
-                    id="tallaUniforme"
-                    value={formData.tallaUniforme}
-                    onChange={(e) => handleInputChange('tallaUniforme', e.target.value)}
-                    className="w-full bg-zinc-800 border border-white/20 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FA7B21] focus:border-transparent"
-                    required
-                  >
-                    <option value="">Seleccione talla</option>
-                    {tallasOptions.map(talla => (
-                      <option key={talla} value={talla}>Talla {talla}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            )}
-
-            {/* Polos Adicionales */}
-            <div>
-              <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                Adicionales (Opcional)
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-white mb-3 block">
-                    ¿Desea añadir polos?
-                  </Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { value: '0', label: 'Ninguno', price: '' },
-                      { value: '1', label: '1', price: 'S/ 60' },
-                      { value: '2', label: '2', price: 'S/ 110' },
-                      { value: '3', label: '3', price: 'S/ 150' }
-                    ].map((option) => (
-                      <label
-                        key={option.value}
-                        className={`flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${polosOption === option.value ? 'border-[#FA7B21] bg-[#FA7B21]/10' : 'border-white/20 hover:border-white/30'
-                          }`}
-                      >
-                        <input
-                          type="radio"
-                          name="polos"
-                          value={option.value}
-                          checked={polosOption === option.value}
-                          onChange={(e) => handlePolosChange(e.target.value as '0' | '1' | '2' | '3')}
-                          className="w-4 h-4 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 bg-zinc-800 border-white/20"
-                        />
-                        <div className="text-white text-sm sm:text-base flex-1">
-                          {option.label === 'Ninguno' ? option.label : `${option.label} × ${option.price}`}
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {needsPoloSize && (
-                  <div className="space-y-3">
-                    <Label className="text-white">Tallas de polos *</Label>
-                    {Array.from({ length: parseInt(polosOption) }).map((_, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <Label className="text-white/70 min-w-[100px]">
-                          Polo {index + 1}:
-                        </Label>
-                        <select
-                          value={tallasPolos[index] || ''}
-                          onChange={(e) => handleTallaPoloChange(index, e.target.value)}
-                          className="flex-1 bg-zinc-800 border border-white/20 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FA7B21] focus:border-transparent"
-                          required
-                        >
-                          <option value="">Seleccionar talla</option>
-                          {tallasOptions.map(talla => (
-                            <option key={talla} value={talla}>Talla {talla}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Fecha de Inicio, Días Tentativos y Fecha de Fin */}
-            <div>
-              <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                Fechas del Programa
-              </h3>
-
-              {/* Fecha de Inicio - Selector Visual */}
-              <div className="mb-6">
-                <Label className="text-white mb-3 block text-base font-semibold">
-                  1. Selecciona tu fecha de inicio *
-                </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {fechasDisponibles.map((fecha, index) => {
-                    const fechaStr = fecha.toISOString().split('T')[0];
-                    const estaSeleccionada = formData.fechaInicio === fechaStr && opcionFechaSeleccionada === 'fechas';
-                    const nombreDia = obtenerNombreDia(fecha);
-                    const diaNumero = fecha.getDate();
-                    const mes = fecha.toLocaleDateString('es-PE', { month: 'long' });
-
-                    return (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => {
-                          handleInputChange('fechaInicio', fechaStr);
-                          setOpcionFechaSeleccionada('fechas');
-                          setMostrarOtraFecha(false);
-                        }}
-                        className={`p-4 rounded-lg border-2 transition-all text-left active:scale-95 ${estaSeleccionada
-                          ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                          : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                          }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${estaSeleccionada ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                            }`}>
-                            {diaNumero}
-                          </div>
-                          <div className="flex-1">
-                            <p className={`font-semibold ${estaSeleccionada ? 'text-[#FA7B21]' : 'text-white'}`}>
-                              {nombreDia}
-                            </p>
-                            <p className="text-white/60 text-sm capitalize">{mes}</p>
-                          </div>
-                          {estaSeleccionada && (
-                            <div className="text-[#FA7B21] text-xl">✓</div>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-
-                  {/* Opción: Aún no especificado */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleInputChange('fechaInicio', 'no-especificado');
-                      setOpcionFechaSeleccionada('no-especificado');
-                      setMostrarOtraFecha(false);
-                    }}
-                    className={`p-4 rounded-lg border-2 transition-all text-left active:scale-95 ${opcionFechaSeleccionada === 'no-especificado'
-                      ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                      : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${opcionFechaSeleccionada === 'no-especificado' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                        }`}>
-                        ⏰
-                      </div>
-                      <div className="flex-1">
-                        <p className={`font-semibold ${opcionFechaSeleccionada === 'no-especificado' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                          Aún no especificado
-                        </p>
-                        <p className="text-white/60 text-sm">Lo decidiré después</p>
-                      </div>
-                      {opcionFechaSeleccionada === 'no-especificado' && (
-                        <div className="text-[#FA7B21] text-xl">✓</div>
-                      )}
-                    </div>
-                  </button>
-
-                  {/* Opción: Otra fecha */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpcionFechaSeleccionada('otra');
-                      setMostrarOtraFecha(true);
-                    }}
-                    className={`p-4 rounded-lg border-2 transition-all text-left active:scale-95 ${opcionFechaSeleccionada === 'otra'
-                      ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                      : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                      }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${opcionFechaSeleccionada === 'otra' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                        }`}>
-                        📅
-                      </div>
-                      <div className="flex-1">
-                        <p className={`font-semibold ${opcionFechaSeleccionada === 'otra' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                          Otra fecha
-                        </p>
-                        <p className="text-white/60 text-sm">Elegir fecha personalizada</p>
-                      </div>
-                      {opcionFechaSeleccionada === 'otra' && (
-                        <div className="text-[#FA7B21] text-xl">✓</div>
-                      )}
-                    </div>
-                  </button>
-                </div>
-
-                {/* Input de fecha personalizada */}
-                {mostrarOtraFecha && opcionFechaSeleccionada === 'otra' && (
-                  <div className="mt-4 p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                    <Label className="text-white mb-2 block text-sm">Selecciona tu fecha personalizada:</Label>
-                    <Input
-                      type="date"
-                      value={formData.fechaInicio !== 'no-especificado' ? formData.fechaInicio : ''}
-                      onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                    />
-                    <p className="text-white/50 text-xs mt-2">
-                      💡 Asegúrate de elegir una fecha válida según tu edad y disponibilidad
-                    </p>
-                  </div>
-                )}
-
-                {!formData.fechaInicio && formData.fechaNacimiento && opcionFechaSeleccionada === 'fechas' && (
-                  <p className="text-white/50 text-xs mt-3">
-                    👆 Selecciona una opción para continuar
-                  </p>
-                )}
-              </div>
-
-              {/* Horarios Disponibles según Edad */}
-              {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && horariosInfo && (
-                <div className="mb-6 p-5 bg-gradient-to-br from-[#FA7B21]/10 to-[#FA7B21]/5 border-2 border-[#FA7B21]/30 rounded-xl">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="text-3xl">🕐</div>
-                    <div className="flex-1">
-                      <h4 className="text-[#FA7B21] font-bold text-lg mb-1">
-                        Horarios Disponibles {horariosInfo.categoria && `- ${horariosInfo.categoria}`}
-                      </h4>
-                      <p className="text-white/70 text-sm">
-                        Según tu edad y turno seleccionado
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="bg-zinc-800/50 rounded-lg p-4">
-                      <p className="text-white/60 text-xs mb-1">Turno seleccionado</p>
-                      <p className="text-white font-semibold text-lg">
-                        {turnoSeleccionado === 'manana' ? `🌄 Mañana (${horariosInfo.horarioManana})` : `🌆 Tarde (${horariosInfo.horarioSemana})`}
-                      </p>
-                    </div>
-                    <div className="bg-zinc-800/50 rounded-lg p-4">
-                      <p className="text-white/60 text-xs mb-1">Sábados</p>
-                      <p className="text-white font-semibold text-lg">{horariosInfo.horarioSabado}</p>
-                    </div>
-                    <div className="bg-zinc-800/50 rounded-lg p-4">
-                      <p className="text-white/60 text-xs mb-1">Días disponibles</p>
-                      <p className="text-white font-semibold">{horariosInfo.diasSemana}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Días Tentativos de Asistencia */}
-              {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && (
-                <div className="mb-6">
-                  <Label className="text-white mb-2 block text-base font-semibold">
-                    2. Días Tentativos de Clases *
-                  </Label>
-                  <p className="text-white/60 text-sm mb-4">
-                    (Solo para cálculo de fecha fin - Selecciona al menos 1 día)
-                  </p>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
-                      let isDisabled = false;
-
-                      // Filtrar según turno seleccionado
-                      if (turnoSeleccionado === 'manana') {
-                        // Mañana: solo martes, jueves y sábado
-                        isDisabled = !['Martes', 'Jueves', 'Sábado'].includes(dia);
-                      } else {
-                        // Tarde: según categoría
-                        if (categoriaAlumno === 'Juniors') {
-                          isDisabled = !['Lunes', 'Miércoles', 'Viernes'].includes(dia);
-                        } else if (categoriaAlumno === 'Adolescentes') {
-                          isDisabled = !['Martes', 'Jueves'].includes(dia);
-                        }
-                        // Para bebés y niños pequeños, todos los días están habilitados excepto domingo
-                      }
-
-                      return (
-                        <label
-                          key={dia}
-                          className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${isDisabled
-                            ? 'border-white/10 opacity-40 cursor-not-allowed bg-zinc-800/30'
-                            : diasTentativos.includes(dia)
-                              ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                              : 'border-white/20 hover:border-[#FA7B21]/50 cursor-pointer bg-zinc-800/50'
-                            }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={diasTentativos.includes(dia)}
-                            onChange={(e) => handleDiaTentativoChange(dia, e.target.checked)}
-                            disabled={isDisabled}
-                            className="w-6 h-6 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
-                          />
-                          <span className={`text-sm font-medium ${diasTentativos.includes(dia) ? 'text-[#FA7B21]' : 'text-white'}`}>{dia}</span>
-                        </label>
-                      );
-                    })}
-                  </div>
-
-                  <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                    <p className="text-yellow-200 text-xs">
-                      ⚠️ Importante: Estos días son solo para calcular tu fecha de fin estimada.
-                      Durante el programa, puedes venir cualquier día disponible de tu categoría según tu disponibilidad.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Fecha de Fin (Calculada Automáticamente) */}
-              {diasTentativos.length >= 1 && fechaFinCalculada && (
-                <div className="mb-6 p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
-                  <div className="flex items-start gap-3 mb-4">
-                    <div className="text-3xl">📅</div>
-                    <div className="flex-1">
-                      <Label className="text-green-400 font-bold text-lg mb-1 block">
-                        3. Fecha de Fin del Programa
-                      </Label>
-                      <p className="text-white/70 text-sm">
-                        Calculada automáticamente según tus días tentativos
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="bg-zinc-800/50 rounded-lg p-6 mb-4">
-                    <p className="text-white/60 text-xs mb-2">Finalizarás aproximadamente el:</p>
-                    <p className="text-white font-bold text-2xl">
-                      {new Date(fechaFinCalculada).toLocaleDateString('es-PE', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
-                  </div>
-
-                  {/* Detalles de Fecha de Fin */}
-                  {detallesFechaFin && (
-                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-white/60 text-xs mb-1">Clases totales</p>
-                          <p className="text-white font-semibold text-lg">{detallesFechaFin.clasesTotales} clases</p>
-                        </div>
-                        <div>
-                          <p className="text-white/60 text-xs mb-1">Duración aproximada</p>
-                          <p className="text-white font-semibold text-lg">{detallesFechaFin.semanasAproximadas} semanas</p>
-                        </div>
-                      </div>
-                      <p className="text-green-300 text-xs mt-3">
-                        ✓ Esta fecha considera feriados, cierres y tus días tentativos seleccionados
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Mensaje si faltan días tentativos */}
-              {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && diasTentativos.length < 2 && (
-                <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <p className="text-yellow-200 text-sm">
-                    ⏳ Selecciona al menos 2 días tentativos arriba para calcular tu fecha de fin
-                  </p>
-                </div>
-              )}
-
-              <div className="bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-lg p-4">
-                <p className="text-white/80 text-sm">
-                  ℹ️ Todos los datos serán enviados por correo
-                </p>
-              </div>
-            </div>
-
-            {/* Código Promocional */}
-            <div>
-              <h3 className="text-white text-lg mb-4 border-b border-white/10 pb-2">
-                Código Promocional (Opcional)
-              </h3>
-              <div className="flex gap-3">
-                <Input
-                  type="text"
-                  placeholder="Ingresa tu código"
-                  value={codigoPromocional}
-                  onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                  className="flex-1 bg-zinc-800 border-white/20 text-white uppercase focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                />
-                <Button
-                  type="button"
-                  onClick={handleAplicarCodigo}
-                  className="bg-[#FA7B21] hover:bg-[#F36A15] text-white px-6 active:scale-95"
-                >
-                  Aplicar
-                </Button>
-              </div>
-
-              {/* Mensaje de código aplicado */}
-              {codigoAplicado?.valido && (
-                <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-green-400 font-semibold mb-2">
-                        ✅ Código "{codigoAplicado.codigo}" aplicado
-                      </p>
-                      <p className="text-green-300 text-sm mb-1">
-                        🎁 {codigoAplicado.descripcion}
-                      </p>
-                      {(codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis') && (
-                        <p className="text-green-200 text-xs mt-2">
-                          Se recalculará tu fecha de fin con las clases adicionales.
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleQuitarCodigo}
-                      className="text-green-300 hover:text-green-100 transition-colors ml-4"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-
-
-            {/* Resumen de Inscripción */}
-            <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border-2 border-[#FA7B21]/30 rounded-lg p-6">
-              <h3 className="text-white text-xl font-bold mb-4">📋 Resumen de tu Inscripción</h3>
-
-              {/* Información del Programa */}
-              <div className="mb-4 space-y-2 text-sm">
-                <p className="text-white">
-                  <strong>Programa:</strong> {NOMBRES_PROGRAMA[programa]}
-                </p>
-                <p className="text-white">
-                  <strong>Clases incluidas:</strong> {PROGRAMA_CLASES[programa]}
-                  {detallesFechaFin && detallesFechaFin.clasesTotales > PROGRAMA_CLASES[programa] && (
-                    <span className="text-green-400"> + {detallesFechaFin.clasesTotales - PROGRAMA_CLASES[programa]} bonus = {detallesFechaFin.clasesTotales} total</span>
-                  )}
-                </p>
-                {diasTentativos.length >= 2 && formData.fechaInicio !== 'no-especificado' && (
-                  <p className="text-white">
-                    <strong>Días tentativos:</strong> {diasTentativos.join(', ')}
-                  </p>
-                )}
-                {formData.fechaInicio && (
-                  <p className="text-white">
-                    <strong>Inicio:</strong> {formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : new Date(formData.fechaInicio).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                )}
-                {fechaFinCalculada && (
-                  <p className="text-white">
-                    <strong>Fin estimado:</strong> {new Date(fechaFinCalculada).toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </p>
-                )}
-              </div>
-
-              {/* Bonus de Código Promocional */}
-              {codigoAplicado?.valido && (codigoAplicado.tipo === 'clases_extra' || codigoAplicado.tipo === 'mes_gratis' || codigoAplicado.tipo === 'polo_gratis' || codigoAplicado.tipo === 'uniforme_gratis') && (
-                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <p className="text-green-400 font-semibold text-sm mb-2">🎁 Promoción aplicada:</p>
-                  <p className="text-green-300 text-xs">✓ {codigoAplicado.descripcion}</p>
-                </div>
-              )}
-
-              {/* Desglose de Precios */}
-              <div className="space-y-2 py-4 border-t border-white/10">
-                <div className="flex justify-between text-white/80 text-sm">
-                  <span>{NOMBRES_PROGRAMA[programa]}</span>
-                  <span>S/ {precioBase}</span>
-                </div>
-                {programa === '1mes' && includeUniform && (
-                  <div className="flex justify-between text-white/80 text-sm">
-                    <span>Uniforme adicional {codigoAplicado?.tipo === 'uniforme_gratis' && '(GRATIS 🎁)'}</span>
-                    <span className={codigoAplicado?.tipo === 'uniforme_gratis' ? 'line-through text-white/50' : ''}>
-                      S/ {programa === '1mes' && includeUniform ? 220 : 0}
-                    </span>
-                  </div>
-                )}
-                {polosOption !== '0' && (
-                  <div className="flex justify-between text-white/80 text-sm">
-                    <span>Polos ({polosOption}) {codigoAplicado?.tipo === 'polo_gratis' && '(Descuento aplicado 🎁)'}</span>
-                    <span>S/ {precioPolosAjustado}</span>
-                  </div>
-                )}
-                {descuentoDinero > 0 && (
-                  <div className="flex justify-between text-green-400 text-sm font-semibold">
-                    <span>Descuento código promo</span>
-                    <span>- S/ {descuentoDinero}</span>
-                  </div>
-                )}
-                {descuentoPorcentaje > 0 && (
-                  <div className="flex justify-between text-green-400 text-sm font-semibold">
-                    <span>Descuento {descuentoPorcentaje}%</span>
-                    <span>- S/ {descuentoPorcentualMonto}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Total Final */}
-              <div className="flex justify-between items-center pt-4 border-t-2 border-white/20">
-                <span className="text-white text-lg font-bold">TOTAL A PAGAR:</span>
-                <span className="text-[#FCA929] text-3xl font-bold">S/ {total}</span>
-              </div>
-            </div>
-
-            {/* Contrato y Firma */}
-            <div className="bg-zinc-800/40 rounded-2xl p-4 sm:p-5 border border-white/10">
-              <ContratoFirma
-                datos={{
-                  nombrePadre: formData.nombrePadre,
-                  dniPadre: formData.dniPadre,
-                  email: formData.email,
-                  telefono: formData.telefono,
-                  direccion: formData.direccion,
-                  nombreAlumno: formData.nombreAlumno,
-                  dniAlumno: formData.dniAlumno,
-                  fechaNacimiento: formData.fechaNacimiento,
-                  categoriaAlumno: categoriaAlumno,
-                  programa: programa === 'full' ? '3 Meses Full' : programa === '6meses' ? '6 Meses' : '1 Mes',
-                  fechaInicio: formData.fechaInicio,
-                  fechaFin: fechaFinCalculada || '',
-                  clasesTotales: detallesFechaFin?.clasesTotales,
-                  turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
-                  diasTentativos: diasTentativos.join(', '),
-                  precioPrograma: precioBase,
-                  descuentoDinero: descuentoDinero,
-                  total: total,
-                }}
-                onFirmaCompleta={(firma) => setFirmaBase64(firma)}
+          <Seccion id="sec-uniforme" titulo={sinUniforme ? 'Uniforme y polos' : 'Talla de uniforme y polos'} descripcion={sinUniforme ? undefined : 'El uniforme está incluido en el programa.'}>
+            {sinUniforme && ropa.uniforme && (
+              <Casilla
+                marcada={conUniforme}
+                onCambio={setConUniforme}
+                titulo="Agregar uniforme completo"
+                detalle="El programa mensual no lo incluye."
+                derecha={`+ ${soles(ropa.uniforme.precio)}`}
               />
-            </div>
+            )}
+            {sinUniforme && regaloUniforme && !conUniforme && <p className={cx.avisoOk}>Tu código incluye el uniforme de regalo.</p>}
+            {pideTallaUniforme && <SelectorTalla titulo="Talla del uniforme" valor={tallaUniforme} onCambio={setTallaUniforme} />}
+            <SelectorPolos ropa={ropa} cantidad={polos} onCantidad={cambiarPolos} tallas={tallasPolos} onTalla={(i, t) => setTallasPolos((prev) => prev.map((x, j) => (j === i ? t : x)))} />
+          </Seccion>
 
-            {/* Submit Button */}
-            <div className="sticky bottom-0 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 bg-zinc-900 border-t border-white/10">
-              <Button
-                type="submit"
-                disabled={isSubmitting || !firmaBase64}
-                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-5 sm:py-6 text-sm sm:text-base md:text-lg shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  touchAction: 'manipulation',
-                  WebkitTapHighlightColor: 'transparent'
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                    Enviando datos...
-                  </>
-                ) : (
-                  'Enviar datos'
-                )}
-              </Button>
-            </div>
-          </form>
+          <Seccion id="sec-resumen" titulo="Resumen">
+            <ResumenCotizacion cotizacion={cotizacion} alDia={alDia} error={error} respaldo={respaldo} clasesBase={clasesBase} />
+            {!respaldo && <CampoCodigo aplicado={codigo} onAplicar={setCodigo} onQuitar={() => setCodigo('')} cotizacion={cotizacion} alDia={alDia} />}
+          </Seccion>
+
+          <Seccion id="sec-contrato" titulo="Contrato">
+            <ContratoFirma
+              datos={{
+                nombrePadre: p.nombrePadre,
+                dniPadre: p.dniPadre,
+                email: p.email,
+                telefono: p.telefono,
+                direccion: p.direccion,
+                nombreAlumno: p.nombreAlumno,
+                dniAlumno: p.dniAlumno,
+                fechaNacimiento: p.fechaNacimiento,
+                categoriaAlumno: fechas.categoria,
+                programa: programa?.nombre ?? '',
+                fechaInicio: fechas.fechaInicio,
+                fechaFin: fechas.fin?.fechaFin ?? '',
+                clasesTotales: fechas.fin?.clasesTotales ?? clasesTotales,
+                turnoSeleccionado: fechas.turno === 'manana' ? 'Mañana' : 'Tarde',
+                diasTentativos: fechas.dias.join(', '),
+                precioPrograma: programa?.precio,
+                descuentoDinero: cotizacion?.descuento ?? 0,
+                total: cotizacion?.total ?? 0,
+              }}
+              onFirmaCompleta={setFirma}
+            />
+          </Seccion>
         </div>
-      </DialogContent>
-    </Dialog>
+        <EspacioBarra />
+      </main>
+
+      <BarraTotal
+        total={cotizacion?.total ?? null}
+        calculando={cargando}
+        enviando={enviando}
+        onEnviar={enviar}
+        texto={firma ? 'Enviar matrícula' : 'Continuar'}
+        deshabilitado={respaldo || estado === 'cargando'}
+      />
+    </div>
   );
-});
+}

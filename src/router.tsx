@@ -281,7 +281,7 @@ function RegistroShowroomRoute() {
 }
 
 function RenovacionRoute() {
-  const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
+  const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount, onRegistrationSuccess } = useLayoutContext();
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
       <SEO title="Renovación de Membresía - JMA Team Wolf" description="Renueva tu membresía de JMA Team Wolf." keywords="renovación membresía" url="https://amasteamwolf.com/renovacion" />
@@ -291,9 +291,7 @@ function RenovacionRoute() {
         onOpenMatricula={onOpenMatricula}
         onCartClick={onCartClick}
         cartItemsCount={cartItemsCount}
-        onSuccess={() => {
-          onNavigate('home');
-        }}
+        onSuccess={onRegistrationSuccess}
       />
     </Suspense></LazyErrorBoundary>
   );

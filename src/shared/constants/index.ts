@@ -11,18 +11,14 @@ export {
 } from './feriados';
 export type { FeriadoFijo, FeriadoMovil } from './feriados';
 
-// Programas y precios
+// Programas y precios (solo respaldo si el API no responde)
 export {
   PROGRAMA_CLASES,
   PRECIOS_BASE,
   NOMBRES_PROGRAMA,
 } from './programas';
 
-// Códigos promocionales
-export {
-  CODIGOS_PROMOCIONALES,
-} from './promociones';
-export type { CodigoPromocional, TipoPromocion } from './promociones';
+// Los códigos promocionales viven en el API (tabla promociones): se validan cotizando.
 
 // Cinturones
 export {

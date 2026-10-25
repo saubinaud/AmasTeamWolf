@@ -20,8 +20,9 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // API local; API_PROXY permite apuntar a otro puerto (p. ej. 4010). Nunca a producción.
       '/api': {
-        target: 'http://localhost:4000',
+        target: process.env.API_PROXY || 'http://localhost:4000',
         changeOrigin: true,
       },
     },

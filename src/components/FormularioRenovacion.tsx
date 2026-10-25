@@ -1,1581 +1,317 @@
-import { useState, useCallback, memo, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
-import { Loader2, Upload, File, Trash2, ChevronDown, ChevronRight, Check, Sparkles, Award, Gift, Heart, Trophy } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+// Renovación pública (/renovacion). Los planes y sus precios salen del
+// catálogo (programas con en_renovacion, más los que desbloquea un código como
+// RENOVAR1MES); el total lo devuelve POST /api/config/cotizar y al enviar el
+// servidor vuelve a cotizar las mismas líneas.
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { API_BASE } from '../config/api';
+import { useCatalogoPublico, useCotizacion } from '../hooks/useCatalogoPublico';
 import { ContratoFirma } from './ContratoFirma';
-import { PROGRAMA_CLASES, PRECIOS_BASE, NOMBRES_PROGRAMA } from '../shared/constants';
+import { cx } from './matricula/tokens';
+import { CabeceraJMA, Portada, Seccion, Campo, CampoFechaNacimiento, SelectorPolos, Exito, irA } from './matricula/piezas';
+import { CampoCodigo, ResumenCotizacion, BarraTotal, EspacioBarra } from './matricula/Resumen';
+import { SeccionFechas, useFechasPrograma } from './matricula/SeccionFechas';
 import {
-  calcularHorarios,
-  obtenerFechasDisponiblesInicio,
-  obtenerNombreDia,
-  calcularFechaFin,
-  validarCodigoPromocional,
-  obtenerClasesExtraDePromo,
-  type HorariosInfo,
-  type CodigoAplicado,
-} from '../utils/matricula';
+  lineasMatricula, piezasRopa, programasOfrecidos, itemPolos, soles,
+  type CantidadPolos, type ItemCatalogo, type PedidoCotizacion,
+} from '../utils/catalogo';
 
-// Información de planes
-const PLANES_INFO = {
+/** Lo que trae cada plan (texto de marketing; precio y clases vienen del catálogo). */
+const BENEFICIOS: Record<string, { subtitulo: string; beneficios: string[]; destacado?: string }> = {
+  '1mes': {
+    subtitulo: 'Desbloqueado con tu código',
+    beneficios: ['Clases 2 veces por semana', 'Clases recuperables', 'Flexibilidad de horarios'],
+  },
   full: {
-    duracion: "3 MESES",
-    subtitulo: "2 VECES X SEMANA",
-    precio: 869,
-    beneficios: [
-      "3 meses de clase 2 veces x semana",
-      "Clases recuperables",
-      "1 Congelamiento del programa por inasistencia o viaje",
-      "Cartilla de deberes programa completo (Seguimiento del progreso)",
-      "1 Graduación",
-      "1 Nuevo cinturón con ceremonia",
-      "2 Certificados del nuevo rango"
-    ],
-    icon: "🥋",
-    color: "from-blue-500 to-cyan-500"
+    subtitulo: '2 veces por semana',
+    beneficios: ['Clases recuperables', '1 congelamiento por inasistencia o viaje', 'Cartilla de deberes y seguimiento', '1 graduación con nuevo cinturón', '2 certificados del nuevo rango'],
   },
-  "6meses": {
-    duracion: "6 MESES",
-    subtitulo: "2 VECES X SEMANA",
-    precio: 1699,
-    beneficios: [
-      "6 meses de clase 2 veces x semana",
-      "Clases recuperables",
-      "1 Congelamiento del programa por inasistencia o viaje",
-      "Cartilla de deberes programa completo (Seguimiento del progreso)",
-      "2 Graduaciones",
-      "2 Nuevos cinturones con ceremonia",
-      "2 Certificados del nuevo rango",
-      "+ 15 días de membresía adicionales",
-      "+ 1 Implemento de regalo"
-    ],
-    icon: "⚡",
-    color: "from-orange-500 to-red-500",
-    popular: true
+  '6meses': {
+    subtitulo: '2 veces por semana',
+    destacado: 'Más elegido',
+    beneficios: ['Clases recuperables', '1 congelamiento por inasistencia o viaje', 'Cartilla de deberes y seguimiento', '2 graduaciones con nuevo cinturón', '2 certificados del nuevo rango', '15 días de membresía adicionales', '1 implemento de regalo'],
   },
-  "12meses_sin": {
-    duracion: "12 MESES",
-    subtitulo: "",
-    precio: 2999,
-    beneficios: [
-      "12 meses de clase 2 veces x semana",
-      "Clases recuperables",
-      "1 Congelamiento del programa por inasistencia o viaje",
-      "Cartilla de deberes programa completo (Seguimiento del progreso)",
-      "4 Graduaciones",
-      "4 Nuevos cinturones con ceremonia",
-      "4 Certificados del nuevo rango"
-    ],
-    icon: "💎",
-    color: "from-emerald-500 to-teal-500"
+  '12meses_sin': {
+    subtitulo: 'Un año completo',
+    beneficios: ['Clases recuperables', '1 congelamiento por inasistencia o viaje', 'Cartilla de deberes y seguimiento', '4 graduaciones con nuevo cinturón', '4 certificados del nuevo rango'],
   },
-  "12meses_con": {
-    duracion: "WOLF ELITE 365",
-    subtitulo: "PROGRAMA ELITE",
-    precio: 3699,
-    beneficios: [], // Se manejará visualmente en columnas separadas
-    icon: "👑",
-    color: "from-[#FA7B21] via-[#FCA929] to-[#FA7B21]",
-    destacado: "PROGRAMA ELITE"
-  }
+  '12meses_con': {
+    subtitulo: 'Programa élite',
+    destacado: 'Todo incluido',
+    beneficios: ['Un año completo de clases', '4 graduaciones con ceremonia', 'Guantes, zapatos, bo staff, combat weapon y nunchaku', 'Acceso indefinido a Leadership', '15 días de regalo'],
+  },
 };
 
-
 interface FormularioRenovacionProps {
-  onClose?: () => void;
+  onVolver: () => void;
   onSuccess: (total: number) => void;
 }
 
-const INITIAL_FORM_STATE = {
-  nombreAlumno: '',
-  dniAlumno: '',
-  fechaNacimiento: '',
-  nombrePadre: '',
-  dniPadre: '',
-  direccion: '',
-  email: '',
-  fechaInicio: '',
-  fechaFin: ''
-};
+const PERSONAS = { nombreAlumno: '', dniAlumno: '', fechaNacimiento: '', nombrePadre: '', dniPadre: '', email: '', direccion: '' };
+const soloDigitos = (v: string, max: number) => v.replace(/\D/g, '').slice(0, max);
 
-export const FormularioRenovacion = memo(function FormularioRenovacion({ onSuccess, onClose }: FormularioRenovacionProps) {
-  // Estados
-  const [planSeleccionado, setPlanSeleccionado] = useState<'full' | '6meses' | '12meses_sin' | '12meses_con' | '1mes' | null>(null);
-  const [mostrar1Mes, setMostrar1Mes] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [firmaBase64, setFirmaBase64] = useState<string | null>(null);
-  const [polosOption, setPolosOption] = useState<'0' | '1' | '2' | '3'>('0');
+function TarjetaPlan({ plan, onElegir }: { plan: ItemCatalogo; onElegir: () => void }) {
+  const info = BENEFICIOS[plan.codigo ?? ''] ?? { subtitulo: '', beneficios: [] };
+  const resaltado = !!info.destacado;
+  return (
+    <div className={`${cx.card} relative flex flex-col p-5 ${resaltado ? 'border-[#F47B20]' : ''}`}>
+      {info.destacado && (
+        <span className={`${cx.display} absolute -top-3 left-5 rounded-full bg-[#F47B20] px-3 py-1 text-[11px] uppercase tracking-wider text-[#231F20]`}>
+          {info.destacado}
+        </span>
+      )}
+      <p className={`${cx.display} text-[20px] text-white`}>{plan.nombre}</p>
+      <p className={`${cx.textoApagado} mt-1 text-[14px]`}>{[plan.clases ? `${plan.clases} clases` : null, info.subtitulo].filter(Boolean).join(' · ')}</p>
+      <p className={`${cx.cifra} mt-4 text-[30px] text-white`}>{soles(plan.precio)}</p>
+      {info.beneficios.length > 0 && (
+        <ul className="mt-4 space-y-2">
+          {info.beneficios.map((b) => (
+            <li key={b} className="flex items-start gap-2.5 text-[14px] text-white/75">
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#F47B20]" />
+              {b}
+            </li>
+          ))}
+        </ul>
+      )}
+      <button type="button" onClick={onElegir} className={`${resaltado ? cx.btnPrimario : cx.btnSecundario} mt-5 w-full`}>
+        Renovar con este plan
+      </button>
+    </div>
+  );
+}
+
+export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovacionProps) {
+  const { items, estado } = useCatalogoPublico();
+  const respaldo = estado === 'respaldo';
+
+  const [codigoPlan, setCodigoPlan] = useState<string | null>(null);
+  const [p, setP] = useState(PERSONAS);
+  const [polos, setPolos] = useState<CantidadPolos>('0');
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [_fileBase64, setFileBase64] = useState<string>('');
-  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
+  const [codigo, setCodigo] = useState('');
+  const [firma, setFirma] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [registrado, setRegistrado] = useState<number | null>(null);
 
-  const [horariosInfo, setHorariosInfo] = useState<HorariosInfo | null>(null);
-  const [categoriaAlumno, setCategoriaAlumno] = useState<string>('');
-  const [diasTentativos, setDiasTentativos] = useState<string[]>([]);
-  const [codigoPromocional, setCodigoPromocional] = useState<string>('');
-  const [codigoAplicado, setCodigoAplicado] = useState<CodigoAplicado | null>(null);
-  const [contratoExpanded, setContratoExpanded] = useState(false);
-  const [fechaFinCalculada, setFechaFinCalculada] = useState<string>('');
-  const [detallesFechaFin, setDetallesFechaFin] = useState<{
-    clasesTotales: number;
-    semanasAproximadas: number;
-  } | null>(null);
-  const [fechasDisponibles, setFechasDisponibles] = useState<Date[]>([]);
-  const [mostrarOtraFecha, setMostrarOtraFecha] = useState(false);
-  const [opcionFechaSeleccionada, setOpcionFechaSeleccionada] = useState<'fechas' | 'no-especificado' | 'otra'>('fechas');
-  const [turnoSeleccionado, setTurnoSeleccionado] = useState<'manana' | 'tarde'>('tarde');
-  const [codigoExpanded, setCodigoExpanded] = useState(false);
+  useEffect(() => { window.scrollTo(0, 0); }, [codigoPlan]);
 
-  // Ref para scroll al formulario
-  const formularioRef = useRef<HTMLDivElement>(null);
+  const ropa = useMemo(() => piezasRopa(items), [items]);
+  const programa = useMemo(() => items.find((i) => i.tipo === 'programa' && i.codigo === codigoPlan) ?? null, [items, codigoPlan]);
 
-  // Verificar si hay código de desbloqueo de 1 mes
-  useEffect(() => {
-    if (codigoAplicado?.tipo === 'desbloquear_1mes' && codigoAplicado.valido) {
-      setMostrar1Mes(true);
-    }
-  }, [codigoAplicado]);
+  // Sin plan elegido se cotiza solo el código (para saber si desbloquea un plan)
+  const pedido = useMemo<PedidoCotizacion | null>(() => {
+    if (respaldo) return null;
+    if (!programa) return codigo ? { lineas: [], codigo } : null;
+    return { lineas: lineasMatricula(programa, polos, false, ropa), codigo: codigo || undefined };
+  }, [respaldo, programa, polos, ropa, codigo]);
+  const { cotizacion, alDia, cargando, error } = useCotizacion(pedido);
 
-  // Recalcular fechas disponibles
-  useEffect(() => {
-    if (formData.fechaNacimiento && planSeleccionado) {
-      const todasLasFechas = obtenerFechasDisponiblesInicio();
-      const horarios = calcularHorarios(formData.fechaNacimiento);
+  const desbloqueados = alDia ? cotizacion?.desbloquea ?? [] : [];
+  const planes = useMemo(() => {
+    const ofrecidos = programasOfrecidos(items, 'en_renovacion');
+    const extra = programasOfrecidos(items, 'en_renovacion', desbloqueados).filter((x) => !ofrecidos.includes(x));
+    return [...ofrecidos, ...extra];
+  }, [items, desbloqueados]);
 
-      let diasPermitidos: string[] = [];
+  const clasesBase = programa?.clases ?? 0;
+  const clasesTotales = clasesBase + (alDia ? cotizacion?.clases_extra ?? 0 : 0);
+  const fechas = useFechasPrograma(p.fechaNacimiento, clasesTotales);
+  const promoAplicada = alDia && cotizacion?.promocion.aplicada ? cotizacion.promocion.codigo : null;
+  const cambiar = (campo: keyof typeof PERSONAS, valor: string) => setP((x) => ({ ...x, [campo]: valor }));
+  const cambiarPolos = (c: CantidadPolos) => { setPolos(c); setTallasPolos(new Array(Number(c)).fill('')); };
 
-      if (turnoSeleccionado === 'manana') {
-        diasPermitidos = ['Martes', 'Jueves', 'Sábado'];
-      } else {
-        if (horarios.categoria === 'Juniors') {
-          diasPermitidos = ['Lunes', 'Miércoles', 'Viernes'];
-        } else if (horarios.categoria === 'Adolescentes') {
-          diasPermitidos = ['Martes', 'Jueves'];
-        } else {
-          diasPermitidos = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        }
-      }
+  const enviar = async () => {
+    const falta = (msg: string, seccion: string) => { toast.error(msg); irA(seccion); };
+    if (!p.nombreAlumno.trim() || p.dniAlumno.length < 8 || !p.fechaNacimiento) return falta('Completa los datos del alumno (nombre, DNI y fecha de nacimiento)', 'sec-alumno');
+    if (!p.nombrePadre.trim() || p.dniPadre.length < 8 || !/\S+@\S+\.\S+/.test(p.email)) return falta('Completa los datos del apoderado (nombre, DNI y correo)', 'sec-apoderado');
+    if (!fechas.completo) return falta('Elige la fecha de inicio y al menos un día de clase', 'sec-fechas');
+    if (tallasPolos.some((t) => !t)) return falta('Elige la talla de cada polo', 'sec-polos');
+    if (!cotizacion || !alDia) return toast.error('Espera a que se calcule el total');
+    if (!cotizacion.ok) return toast.error(cotizacion.errores[0] ?? 'No se pudo calcular el total');
+    if (!firma) return falta('Firma el contrato para terminar', 'sec-contrato');
+    if (!programa || !pedido) return;
 
-      const fechasFiltradas = todasLasFechas.filter(fecha => {
-        const nombreDia = obtenerNombreDia(fecha);
-        return diasPermitidos.includes(nombreDia);
-      });
+    const h = fechas.horarios;
+    const manana = fechas.turno === 'manana';
+    const lineaDe = (id: number | undefined) => cotizacion.lineas.find((l) => l.item_id === id);
+    const payload = {
+      tipoFormulario: 'Renovación',
+      programaCodigo: programa.codigo,
+      lineas: pedido.lineas,
+      codigoPromocional: promoAplicada ?? 'No aplicado',
 
-      setFechasDisponibles(fechasFiltradas.slice(0, 5));
-    } else if (planSeleccionado) {
-      const fechas = obtenerFechasDisponiblesInicio();
-      setFechasDisponibles(fechas);
-    }
-  }, [formData.fechaNacimiento, turnoSeleccionado, planSeleccionado]);
+      programa: programa.nombre,
+      clasesTotales: fechas.fin?.clasesTotales ?? clasesTotales,
+      nombreAlumno: p.nombreAlumno.trim(),
+      dniAlumno: p.dniAlumno,
+      fechaNacimiento: p.fechaNacimiento,
+      categoriaAlumno: fechas.categoria || 'No especificada',
+      turnoSeleccionado: manana ? 'Mañana' : 'Tarde',
+      horariosDisponibles: h ? {
+        horarioSemana: manana ? h.horarioManana : h.horarioSemana,
+        horarioSabado: h.horarioSabado,
+        horarioManana: h.horarioManana,
+        horarioTarde: h.horarioSemana,
+        diasSemana: manana ? 'Martes, Jueves y Sábado' : h.diasSemana,
+      } : null,
+      tallasPolos,
+      nombrePadre: p.nombrePadre.trim(),
+      dniPadre: p.dniPadre,
+      direccion: p.direccion.trim(),
+      email: p.email.trim(),
+      polos: polos === '0' ? 'No' : `${polos} polo(s)`,
+      fechaInicio: fechas.fechaInicio,
+      diasTentativos: fechas.sinDefinir ? 'Aún no especificado' : fechas.dias.join(', '),
+      fechaFin: fechas.sinDefinir ? 'Por calcular' : fechas.fin?.fechaFin ?? '',
+      semanasAproximadas: fechas.fin?.semanas ?? 0,
 
-  // Cálculos de precio
-  const precioBase = planSeleccionado ? PRECIOS_BASE[planSeleccionado] : 0;
-  const preciosPolos = { '0': 0, '1': 60, '2': 110, '3': 150 };
-  let precioPolosAjustado = preciosPolos[polosOption];
+      // Informativo; el servidor lo reemplaza por su cotización
+      precioPrograma: lineaDe(programa.id)?.precio_unitario ?? programa.precio,
+      precioPolos: lineaDe(itemPolos(polos, ropa)?.id)?.subtotal ?? 0,
+      descuentoDinero: cotizacion.descuento,
+      subtotal: cotizacion.subtotal,
+      total: cotizacion.total,
 
-  let descuentoDinero = 0;
-  let descuentoPorcentaje = 0;
-
-  if (codigoAplicado?.valido && codigoAplicado.valor && codigoAplicado.tipo !== 'desbloquear_1mes') {
-    if (codigoAplicado.tipo === 'descuento_dinero') {
-      descuentoDinero = codigoAplicado.valor;
-    } else if (codigoAplicado.tipo === 'descuento_porcentaje') {
-      descuentoPorcentaje = codigoAplicado.valor;
-    } else if (codigoAplicado.tipo === 'polo_gratis') {
-      const valorDescuentoPolo = codigoAplicado.valor === 1 ? 60 : 110;
-      precioPolosAjustado = Math.max(0, preciosPolos[polosOption] - valorDescuentoPolo);
-    }
-  }
-
-  const subtotal = precioBase + precioPolosAjustado - descuentoDinero;
-  const descuentoPorcentualMonto = descuentoPorcentaje > 0 ? Math.round(subtotal * (descuentoPorcentaje / 100)) : 0;
-  const total = Math.max(0, subtotal - descuentoPorcentualMonto);
-
-  const needsPoloSize = polosOption !== '0';
-
-  const handlePolosChange = useCallback((value: '0' | '1' | '2' | '3') => {
-    setPolosOption(value);
-    const numPolos = parseInt(value);
-    setTallasPolos(new Array(numPolos).fill(''));
-  }, []);
-
-  const handleTallaPoloChange = useCallback((index: number, talla: string) => {
-    setTallasPolos(prev => {
-      const newTallas = [...prev];
-      newTallas[index] = talla;
-      return newTallas;
-    });
-  }, []);
-
-  const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  }, []);
-
-  const handleFileUpload = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error('El archivo es demasiado grande. Máximo 5MB.');
-      return;
-    }
-
-    const validTypes = [
-      'application/pdf',
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/webp',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-
-    if (!validTypes.includes(file.type)) {
-      toast.error('Tipo de archivo no válido. Use PDF, imagen o documento Word.');
-      return;
-    }
-
-    setUploadedFile(file);
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const base64String = e.target?.result as string;
-      setFileBase64(base64String);
-      toast.success('Archivo cargado correctamente');
+      contratoFirmado: firma,
+      fechaRegistro: new Date().toISOString(),
     };
-    reader.onerror = () => {
-      toast.error('Error al leer el archivo');
-    };
-    reader.readAsDataURL(file);
-  }, []);
 
-  const handleRemoveFile = useCallback(() => {
-    setUploadedFile(null);
-    setFileBase64('');
-  }, []);
-
-  const handleFechaNacimientoChange = useCallback((fecha: string) => {
-    handleInputChange('fechaNacimiento', fecha);
-    if (fecha) {
-      const horarios = calcularHorarios(fecha);
-      setHorariosInfo(horarios);
-      setCategoriaAlumno(horarios.categoria);
-    } else {
-      setHorariosInfo(null);
-      setCategoriaAlumno('');
-    }
-  }, []);
-
-  const handleDiaTentativoChange = useCallback((dia: string, checked: boolean) => {
-    setDiasTentativos(prev => {
-      if (checked) {
-        return [...prev, dia];
-      } else {
-        return prev.filter(d => d !== dia);
-      }
-    });
-  }, []);
-
-  const handleAplicarCodigo = useCallback(() => {
-    if (!codigoPromocional.trim()) {
-      toast.error('Ingrese un código promocional');
-      return;
-    }
-
-    const validacion = validarCodigoPromocional(codigoPromocional, planSeleccionado || '1mes');
-
-    if (!validacion.valido) {
-      toast.error(validacion.mensaje || 'Código no válido');
-      setCodigoAplicado(null);
-      return;
-    }
-
-    setCodigoAplicado(validacion);
-
-    if (validacion.tipo === 'desbloquear_1mes') {
-      toast.success('✅ Programa de 1 mes desbloqueado');
-    } else {
-      toast.success(`✅ Código "${validacion.codigo}" aplicado exitosamente`);
-    }
-  }, [codigoPromocional, planSeleccionado]);
-
-  const handleQuitarCodigo = useCallback(() => {
-    setCodigoPromocional('');
-    setCodigoAplicado(null);
-    setMostrar1Mes(false);
-    toast.info('Código promocional removido');
-  }, []);
-
-  const handleSelectPlan = useCallback((plan: 'full' | '6meses' | '12meses_sin' | '12meses_con' | '1mes') => {
-    setPlanSeleccionado(plan);
-    // Scroll al inicio del formulario
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
-  }, []);
-
-  // Limpiar días tentativos cuando cambia el turno
-  useEffect(() => {
-    if (turnoSeleccionado && diasTentativos.length > 0) {
-      const diasValidos = turnoSeleccionado === 'manana'
-        ? ['Martes', 'Jueves', 'Sábado']
-        : categoriaAlumno === 'Juniors'
-          ? ['Lunes', 'Miércoles', 'Viernes']
-          : categoriaAlumno === 'Adolescentes'
-            ? ['Martes', 'Jueves']
-            : ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-
-      const diasFiltrados = diasTentativos.filter(dia => diasValidos.includes(dia));
-      if (diasFiltrados.length !== diasTentativos.length) {
-        setDiasTentativos(diasFiltrados);
-      }
-    }
-  }, [turnoSeleccionado, categoriaAlumno, diasTentativos]);
-
-  // Effect para calcular fecha de fin
-  useEffect(() => {
-    if (!formData.fechaInicio || formData.fechaInicio === 'no-especificado' || diasTentativos.length < 1 || !planSeleccionado) {
-      setFechaFinCalculada('');
-      setDetallesFechaFin(null);
-      return;
-    }
-
-    const clasesExtra = codigoAplicado?.codigo ? obtenerClasesExtraDePromo(codigoAplicado.codigo) : 0;
-    const resultado = calcularFechaFin(new Date(formData.fechaInicio), planSeleccionado, diasTentativos, clasesExtra);
-
-    setFechaFinCalculada(resultado.fechaFin.toISOString().split('T')[0]);
-    setDetallesFechaFin({
-      clasesTotales: resultado.clasesTotales,
-      semanasAproximadas: resultado.semanasAproximadas
-    });
-  }, [formData.fechaInicio, diasTentativos, codigoAplicado, planSeleccionado]);
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-
-    if (!planSeleccionado) {
-      toast.error('Por favor seleccione un plan');
-      return;
-    }
-
-    // Validaciones básicas
-    if (!formData.nombreAlumno || !formData.dniAlumno || !formData.nombrePadre || !formData.dniPadre || !formData.email || !formData.fechaInicio) {
-      toast.error('Por favor complete todos los campos obligatorios');
-      return;
-    }
-
-    if (!formData.fechaNacimiento) {
-      toast.error('Por favor ingrese la fecha de nacimiento del alumno');
-      return;
-    }
-
-    if (formData.fechaInicio !== 'no-especificado' && diasTentativos.length < 1) {
-      toast.error('Debes seleccionar al menos 1 día de asistencia por semana');
-      return;
-    }
-
-    if (formData.fechaInicio !== 'no-especificado' && !fechaFinCalculada) {
-      toast.error('La fecha de fin no se ha calculado correctamente. Por favor verifica los datos');
-      return;
-    }
-
-    if (needsPoloSize && tallasPolos.some(talla => !talla)) {
-      toast.error('Por favor seleccione todas las tallas de los polos');
-      return;
-    }
-
-    if (!firmaBase64) {
-      toast.error('Por favor firma el contrato antes de enviar');
-      return;
-    }
-
-    setIsSubmitting(true);
-
+    setEnviando(true);
     try {
-      const payload = {
-        tipoFormulario: 'Renovación',
-        programa: NOMBRES_PROGRAMA[planSeleccionado],
-        clasesTotales: formData.fechaInicio === 'no-especificado' ? PROGRAMA_CLASES[planSeleccionado] : (detallesFechaFin?.clasesTotales || PROGRAMA_CLASES[planSeleccionado]),
-
-        nombreAlumno: formData.nombreAlumno,
-        dniAlumno: formData.dniAlumno,
-        fechaNacimiento: formData.fechaNacimiento,
-        categoriaAlumno: categoriaAlumno || 'No especificada',
-
-        turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
-        horariosDisponibles: horariosInfo ? {
-          horarioSemana: turnoSeleccionado === 'manana' ? horariosInfo.horarioManana : horariosInfo.horarioSemana,
-          horarioSabado: horariosInfo.horarioSabado,
-          horarioManana: horariosInfo.horarioManana,
-          horarioTarde: horariosInfo.horarioSemana,
-          diasSemana: turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana
-        } : null,
-
-        tallasPolos: needsPoloSize ? tallasPolos : [],
-
-        nombrePadre: formData.nombrePadre,
-        dniPadre: formData.dniPadre,
-        direccion: formData.direccion,
-        email: formData.email,
-
-        polos: polosOption === '0' ? 'No' : `${polosOption} polo(s)`,
-        precioPolos: preciosPolos[polosOption],
-
-        fechaInicio: formData.fechaInicio,
-        diasTentativos: formData.fechaInicio === 'no-especificado' ? 'Aún no especificado' : diasTentativos.join(', '),
-        fechaFin: formData.fechaInicio === 'no-especificado' ? 'Por calcular' : fechaFinCalculada,
-        semanasAproximadas: formData.fechaInicio === 'no-especificado' ? 0 : (detallesFechaFin?.semanasAproximadas || 0),
-
-        codigoPromocional: codigoAplicado?.codigo || 'No aplicado',
-        tipoDescuento: codigoAplicado?.tipo || 'ninguno',
-        descuentoDinero: descuentoDinero,
-        descuentoPorcentaje: descuentoPorcentaje,
-        descuentoPorcentualMonto: descuentoPorcentualMonto,
-
-        precioPrograma: precioBase,
-        subtotal: subtotal,
-        total: total,
-
-        contratoFirmado: firmaBase64 || null,
-
-        fechaRegistro: new Date().toISOString()
-      };
-
-      const { API_BASE } = await import('../config/api');
-
-      const response = await fetch(`${API_BASE}/renovacion`, {
+      const r = await fetch(`${API_BASE}/renovacion`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        mode: 'cors'
       });
-
-      if (response.ok || response.status === 200) {
-        toast.success('¡Renovación registrada correctamente! Los detalles se enviarán por correo.');
-        onSuccess(total);
-      } else {
-        throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error completo:', error);
-      toast.error('Hubo un error al enviar los datos. Por favor intente nuevamente.');
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 404) throw new Error('No encontramos un alumno con ese DNI. Revisa el número o escríbenos por WhatsApp');
+      if (!r.ok || j.success === false) throw new Error(j.error || `Error ${r.status}`);
+      const total = Number(j.total ?? cotizacion.total);
+      setRegistrado(total);
+      window.scrollTo(0, 0);
+      onSuccess(total);
+    } catch (e) {
+      toast.error((e as Error).message);
     } finally {
-      setIsSubmitting(false);
+      setEnviando(false);
     }
   };
 
-  const tallasOptions = ['2', '4', '6', '8', '10', '12', '14', 'S', 'M', 'L', 'XL'];
-
-  // Si no hay plan seleccionado, mostrar hero y cards de planes
-  if (!planSeleccionado) {
+  if (registrado != null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-black to-zinc-950 pt-24 sm:pt-28">
-        {/* Hero Section Impactante */}
-        <div className="relative overflow-hidden pt-28 sm:pt-32 lg:pt-20">
-          {/* Background decorative elements */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-[#FA7B21]/20 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-[#FCA929]/15 rounded-full blur-3xl"></div>
-          </div>
-
-          <div className="relative container mx-auto px-4 lg:px-6 py-12 lg:py-20">
-            {/* Hero content - Una columna centrada */}
-            <div className="max-w-4xl mx-auto text-center">
-              {/* Badge superior */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
-                <Heart className="w-4 h-4 text-[#FCA929]" />
-                <span className="text-white/90 text-sm font-medium">El legado de su hijo continúa</span>
-              </div>
-
-              {/* Título principal */}
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 leading-[1.1]">
-                <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FA7B21] bg-clip-text text-transparent">
-                  No Detenga la Transformación
-                </span>
-                <br />
-                <span className="text-white drop-shadow-2xl">de Su Hijo</span>
-              </h1>
-
-              {/* Descripción */}
-              <p className="text-white/90 text-xl sm:text-2xl lg:text-3xl mb-12 leading-relaxed font-light max-w-3xl mx-auto">
-                Cada clase acerca más a su hijo a la mejor versión de sí mismo.
-                <span className="text-[#FCA929] font-bold"> Renueve hoy</span> y continúe el camino del guerrero.
-              </p>
-
-              {/* Stats emocionales - en fila */}
-              <div className="flex flex-wrap justify-center gap-6 lg:gap-12 mb-12">
-                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-6 py-3">
-                  <Trophy className="w-8 h-8 text-[#FCA929]" />
-                  <div className="text-left">
-                    <p className="text-white font-bold text-2xl">+300</p>
-                    <p className="text-white/60 text-xs">Alumnos Renovados</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-6 py-3">
-                  <Award className="w-8 h-8 text-[#FCA929]" />
-                  <div className="text-left">
-                    <p className="text-white font-bold text-2xl">10+</p>
-                    <p className="text-white/60 text-xs">Años Formando</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-6 py-3">
-                  <Sparkles className="w-8 h-8 text-[#FCA929]" />
-                  <div className="text-left">
-                    <p className="text-white font-bold text-2xl">100%</p>
-                    <p className="text-white/60 text-xs">Compromiso</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Elementos visuales decorativos */}
-              <div className="relative mx-auto max-w-2xl">
-                {/* Patrón de grid */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="grid grid-cols-8 gap-4 h-full">
-                    {Array.from({ length: 32 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-lg animate-pulse"
-                        style={{ animationDelay: `${i * 0.1}s` }}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Círculos decorativos flotantes */}
-                <div className="relative h-40 sm:h-48">
-                  <div className="absolute top-0 left-1/4 w-20 h-20 bg-[#FA7B21]/30 rounded-full blur-xl animate-bounce" style={{ animationDuration: '3s' }}></div>
-                  <div className="absolute top-10 right-1/4 w-16 h-16 bg-[#FCA929]/40 rounded-full blur-xl animate-bounce" style={{ animationDuration: '4s', animationDelay: '0.5s' }}></div>
-                  <div className="absolute bottom-0 left-1/2 w-24 h-24 bg-[#FA7B21]/20 rounded-full blur-2xl animate-pulse"></div>
-                </div>
-              </div>
-
-              {/* CTA visual */}
-              <div className="mt-8">
-                <div className="inline-flex items-center gap-3 text-white/70 text-sm animate-bounce">
-                  <ChevronDown className="w-5 h-5 text-[#FCA929]" />
-                  <span>Elige tu plan y renueva ahora</span>
-                  <ChevronDown className="w-5 h-5 text-[#FCA929]" />
-                </div>
-              </div>
-
-            </div>
-
-            {/* Cards de planes con mejor separación */}
-            <div className="max-w-7xl mx-auto mt-24 lg:mt-32">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-6">
-                Elija el Plan de Renovación
-              </h2>
-              <p className="text-white/60 text-center mb-12 max-w-2xl mx-auto">
-                Seleccione el plan que mejor se adapte a los objetivos de su hijo y continúe el camino del guerrero
-              </p>
-
-              {/* Grid Inferior - 3 Columnas Ordenadas (Ahora Arriba) - Config 3m, 6m, 12m */}
-              <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto mb-16">
-                {/* 1. Plan 3 meses (Ahora Primero) */}
-                <div
-                  onClick={() => handleSelectPlan('full')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 border-2 border-white/20 rounded-2xl p-6 sm:p-8 hover:border-blue-500/70 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/20"
-                >
-                  <div className="text-center mb-6">
-                    <div className="text-5xl mb-4">{PLANES_INFO.full.icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO.full.duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO.full.subtitulo}</p>
-                    <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                        S/ {PLANES_INFO.full.precio}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {PLANES_INFO.full.beneficios.map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{beneficio}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
-                    Renovar
-                  </Button>
-                </div>
-
-                {/* 2. Plan 6 meses - Popular (Ahora Segundo) */}
-                <div
-                  onClick={() => handleSelectPlan('6meses')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 border-2 border-[#FA7B21] rounded-2xl p-6 sm:p-8 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-[#FA7B21]/30"
-                >
-                  {/* Badge Popular */}
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
-                    MÁS POPULAR
-                  </div>
-
-                  <div className="text-center mb-6 mt-4">
-                    <div className="text-5xl mb-4">{PLANES_INFO["6meses"].icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["6meses"].duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2">{PLANES_INFO["6meses"].subtitulo}</p>
-                    <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">
-                        S/ {PLANES_INFO["6meses"].precio}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {PLANES_INFO["6meses"].beneficios.map((beneficio, index) => {
-                      const isHighlight = beneficio.startsWith('+');
-                      return (
-                        <div key={index} className="flex items-start gap-2">
-                          <Check className={`w-5 h-5 flex-shrink-0 mt-0.5 ${isHighlight ? 'text-[#FCA929]' : 'text-green-400'}`} />
-                          <span className={`${isHighlight ? 'text-[#FCA929] font-bold' : 'text-white/80'} text-sm`}>
-                            {beneficio}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 text-base font-bold shadow-lg mt-auto">
-                    Renovar
-                  </Button>
-                </div>
-
-                {/* 3. Plan 12 meses - Sin Implementos (Ahora Tercero) */}
-                <div
-                  onClick={() => handleSelectPlan('12meses_sin')}
-                  className="relative bg-gradient-to-b from-white/10 to-white/5 border-2 border-emerald-500/50 rounded-2xl p-6 sm:p-8 hover:border-emerald-500 transition-all cursor-pointer group hover:transform hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/30"
-                >
-                  <div className="text-center mb-6">
-                    <div className="text-5xl mb-4">{PLANES_INFO["12meses_sin"].icon}</div>
-                    <h3 className="text-2xl font-bold text-white mb-1">{PLANES_INFO["12meses_sin"].duracion}</h3>
-                    <p className="text-white/60 text-xs font-semibold tracking-wider mb-2 min-h-[1rem]">{PLANES_INFO["12meses_sin"].subtitulo}</p>
-                    <div className="flex items-baseline justify-center gap-2 mb-4">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                        S/ {PLANES_INFO["12meses_sin"].precio}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 mb-6">
-                    {PLANES_INFO["12meses_sin"].beneficios.map((beneficio, index) => (
-                      <div key={index} className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">{beneficio}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white py-4 text-base font-bold shadow-lg mt-auto">
-                    Renovar
-                  </Button>
-                </div>
-              </div>
-
-              {/* WOLF ELITE 365 - Destacado Arriba */}
-              <div className="max-w-4xl mx-auto mb-16 relative">
-                {/* Badge Superior */}
-                <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 z-10">
-                </div>
-
-                <div
-                  onClick={() => handleSelectPlan('12meses_con')}
-                  className="relative overflow-hidden bg-gradient-to-b from-zinc-900 to-black border-2 border-[#FA7B21] rounded-3xl p-8 sm:p-12 hover:border-[#FCA929] transition-all cursor-pointer group hover:transform hover:scale-[1.02] hover:shadow-2xl hover:shadow-[#FA7B21]/40"
-                >
-                  {/* Background effects */}
-                  <div className="absolute top-0 right-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 mix-blend-overlay"></div>
-                  <div className="absolute -top-40 -right-40 w-96 h-96 bg-[#FA7B21]/20 rounded-full blur-3xl group-hover:bg-[#FA7B21]/30 transition-all duration-500"></div>
-                  <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl"></div>
-
-                  <div className="relative z-10">
-                    <div className="text-center mb-10">
-                      <h3 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight font-bold">
-                        WOLF ELITE
-                        <span className="text-[#FA7B21]"> 365</span>
-                      </h3>
-                      <p className="text-lg text-white/80 max-w-2xl mx-auto font-light mb-6">
-                        Un año completo de formación + todos los implementos + acceso de por vida al programa Leadership
-                      </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8 lg:gap-16 mb-12">
-                      {/* Columna 1 */}
-                      <div className="bg-white/5 rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-colors flex flex-col h-full">
-                        <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
-                          <div className="bg-[#FA7B21]/20 p-2 rounded-lg">
-                            <Trophy className="w-6 h-6 text-[#FA7B21]" />
-                          </div>
-                          <h4 className="text-xl font-bold text-white">Formación y Grados</h4>
-                        </div>
-                        <ul className="space-y-4">
-                          {[
-                            "96 clases al año (2x semana)",
-                            "Clases recuperables",
-                            "1 Congelamiento incluido",
-                            "4 Graduaciones",
-                            "4 Cinturones con ceremonia",
-                            "4 Certificados oficiales",
-                            "Cartilla de seguimiento",
-                            "+ 15 días de regalo"
-                          ].map((item, i) => (
-                            <li key={i} className="flex items-center gap-3">
-                              <div className="w-1.5 h-1.5 rounded-full bg-[#FA7B21]"></div>
-                              <span className="text-white/90">{item}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      {/* Columna 2 */}
-                      <div className="bg-white/5 rounded-2xl p-8 border border-white/10 hover:border-white/20 transition-colors flex flex-col h-full">
-                        <div className="flex items-center gap-4 mb-8 border-b border-white/10 pb-6">
-                          <div className="bg-[#FCA929]/20 p-2 rounded-lg">
-                            <Gift className="w-6 h-6 text-[#FCA929]" />
-                          </div>
-                          <h4 className="text-xl font-bold text-white">Kit Leadership Wolf</h4>
-                        </div>
-                        <ul className="space-y-4">
-                          {[
-                            { name: "Guantes JMA", price: "S/ 250" },
-                            { name: "Zapatos JMA", price: "S/ 250" },
-                            { name: "Bo Staff", price: "S/ 180" },
-                            { name: "Combat Weapon", price: "S/ 220" },
-                            { name: "Nunchaku", price: "S/ 350" },
-                            { name: "Parche Leadership", price: "" },
-                            { name: "Acceso indefinido Leadership", price: "" }
-                          ].map((item, i) => (
-                            <li key={i} className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-3">
-                                <Check className="w-5 h-5 text-green-400" />
-                                <span className="text-white/90">{item.name}</span>
-                              </div>
-                              {item.price && <span className="text-[#FCA929] text-sm font-semibold">{item.price}</span>}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Pricing Box */}
-                    <div className="max-w-2xl mx-auto bg-gradient-to-r from-zinc-800 to-zinc-900 rounded-3xl p-8 border border-white/10 text-center mb-6 relative overflow-hidden group-hover:border-[#FA7B21]/50 transition-colors shadow-2xl">
-                      <div className="text-white/50 text-xl mb-2 line-through decoration-red-500/50">Valor real: S/ 4,298</div>
-                      <div className="flex items-center justify-center gap-3 mb-4">
-                        <span className="text-4xl sm:text-5xl font-black text-[#FCA929] font-bold tracking-tight">S/ 3,699</span>
-                      </div>
-                      <div className="inline-block bg-[#FA7B21]/20 text-[#FCA929] px-4 py-1 rounded-full text-sm font-bold animate-pulse">
-                        Ahorra S/ 599 — Precio de lanzamiento
-                      </div>
-                      <p className="text-white/40 text-xs mt-4 italic">* Válido para alumnos con mínimo 3 meses de entrenamiento</p>
-                    </div>
-
-                    <Button className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-4 sm:py-6 text-base sm:text-lg md:text-xl font-bold shadow-xl shadow-orange-500/20 rounded-xl group-hover:scale-[1.02] transition-transform h-auto whitespace-normal px-4 leading-tight">
-                      <span className="mr-2 text-2xl">🐺</span>
-                      <span>Quiero ser parte del programa Elite</span>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Plan 1 mes - Solo visible con código */}
-              {mostrar1Mes && (
-                <div className="mt-8 max-w-lg mx-auto">
-                  <div className="relative bg-gradient-to-b from-green-500/10 to-green-500/5 border-2 border-green-500/50 rounded-2xl p-6 sm:p-8">
-                    {/* Badge Código Desbloqueado */}
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-1 rounded-full text-sm font-bold shadow-lg">
-                      🔓 CÓDIGO DESBLOQUEADO
-                    </div>
-
-                    <div className="text-center mb-6 mt-4">
-                      <div className="text-5xl mb-4">⚡</div>
-                      <h3 className="text-2xl font-bold text-white mb-2">1 MES</h3>
-                      <div className="flex items-baseline justify-center gap-2 mb-4">
-                        <span className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                          S/ 330
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">1 mes de clase 2 veces por semana</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">Clases recuperables</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                        <span className="text-white/80 text-sm">Flexibilidad de horarios</span>
-                      </div>
-                    </div>
-
-                    <Button
-                      onClick={() => handleSelectPlan('1mes')}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white py-6 text-lg font-bold shadow-lg"
-                    >
-                      Renovar con este Plan
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Código Promocional - Desplegable discreto */}
-              <div className="mt-12 max-w-2xl mx-auto">
-                <button
-                  onClick={() => setCodigoExpanded(!codigoExpanded)}
-                  className="w-full flex items-center justify-center gap-2 text-white/60 hover:text-white/90 transition-colors py-3 text-sm group"
-                >
-                  <Gift className="w-4 h-4 text-[#FCA929] group-hover:scale-110 transition-transform" />
-                  <span>¿Tienes un código exclusivo?</span>
-                  <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${codigoExpanded ? 'rotate-180' : ''}`} />
-                </button>
-
-                {codigoExpanded && (
-                  <div className="mt-4 bg-white/5 border border-white/10 rounded-xl p-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <div className="flex gap-3">
-                      <Input
-                        type="text"
-                        placeholder="Ingresa tu código aquí"
-                        value={codigoPromocional}
-                        onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                        className="flex-1 bg-zinc-800 border-white/20 text-white placeholder:text-white/40 uppercase"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAplicarCodigo}
-                        disabled={!codigoPromocional.trim()}
-                        className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Aplicar
-                      </Button>
-                    </div>
-
-                    {codigoAplicado?.valido && (
-                      <div className="mt-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg animate-in fade-in duration-500">
-                        <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
-                          <Check className="w-4 h-4" />
-                          {codigoAplicado.tipo === 'desbloquear_1mes'
-                            ? '¡Código válido! Plan de 1 mes desbloqueado ✨'
-                            : `${codigoAplicado.descripcion}`}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className={cx.pagina}>
+        <CabeceraJMA onVolver={onVolver} />
+        <Exito
+          titulo="¡Renovación registrada!"
+          texto={`Gracias por seguir con nosotros. Te enviamos los detalles a ${p.email || 'tu correo'}.`}
+          total={registrado}
+          onPagar={() => onSuccess(registrado)}
+          onInicio={onVolver}
+        />
       </div>
     );
   }
 
-  // Formulario completo cuando ya hay un plan seleccionado
+  // ── Paso 1: elegir plan ──
+  if (!programa) {
+    return (
+      <div className={cx.pagina}>
+        <CabeceraJMA onVolver={onVolver} />
+        <main className={`${cx.contenedor} pb-16`}>
+          <Portada
+            etiqueta="Renovación"
+            titulo="Que su camino de guerrero no se detenga"
+            bajada="Elige el plan con el que tu hijo sigue entrenando. Todos son 2 veces por semana."
+            respaldo={respaldo}
+          />
+          {estado === 'cargando' ? (
+            <div className="space-y-4">{[0, 1, 2].map((i) => <div key={i} className="h-64 animate-pulse rounded-2xl bg-white/5" />)}</div>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {planes.map((plan) => <TarjetaPlan key={plan.id} plan={plan} onElegir={() => setCodigoPlan(plan.codigo)} />)}
+            </div>
+          )}
+          {!respaldo && (
+            <div className={`${cx.card} ${cx.cardPad} mt-6`}>
+              <CampoCodigo aplicado={codigo} onAplicar={setCodigo} onQuitar={() => setCodigo('')} cotizacion={cotizacion} alDia={alDia} />
+              {desbloqueados.length > 0 && <p className={`${cx.ayuda} mt-3`}>Se agregó un plan más a la lista.</p>}
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // ── Paso 2: datos, fechas, resumen y contrato ──
   return (
-    <div ref={formularioRef} className="min-h-screen bg-zinc-950 pt-24 sm:pt-28">
-      <div className="container mx-auto px-4 md:px-6 py-8 pb-28 max-w-4xl">
-        {/* Header con plan seleccionado */}
-        <div className="bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 border border-[#FA7B21]/30 rounded-2xl p-6 mb-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div>
-              <p className="text-white/70 text-sm mb-1">Plan seleccionado:</p>
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
-                {NOMBRES_PROGRAMA[planSeleccionado]} - S/ {PRECIOS_BASE[planSeleccionado]}
-              </h2>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={() => {
-                  setPlanSeleccionado(null);
-                  setFormData(INITIAL_FORM_STATE);
-                }}
-                variant="ghost"
-                className="text-white hover:text-[#FA7B21] hover:bg-white/5 transition-colors"
-              >
-                ← Volver a Planes
-              </Button>
-              {onClose && (
-                <Button
-                  onClick={onClose}
-                  variant="ghost"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
-                >
-                  Salir
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
+    <div className={cx.pagina}>
+      <CabeceraJMA onVolver={() => setCodigoPlan(null)} textoVolver="Planes" />
+      <main className={cx.contenedor}>
+        <Portada etiqueta="Renovación" titulo={programa.nombre} precio={programa.precio} notaPrecio={programa.clases ? `${programa.clases} clases` : undefined} />
 
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="space-y-6 md:space-y-7">
-          {/* Datos del Alumno */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-7">
-            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
-              Datos del Alumno
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
-              <div>
-                <Label htmlFor="nombreAlumno" className="text-white mb-2">
-                  Nombre completo *
-                </Label>
-                <Input
-                  id="nombreAlumno"
-                  value={formData.nombreAlumno}
-                  onChange={(e) => handleInputChange('nombreAlumno', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  required
-                  autoComplete="name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="dniAlumno" className="text-white mb-2">
-                  DNI *
-                </Label>
-                <Input
-                  id="dniAlumno"
-                  value={formData.dniAlumno}
-                  onChange={(e) => handleInputChange('dniAlumno', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={8}
-                  required
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label htmlFor="fechaNacimiento" className="text-white mb-2">
-                  Fecha de nacimiento *
-                </Label>
-                <Input
-                  id="fechaNacimiento"
-                  type="date"
-                  value={formData.fechaNacimiento}
-                  onChange={(e) => handleFechaNacimientoChange(e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  required
-                />
+        <div className="space-y-4">
+          <Seccion id="sec-alumno" titulo="Alumno">
+            <Campo id="nombreAlumno" label="Nombre completo" autoComplete="off" value={p.nombreAlumno} onValor={(v) => cambiar('nombreAlumno', v)} />
+            <Campo id="dniAlumno" label="DNI" inputMode="numeric" placeholder="8 dígitos" value={p.dniAlumno} onValor={(v) => cambiar('dniAlumno', soloDigitos(v, 8))} ayuda="El mismo con el que está inscrito." />
+            <CampoFechaNacimiento id="fechaNacimiento" valor={p.fechaNacimiento} onCambio={(v) => cambiar('fechaNacimiento', v)} />
+          </Seccion>
 
-                {/* Mostrar horarios disponibles */}
-                {horariosInfo && horariosInfo.horarioSemana && (
-                  <div className="mt-4 space-y-4">
-                    {/* Selector de Turno */}
-                    <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                      <p className="text-white font-semibold mb-3 text-sm">
-                        🌅 Selecciona tu turno preferido
-                      </p>
-                      <div className="grid grid-cols-2 gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setTurnoSeleccionado('manana')}
-                          className={`p-3 rounded-lg border-2 transition-all ${turnoSeleccionado === 'manana'
-                            ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                            : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                            }`}
-                        >
-                          <div className="text-center">
-                            <div className="text-2xl mb-1">🌄</div>
-                            <div className={`font-semibold text-sm ${turnoSeleccionado === 'manana' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                              Mañana
-                            </div>
-                            <div className="text-white/60 text-xs mt-1">
-                              {horariosInfo.horarioManana}
-                            </div>
-                          </div>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTurnoSeleccionado('tarde')}
-                          className={`p-3 rounded-lg border-2 transition-all ${turnoSeleccionado === 'tarde'
-                            ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                            : 'border-white/20 hover:border-[#FA7B21]/50 bg-zinc-800/50'
-                            }`}
-                        >
-                          <div className="text-center">
-                            <div className="text-2xl mb-1">🌆</div>
-                            <div className={`font-semibold text-sm ${turnoSeleccionado === 'tarde' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                              Tarde
-                            </div>
-                            <div className="text-white/60 text-xs mt-1">
-                              {horariosInfo.horarioSemana}
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
+          <Seccion id="sec-apoderado" titulo="Madre, padre o apoderado">
+            <Campo id="nombrePadre" label="Nombre completo" autoComplete="name" value={p.nombrePadre} onValor={(v) => cambiar('nombrePadre', v)} />
+            <Campo id="dniPadre" label="DNI" inputMode="numeric" placeholder="8 dígitos" value={p.dniPadre} onValor={(v) => cambiar('dniPadre', soloDigitos(v, 8))} />
+            <Campo id="email" label="Correo" type="email" inputMode="email" autoComplete="email" value={p.email} onValor={(v) => cambiar('email', v)} />
+            <Campo id="direccion" label="Dirección (opcional)" autoComplete="street-address" value={p.direccion} onValor={(v) => cambiar('direccion', v)} />
+          </Seccion>
 
-                    {/* Información de horarios */}
-                    <div className="p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                      <p className="text-white font-semibold mb-3 text-sm">
-                        📍 Horarios disponibles{horariosInfo.categoria ? ` - Categoría ${horariosInfo.categoria}` : ''}
-                      </p>
-                      <div className="space-y-2 text-xs">
-                        <p className="text-white/80">
-                          <strong className="text-white">Turno seleccionado:</strong> {turnoSeleccionado === 'manana' ? `Mañana (${horariosInfo.horarioManana})` : `Tarde (${horariosInfo.horarioSemana})`}
-                        </p>
-                        <p className="text-white/80">
-                          <strong className="text-white">Días disponibles:</strong> {turnoSeleccionado === 'manana' ? 'Martes, Jueves y Sábado' : horariosInfo.diasSemana}
-                        </p>
-                        <p className="text-white/80">
-                          <strong className="text-white">Sábados:</strong> {horariosInfo.horarioSabado}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <Seccion id="sec-fechas" titulo="Horario y fechas">
+            <SeccionFechas f={fechas} hayNacimiento={!!p.fechaNacimiento} />
+          </Seccion>
 
-          {/* Datos del Padre */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-7">
-            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
-              Datos del Padre de Familia
-            </h3>
-            <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
-              <div>
-                <Label htmlFor="nombrePadre" className="text-white mb-2">
-                  Nombre completo *
-                </Label>
-                <Input
-                  id="nombrePadre"
-                  value={formData.nombrePadre}
-                  onChange={(e) => handleInputChange('nombrePadre', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  required
-                  autoComplete="name"
-                />
-              </div>
-              <div>
-                <Label htmlFor="dniPadre" className="text-white mb-2">
-                  DNI *
-                </Label>
-                <Input
-                  id="dniPadre"
-                  value={formData.dniPadre}
-                  onChange={(e) => handleInputChange('dniPadre', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={8}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="email" className="text-white mb-2">
-                  Correo electrónico *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  required
-                  autoComplete="email"
-                />
-              </div>
-              <div>
-                <Label htmlFor="direccion" className="text-white mb-2">
-                  Dirección
-                </Label>
-                <Input
-                  id="direccion"
-                  value={formData.direccion}
-                  onChange={(e) => handleInputChange('direccion', e.target.value)}
-                  className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  autoComplete="street-address"
-                />
-              </div>
-            </div>
-          </div>
+          <Seccion id="sec-polos" titulo="Polos (opcional)">
+            <SelectorPolos ropa={ropa} cantidad={polos} onCantidad={cambiarPolos} tallas={tallasPolos} onTalla={(i, t) => setTallasPolos((prev) => prev.map((x, j) => (j === i ? t : x)))} />
+          </Seccion>
 
-          {/* Polos Adicionales */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-7">
-            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
-              Adicionales (Opcional)
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <Label className="text-white mb-3 block">
-                  ¿Desea añadir polos?
-                </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { value: '0', label: 'Ninguno', price: '' },
-                    { value: '1', label: '1', price: 'S/ 60' },
-                    { value: '2', label: '2', price: 'S/ 110' },
-                    { value: '3', label: '3', price: 'S/ 150' }
-                  ].map((option) => (
-                    <label
-                      key={option.value}
-                      className={`flex items-center space-x-2 p-3 rounded-lg border-2 cursor-pointer transition-all ${polosOption === option.value ? 'border-[#FA7B21] bg-[#FA7B21]/10' : 'border-white/20 hover:border-white/30'
-                        }`}
-                    >
-                      <input
-                        type="radio"
-                        name="polos"
-                        value={option.value}
-                        checked={polosOption === option.value}
-                        onChange={(e) => handlePolosChange(e.target.value as '0' | '1' | '2' | '3')}
-                        className="w-4 h-4 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 bg-zinc-800 border-white/20"
-                      />
-                      <div className="text-white text-sm flex-1">
-                        {option.label === 'Ninguno' ? option.label : `${option.label} × ${option.price}`}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </div>
+          <Seccion id="sec-resumen" titulo="Resumen">
+            <ResumenCotizacion cotizacion={cotizacion} alDia={alDia} error={error} respaldo={respaldo} clasesBase={clasesBase} />
+            {!respaldo && <CampoCodigo aplicado={codigo} onAplicar={setCodigo} onQuitar={() => setCodigo('')} cotizacion={cotizacion} alDia={alDia} />}
+          </Seccion>
 
-              {needsPoloSize && (
-                <div className="space-y-3">
-                  <Label className="text-white">Tallas de polos *</Label>
-                  {Array.from({ length: parseInt(polosOption) }).map((_, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <Label className="text-white/70 min-w-[100px]">
-                        Polo {index + 1}:
-                      </Label>
-                      <select
-                        value={tallasPolos[index] || ''}
-                        onChange={(e) => handleTallaPoloChange(index, e.target.value)}
-                        className="flex-1 bg-zinc-800 border border-white/20 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#FA7B21] focus:border-transparent"
-                        required
-                      >
-                        <option value="">Seleccionar talla</option>
-                        {tallasOptions.map(talla => (
-                          <option key={talla} value={talla}>Talla {talla}</option>
-                        ))}
-                      </select>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Fechas del Programa */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
-              Fechas del Programa
-            </h3>
-
-            {/* Fecha de Inicio */}
-            <div className="mb-6">
-              <Label className="text-white mb-3 block text-base font-semibold">
-                1. Selecciona tu fecha de inicio *
-              </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {fechasDisponibles.map((fecha, index) => {
-                  const fechaStr = fecha.toISOString().split('T')[0];
-                  const estaSeleccionada = formData.fechaInicio === fechaStr && opcionFechaSeleccionada === 'fechas';
-                  const nombreDia = obtenerNombreDia(fecha);
-                  const diaNumero = fecha.getDate();
-                  const mes = fecha.toLocaleDateString('es-PE', { month: 'long' });
-
-                  return (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => {
-                        handleInputChange('fechaInicio', fechaStr);
-                        setOpcionFechaSeleccionada('fechas');
-                        setMostrarOtraFecha(false);
-                      }}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${estaSeleccionada
-                        ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                        : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                        }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${estaSeleccionada ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                          }`}>
-                          {diaNumero}
-                        </div>
-                        <div className="flex-1">
-                          <p className={`font-semibold ${estaSeleccionada ? 'text-[#FA7B21]' : 'text-white'}`}>
-                            {nombreDia}
-                          </p>
-                          <p className="text-white/60 text-sm capitalize">{mes}</p>
-                        </div>
-                        {estaSeleccionada && (
-                          <div className="text-[#FA7B21] text-xl">✓</div>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {/* Opción: Aún no especificado */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleInputChange('fechaInicio', 'no-especificado');
-                    setOpcionFechaSeleccionada('no-especificado');
-                    setMostrarOtraFecha(false);
-                  }}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${opcionFechaSeleccionada === 'no-especificado'
-                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                    : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${opcionFechaSeleccionada === 'no-especificado' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                      }`}>
-                      ⏰
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-semibold ${opcionFechaSeleccionada === 'no-especificado' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                        Aún no especificado
-                      </p>
-                      <p className="text-white/60 text-sm">Lo decidiré después</p>
-                    </div>
-                    {opcionFechaSeleccionada === 'no-especificado' && (
-                      <div className="text-[#FA7B21] text-xl">✓</div>
-                    )}
-                  </div>
-                </button>
-
-                {/* Opción: Otra fecha */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpcionFechaSeleccionada('otra');
-                    setMostrarOtraFecha(true);
-                  }}
-                  className={`p-4 rounded-lg border-2 transition-all text-left ${opcionFechaSeleccionada === 'otra'
-                    ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                    : 'border-white/20 hover:border-white/40 bg-zinc-800/50 hover:bg-zinc-800'
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${opcionFechaSeleccionada === 'otra' ? 'bg-[#FA7B21] text-white' : 'bg-zinc-700 text-white/80'
-                      }`}>
-                      📅
-                    </div>
-                    <div className="flex-1">
-                      <p className={`font-semibold ${opcionFechaSeleccionada === 'otra' ? 'text-[#FA7B21]' : 'text-white'}`}>
-                        Otra fecha
-                      </p>
-                      <p className="text-white/60 text-sm">Elegir fecha personalizada</p>
-                    </div>
-                    {opcionFechaSeleccionada === 'otra' && (
-                      <div className="text-[#FA7B21] text-xl">✓</div>
-                    )}
-                  </div>
-                </button>
-              </div>
-
-              {/* Input de fecha personalizada */}
-              {mostrarOtraFecha && opcionFechaSeleccionada === 'otra' && (
-                <div className="mt-4 p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                  <Label className="text-white mb-2 block text-sm">Selecciona tu fecha personalizada:</Label>
-                  <Input
-                    type="date"
-                    value={formData.fechaInicio !== 'no-especificado' ? formData.fechaInicio : ''}
-                    onChange={(e) => handleInputChange('fechaInicio', e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="bg-zinc-800 border-white/20 text-white focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Días Tentativos */}
-            {formData.fechaInicio && formData.fechaInicio !== 'no-especificado' && formData.fechaNacimiento && (
-              <div className="mb-6">
-                <Label className="text-white mb-2 block text-base font-semibold">
-                  2. Días Tentativos de Clases *
-                </Label>
-                <p className="text-white/60 text-sm mb-4">
-                  (Solo para cálculo de fecha fin - Selecciona al menos 1 día)
-                </p>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dia) => {
-                    let isDisabled = false;
-
-                    if (turnoSeleccionado === 'manana') {
-                      isDisabled = !['Martes', 'Jueves', 'Sábado'].includes(dia);
-                    } else {
-                      if (categoriaAlumno === 'Juniors') {
-                        isDisabled = !['Lunes', 'Miércoles', 'Viernes'].includes(dia);
-                      } else if (categoriaAlumno === 'Adolescentes') {
-                        isDisabled = !['Martes', 'Jueves'].includes(dia);
-                      }
-                    }
-
-                    return (
-                      <label
-                        key={dia}
-                        className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${isDisabled
-                          ? 'border-white/10 opacity-40 cursor-not-allowed bg-zinc-800/30'
-                          : diasTentativos.includes(dia)
-                            ? 'border-[#FA7B21] bg-[#FA7B21]/20'
-                            : 'border-white/20 hover:border-[#FA7B21]/50 cursor-pointer bg-zinc-800/50'
-                          }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={diasTentativos.includes(dia)}
-                          onChange={(e) => handleDiaTentativoChange(dia, e.target.checked)}
-                          disabled={isDisabled}
-                          className="w-6 h-6 rounded border-white/20 bg-zinc-800 text-[#FA7B21] focus:ring-[#FA7B21] focus:ring-offset-0 disabled:opacity-50"
-                        />
-                        <span className={`text-sm font-medium ${diasTentativos.includes(dia) ? 'text-[#FA7B21]' : 'text-white'}`}>{dia}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <p className="text-yellow-200 text-xs">
-                    ⚠️ Importante: Estos días son solo para calcular tu fecha de fin estimada.
-                    Durante el programa, puedes venir cualquier día disponible de tu categoría según tu disponibilidad.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Fecha de Fin (Calculada) */}
-            {diasTentativos.length >= 1 && fechaFinCalculada && (
-              <div className="p-6 bg-gradient-to-br from-green-500/20 to-green-500/5 border-2 border-green-500/40 rounded-xl">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="text-3xl">📅</div>
-                  <div className="flex-1">
-                    <Label className="text-green-400 font-bold text-lg mb-1 block">
-                      3. Fecha de Fin del Programa
-                    </Label>
-                    <p className="text-white/70 text-sm">
-                      Calculada automáticamente según tus días tentativos
-                    </p>
-                  </div>
-                </div>
-
-                <div className="bg-zinc-800/50 rounded-lg p-6 mb-4">
-                  <p className="text-white/60 text-xs mb-2">Finalizarás aproximadamente el:</p>
-                  <p className="text-white font-bold text-2xl">
-                    {new Date(fechaFinCalculada).toLocaleDateString('es-PE', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </div>
-
-                {detallesFechaFin && (
-                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-white/60 text-xs mb-1">Clases totales</p>
-                        <p className="text-white font-semibold text-lg">{detallesFechaFin.clasesTotales} clases</p>
-                      </div>
-                      <div>
-                        <p className="text-white/60 text-xs mb-1">Duración aproximada</p>
-                        <p className="text-white font-semibold text-lg">{detallesFechaFin.semanasAproximadas} semanas</p>
-                      </div>
-                    </div>
-                    <p className="text-green-300 text-xs mt-3">
-                      ✓ Esta fecha considera feriados, cierres y tus días tentativos seleccionados
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Código Promocional */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <h3 className="text-white text-lg font-semibold mb-4 border-b border-white/10 pb-2">
-              Código Promocional (Opcional)
-            </h3>
-            <div className="flex gap-3">
-              <Input
-                type="text"
-                placeholder="Ingresa tu código"
-                value={codigoPromocional}
-                onChange={(e) => setCodigoPromocional(e.target.value.toUpperCase())}
-                className="flex-1 bg-zinc-800 border-white/20 text-white uppercase focus:border-[#FA7B21] focus:ring-2 focus:ring-[#FA7B21]/30"
-              />
-              <Button
-                type="button"
-                onClick={handleAplicarCodigo}
-                className="bg-[#FA7B21] hover:bg-[#F36A15] text-white"
-              >
-                Aplicar
-              </Button>
-            </div>
-
-            {codigoAplicado?.valido && codigoAplicado.tipo !== 'desbloquear_1mes' && (
-              <div className="mt-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-green-400 font-semibold mb-2">
-                      ✅ Código "{codigoAplicado.codigo}" aplicado
-                    </p>
-                    <p className="text-green-300 text-sm">
-                      🎁 {codigoAplicado.descripcion}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleQuitarCodigo}
-                    className="text-green-300 hover:text-green-100 transition-colors ml-4"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Contrato Firmado */}
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-            <button
-              type="button"
-              onClick={() => setContratoExpanded(!contratoExpanded)}
-              className="w-full flex items-center justify-between"
-            >
-              <h3 className="text-white text-lg font-semibold">
-                Contrato Firmado (Opcional)
-              </h3>
-              {contratoExpanded ? (
-                <ChevronDown className="w-5 h-5 text-white/60" />
-              ) : (
-                <ChevronRight className="w-5 h-5 text-white/60" />
-              )}
-            </button>
-
-            {contratoExpanded && (
-              <div className="mt-4">
-                <p className="text-white/60 text-sm mb-4">
-                  Si ya tienes el contrato firmado físicamente, puedes subirlo aquí:
-                </p>
-
-                {!uploadedFile ? (
-                  <label className="flex flex-col items-center justify-center w-full h-24 sm:h-32 border-2 border-dashed border-white/20 rounded-lg cursor-pointer hover:border-[#FA7B21]/50 transition-colors bg-zinc-800/30">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-10 h-10 mb-3 text-white/40" />
-                      <p className="mb-2 text-sm text-white/60">
-                        <span className="font-semibold">Click para subir</span> o arrastra aquí
-                      </p>
-                      <p className="text-xs text-white/40">PDF, JPG, PNG (MAX. 5MB)</p>
-                    </div>
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      accept=".pdf,.jpg,.jpeg,.png,.webp,.doc,.docx"
-                    />
-                  </label>
-                ) : (
-                  <div className="flex items-center justify-between p-4 bg-zinc-800/50 border border-[#FA7B21]/30 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <File className="w-8 h-8 text-[#FCA929]" />
-                      <div>
-                        <p className="text-white text-sm">{uploadedFile.name}</p>
-                        <p className="text-white/40 text-xs">
-                          {(uploadedFile.size / 1024).toFixed(2)} KB
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveFile}
-                      className="text-white/60 hover:text-red-500 transition-colors p-2"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Resumen */}
-          <div className="bg-gradient-to-br from-[#FA7B21]/20 to-[#FCA929]/10 border-2 border-[#FA7B21]/30 rounded-xl p-6">
-            <h3 className="text-white text-xl font-bold mb-4">📋 Resumen de tu Renovación</h3>
-
-            <div className="space-y-2 py-4 border-t border-white/10">
-              <div className="flex justify-between text-white/80 text-sm">
-                <span>{NOMBRES_PROGRAMA[planSeleccionado]}</span>
-                <span>S/ {precioBase}</span>
-              </div>
-              {polosOption !== '0' && (
-                <div className="flex justify-between text-white/80 text-sm">
-                  <span>Polos ({polosOption})</span>
-                  <span>S/ {precioPolosAjustado}</span>
-                </div>
-              )}
-              {descuentoDinero > 0 && (
-                <div className="flex justify-between text-green-400 text-sm font-semibold">
-                  <span>Descuento código promo</span>
-                  <span>- S/ {descuentoDinero}</span>
-                </div>
-              )}
-              {descuentoPorcentaje > 0 && (
-                <div className="flex justify-between text-green-400 text-sm font-semibold">
-                  <span>Descuento {descuentoPorcentaje}%</span>
-                  <span>- S/ {descuentoPorcentualMonto}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between items-center pt-4 border-t-2 border-white/20">
-              <span className="text-white text-lg font-bold">TOTAL A PAGAR:</span>
-              <span className="text-[#FCA929] text-3xl font-bold">S/ {total}</span>
-            </div>
-          </div>
-
-          {/* Contrato y Firma */}
-          <div className="bg-zinc-800/40 rounded-2xl p-4 sm:p-5 border border-white/10">
+          <Seccion id="sec-contrato" titulo="Contrato">
             <ContratoFirma
               datos={{
-                nombrePadre: formData.nombrePadre,
-                dniPadre: formData.dniPadre,
-                email: formData.email,
-                direccion: formData.direccion,
-                nombreAlumno: formData.nombreAlumno,
-                dniAlumno: formData.dniAlumno,
-                fechaNacimiento: formData.fechaNacimiento,
-                categoriaAlumno: categoriaAlumno,
-                programa: planSeleccionado ? NOMBRES_PROGRAMA[planSeleccionado] : '',
-                fechaInicio: formData.fechaInicio,
-                fechaFin: fechaFinCalculada || '',
-                clasesTotales: detallesFechaFin?.clasesTotales,
-                turnoSeleccionado: turnoSeleccionado === 'manana' ? 'Mañana' : 'Tarde',
-                diasTentativos: diasTentativos.join(', '),
-                precioPrograma: precioBase,
-                descuentoDinero: descuentoDinero,
-                total: total,
+                nombrePadre: p.nombrePadre,
+                dniPadre: p.dniPadre,
+                email: p.email,
+                direccion: p.direccion,
+                nombreAlumno: p.nombreAlumno,
+                dniAlumno: p.dniAlumno,
+                fechaNacimiento: p.fechaNacimiento,
+                categoriaAlumno: fechas.categoria,
+                programa: programa.nombre,
+                fechaInicio: fechas.fechaInicio,
+                fechaFin: fechas.fin?.fechaFin ?? '',
+                clasesTotales: fechas.fin?.clasesTotales ?? clasesTotales,
+                turnoSeleccionado: fechas.turno === 'manana' ? 'Mañana' : 'Tarde',
+                diasTentativos: fechas.dias.join(', '),
+                precioPrograma: programa.precio,
+                descuentoDinero: cotizacion?.descuento ?? 0,
+                total: cotizacion?.total ?? 0,
               }}
-              onFirmaCompleta={(firma) => setFirmaBase64(firma)}
+              onFirmaCompleta={setFirma}
             />
-          </div>
+          </Seccion>
+        </div>
+        <EspacioBarra />
+      </main>
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isSubmitting || !firmaBase64}
-            className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-lg shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Enviando datos...
-              </>
-            ) : (
-              'Confirmar Renovación'
-            )}
-          </Button>
-        </form>
-      </div>
+      <BarraTotal
+        total={cotizacion?.total ?? null}
+        calculando={cargando}
+        enviando={enviando}
+        onEnviar={enviar}
+        texto={firma ? 'Enviar renovación' : 'Continuar'}
+        deshabilitado={respaldo}
+      />
     </div>
   );
-});
+}

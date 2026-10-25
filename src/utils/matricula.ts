@@ -1,13 +1,7 @@
-// Funciones de cálculo de matrícula/renovación (fuente única, compartida por
-// FormularioMatricula y FormularioRenovacion). Las constantes de negocio vienen
-// de shared/constants — aquí no se hardcodea ninguna.
-import {
-  esFeriado,
-  esCierreVacacionalAMAS,
-  PROGRAMA_CLASES,
-  CODIGOS_PROMOCIONALES,
-  type TipoPromocion,
-} from '../shared/constants';
+// Fechas y horarios de matrícula/renovación (compartido por FormularioMatricula
+// y FormularioRenovacion). Aquí no hay precios ni códigos: eso lo decide el API
+// (ver utils/catalogo.ts y POST /api/config/cotizar).
+import { esFeriado, esCierreVacacionalAMAS } from '../shared/constants';
 
 export interface HorariosInfo {
   horarioSemana: string;
@@ -17,13 +11,33 @@ export interface HorariosInfo {
   horarioManana: string;
 }
 
-export interface CodigoAplicado {
-  valido: boolean;
-  tipo?: TipoPromocion;
-  valor?: number;
-  descripcion?: string;
-  codigo?: string;
-  mensaje?: string;
+export type Turno = 'manana' | 'tarde';
+
+/** YYYY-MM-DD en hora local (toISOString usa UTC y en Lima de noche da el día siguiente). */
+export function aYmd(fecha: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${fecha.getFullYear()}-${p(fecha.getMonth() + 1)}-${p(fecha.getDate())}`;
+}
+
+/** Date local a partir de YYYY-MM-DD (new Date('YYYY-MM-DD') lo toma como UTC). */
+export function deYmd(ymd: string): Date {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** "martes 4 de noviembre" */
+export function fechaLarga(ymd: string, conAnio = false): string {
+  return deYmd(ymd).toLocaleDateString('es-PE', {
+    weekday: 'long', day: 'numeric', month: 'long', ...(conAnio ? { year: 'numeric' } : {}),
+  });
+}
+
+/** Días de clase posibles según turno y categoría. */
+export function diasPermitidos(turno: Turno, categoria: string): string[] {
+  if (turno === 'manana') return ['Martes', 'Jueves', 'Sábado'];
+  if (categoria === 'Juniors') return ['Lunes', 'Miércoles', 'Viernes'];
+  if (categoria === 'Adolescentes') return ['Martes', 'Jueves'];
+  return ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 }
 
 // Calcular horarios y categoría según la edad (en meses) del alumno.
@@ -84,15 +98,15 @@ export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
   return { horarioSemana, horarioSabado, horarioManana, diasSemana, categoria };
 }
 
-// Próximas 5 fechas hábiles para iniciar (omite domingos y cierre vacacional).
-export function obtenerFechasDisponiblesInicio(): Date[] {
+// Próximas fechas hábiles para iniciar (omite domingos y cierre vacacional).
+export function obtenerFechasDisponiblesInicio(cantidad = 5): Date[] {
   const hoy = new Date();
   const fechasDisponibles: Date[] = [];
   let diasHabilesContados = 0;
   const fechaIteracion = new Date(hoy);
   fechaIteracion.setDate(fechaIteracion.getDate() + 1);
 
-  while (diasHabilesContados < 5) {
+  while (diasHabilesContados < cantidad) {
     if (fechaIteracion.getDay() === 0) {
       fechaIteracion.setDate(fechaIteracion.getDate() + 1);
       continue;
@@ -116,19 +130,19 @@ export function obtenerNombreDia(fecha: Date): string {
   return dias[fecha.getDay()];
 }
 
-// Calcula la fecha de fin contando las clases del programa: omite domingos,
-// cierre vacacional, y feriados que caen en días de clase.
-export function calcularFechaFin(fechaInicio: Date, programa: string, diasTentativos: string[], clasesExtra: number = 0): {
+// Calcula la fecha de fin contando las clases (las del programa en el catálogo
+// más las que regale el código): omite domingos, cierre vacacional, y feriados
+// que caen en días de clase.
+export function calcularFechaFin(fechaInicio: Date, clasesTotales: number, diasTentativos: string[]): {
   fechaFin: Date;
   clasesTotales: number;
   semanasAproximadas: number;
 } {
-  const clasesTotales = PROGRAMA_CLASES[programa] + clasesExtra;
 
   const fechaActual = new Date(fechaInicio);
   let clasesContadas = 1; // La primera clase cuenta
 
-  while (clasesContadas < clasesTotales) {
+  while (clasesContadas < clasesTotales && diasTentativos.length > 0) {
     fechaActual.setDate(fechaActual.getDate() + 1);
 
     if (fechaActual.getDay() === 0) continue;  // Domingo
@@ -147,43 +161,4 @@ export function calcularFechaFin(fechaInicio: Date, programa: string, diasTentat
     clasesTotales,
     semanasAproximadas: Math.ceil((fechaActual.getTime() - fechaInicio.getTime()) / (7 * 24 * 60 * 60 * 1000))
   };
-}
-
-// Valida un código promocional contra el programa seleccionado.
-export function validarCodigoPromocional(codigo: string, programaActual: string): CodigoAplicado {
-  const codigoUpper = codigo.toUpperCase().trim();
-  const promo = CODIGOS_PROMOCIONALES[codigoUpper];
-
-  if (!promo) {
-    return { valido: false, mensaje: "❌ Código no válido" };
-  }
-
-  if (!promo.activo) {
-    return { valido: false, mensaje: "❌ Código inactivo" };
-  }
-
-  if (!promo.programasAplicables.includes(programaActual)) {
-    return {
-      valido: false,
-      mensaje: "❌ Este código no aplica para el programa seleccionado"
-    };
-  }
-
-  return {
-    valido: true,
-    tipo: promo.tipo,
-    valor: promo.valor,
-    descripcion: promo.descripcion,
-    codigo: codigoUpper
-  };
-}
-
-// Clases extra que otorga un código (clases_extra / mes_gratis).
-export function obtenerClasesExtraDePromo(codigo: string): number {
-  const promo = CODIGOS_PROMOCIONALES[codigo];
-  if (!promo) return 0;
-
-  if (promo.tipo === "clases_extra") return promo.valor;
-  if (promo.tipo === "mes_gratis") return promo.valor;
-  return 0;
 }
