@@ -12,11 +12,8 @@ export function CabeceraJMA({ onVolver, textoVolver = 'Inicio' }: { onVolver?: (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[#231F20]/95 backdrop-blur">
       <div className={`${cx.contenedor} flex h-16 items-center justify-between`}>
         <div className="flex items-center gap-3">
-          <img src="/marca/lobo-192.png" alt="" width={40} height={40} className="h-10 w-10 object-contain" />
-          <div className="leading-none">
-            <p className={`${cx.display} text-[15px] text-white`}>TEAM WOLF</p>
-            <p className={`${cx.display} mt-1 text-[11px] text-[#F47B20]`}>× JMA</p>
-          </div>
+          {/* Logo oficial, versión para fondo oscuro (texto claro) */}
+          <img src="/marca/logo-completo-oscuro-800.png" alt="Team Wolf, centro de entrenamiento × JMA" width={800} height={258} className="h-11 w-auto" />
         </div>
         {onVolver && (
           <button type="button" onClick={onVolver} className="flex min-h-[44px] items-center gap-1.5 px-2 text-[14px] font-bold text-white/70 hover:text-white">
@@ -273,7 +270,7 @@ export function Exito({ titulo, texto, total, onPagar, onInicio }: {
 }) {
   return (
     <div className={`${cx.contenedor} py-12 text-center`}>
-      <img src="/marca/lobo-192.png" alt="" width={96} height={96} className="mx-auto h-24 w-24 object-contain" />
+      <img src="/marca/logo-completo-oscuro-800.png" alt="Team Wolf, centro de entrenamiento × JMA" width={800} height={258} className="mx-auto h-auto w-64" />
       <h1 className={`${cx.h1} mt-6`}>{titulo}</h1>
       <p className={`${cx.textoSec} mx-auto mt-3 max-w-md text-[16px] leading-relaxed`}>{texto}</p>
       <div className={`${cx.card} mx-auto mt-8 max-w-sm px-6 py-5`}>

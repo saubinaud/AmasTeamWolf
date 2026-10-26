@@ -1,13 +1,28 @@
 import { useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useTextoContrato } from '../hooks/useTextoContrato';
+import type { Terminos } from '../hooks/useTextoContrato';
+import { BloquesLegales } from './legal/BloquesLegales';
+// Respaldo estático (SEO y sin conexión). Se regenera desde amas-api:
+//   node scripts/exportar-terminos.js ../amas-web/src/data/terminos.json
+import respaldo from '../data/terminos.json';
+
+// El texto vive en amas-api/src/services/contratoTexto.js: es la misma fuente
+// que el contrato que firman las familias. Aquí no se escribe ninguna sección.
 
 interface TerminosCondicionesPageProps {
     onNavigate: (page: string) => void;
 }
 
 export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageProps) {
+    const { texto } = useTextoContrato();
+    const t: Terminos = texto?.terminos ?? (respaldo.terminos as Terminos);
+
     useEffect(() => {
-        window.scrollTo(0, 0);
+        const id = window.location.hash.slice(1);
+        const destino = id ? document.getElementById(id) : null;
+        if (destino) destino.scrollIntoView();
+        else window.scrollTo(0, 0);
     }, []);
 
     return (
@@ -36,148 +51,27 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                             <span className="text-3xl">📜</span>
                         </div>
                         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-                            Términos y Condiciones
+                            {t.titulo}
                         </h1>
                         <p className="text-white/60">
-                            Academia de Artes Marciales JMA
+                            {t.subtitulo}
                         </p>
                     </div>
 
                     {/* Terms Content */}
-                    <div className="prose prose-invert max-w-none space-y-8">
-
-                        {/* Section 1 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">1. OBJETO Y ACEPTACIÓN</h2>
-                            <p className="text-white/80 leading-relaxed">
-                                El presente documento establece las condiciones que regulan el acceso y uso del sitio web de la Academia de Artes Marciales JMA. Al navegar o utilizar nuestros servicios digitales, el usuario (padre, madre o tutor) acepta estos términos en su totalidad. Si no está de acuerdo con alguna cláusula, deberá abstenerse de utilizar el portal.
-                            </p>
-                        </section>
-
-                        {/* Section 2 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">2. REGISTRO Y RESPONSABILIDAD DE DATOS</h2>
-                            <ul className="space-y-3 text-white/80">
-                                <li>
-                                    <strong className="text-white">Menores de Edad:</strong> El registro de alumnos menores de 18 años debe ser realizado exclusivamente por su padre, madre o tutor legal.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Veracidad:</strong> El tutor garantiza que toda la información proporcionada (nombres, DNI, fecha de nacimiento y estado de salud) es veraz y actual.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Uso de Cuenta:</strong> El usuario es responsable de mantener la confidencialidad de sus credenciales de acceso.
-                                </li>
-                            </ul>
-                        </section>
-
-                        {/* Section 3 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">3. SERVICIOS Y PAGOS ELECTRÓNICOS</h2>
-                            <ul className="space-y-3 text-white/80">
-                                <li>
-                                    <strong className="text-white">Pasarela de Pagos:</strong> Todos los pagos realizados a través de la web por conceptos de membresía, programas o implementos están sujetos a verificación.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Devoluciones:</strong> Las solicitudes de devolución se rigen por lo establecido en la sección 9 de este documento.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Precios:</strong> La academia se reserva el derecho de modificar los precios de los programas y promociones sin previo aviso, respetando los montos ya pagados por membresías activas.
-                                </li>
-                            </ul>
-                        </section>
-
-                        {/* Section 4 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">4. INFRAESTRUCTURA Y SEGURIDAD (CLOUDFLARE)</h2>
-                            <p className="text-white/80 leading-relaxed mb-3">
-                                Para garantizar una experiencia de navegación rápida y segura, nuestro sitio web utiliza los servicios de Cloudflare.
-                            </p>
-                            <ul className="space-y-3 text-white/80">
-                                <li>
-                                    <strong className="text-white">Seguridad:</strong> El usuario acepta que el tráfico hacia el sitio web sea monitoreado para detectar amenazas, ataques de denegación de servicio (DDoS) y garantizar la integridad de los datos transaccionales.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Disponibilidad:</strong> Aunque nos esforzamos por mantener el sitio activo 24/7, la academia no se hace responsable por interrupciones técnicas ajenas a nuestro control o por periodos de mantenimiento.
-                                </li>
-                            </ul>
-                        </section>
-
-                        {/* Section 5 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">5. PROPIEDAD INTELECTUAL</h2>
-                            <p className="text-white/80 leading-relaxed">
-                                Todo el contenido del sitio web (logotipos de JMA, fotografías de alumnos, videos de entrenamiento, textos y metodologías) es propiedad exclusiva de la Academia JMA o cuenta con las autorizaciones correspondientes. Queda prohibida su reproducción, copia o distribución sin autorización expresa.
-                            </p>
-                        </section>
-
-                        {/* Section 6 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">6. PROTECCIÓN DE DATOS PERSONALES (LEY 29733)</h2>
-                            <p className="text-white/80 leading-relaxed mb-3">
-                                De acuerdo con la legislación peruana, los datos personales recolectados a través de formularios web serán tratados con la finalidad de gestionar la matrícula del alumno y enviar información comercial relevante.
-                            </p>
-                            <ul className="space-y-3 text-white/80">
-                                <li>
-                                    <strong className="text-white">Consentimiento de Imagen:</strong> Al registrar al menor en actividades que se transmitan o promocionen vía web, el tutor acepta la política de uso de imagen detallada en el convenio de membresía.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Derechos ARCO:</strong> El usuario puede solicitar el acceso, rectificación o cancelación de sus datos enviando un correo a la administración de la academia.
-                                </li>
-                            </ul>
-                        </section>
-
-                        {/* Section 7 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">7. CONDUCTA EN EL ENTORNO DIGITAL</h2>
-                            <p className="text-white/80 leading-relaxed mb-3">
-                                La academia se reserva el derecho de admisión y el derecho de bloquear el acceso a cualquier usuario que:
-                            </p>
-                            <ul className="space-y-2 text-white/80 list-disc list-inside">
-                                <li>Proporcione información falsa o fraudulenta.</li>
-                                <li>Realice comentarios injuriosos en blogs o secciones interactivas que dañen la imagen de la institución o su staff.</li>
-                                <li>Intente vulnerar la seguridad del sitio web.</li>
-                            </ul>
-                        </section>
-
-                        {/* Section 8 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">8. LEY APLICABLE Y JURISDICCIÓN</h2>
-                            <p className="text-white/80 leading-relaxed">
-                                Estos términos se rigen por las leyes de la República del Perú. Cualquier controversia será resuelta ante los jueces y tribunales del distrito judicial de Lima.
-                            </p>
-                        </section>
-
-                        {/* Section 9 */}
-                        <section>
-                            <h2 className="text-xl font-bold text-[#FCA929] mb-4">9. DEVOLUCIONES, BENEFICIOS PROMOCIONALES Y OBSEQUIOS</h2>
-                            <ul className="space-y-3 text-white/80">
-                                <li>
-                                    <strong className="text-white">Devolución proporcional:</strong> Toda devolución se calcula descontando el periodo ya transcurrido del programa contratado, contado desde su fecha de inicio hasta la fecha en que se presenta la solicitud. El periodo transcurrido se valoriza en proporción al precio efectivamente pagado por el programa. Las inasistencias del alumno no reducen el periodo transcurrido.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Beneficios promocionales al final del programa:</strong> Todo beneficio otorgado sin costo (por ejemplo, un mes de clases o 15 días de clases gratis) se aplica al término del periodo pagado. Ejemplo: en un plan de 3 meses con 1 mes de regalo, el alumno cursa primero los 3 meses pagados y luego inicia su mes gratuito.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Los beneficios no son reembolsables:</strong> Por tratarse de beneficios sin costo, no tienen valor monetario, no se devuelven en dinero y se pierden si el programa pagado se deja sin efecto antes de que el beneficio comience.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Instrumentos y objetos obsequiados:</strong> Si junto con el programa se entregó un instrumento u otro objeto de regalo, al realizar una devolución se descuenta el 50 % de su valor de mercado al momento de la devolución. Como valor de mercado se toma el precio de venta del mismo artículo en la Tienda JMA en esa fecha.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Saldo a devolver:</strong> El monto a devolver es el precio pagado menos el periodo transcurrido y, de corresponder, el descuento por obsequios. Si estos descuentos igualan o superan lo pagado, no hay monto que devolver.
-                                </li>
-                                <li>
-                                    <strong className="text-white">Vigencia:</strong> Estas condiciones se aplican a las matrículas, renovaciones y promociones contratadas desde el 1 de abril de 2026.
-                                </li>
-                            </ul>
-                        </section>
-
+                    <div className="max-w-none space-y-8">
+                        {t.secciones.map((sec) => (
+                            <section key={sec.id} id={sec.id} className="scroll-mt-24">
+                                <h2 className="text-xl font-bold text-[#FCA929] mb-4">{sec.numero}. {sec.titulo.toUpperCase()}</h2>
+                                <BloquesLegales bloques={sec.bloques} />
+                            </section>
+                        ))}
                     </div>
 
                     {/* Footer */}
                     <div className="mt-10 pt-8 border-t border-white/10 text-center">
                         <p className="text-white/40 text-sm">
-                            Última actualización: Octubre 2026
+                            Última actualización: {t.actualizado}
                         </p>
                         <button
                             onClick={() => onNavigate('home')}

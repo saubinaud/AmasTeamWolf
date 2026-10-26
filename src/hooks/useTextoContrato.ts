@@ -1,27 +1,59 @@
-// Texto del contrato: viene del API (GET /api/contratos/texto), el mismo que
-// imprime el PDF. Aquí no se escribe ninguna cláusula.
+// Texto del contrato y de los Términos y Condiciones: viene del API
+// (GET /api/contratos/texto; fuente única en amas-api/src/services/contratoTexto.js),
+// el mismo que imprime el PDF. Aquí no se escribe ninguna cláusula.
 import { useCallback, useEffect, useState } from 'react';
 import { API_BASE } from '../config/api';
 
+export type Bloque =
+  | { tipo: 'p'; texto: string; variante?: 'autoriza' | 'no_autoriza' }
+  | { tipo: 'lista'; items: { etiqueta?: string; texto: string }[] }
+  | { tipo: 'formula'; texto: string }
+  | { tipo: 'ejemplo'; titulo: string; filas: { concepto: string; detalle?: string; monto: number; total?: boolean }[]; nota?: string };
+
 export interface Clausula {
   numero: number;
+  id: string;
   titulo: string;
-  texto: string;
-  variantes?: { autoriza: string; no_autoriza: string };
+  bloques: Bloque[];
+}
+
+export interface Terminos {
+  titulo: string;
+  subtitulo: string;
+  actualizado: string;
+  secciones: Clausula[];
 }
 
 export interface TextoContrato {
   version: string;
   clausulas: Clausula[];
   clausula_imagen: number;
-  resumen: { clausula: number; texto: string }[];
+  clausula_devoluciones: number;
+  resumen: { clausula: number; ref: string; texto: string }[];
+  /** Con {apoderado}, {dni}, {alumno} y {programa} por llenar */
+  declaracion: string;
+  terminos: Terminos;
 }
 
 let enCache: TextoContrato | null = null;
 
-/** Cláusulas con la variante de imagen elegida. */
+/** Cláusulas con la variante de imagen elegida (los demás bloques no cambian). */
 export function clausulasCon(t: TextoContrato, autorizaImagen: boolean): Clausula[] {
-  return t.clausulas.map((c) => (c.variantes ? { ...c, texto: autorizaImagen ? c.variantes.autoriza : c.variantes.no_autoriza } : c));
+  const elegida = autorizaImagen ? 'autoriza' : 'no_autoriza';
+  return t.clausulas.map((c) => ({
+    ...c,
+    bloques: c.bloques.filter((b) => b.tipo !== 'p' || !b.variante || b.variante === elegida),
+  }));
+}
+
+type Hueco = 'apoderado' | 'dni' | 'alumno' | 'programa';
+
+/** Declaración partida en texto y huecos ({apoderado}, {dni}…), para pintar los datos en negrita. */
+export function partesDeclaracion(t: TextoContrato, datos: Record<Hueco, string>) {
+  return t.declaracion.split(/(\{(?:apoderado|dni|alumno|programa)\})/).filter(Boolean).map((trozo) => {
+    const m = /^\{(apoderado|dni|alumno|programa)\}$/.exec(trozo);
+    return m ? { dato: true, texto: datos[m[1] as Hueco] } : { dato: false, texto: trozo };
+  });
 }
 
 export function useTextoContrato() {

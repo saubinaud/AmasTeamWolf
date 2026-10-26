@@ -1,0 +1,236 @@
+{
+  "version": "2026-10-jma-2",
+  "terminos": {
+    "titulo": "Términos y Condiciones",
+    "subtitulo": "Academia de Artes Marciales JMA",
+    "actualizado": "Octubre 2026",
+    "secciones": [
+      {
+        "numero": 1,
+        "id": "objeto",
+        "titulo": "Objeto y aceptación",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "El presente documento establece las condiciones que regulan el acceso y uso del sitio web de la Academia de Artes Marciales JMA. Al navegar o utilizar nuestros servicios digitales, el usuario (padre, madre o tutor) acepta estos términos en su totalidad. Si no está de acuerdo con alguna cláusula, deberá abstenerse de utilizar el portal."
+          }
+        ]
+      },
+      {
+        "numero": 2,
+        "id": "registro",
+        "titulo": "Registro y responsabilidad de datos",
+        "bloques": [
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Menores de edad",
+                "texto": "El registro de alumnos menores de 18 años debe ser realizado exclusivamente por su padre, madre o tutor legal."
+              },
+              {
+                "etiqueta": "Veracidad",
+                "texto": "El tutor garantiza que toda la información proporcionada (nombres, DNI, fecha de nacimiento y estado de salud) es veraz y actual."
+              },
+              {
+                "etiqueta": "Uso de cuenta",
+                "texto": "El usuario es responsable de mantener la confidencialidad de sus credenciales de acceso."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 3,
+        "id": "pagos",
+        "titulo": "Servicios y pagos electrónicos",
+        "bloques": [
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Pasarela de pagos",
+                "texto": "Todos los pagos realizados a través de la web por conceptos de membresía, programas o implementos están sujetos a verificación."
+              },
+              {
+                "etiqueta": "Devoluciones",
+                "texto": "Las solicitudes de devolución se rigen por lo establecido en la sección 9 de este documento."
+              },
+              {
+                "etiqueta": "Precios",
+                "texto": "La academia se reserva el derecho de modificar los precios de los programas y promociones sin previo aviso, respetando los montos ya pagados por membresías activas."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 4,
+        "id": "infraestructura",
+        "titulo": "Infraestructura y seguridad (Cloudflare)",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "Para garantizar una experiencia de navegación rápida y segura, nuestro sitio web utiliza los servicios de Cloudflare."
+          },
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Seguridad",
+                "texto": "El usuario acepta que el tráfico hacia el sitio web sea monitoreado para detectar amenazas, ataques de denegación de servicio (DDoS) y garantizar la integridad de los datos transaccionales."
+              },
+              {
+                "etiqueta": "Disponibilidad",
+                "texto": "Aunque nos esforzamos por mantener el sitio activo 24/7, la academia no se hace responsable por interrupciones técnicas ajenas a nuestro control o por periodos de mantenimiento."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 5,
+        "id": "propiedad-intelectual",
+        "titulo": "Propiedad intelectual",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "Todo el contenido del sitio web (logotipos de JMA, fotografías de alumnos, videos de entrenamiento, textos y metodologías) es propiedad exclusiva de la Academia JMA o cuenta con las autorizaciones correspondientes. Queda prohibida su reproducción, copia o distribución sin autorización expresa."
+          }
+        ]
+      },
+      {
+        "numero": 6,
+        "id": "datos-personales",
+        "titulo": "Protección de datos personales (Ley 29733)",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "De acuerdo con la legislación peruana, los datos personales recolectados a través de formularios web serán tratados con la finalidad de gestionar la matrícula del alumno y enviar información comercial relevante."
+          },
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Consentimiento de imagen",
+                "texto": "Al registrar al menor en actividades que se transmitan o promocionen vía web, el tutor acepta la política de uso de imagen detallada en el convenio de membresía."
+              },
+              {
+                "etiqueta": "Derechos ARCO",
+                "texto": "El usuario puede solicitar el acceso, rectificación o cancelación de sus datos enviando un correo a la administración de la academia."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 7,
+        "id": "conducta",
+        "titulo": "Conducta en el entorno digital",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "La academia se reserva el derecho de admisión y el derecho de bloquear el acceso a cualquier usuario que:"
+          },
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "texto": "Proporcione información falsa o fraudulenta."
+              },
+              {
+                "texto": "Realice comentarios injuriosos en blogs o secciones interactivas que dañen la imagen de la institución o su staff."
+              },
+              {
+                "texto": "Intente vulnerar la seguridad del sitio web."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 8,
+        "id": "ley-aplicable",
+        "titulo": "Ley aplicable y jurisdicción",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "Estos términos y el contrato de inscripción se rigen por las leyes de la República del Perú. Cualquier controversia será resuelta ante los jueces y tribunales del distrito judicial de Lima."
+          }
+        ]
+      },
+      {
+        "numero": 9,
+        "id": "devoluciones",
+        "titulo": "Devoluciones, beneficios promocionales y obsequios",
+        "bloques": [
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Devolución proporcional",
+                "texto": "Toda devolución se calcula descontando el periodo ya transcurrido del programa contratado, contado desde su fecha de inicio hasta la fecha en que se presenta la solicitud. El periodo transcurrido se valoriza en proporción al precio efectivamente pagado por el programa. Las inasistencias del alumno no reducen el periodo transcurrido."
+              },
+              {
+                "etiqueta": "Beneficios promocionales al final del programa",
+                "texto": "Todo beneficio otorgado sin costo (por ejemplo, un mes de clases o 15 días de clases gratis) se aplica al término del periodo pagado. Ejemplo: en un plan de 3 meses con 1 mes de regalo, el alumno cursa primero los 3 meses pagados y luego inicia su mes gratuito."
+              },
+              {
+                "etiqueta": "Los beneficios no son reembolsables",
+                "texto": "Por tratarse de beneficios sin costo, no tienen valor monetario, no se devuelven en dinero y se pierden si el programa pagado se deja sin efecto antes de que el beneficio comience."
+              },
+              {
+                "etiqueta": "Instrumentos y objetos obsequiados",
+                "texto": "Si junto con el programa se entregó un instrumento u otro objeto de regalo, al realizar una devolución se descuenta el 50 % de su valor de mercado al momento de la devolución. Como valor de mercado se toma el precio de venta del mismo artículo en la Tienda JMA en esa fecha."
+              },
+              {
+                "etiqueta": "Saldo a devolver",
+                "texto": "El monto a devolver es el precio pagado menos el periodo transcurrido y, de corresponder, el descuento por obsequios. Si estos descuentos igualan o superan lo pagado, no hay monto que devolver."
+              },
+              {
+                "etiqueta": "Vigencia",
+                "texto": "Estas condiciones se aplican a las matrículas, renovaciones y promociones contratadas desde el 1 de abril de 2026."
+              }
+            ]
+          },
+          {
+            "tipo": "formula",
+            "texto": "Monto a devolver = precio pagado - (precio pagado x días transcurridos / días del periodo pagado) - 50 % del precio en Tienda JMA de cada obsequio. Si el resultado es cero o menos, no hay monto que devolver."
+          },
+          {
+            "tipo": "ejemplo",
+            "titulo": "Ejemplo",
+            "filas": [
+              {
+                "concepto": "Precio pagado",
+                "detalle": "Programa de 3 meses (90 días) con 1 mes de regalo",
+                "monto": 900
+              },
+              {
+                "concepto": "Periodo transcurrido",
+                "detalle": "Pide la devolución a los 30 días del inicio: 900 x 30 / 90",
+                "monto": -300
+              },
+              {
+                "concepto": "Obsequio",
+                "detalle": "Guantes que hoy cuestan S/ 80 en Tienda JMA: 50 %",
+                "monto": -40
+              },
+              {
+                "concepto": "Mes de regalo",
+                "detalle": "No tiene valor monetario: no se devuelve",
+                "monto": 0
+              },
+              {
+                "concepto": "Monto a devolver",
+                "monto": 560,
+                "total": true
+              }
+            ],
+            "nota": "Cifras ilustrativas. Las faltas del alumno no cambian el cálculo."
+          }
+        ]
+      }
+    ]
+  }
+}

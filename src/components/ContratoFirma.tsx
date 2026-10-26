@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, CheckCircle, ChevronDown, Pen, RotateCcw } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ChevronDown, ExternalLink, Pen, RotateCcw } from 'lucide-react';
 import { cx } from './matricula/tokens';
 import { Casilla } from './matricula/piezas';
 import { PadFirma } from './PadFirma';
 import { soles } from '../utils/catalogo';
-import { clausulasCon, useTextoContrato } from '../hooks/useTextoContrato';
+import { clausulasCon, partesDeclaracion, useTextoContrato } from '../hooks/useTextoContrato';
+import { BloquesLegales } from './legal/BloquesLegales';
 
 interface ContratoFirmaProps {
   datos: {
@@ -39,6 +40,14 @@ const fechaCorta = (v?: string) => {
   if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return v ?? '';
   return new Date(`${v}T12:00:00`).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
 };
+
+/** "… la cláusula 5 sobre devoluciones…" con el número resaltado. */
+function resaltarClausula(t: string, n: number) {
+  const marca = `cláusula ${n}`;
+  const i = t.indexOf(marca);
+  if (i < 0) return t;
+  return <>{t.slice(0, i)}<strong className="text-[#F47B20]">{marca}</strong>{t.slice(i + marca.length)}</>;
+}
 
 const unir = (...partes: (string | false | null | undefined)[]) => partes.filter(Boolean).join(' · ');
 
@@ -167,9 +176,10 @@ export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen }: Cont
           <div className={`${cx.divisor} max-h-[60vh] overflow-y-auto overscroll-contain px-4 py-4`}>
             <div className="max-w-prose space-y-3">
               {clausulas.map((c) => (
-                <p key={c.numero} className="text-[15px] leading-relaxed text-white/75">
-                  <span className="font-bold text-white">{c.numero}. {c.titulo}.</span> {c.texto}
-                </p>
+                <section key={c.id} className="space-y-2">
+                  <h4 className="text-[15px] font-bold text-white">{c.numero}. {c.titulo}</h4>
+                  <BloquesLegales bloques={c.bloques} compacto />
+                </section>
               ))}
               <p className={`${cx.textoApagado} pt-1 text-[12px]`}>Versión {texto.version}. Es el mismo texto que recibirás en el PDF.</p>
             </div>
@@ -178,11 +188,13 @@ export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen }: Cont
       </div>
 
       {/* 3. Declaración y casillas */}
-      <p className={`${cx.textoSec} max-w-prose text-[15px] leading-relaxed`}>
-        Yo, {fuerte(d.nombrePadre)}, con DNI {fuerte(d.dniPadre)}, declaro haber leído, comprendido y aceptado todas las
-        condiciones del presente contrato, incluyendo expresamente la <strong className="text-[#F47B20]">cláusula 4 (cancelaciones
-        y devoluciones)</strong>, para la inscripción de {fuerte(d.nombreAlumno)} en el programa {fuerte(d.programa)} de JMA Team Wolf.
-      </p>
+      {texto && (
+        <p className={`${cx.textoSec} max-w-prose text-[15px] leading-relaxed`}>
+          {partesDeclaracion(texto, { apoderado: d.nombrePadre, dni: d.dniPadre, alumno: d.nombreAlumno, programa: d.programa }).map((t, i) => (
+            t.dato ? <span key={i}>{fuerte(t.texto)}</span> : <span key={i}>{resaltarClausula(t.texto, texto.clausula_devoluciones)}</span>
+          ))}
+        </p>
+      )}
       <div className={`space-y-2 ${firma ? 'pointer-events-none opacity-60' : ''}`}>
         <Casilla
           marcada={autorizaImagen}
@@ -190,7 +202,15 @@ export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen }: Cont
           titulo="Autorizo el uso de fotos y videos del alumno en material promocional"
           detalle="Opcional. Sin marcar, solo se usan para comunicación institucional."
         />
-        <Casilla marcada={aceptado} onCambio={setAceptado} titulo="He leído y acepto los términos y condiciones del contrato" />
+        <Casilla
+          marcada={aceptado}
+          onCambio={setAceptado}
+          titulo="He leído y acepto el contrato y los Términos y Condiciones de JMA Team Wolf"
+          detalle="Los términos forman parte del contrato y sus reglas están en sus cláusulas."
+        />
+        <a href="/terminos" target="_blank" rel="noopener noreferrer" className="pointer-events-auto inline-flex items-center gap-1.5 px-1 text-[13px] font-bold text-[#FCA929] hover:underline">
+          Ver Términos y Condiciones <ExternalLink className="h-3.5 w-3.5" />
+        </a>
       </div>
 
       {/* 4. Firma */}
