@@ -3,7 +3,8 @@ import { Award, Shield, Clock, Zap, Calendar, AlertTriangle, ArrowRight, Calenda
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '../../ui/utils';
-import { BELT_COLORS, BELT_PROGRESSION, formatDate, getBeltColor, getNextBelt, getApiUrl, parseSpanishDate } from '../utils';
+import { formatDate, getApiUrl, parseSpanishDate } from '../utils';
+import { useCinturones } from '../../../hooks/useCinturones';
 import { BeltDisplay } from '../BeltDisplay';
 
 interface GraduacionTabProps {
@@ -12,6 +13,7 @@ interface GraduacionTabProps {
 }
 
 export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
+  const { color: colorCinturon, siguiente: siguienteCinturon, progreso: progresoCinturon } = useCinturones();
   const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
   const [graduationError, setGraduationError] = useState<string | null>(null);
   const [graduationLoaded, setGraduationLoaded] = useState(false);
@@ -98,9 +100,9 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
                 <div className="flex flex-col items-center gap-2">
                   <div
                     className="w-14 h-14 rounded-full border-4 flex items-center justify-center"
-                    style={{ borderColor: BELT_COLORS[user.proximaGraduacion.cinturonDesde] ?? '#555', backgroundColor: `${BELT_COLORS[user.proximaGraduacion.cinturonDesde] ?? '#555'}20` }}
+                    style={{ borderColor: colorCinturon(user.proximaGraduacion.cinturonDesde), backgroundColor: `${colorCinturon(user.proximaGraduacion.cinturonDesde)}20` }}
                   >
-                    <Shield className="w-6 h-6" style={{ color: BELT_COLORS[user.proximaGraduacion.cinturonDesde] ?? '#555' }} />
+                    <Shield className="w-6 h-6" style={{ color: colorCinturon(user.proximaGraduacion.cinturonDesde) }} />
                   </div>
                   <span className="text-xs text-zinc-400 text-center max-w-[80px] leading-tight">{user.proximaGraduacion.cinturonDesde || '-'}</span>
                 </div>
@@ -108,9 +110,9 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
                 <div className="flex flex-col items-center gap-2">
                   <div
                     className="w-14 h-14 rounded-full border-4 flex items-center justify-center"
-                    style={{ borderColor: BELT_COLORS[user.proximaGraduacion.cinturonHasta] ?? '#FCA929', backgroundColor: `${BELT_COLORS[user.proximaGraduacion.cinturonHasta] ?? '#FCA929'}20` }}
+                    style={{ borderColor: colorCinturon(user.proximaGraduacion.cinturonHasta), backgroundColor: `${colorCinturon(user.proximaGraduacion.cinturonHasta)}20` }}
                   >
-                    <Award className="w-6 h-6" style={{ color: BELT_COLORS[user.proximaGraduacion.cinturonHasta] ?? '#FCA929' }} />
+                    <Award className="w-6 h-6" style={{ color: colorCinturon(user.proximaGraduacion.cinturonHasta) }} />
                   </div>
                   <span className="text-xs text-[#FCA929] font-medium text-center max-w-[80px] leading-tight">{user.proximaGraduacion.cinturonHasta || '-'}</span>
                 </div>
@@ -176,11 +178,11 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
             <div
               className="w-20 h-20 mx-auto rounded-full flex items-center justify-center border-4 mb-3"
               style={{
-                borderColor: BELT_COLORS[user?.estudiante?.cinturonActual ?? 'Blanco'] ?? '#555',
-                backgroundColor: `${BELT_COLORS[user?.estudiante?.cinturonActual ?? 'Blanco'] ?? '#555'}15`,
+                borderColor: colorCinturon(user?.estudiante?.cinturonActual ?? 'Blanco'),
+                backgroundColor: `${colorCinturon(user?.estudiante?.cinturonActual ?? 'Blanco')}15`,
               }}
             >
-              <Award className="w-10 h-10" style={{ color: BELT_COLORS[user?.estudiante?.cinturonActual ?? 'Blanco'] ?? '#FA7B21' }} />
+              <Award className="w-10 h-10" style={{ color: colorCinturon(user?.estudiante?.cinturonActual ?? 'Blanco') }} />
             </div>
             <p className="text-2xl font-bold text-white">{user?.estudiante?.cinturonActual ?? 'Blanco'}</p>
             <p className="text-xs text-zinc-500 mt-1">Cinturon Actual</p>
@@ -197,13 +199,13 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
                     <div key={i} className="relative flex items-center gap-3">
                       <div
                         className="absolute -left-6 w-3.5 h-3.5 rounded-full border-2 border-black"
-                        style={{ backgroundColor: BELT_COLORS[c.cinturon] ?? '#888' }}
+                        style={{ backgroundColor: colorCinturon(c.cinturon) }}
                       />
                       <div className="flex-1 bg-white/5 rounded-xl px-4 py-3 border border-white/5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: BELT_COLORS[c.cinturon] ?? '#888' }}
+                            style={{ backgroundColor: colorCinturon(c.cinturon) }}
                           />
                           <p className="text-sm font-medium text-white">{c.cinturon}</p>
                         </div>
@@ -381,10 +383,9 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
         {/* Belt progression */}
         {(() => {
           const currentBelt = user?.estudiante?.cinturonActual || 'Blanco';
-          const currentColor = getBeltColor(currentBelt);
-          const next = getNextBelt(currentBelt);
-          const currentIdx = BELT_PROGRESSION.indexOf(currentBelt as any);
-          const progress = currentIdx >= 0 ? Math.round((currentIdx / (BELT_PROGRESSION.length - 1)) * 100) : 0;
+          const currentColor = colorCinturon(currentBelt);
+          const next = siguienteCinturon(currentBelt);
+          const progress = progresoCinturon(currentBelt);
           return (
             <div className="space-y-6 mt-12 bg-black/20 rounded-2xl p-6 border border-white/5">
               <div className="flex items-center justify-between px-4 md:px-12">

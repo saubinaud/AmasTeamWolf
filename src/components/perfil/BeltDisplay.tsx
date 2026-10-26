@@ -1,11 +1,30 @@
 import { useState } from 'react';
-import { parseBeltDisplay, darkenHex } from './utils';
+import { darkenHex } from './utils';
+import { useCinturones } from '../../hooks/useCinturones';
+
+/** ¿Tan claro que hace falta borde? */
+function esClaro(hex: string) {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m) return true;
+  const [r, g, b] = m.slice(1).map((x) => parseInt(x, 16));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 225;
+}
 
 let beltIdCounter = 0;
 
 export function BeltDisplay({ name }: { name: string }) {
   const [uid] = useState(() => `belt-${++beltIdCounter}`);
-  const b = parseBeltDisplay(name);
+  const { dibujo } = useCinturones();
+  const d = dibujo(name);
+  const conTira = d.grosor_tira !== 'ninguna' && !!d.color_tira;
+  const b = {
+    base: d.color_base,
+    stripe: conTira && !d.tira_camuflada ? d.color_tira : null,
+    bicolor: conTira ? d.color_tira_2 : null,
+    thick: conTira ? d.grosor_tira : null,
+    dan: d.grados,
+    white: esClaro(d.color_base),
+  };
 
   // Stripe band position on belt body (body y=25..55, height=30)
   const sY = b.thick === 'gruesa' ? 31 : b.thick === 'delgada' ? 36 : 33;
@@ -47,22 +66,22 @@ export function BeltDisplay({ name }: { name: string }) {
           <path d="M111,48 L132,94 L120,94 L105,56 Z" fill={tail} />
 
           {/* Stripe band (clipped to full belt shape) */}
-          {b.stripe && !('bicolor' in b && b.bicolor) && (
+          {b.stripe && !b.bicolor && (
             <rect x="0" y={sY} width="200" height={sH} fill={b.stripe} clipPath={`url(#${uid})`} />
           )}
           {/* Bicolor stripe (rojo negro: red + black) */}
-          {'bicolor' in b && b.bicolor && b.stripe && (
+          {b.bicolor && b.stripe && (
             <>
               <rect x="0" y={sY} width="120" height={sH} fill={b.stripe} clipPath={`url(#${uid})`} />
-              <rect x="120" y={sY} width="80" height={sH} fill={b.bicolor as string} clipPath={`url(#${uid})`} />
+              <rect x="120" y={sY} width="80" height={sH} fill={b.bicolor} clipPath={`url(#${uid})`} />
             </>
           )}
 
           {/* Camo overlay (stripe or full) */}
-          {b.camo && b.thick && (
+          {conTira && d.tira_camuflada && (
             <rect x="0" y={sY} width="200" height={sH} fill={`url(#${uid}-camo)`} clipPath={`url(#${uid})`} />
           )}
-          {b.camo && !b.thick && (
+          {d.base_camuflada && (
             <rect x="0" y="0" width="200" height="100" fill={`url(#${uid}-camo)`} clipPath={`url(#${uid})`} opacity="0.5" />
           )}
 

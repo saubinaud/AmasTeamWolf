@@ -54,6 +54,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
   const [codigo, setCodigo] = useState('');
   const [firma, setFirma] = useState<string | null>(null);
+  const [autorizaImagen, setAutorizaImagen] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [registrado, setRegistrado] = useState<number | null>(null);
 
@@ -73,7 +74,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
 
   const clasesBase = programa?.clases ?? 0;
   const clasesTotales = clasesBase + (alDia ? cotizacion?.clases_extra ?? 0 : 0);
-  const fechas = useFechasPrograma(p.fechaNacimiento, clasesTotales);
+  const fechas = useFechasPrograma(p.fechaNacimiento, clasesTotales, programa?.codigo, clasesTotales - clasesBase);
 
   const regaloUniforme = !!cotizacion?.regalos.some((g) => g.categoria === 'uniforme');
   const pideTallaUniforme = !sinUniforme || conUniforme || regaloUniforme;
@@ -127,9 +128,9 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
       email: p.email.trim(),
       polos: polos === '0' ? 'No' : `${polos} polo(s)`,
       uniformeAdicional: sinUniforme ? (conUniforme || regaloUniforme ? 'Sí' : 'No') : 'Incluido',
-      fechaInicio: fechas.fechaInicio,
+      fechaInicio: fechas.fin?.fechaInicio ?? fechas.fechaInicio,
       diasTentativos: fechas.sinDefinir ? 'Aún no especificado' : fechas.dias.join(', '),
-      fechaFin: fechas.sinDefinir ? 'Por calcular' : fechas.fin?.fechaFin ?? '',
+      fechaFin: fechas.sinDefinir ? '' : fechas.fin?.fechaFin ?? '',
       semanasAproximadas: fechas.fin?.semanas ?? 0,
 
       // Informativo (correo y contrato); el servidor lo reemplaza por su cotización
@@ -141,6 +142,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
       total: cotizacion.total,
 
       contratoFirmado: firma,
+      autorizaImagen,
       fechaRegistro: new Date().toISOString(),
     };
 
@@ -248,7 +250,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
                 fechaNacimiento: p.fechaNacimiento,
                 categoriaAlumno: fechas.categoria,
                 programa: programa?.nombre ?? '',
-                fechaInicio: fechas.fechaInicio,
+                fechaInicio: fechas.fin?.fechaInicio ?? fechas.fechaInicio,
                 fechaFin: fechas.fin?.fechaFin ?? '',
                 clasesTotales: fechas.fin?.clasesTotales ?? clasesTotales,
                 turnoSeleccionado: fechas.turno === 'manana' ? 'Mañana' : 'Tarde',
@@ -258,6 +260,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
                 total: cotizacion?.total ?? 0,
               }}
               onFirmaCompleta={setFirma}
+              onAutorizaImagen={setAutorizaImagen}
             />
           </Seccion>
         </div>

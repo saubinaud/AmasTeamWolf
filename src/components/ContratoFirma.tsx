@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { FileText, Eraser, CheckCircle, ChevronDown, ChevronUp, User, GraduationCap, Calendar, DollarSign, Pen, X } from 'lucide-react';
-import { Button } from './ui/button';
-import { API_BASE } from '../config/api';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, CheckCircle, ChevronDown, Pen, RotateCcw } from 'lucide-react';
+import { cx } from './matricula/tokens';
+import { Casilla } from './matricula/piezas';
+import { PadFirma } from './PadFirma';
+import { soles } from '../utils/catalogo';
+import { clausulasCon, useTextoContrato } from '../hooks/useTextoContrato';
 
 interface ContratoFirmaProps {
   datos: {
@@ -22,501 +25,201 @@ interface ContratoFirmaProps {
     diasTentativos?: string;
     precioPrograma?: number;
     descuentoDinero?: number;
+    /** Total cotizado por el servidor (0 es un total válido) */
     total?: number;
   };
+  /** Firma en data URL, o '' si se borró (cambiaron los datos o se vuelve a firmar) */
   onFirmaCompleta: (firmaBase64: string) => void;
-  onContratoGenerado?: (pdfBase64: string) => void;
+  /** Lo que eligió el apoderado sobre el uso promocional de imagen */
+  onAutorizaImagen: (autoriza: boolean) => void;
 }
 
-export function ContratoFirma({ datos, onFirmaCompleta, onContratoGenerado }: ContratoFirmaProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fullscreenCanvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasContainerRef = useRef<HTMLDivElement>(null);
-  const [firmado, setFirmado] = useState(false);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [hasStrokes, setHasStrokes] = useState(false);
+/** '2026-10-25' → '25 oct. 2026'; cualquier otro texto se deja tal cual. */
+const fechaCorta = (v?: string) => {
+  if (!v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return v ?? '';
+  return new Date(`${v}T12:00:00`).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const unir = (...partes: (string | false | null | undefined)[]) => partes.filter(Boolean).join(' · ');
+
+function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <p className={`${cx.textoApagado} text-[12px] font-bold uppercase tracking-wider`}>{etiqueta}</p>
+      <div className="mt-0.5 text-[15px] text-white">{children}</div>
+    </div>
+  );
+}
+
+/**
+ * Contrato y firma de la matrícula y la renovación públicas: resumen primero,
+ * el texto completo (el mismo del PDF, servido por el API) en un desplegable,
+ * las dos casillas, el botón Firmar y la firma a pantalla completa. Si los
+ * datos cambian después de firmar, la firma se borra.
+ */
+export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen }: ContratoFirmaProps) {
+  const { texto, error, reintentar } = useTextoContrato();
+  const [firma, setFirma] = useState<string | null>(null);
   const [aceptado, setAceptado] = useState(false);
-  const [autorizaImagen, setAutorizaImagen] = useState(true);
-  const [clausulasAbiertas, setClausulasAbiertas] = useState(false);
-  const [generandoPDF, setGenerandoPDF] = useState(false);
-  const [fullscreenMode, setFullscreenMode] = useState(false);
+  const [autorizaImagen, setAutorizaImagen] = useState(false);
+  const [abierto, setAbierto] = useState(false);
+  const [firmando, setFirmando] = useState(false);
+  const [invalidada, setInvalidada] = useState(false);
 
-  // ── CANVAS SETUP (High-DPI) ──
-  const initCanvas = useCallback((canvas: HTMLCanvasElement | null) => {
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-
-    // Set the internal resolution to match the CSS size * DPR
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-
-    // Scale the context so drawing operations use CSS pixel coordinates
-    ctx.scale(dpr, dpr);
-
-    ctx.strokeStyle = '#111';
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-  }, []);
-
-  const initInlineCanvas = useCallback(() => {
-    initCanvas(canvasRef.current);
-  }, [initCanvas]);
-
-  const initFullscreenCanvas = useCallback(() => {
-    initCanvas(fullscreenCanvasRef.current);
-  }, [initCanvas]);
-
-  // Init inline canvas on mount and resize
+  const huella = JSON.stringify(datos);
+  const huellaFirmada = useRef<string | null>(null);
   useEffect(() => {
-    initInlineCanvas();
-    window.addEventListener('resize', initInlineCanvas);
-    return () => window.removeEventListener('resize', initInlineCanvas);
-  }, [initInlineCanvas]);
-
-  // Init fullscreen canvas when fullscreen mode opens
-  useEffect(() => {
-    if (fullscreenMode) {
-      // Use a rAF to ensure the DOM has laid out the fullscreen overlay
-      const frameId = requestAnimationFrame(() => {
-        initFullscreenCanvas();
-      });
-      return () => cancelAnimationFrame(frameId);
+    if (firma && huellaFirmada.current !== null && huellaFirmada.current !== huella) {
+      setFirma(null);
+      huellaFirmada.current = null;
+      setInvalidada(true);
+      onFirmaCompleta('');
     }
-  }, [fullscreenMode, initFullscreenCanvas]);
+  }, [huella, firma, onFirmaCompleta]);
 
-  // ── BLOCK PAGE SCROLL WHILE SIGNING ──
-  useEffect(() => {
-    const container = canvasContainerRef.current;
-    if (!container) return;
+  useEffect(() => { onAutorizaImagen(autorizaImagen); }, [autorizaImagen, onAutorizaImagen]);
 
-    const preventScroll = (e: TouchEvent) => {
-      if (isDrawing) {
-        e.preventDefault();
-      }
-    };
-
-    container.addEventListener('touchmove', preventScroll, { passive: false });
-    return () => container.removeEventListener('touchmove', preventScroll);
-  }, [isDrawing]);
-
-  // Lock body scroll while drawing or in fullscreen mode
-  useEffect(() => {
-    if (isDrawing || fullscreenMode) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-    } else {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
-    };
-  }, [isDrawing, fullscreenMode]);
-
-  // ── POINTER EVENT DRAWING HANDLERS ──
-  // Using Pointer Events instead of Touch/Mouse events fixes Apple Pencil offset
-  const getPos = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    const canvas = e.currentTarget;
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    };
-  }, []);
-
-  const startDrawing = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const canvas = e.currentTarget;
-    // Capture pointer so moves outside the canvas still register
-    canvas.setPointerCapture(e.pointerId);
-    const ctx = canvas.getContext('2d');
-    if (!ctx || firmado) return;
-    const pos = getPos(e);
-    ctx.beginPath();
-    ctx.moveTo(pos.x, pos.y);
-    setIsDrawing(true);
-  }, [getPos, firmado]);
-
-  const draw = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isDrawing) return;
-    const canvas = e.currentTarget;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    const pos = getPos(e);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    setHasStrokes(true);
-  }, [isDrawing, getPos]);
-
-  const stopDrawing = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const canvas = e.currentTarget;
-    canvas.releasePointerCapture(e.pointerId);
-    setIsDrawing(false);
-  }, []);
-
-  const limpiarFirma = useCallback(() => {
-    // Clear both canvases
-    [canvasRef.current, fullscreenCanvasRef.current].forEach((canvas) => {
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      const dpr = window.devicePixelRatio || 1;
-      ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
-    });
-    setHasStrokes(false);
-    setFirmado(false);
-  }, []);
-
-  // ── FULLSCREEN MODE ──
-  const openFullscreen = useCallback(() => {
-    setFullscreenMode(true);
-  }, []);
-
-  const closeFullscreen = useCallback(() => {
-    // Copy fullscreen canvas content to inline canvas
-    const fsCanvas = fullscreenCanvasRef.current;
-    const inlineCanvas = canvasRef.current;
-    if (fsCanvas && inlineCanvas) {
-      const inlineCtx = inlineCanvas.getContext('2d');
-      if (inlineCtx) {
-        const dpr = window.devicePixelRatio || 1;
-        // Re-init the inline canvas to reset its state
-        initCanvas(inlineCanvas);
-        // Draw the fullscreen canvas content scaled into the inline canvas
-        const inlineW = inlineCanvas.width / dpr;
-        const inlineH = inlineCanvas.height / dpr;
-        inlineCtx.drawImage(fsCanvas, 0, 0, fsCanvas.width, fsCanvas.height, 0, 0, inlineW, inlineH);
-      }
-    }
-    setFullscreenMode(false);
-  }, [initCanvas]);
-
-  const confirmarFirmaFromFullscreen = useCallback(() => {
-    const canvas = fullscreenCanvasRef.current;
-    if (!canvas || !hasStrokes) return;
-
-    // Escalar firma a max 400px de ancho para reducir tamaño (de ~1-2MB a ~10-30KB)
-    const maxW = 400;
-    const scale = Math.min(1, maxW / canvas.width);
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = canvas.width * scale;
-    exportCanvas.height = canvas.height * scale;
-    const ctx = exportCanvas.getContext('2d');
-    if (ctx) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-      ctx.drawImage(canvas, 0, 0, exportCanvas.width, exportCanvas.height);
-    }
-    const firmaBase64 = exportCanvas.toDataURL('image/jpeg', 0.7);
-
-    setFullscreenMode(false);
-    setFirmado(true);
-    onFirmaCompleta(firmaBase64);
-
-    setGenerandoPDF(true);
-    fetch(`${API_BASE}/contratos/generar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ datos, firma_base64: firmaBase64 }),
-    })
-      .then((resp) => resp.json())
-      .then((result) => {
-        if (result.success && onContratoGenerado) {
-          onContratoGenerado(result.pdf_base64);
-        }
-      })
-      .catch((err) => {
-        console.error('Error generando PDF:', err);
-      })
-      .finally(() => {
-        setGenerandoPDF(false);
-      });
-  }, [hasStrokes, datos, onFirmaCompleta, onContratoGenerado]);
-
-  const d = datos;
-  const hoy = new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
-
-  const clausulas = [
-    'OBJETO DEL CONTRATO. JMA Team Wolf se compromete a brindar al alumno los servicios de enseñanza de Taekwondo conforme al programa seleccionado.',
-    'VIGENCIA. El contrato tiene vigencia desde la fecha de inicio hasta la fecha de fin del programa contratado.',
-    'PAGO. El monto total deberá abonarse antes del inicio de clases. No se iniciará ningún programa sin confirmación del pago.',
-    'POLITICA DE CANCELACIONES Y DEVOLUCIONES. Toda devolución descuenta el periodo ya transcurrido desde la fecha de inicio, en proporción al precio pagado; la inasistencia no reduce ese periodo ni genera clases de recuperación. Los beneficios gratuitos (p. ej. un mes o 15 días de clases) se aplican al final del periodo pagado y no son reembolsables. De los instrumentos u objetos regalados se descuenta el 50 % de su precio en la Tienda JMA al momento de la devolución.',
-    'EXCEPCIONES. JMA Team Wolf podrá ofrecer congelamiento temporal por razones de salud con certificado médico, sujeto a aprobación de la dirección.',
-    'HORARIOS. La academia puede modificar horarios en cualquier momento. Los padres de familia deben respetar los horarios asignados a su categoría.',
-    'UNIFORMIDAD. El alumno debe asistir correctamente uniformado: pantalón, chaqueta, cinturón y polo de la academia. No se permite asistir con otra vestimenta que no sea la reglamentaria.',
-    'IMPLEMENTOS. Únicamente está permitido el uso de implementos reglamentarios proporcionados por la organización JMA o la Academia Team Wolf.',
-    'ESTADO DE SALUD. El apoderado declara que el alumno se encuentra apto para la práctica de artes marciales.',
-    'CONDUCTA Y CONVIVENCIA. No está permitido ningún tipo de maltrato ni conflicto dentro de la academia. No se permite la venta de productos o servicios dentro de las instalaciones.',
-    'RESPONSABILIDAD. La academia no se responsabiliza por objetos olvidados en las instalaciones ni por daños físicos que el alumno se ocasione fuera del horario de clase.',
-    `AUTORIZACION DE IMAGEN. Se autoriza el uso de fotografías y videos del menor para fines institucionales${autorizaImagen ? ' y promocionales' : ' (NO se autoriza el uso promocional)'}.`,
-    'CONFIDENCIALIDAD. El apoderado se compromete a no divulgar la metodología ni información interna de JMA Team Wolf.',
-    'LEY APLICABLE. Las partes se someten a la legislación civil peruana y tribunales de Lima.',
-  ];
-
-  // Shared canvas props for pointer events
-  const canvasPointerProps = {
-    onPointerDown: startDrawing,
-    onPointerMove: draw,
-    onPointerUp: stopDrawing,
-    onPointerCancel: stopDrawing,
+  const listo = (base64: string) => {
+    setFirmando(false);
+    setFirma(base64);
+    huellaFirmada.current = huella;
+    setInvalidada(false);
+    onFirmaCompleta(base64);
+  };
+  const volverAFirmar = () => {
+    setFirma(null);
+    huellaFirmada.current = null;
+    onFirmaCompleta('');
+    setFirmando(true);
   };
 
+  const d = datos;
+  const hoy = new Date().toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Lima' });
+  const clausulas = texto ? clausulasCon(texto, autorizaImagen) : [];
+  const total = Number.isFinite(Number(d.total)) ? Number(d.total) : null;
+  const fuerte = (v?: string) => <strong className="text-white">{v || '___'}</strong>;
+
   return (
-    <div className="space-y-3">
-      {/* ── HEADER ── */}
-      <div className="flex items-center gap-2.5 pb-1">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center">
-          <FileText className="w-4 h-4 text-white" />
-        </div>
-        <div>
-          <h3 className="text-white text-sm font-semibold">Contrato de Inscripcion</h3>
-          <p className="text-white/40 text-[10px]">Lima, {hoy}</p>
-        </div>
-      </div>
-
-      {/* ── RESUMEN DE DATOS (auto-llenado) ── */}
-      <div className="bg-zinc-800/50 rounded-xl border border-white/10 divide-y divide-white/5">
-        {/* Apoderado */}
-        <div className="p-3 flex items-start gap-3">
-          <User className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Apoderado</p>
-            <p className="text-white text-sm font-medium truncate">{d.nombrePadre || '\u2014'}</p>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-white/50 text-[11px]">
-              <span>DNI: {d.dniPadre || '\u2014'}</span>
-              {d.telefono && <span>Tel: {d.telefono}</span>}
-            </div>
-          </div>
-        </div>
-
-        {/* Alumno */}
-        <div className="p-3 flex items-start gap-3">
-          <GraduationCap className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Alumno</p>
-            <p className="text-white text-sm font-medium truncate">{d.nombreAlumno || '\u2014'}</p>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-white/50 text-[11px]">
-              <span>DNI: {d.dniAlumno || '\u2014'}</span>
-              {d.categoriaAlumno && <span>{d.categoriaAlumno}</span>}
-            </div>
-          </div>
-        </div>
-
-        {/* Programa */}
-        <div className="p-3 flex items-start gap-3">
-          <Calendar className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Programa</p>
-            <p className="text-white text-sm font-medium">{d.programa || '\u2014'}</p>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 mt-0.5 text-white/50 text-[11px]">
-              {d.fechaInicio && <span>Inicio: {d.fechaInicio}</span>}
-              {d.fechaFin && <span>Fin: {d.fechaFin}</span>}
-              {d.turnoSeleccionado && <span>Turno: {d.turnoSeleccionado}</span>}
-              {d.clasesTotales && <span>{d.clasesTotales} clases</span>}
-            </div>
-          </div>
-        </div>
-
-        {/* Precio */}
-        <div className="p-3 flex items-start gap-3">
-          <DollarSign className="w-4 h-4 text-[#FCA929] mt-0.5 flex-shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-white/40 text-[10px] uppercase tracking-wider mb-0.5">Inversion</p>
-            <div className="flex items-baseline gap-2">
-              <span className="text-white text-lg font-bold">S/ {d.total || d.precioPrograma || '0'}</span>
-              {d.descuentoDinero != null && d.descuentoDinero > 0 && (
-                <span className="text-green-400 text-xs">(-S/ {d.descuentoDinero} desc.)</span>
+    <div className="space-y-4">
+      {/* 1. Lo que se firma */}
+      <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+        <p className={`${cx.textoApagado} mb-3 text-[13px]`}>Contrato de inscripción · Lima, {hoy}</p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Dato etiqueta="Apoderado">
+            <span className="font-bold">{d.nombrePadre || '___'}</span>
+            <span className={`${cx.textoApagado} block text-[13px]`}>{unir(d.dniPadre && `DNI ${d.dniPadre}`, d.telefono)}</span>
+          </Dato>
+          <Dato etiqueta="Alumno">
+            <span className="font-bold">{d.nombreAlumno || '___'}</span>
+            <span className={`${cx.textoApagado} block text-[13px]`}>{unir(d.dniAlumno && `DNI ${d.dniAlumno}`, d.categoriaAlumno)}</span>
+          </Dato>
+          <Dato etiqueta="Programa">
+            <span className="font-bold">{d.programa || '___'}</span>
+            <span className={`${cx.textoApagado} block text-[13px]`}>
+              {unir(
+                d.fechaInicio && d.fechaFin ? `${fechaCorta(d.fechaInicio)} al ${fechaCorta(d.fechaFin)}` : d.fechaInicio && `Desde el ${fechaCorta(d.fechaInicio)}`,
+                d.turnoSeleccionado && `Turno ${d.turnoSeleccionado.toLowerCase()}`,
+                d.clasesTotales ? `${d.clasesTotales} clases` : null,
               )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── CLAUSULAS (colapsable) ── */}
-      <button
-        type="button"
-        onClick={() => setClausulasAbiertas(!clausulasAbiertas)}
-        className="w-full flex items-center justify-between bg-zinc-800/30 border border-white/5 rounded-lg px-3 py-2.5 text-left group"
-      >
-        <span className="text-white/50 text-xs group-hover:text-white/70 transition-colors">
-          Ver terminos y condiciones ({clausulas.length} clausulas)
-        </span>
-        {clausulasAbiertas
-          ? <ChevronUp className="w-3.5 h-3.5 text-white/30" />
-          : <ChevronDown className="w-3.5 h-3.5 text-white/30" />
-        }
-      </button>
-
-      {clausulasAbiertas && (
-        <div className="bg-zinc-900/80 border border-white/10 rounded-xl p-4 max-h-56 overflow-y-auto space-y-2">
-          {clausulas.map((c, i) => {
-            const [titulo, ...resto] = c.split('. ');
-            return (
-              <div key={i} className="text-xs leading-relaxed">
-                <span className="text-white/70 font-semibold">{i + 1}. {titulo}.</span>{' '}
-                <span className="text-white/45">{resto.join('. ')}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ── DECLARACION ── */}
-      <div className="bg-zinc-800/30 border border-white/10 rounded-xl p-3">
-        <p className="text-white/60 text-xs leading-relaxed">
-          Yo, <strong className="text-white">{d.nombrePadre || '___'}</strong>, con DNI{' '}
-          <strong className="text-white">{d.dniPadre || '___'}</strong>, declaro haber leido y aceptado
-          todas las condiciones del presente contrato, incluyendo la <strong className="text-amber-400">Clausula 4
-          (cancelaciones y devoluciones)</strong>, para la inscripcion de{' '}
-          <strong className="text-white">{d.nombreAlumno || '___'}</strong> en el programa{' '}
-          <strong className="text-white">{d.programa || '___'}</strong> de JMA Team Wolf.
-        </p>
-      </div>
-
-      {/* ── CHECKBOX IMAGEN PROMOCIONAL ── */}
-      <label className="flex items-center gap-3 cursor-pointer py-1">
-        <div className="relative flex-shrink-0">
-          <input
-            type="checkbox"
-            checked={autorizaImagen}
-            onChange={(e) => setAutorizaImagen(e.target.checked)}
-            className="sr-only peer"
-          />
-          <div className="w-5 h-5 rounded border-2 border-white/30 bg-zinc-800 peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
-            {autorizaImagen && <CheckCircle className="w-3.5 h-3.5 text-white" />}
-          </div>
-        </div>
-        <span className="text-white/70 text-xs leading-snug">
-          Autorizo el uso de fotografias y videos del alumno para fines <strong className="text-white">promocionales</strong> (desmarcar si solo autoriza uso institucional).
-        </span>
-      </label>
-
-      {/* ── CHECKBOX ACEPTACION ── */}
-      <label className="flex items-center gap-3 cursor-pointer py-1">
-        <div className="relative flex-shrink-0">
-          <input
-            type="checkbox"
-            checked={aceptado}
-            onChange={(e) => setAceptado(e.target.checked)}
-            className="sr-only peer"
-          />
-          <div className="w-5 h-5 rounded border-2 border-white/30 bg-zinc-800 peer-checked:bg-[#FA7B21] peer-checked:border-[#FA7B21] transition-all flex items-center justify-center">
-            {aceptado && <CheckCircle className="w-3.5 h-3.5 text-white" />}
-          </div>
-        </div>
-        <span className="text-white/70 text-xs leading-snug">
-          He leido y acepto los terminos y condiciones del contrato.
-        </span>
-      </label>
-
-      {/* ── BOTÓN FIRMAR (abre fullscreen) ── */}
-      {aceptado && !firmado && (
-        <Button
-          type="button"
-          onClick={openFullscreen}
-          className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white text-base font-semibold"
-        >
-          <Pen className="w-5 h-5 mr-2" />
-          Firmar contrato
-        </Button>
-      )}
-
-      {/* Canvas oculto para almacenar la firma (necesario para toDataURL) */}
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-
-      {/* ── FULLSCREEN SIGNATURE OVERLAY ── */}
-      {fullscreenMode && (
-        <div
-          className="fixed inset-0 z-[9999] bg-white flex flex-col"
-          style={{ touchAction: 'none' }}
-        >
-          {/* Fullscreen header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <Pen className="w-4 h-4 text-[#FCA929]" />
-              <span className="text-white text-sm font-semibold">Firma del apoderado</span>
-            </div>
-            <div className="flex items-center gap-3">
-              {hasStrokes && (
-                <button
-                  type="button"
-                  onClick={limpiarFirma}
-                  className="flex items-center gap-1 text-white/60 hover:text-red-400 text-xs transition-colors"
-                >
-                  <Eraser className="w-3.5 h-3.5" /> Limpiar
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={closeFullscreen}
-                className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                aria-label="Cerrar"
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          </div>
-
-          {/* Fullscreen canvas area */}
-          <div className="flex-1 relative overflow-hidden">
-            <canvas
-              ref={fullscreenCanvasRef}
-              className="w-full h-full cursor-crosshair absolute inset-0"
-              style={{ touchAction: 'none' }}
-              {...canvasPointerProps}
-            />
-            {!hasStrokes && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <Pen className="w-10 h-10 text-zinc-300 mb-3" />
-                <span className="text-zinc-400 text-base">Firma aqui</span>
-              </div>
+            </span>
+          </Dato>
+          <Dato etiqueta="Total">
+            <span className={`${cx.cifra} text-[20px]`}>{total != null ? soles(total) : 'Calculando'}</span>
+            {!!d.descuentoDinero && d.descuentoDinero > 0 && (
+              <span className="block text-[13px] text-emerald-300">Incluye {soles(d.descuentoDinero)} de descuento</span>
             )}
-          </div>
+          </Dato>
+        </div>
+      </div>
 
-          {/* Fullscreen footer */}
-          <div className="flex-shrink-0 px-4 py-4 bg-zinc-900" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                onClick={closeFullscreen}
-                className="flex-1 h-12 bg-zinc-700 hover:bg-zinc-600 text-white text-sm font-semibold"
-              >
-                Volver
-              </Button>
-              <Button
-                type="button"
-                onClick={confirmarFirmaFromFullscreen}
-                disabled={!hasStrokes}
-                className="flex-1 h-12 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white text-sm font-semibold disabled:opacity-30"
-              >
-                Confirmar firma
-              </Button>
+      {/* 2. Lo esencial y el contrato completo */}
+      {texto && (
+        <ul className="space-y-2.5">
+          {texto.resumen.map((r) => (
+            <li key={r.clausula} className={`${cx.textoSec} flex gap-2.5 text-[15px] leading-relaxed`}>
+              <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#F47B20]" />
+              <span>{r.texto} <span className={`${cx.textoApagado} whitespace-nowrap text-[12px]`}>Cláusula {r.clausula}</span></span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {error && !texto && (
+        <div className={`${cx.avisoError} flex items-center justify-between gap-3`}>
+          <span>No se pudo cargar el contrato.</span>
+          <button type="button" onClick={reintentar} className={cx.btnTexto}><RotateCcw className="mr-1 inline h-4 w-4" />Reintentar</button>
+        </div>
+      )}
+      <div className="rounded-xl border border-white/10">
+        <button
+          type="button"
+          onClick={() => setAbierto((a) => !a)}
+          aria-expanded={abierto}
+          disabled={!texto}
+          className="flex min-h-[52px] w-full items-center justify-between gap-3 px-4 text-left"
+        >
+          <span className="text-[15px] font-bold text-white">Leer el contrato completo</span>
+          <span className={`${cx.textoApagado} flex shrink-0 items-center gap-2 whitespace-nowrap text-[13px]`}>
+            {texto ? `${clausulas.length} cláusulas` : 'Cargando'}
+            <ChevronDown className={`h-4 w-4 transition-transform duration-150 ${abierto ? 'rotate-180' : ''}`} />
+          </span>
+        </button>
+        {abierto && texto && (
+          <div className={`${cx.divisor} max-h-[60vh] overflow-y-auto overscroll-contain px-4 py-4`}>
+            <div className="max-w-prose space-y-3">
+              {clausulas.map((c) => (
+                <p key={c.numero} className="text-[15px] leading-relaxed text-white/75">
+                  <span className="font-bold text-white">{c.numero}. {c.titulo}.</span> {c.texto}
+                </p>
+              ))}
+              <p className={`${cx.textoApagado} pt-1 text-[12px]`}>Versión {texto.version}. Es el mismo texto que recibirás en el PDF.</p>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* 3. Declaración y casillas */}
+      <p className={`${cx.textoSec} max-w-prose text-[15px] leading-relaxed`}>
+        Yo, {fuerte(d.nombrePadre)}, con DNI {fuerte(d.dniPadre)}, declaro haber leído, comprendido y aceptado todas las
+        condiciones del presente contrato, incluyendo expresamente la <strong className="text-[#F47B20]">cláusula 4 (cancelaciones
+        y devoluciones)</strong>, para la inscripción de {fuerte(d.nombreAlumno)} en el programa {fuerte(d.programa)} de JMA Team Wolf.
+      </p>
+      <div className={`space-y-2 ${firma ? 'pointer-events-none opacity-60' : ''}`}>
+        <Casilla
+          marcada={autorizaImagen}
+          onCambio={setAutorizaImagen}
+          titulo="Autorizo el uso de fotos y videos del alumno en material promocional"
+          detalle="Opcional. Sin marcar, solo se usan para comunicación institucional."
+        />
+        <Casilla marcada={aceptado} onCambio={setAceptado} titulo="He leído y acepto los términos y condiciones del contrato" />
+      </div>
+
+      {/* 4. Firma */}
+      {firma ? (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-3">
+          <div className="flex h-16 w-28 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white">
+            <img src={firma} alt="Tu firma" className="max-h-full max-w-full object-contain" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-1.5 text-[15px] font-bold text-emerald-200"><CheckCircle className="h-4 w-4" /> Firmado</p>
+            <p className={`${cx.textoApagado} text-[13px]`}>Al enviar, el PDF llega a tu correo.</p>
+          </div>
+          <button type="button" onClick={volverAFirmar} className={`${cx.btnSecundario} shrink-0 px-3`}>Volver a firmar</button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {invalidada && (
+            <p className={`${cx.avisoAmbar} flex items-start gap-2`}>
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> Cambiaron los datos del contrato: firma de nuevo.
+            </p>
+          )}
+          <button type="button" disabled={!aceptado || !texto} onClick={() => setFirmando(true)} className={`${cx.btnPrimario} w-full`}>
+            <Pen className="h-5 w-5" /> Firmar contrato
+          </button>
+          {!aceptado && <p className={`${cx.textoApagado} text-center text-[13px]`}>Marca que aceptas los términos para firmar</p>}
         </div>
       )}
 
-      {/* ── ESTADO FIRMADO ── */}
-      {firmado && (
-        <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center">
-          <CheckCircle className="w-8 h-8 text-green-400 mx-auto mb-2" />
-          <p className="text-green-400 text-sm font-semibold">
-            {generandoPDF ? 'Generando contrato PDF...' : 'Contrato firmado correctamente'}
-          </p>
-          <p className="text-white/40 text-[11px] mt-1">El PDF se enviara a tu correo con la confirmacion</p>
-        </div>
-      )}
+      {firmando && <PadFirma nombre={d.nombrePadre} onCerrar={() => setFirmando(false)} onListo={listo} />}
     </div>
   );
 }

@@ -1,26 +1,34 @@
 import { Lock, Star, Clock, Zap, Trophy } from 'lucide-react';
+import { BELT_ORDER } from '../../shared/constants/cinturones';
+import { useCinturones } from '../../hooks/useCinturones';
 
 /* ═══════════════════════════════════════════════════════════════
    NodoClase — Shows belt SVG if assigned, orange circle otherwise.
    ═══════════════════════════════════════════════════════════════ */
 
-// Map belt name → SVG filename in /cinturones/
-const BELT_FILES: Record<string, string> = {};
-const BELT_LIST = [
-  "Blanco","Blanco con tira dorada","Blanco con tira naranja delgada","Blanco con tira naranja gruesa",
-  "Blanco con tira amarilla delgada","Blanco con tira amarilla gruesa","Blanco con tira camuflada delgada",
-  "Blanco con tira camuflada gruesa","Blanco con tira verde delgada","Blanco con tira verde gruesa",
-  "Blanco con tira violeta delgada","Blanco con tira violeta gruesa","Blanco con tira azul delgada",
-  "Blanco con tira azul gruesa","Blanco con tira marrón delgada","Blanco con tira marrón gruesa",
-  "Blanco con tira rojo delgada","Blanco con tira roja gruesa","Blanco con tira rojo negro delgada",
-  "Blanco con tira rojo negro gruesa","Amarillo","Amarillo Camuflado","Naranja","Naranja Camuflado",
-  "Verde","Verde Camuflado","Azul","Azul Camuflado","Rojo","Rojo Camuflado",
-  "Negro 1 Dan","Negro 2 Dan","Negro 3 Dan",
-];
-BELT_LIST.forEach((name, i) => {
-  const fn = `${String(i + 1).padStart(2, '0')}-${name.toLowerCase().replace(/\s+/g, '-').replace(/ó/g, 'o')}.svg`;
-  BELT_FILES[name] = `/cinturones/${fn}`;
-});
+// Imagen de cada cinturón en /cinturones/: los SVG se dibujaron numerados con el
+// orden histórico (BELT_ORDER, respaldo), así que el nombre del archivo sale de
+// esa lista. Un cinturón creado después en Space no tiene SVG y se pinta con
+// CintaMini a partir de los datos del API.
+const BELT_FILES: Record<string, string> = Object.fromEntries(BELT_ORDER.map((name, i) => [
+  name,
+  `/cinturones/${String(i + 1).padStart(2, '0')}-${name.toLowerCase().replace(/\s+/g, '-').replace(/ó/g, 'o')}.svg`,
+]));
+
+/** Cinturón sin SVG propio: barra con su color de base y su tira (datos del API). */
+function CintaMini({ nombre }: { nombre: string }) {
+  const { dibujo } = useCinturones();
+  const d = dibujo(nombre);
+  const tira = d.grosor_tira !== 'ninguna' ? d.color_tira : null;
+  return (
+    <span className="relative block w-[80%] h-3.5 rounded-sm overflow-hidden drop-shadow-md" style={{ background: d.color_base }} role="img" aria-label={nombre}>
+      {tira && (
+        <span className="absolute inset-x-0 top-1/2 -translate-y-1/2"
+          style={{ height: d.grosor_tira === 'gruesa' ? '56%' : '30%', background: d.color_tira_2 ? `linear-gradient(to right, ${tira} 60%, ${d.color_tira_2} 60%)` : tira }} />
+      )}
+    </span>
+  );
+}
 
 interface ClaseNodo { id: number; titulo: string; orden: number; estado: string; puntos: number; cinturon_nombre?: string | null }
 
@@ -108,6 +116,8 @@ export function NodoClase({ clase, color, position, onClick, isCurrent }: Props)
             <img src={BELT_FILES[clase.cinturon_nombre]} alt={clase.cinturon_nombre}
               className="w-[85%] h-auto drop-shadow-md" draggable={false}
               style={{ filter: done ? 'drop-shadow(0 0 4px rgba(255,215,0,0.5))' : undefined }} />
+          ) : clase.cinturon_nombre && !locked ? (
+            <CintaMini nombre={clase.cinturon_nombre} />
           ) : (
             <>
               {locked && <Lock className="w-5 h-5 opacity-40" />}

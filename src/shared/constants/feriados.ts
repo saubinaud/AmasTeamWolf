@@ -55,7 +55,8 @@ export function esFeriado(fecha: Date): boolean {
   const esFeriadoFijo = FERIADOS_FIJOS_PERU.some(f => f.mes === mes && f.dia === dia);
   if (esFeriadoFijo) return true;
 
-  const fechaStr = fecha.toISOString().split('T')[0];
+  // Fecha local (toISOString pasa a UTC y en otras zonas cambia el día)
+  const fechaStr = `${anio}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
   const moviles = FERIADOS_MOVILES[anio] || [];
   return moviles.some(f => f.fecha === fechaStr);
 }

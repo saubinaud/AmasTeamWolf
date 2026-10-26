@@ -90,6 +90,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
   const [tallasPolos, setTallasPolos] = useState<string[]>([]);
   const [codigo, setCodigo] = useState('');
   const [firma, setFirma] = useState<string | null>(null);
+  const [autorizaImagen, setAutorizaImagen] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [registrado, setRegistrado] = useState<number | null>(null);
 
@@ -115,7 +116,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
 
   const clasesBase = programa?.clases ?? 0;
   const clasesTotales = clasesBase + (alDia ? cotizacion?.clases_extra ?? 0 : 0);
-  const fechas = useFechasPrograma(p.fechaNacimiento, clasesTotales);
+  const fechas = useFechasPrograma(p.fechaNacimiento, clasesTotales, programa?.codigo, clasesTotales - clasesBase);
   const promoAplicada = alDia && cotizacion?.promocion.aplicada ? cotizacion.promocion.codigo : null;
   const cambiar = (campo: keyof typeof PERSONAS, valor: string) => setP((x) => ({ ...x, [campo]: valor }));
   const cambiarPolos = (c: CantidadPolos) => { setPolos(c); setTallasPolos(new Array(Number(c)).fill('')); };
@@ -160,9 +161,9 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
       direccion: p.direccion.trim(),
       email: p.email.trim(),
       polos: polos === '0' ? 'No' : `${polos} polo(s)`,
-      fechaInicio: fechas.fechaInicio,
+      fechaInicio: fechas.fin?.fechaInicio ?? fechas.fechaInicio,
       diasTentativos: fechas.sinDefinir ? 'Aún no especificado' : fechas.dias.join(', '),
-      fechaFin: fechas.sinDefinir ? 'Por calcular' : fechas.fin?.fechaFin ?? '',
+      fechaFin: fechas.sinDefinir ? '' : fechas.fin?.fechaFin ?? '',
       semanasAproximadas: fechas.fin?.semanas ?? 0,
 
       // Informativo; el servidor lo reemplaza por su cotización
@@ -173,6 +174,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
       total: cotizacion.total,
 
       contratoFirmado: firma,
+      autorizaImagen,
       fechaRegistro: new Date().toISOString(),
     };
 
@@ -288,7 +290,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
                 fechaNacimiento: p.fechaNacimiento,
                 categoriaAlumno: fechas.categoria,
                 programa: programa.nombre,
-                fechaInicio: fechas.fechaInicio,
+                fechaInicio: fechas.fin?.fechaInicio ?? fechas.fechaInicio,
                 fechaFin: fechas.fin?.fechaFin ?? '',
                 clasesTotales: fechas.fin?.clasesTotales ?? clasesTotales,
                 turnoSeleccionado: fechas.turno === 'manana' ? 'Mañana' : 'Tarde',
@@ -298,6 +300,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
                 total: cotizacion?.total ?? 0,
               }}
               onFirmaCompleta={setFirma}
+              onAutorizaImagen={setAutorizaImagen}
             />
           </Seccion>
         </div>

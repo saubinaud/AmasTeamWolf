@@ -1,7 +1,38 @@
 // Fechas y horarios de matrícula/renovación (compartido por FormularioMatricula
 // y FormularioRenovacion). Aquí no hay precios ni códigos: eso lo decide el API
 // (ver utils/catalogo.ts y POST /api/config/cotizar).
+//
+// Las fechas del plan (inicio válido, días con clase para su edad, fecha de fin,
+// feriados y cierres) las calcula el API: POST /api/fechas/plan (ver
+// SeccionFechas.tsx). Lo de abajo de «RESPALDO SIN CONEXIÓN» solo se usa si el
+// API no responde, para que la familia vea una fecha aproximada.
 import { esFeriado, esCierreVacacionalAMAS } from '../shared/constants';
+
+export const NOMBRES_DIA = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+/** Respuesta de POST /api/fechas/plan (lo que usa el formulario). */
+export interface AvisoFechas { codigo: string; mensaje: string }
+export interface PlanFechas {
+  ok: boolean;
+  fecha_inicio: string | null;
+  inicio_movido: { de: string; a: string; motivo: string } | null;
+  fecha_fin: string | null;
+  clases_totales: number | null;
+  semanas: number | null;
+  dias: number[];
+  dias_texto: string;
+  estimado: boolean;
+  errores: AvisoFechas[];
+  avisos: AvisoFechas[];
+  dias_por_turno: { manana: number[] | null; tarde: number[] | null } | null;
+  proximas_fechas: string[];
+}
+
+/** "mar 3 nov" a partir de YYYY-MM-DD, sin pasar por la zona del navegador. */
+export function etiquetaFecha(ymd: string): { dia: string; fecha: string } {
+  const d = deYmd(ymd);
+  return { dia: NOMBRES_DIA[d.getDay()], fecha: d.toLocaleDateString('es-PE', { day: 'numeric', month: 'short' }) };
+}
 
 export interface HorariosInfo {
   horarioSemana: string;
@@ -32,7 +63,7 @@ export function fechaLarga(ymd: string, conAnio = false): string {
   });
 }
 
-/** Días de clase posibles según turno y categoría. */
+/** RESPALDO SIN CONEXIÓN: días de clase posibles según turno y categoría (el API los saca de la tabla horarios). */
 export function diasPermitidos(turno: Turno, categoria: string): string[] {
   if (turno === 'manana') return ['Martes', 'Jueves', 'Sábado'];
   if (categoria === 'Juniors') return ['Lunes', 'Miércoles', 'Viernes'];
@@ -97,6 +128,12 @@ export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
 
   return { horarioSemana, horarioSabado, horarioManana, diasSemana, categoria };
 }
+
+// ───────────── RESPALDO SIN CONEXIÓN ─────────────
+// Copia simplificada de la regla del API (services/fechasPlan.js): solo corre si
+// POST /api/fechas/plan falla. No conoce los cierres que la academia carga en la
+// base: por eso la fecha se muestra como aproximada y el servidor la recalcula al
+// registrar.
 
 // Próximas fechas hábiles para iniciar (omite domingos y cierre vacacional).
 export function obtenerFechasDisponiblesInicio(cantidad = 5): Date[] {

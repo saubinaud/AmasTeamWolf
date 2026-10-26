@@ -165,6 +165,8 @@ interface LoginResult {
   hasEmail?: boolean;
 }
 
+export type PropositoCodigo = 'crear' | 'recuperar';
+
 interface CodeResult {
   success: boolean;
   emailHint?: string;
@@ -176,9 +178,11 @@ interface AuthContextType {
   isLoading: boolean;
   user: UserData | null;
   login: (dni: string, password: string) => Promise<LoginResult>;
-  requestCode: (dni: string) => Promise<CodeResult>;
+  /** Envía un código al correo del apoderado. 'recuperar' = olvidé mi contraseña. */
+  requestCode: (dni: string, proposito?: PropositoCodigo) => Promise<CodeResult>;
   verifyCode: (dni: string, code: string) => Promise<{ success: boolean; error?: string }>;
-  setPassword: (dni: string, code: string, password: string) => Promise<LoginResult>;
+  /** Pone la contraseña con el código recibido por correo (crear la primera o restablecerla). */
+  setPassword: (dni: string, code: string, password: string, proposito?: PropositoCodigo) => Promise<LoginResult>;
   logout: () => void;
   refreshUserData: () => Promise<void>;
 }
@@ -384,12 +388,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const requestCode = useCallback(async (dni: string): Promise<CodeResult> => {
+  const requestCode = useCallback(async (dni: string, proposito: PropositoCodigo = 'crear'): Promise<CodeResult> => {
     try {
       const res = await fetch(`${AUTH_API}/solicitar-codigo`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dni }),
+        body: JSON.stringify({ dni, proposito }),
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error };
@@ -414,12 +418,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const setPassword = useCallback(async (dni: string, _code: string, password: string): Promise<LoginResult> => {
+  const setPassword = useCallback(async (dni: string, code: string, password: string, proposito: PropositoCodigo = 'crear'): Promise<LoginResult> => {
     try {
-      const res = await fetch(`${AUTH_API}/crear-password`, {
+      // Sin el código del correo el API no escribe nada
+      const ruta = proposito === 'recuperar' ? 'restablecer-password' : 'crear-password';
+      const res = await fetch(`${AUTH_API}/${ruta}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ dni, password }),
+        body: JSON.stringify({ dni, code, password }),
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error };

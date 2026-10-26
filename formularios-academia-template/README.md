@@ -1,3 +1,5 @@
+> **OBSOLETO (oct-2026).** Copia antigua, no la usa el build de amas-web (`tsconfig` solo incluye `src/`). El contrato vigente lo sirve el API (`GET /api/contratos/texto`) y lo pinta `src/components/ContratoFirma.tsx`. No editar aquí.
+
 # 📋 Formularios Academia - Template
 
 Template completo y funcional del sistema de formularios de inscripción y renovación para academias. Incluye formularios de matrícula (leads) y renovación con toda la lógica de negocio.
