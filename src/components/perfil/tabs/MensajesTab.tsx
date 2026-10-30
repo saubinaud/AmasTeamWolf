@@ -2,6 +2,7 @@ import { Button } from '../../ui/button';
 import { MessageCircle, Mail, Award, Phone } from 'lucide-react';
 import { cn } from '../../ui/utils';
 import { formatDate, getApiUrl } from '../utils';
+import { enlaceWhatsApp } from '../../../config/contacto';
 
 interface MensajesTabProps {
   user: any;
@@ -79,7 +80,7 @@ export function MensajesTab({ user, isMobile, onRefresh }: MensajesTabProps) {
           <Button
             variant="outline"
             className="w-full border-zinc-800 bg-zinc-900 hover:bg-zinc-800 h-14 rounded-2xl text-base transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
-            onClick={() => window.open('https://wa.me/51989717412', '_blank')}
+            onClick={() => window.open(enlaceWhatsApp(), '_blank')}
           >
             <Phone className="w-5 h-5 mr-2" /> Contactar Soporte
           </Button>

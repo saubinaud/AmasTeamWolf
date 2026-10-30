@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { TELEFONO, CORREO, DIRECCION } from '../config/contacto';
 
 interface SEOProps {
   title?: string;
@@ -72,9 +73,9 @@ export function SEO({
     updateMetaTag('ICBM', '-12.097438, -77.004928');
 
     // Business/Organization
-    updateMetaTag('og:phone_number', '+51989717412', true);
-    updateMetaTag('og:email', 'amasteamwolf@gmail.com', true);
-    updateMetaTag('og:street-address', 'Av. Angamos Este 2741', true);
+    updateMetaTag('og:phone_number', TELEFONO, true);
+    updateMetaTag('og:email', CORREO, true);
+    updateMetaTag('og:street-address', DIRECCION, true);
     updateMetaTag('og:locality', 'San Borja', true);
     updateMetaTag('og:region', 'Lima', true);
     updateMetaTag('og:postal-code', '15036', true);
@@ -113,11 +114,11 @@ export function SEO({
           "image": image,
           "description": description,
           "priceRange": "S/ 330 - S/ 1,964",
-          "telephone": "+51989717412",
-          "email": "amasteamwolf@gmail.com",
+          "telephone": TELEFONO,
+          "email": CORREO,
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "Av. Angamos Este 2741",
+            "streetAddress": DIRECCION,
             "addressLocality": "San Borja",
             "addressRegion": "Lima",
             "postalCode": "15036",
@@ -200,11 +201,11 @@ export function SEO({
           "image": image,
           "@id": "https://amasteamwolf.com",
           "url": "https://amasteamwolf.com",
-          "telephone": "+51989717412",
+          "telephone": TELEFONO,
           "priceRange": "S/ 330 - S/ 1,964",
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": "Av. Angamos Este 2741",
+            "streetAddress": DIRECCION,
             "addressLocality": "San Borja",
             "addressRegion": "Lima",
             "postalCode": "15036",
