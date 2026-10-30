@@ -8,7 +8,7 @@ import { useCatalogoPublico, useCotizacion } from '../hooks/useCatalogoPublico';
 import { cx } from './matricula/tokens';
 import { CabeceraJMA, Portada, Seccion, Campo, Casilla, Exito, irA } from './matricula/piezas';
 import { CampoCodigo, ResumenCotizacion, BarraTotal, EspacioBarra } from './matricula/Resumen';
-import { programaPorCodigo, soles, type ItemCatalogo, type PedidoCotizacion } from '../utils/catalogo';
+import { programaPorCodigo, soles, tituloWeb, type ItemCatalogo, type PedidoCotizacion } from '../utils/catalogo';
 
 interface RegistroLeadershipPageProps {
   onNavigateHome: () => void;
@@ -112,9 +112,11 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
       <main className={cx.contenedor}>
         <Portada
           etiqueta="Programa adicional"
-          titulo="Leadership Wolf"
+          titulo={programa ? tituloWeb(programa) : 'Leadership Wolf'}
           bajada="Se suma al programa que el alumno ya lleva. Marca los implementos que ya tiene y no los pagas."
           precio={programa?.precio}
+          precioAntes={programa?.web?.precio_referencia}
+          incluye={programa?.web?.beneficios}
           notaPrecio="con todos los implementos"
           respaldo={respaldo}
         />

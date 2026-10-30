@@ -6,6 +6,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { toast } from 'sonner';
+import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
+import { programaPorCodigo, soles } from '../utils/catalogo';
 import { Calendar, Gift, Rocket, Dumbbell, CheckCircle, Mail, Phone as PhoneIcon, Clock, Users, Sparkles } from 'lucide-react';
 
 interface RenovacionNavidadPageProps {
@@ -16,6 +18,13 @@ interface RenovacionNavidadPageProps {
 }
 
 export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: RenovacionNavidadPageProps) {
+  // Precios del catálogo del API; sin conexión solo se muestra el nombre del plan
+  const { items: catalogo } = useCatalogoPublico();
+  const precioPlan = (codigo: string) => {
+    const p = programaPorCodigo(catalogo, codigo);
+    return p ? ` - ${soles(p.precio)}` : '';
+  };
+
   const [formData, setFormData] = useState({
     nombre_padre: '',
     nombre_alumno: '',
@@ -465,7 +474,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex flex-col gap-2 flex-1">
-                                <span className="font-bold text-[#FCA929] text-lg">Plan 3 Meses - S/ 869</span>
+                                <span className="font-bold text-[#FCA929] text-lg">Plan 3 Meses{precioPlan('full')}</span>
                                 <span className="text-sm text-white/80 flex items-center gap-2">
                                   <Gift className="w-4 h-4" />
                                   + 15 días de regalo
@@ -489,7 +498,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex flex-col gap-2 flex-1">
-                                <span className="font-bold text-[#FCA929] text-lg">Plan 6 Meses - S/ 1,699</span>
+                                <span className="font-bold text-[#FCA929] text-lg">Plan 6 Meses{precioPlan('6meses')}</span>
                                 <div className="space-y-1">
                                   <span className="text-sm text-white/80 flex items-center gap-2">
                                     <Gift className="w-4 h-4" />

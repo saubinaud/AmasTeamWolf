@@ -5,88 +5,77 @@ import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { useUmami } from '../hooks/useUmami';
 import { enlaceWhatsApp, TELEFONO_VISIBLE } from '../config/contacto';
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  variant: string;
-  quantity: number;
-}
+import type { ItemCarrito } from '../hooks/useCarrito';
+import { soles } from '../utils/catalogo';
 
 interface PopupPagoProps {
   isOpen: boolean;
   onClose: () => void;
   totalAmount: number;
-  cartItems?: CartItem[];
-  customerEmail?: string;
+  /** Carrito de la tienda: si viene, se registra el pedido (con nombre y celular) */
+  cartItems?: ItemCarrito[];
+  /** El pedido de la tienda quedó registrado: vaciar el carrito */
+  onPedidoRegistrado?: () => void;
 }
 
-export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount, cartItems = [], customerEmail = '' }: PopupPagoProps) {
+export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount, cartItems = [], onPedidoRegistrado }: PopupPagoProps) {
   // Umami analytics
   const { trackPaymentMethod, trackPurchase } = useUmami();
 
   const [selectedMethod, setSelectedMethod] = useState<'yape' | 'transfer' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contacto, setContacto] = useState({ nombre: '', telefono: '', correo: '' });
+  const esTienda = cartItems.length > 0;
 
   const handleProceedPayment = async () => {
     if (!selectedMethod) {
       toast.error('Por favor seleccione un método de pago');
       return;
     }
+    if (esTienda) {
+      if (contacto.nombre.trim().length < 3) { toast.error('Escribe tu nombre'); return; }
+      if (contacto.telefono.length < 9) { toast.error('Escribe tu celular (9 dígitos)'); return; }
+      if (contacto.correo && !/^\S+@\S+\.\S+$/.test(contacto.correo)) { toast.error('El correo no es válido'); return; }
+    }
 
     setIsSubmitting(true);
 
     try {
-      // Si hay productos en el carrito, enviar al webhook de implementos
-      if (cartItems.length > 0) {
-        const payload = {
-          metodoPago: selectedMethod === 'yape' ? 'Yape' : 'Transferencia Bancaria',
-          productos: cartItems.map(item => ({
-            id: item.id,
-            nombre: item.name,
-            precio: item.price,
-            variante: item.variant,
-            cantidad: item.quantity,
-            subtotal: item.price * item.quantity
-          })),
-          total: totalAmount,
-          email: customerEmail || 'no-proporcionado@email.com',
-          fechaPedido: new Date().toISOString(),
-          estado: 'Pendiente de pago'
-        };
-
+      if (esTienda) {
+        // Pedido de la tienda: el servidor vuelve a cotizar el carrito con los
+        // precios del catálogo y guarda su total, no el que muestra el navegador.
         const { API_BASE } = await import('../config/api');
         const response = await fetch(`${API_BASE}/implementos`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lineas: cartItems.map((i) => ({ item_id: i.item_id, cantidad: i.cantidad, variante: i.variante })),
+            nombre: contacto.nombre.trim(),
+            telefono: contacto.telefono,
+            correo: contacto.correo.trim() || undefined,
+            metodo: selectedMethod === 'yape' ? 'yape' : 'transferencia',
+          }),
         });
+        const j = await response.json().catch(() => ({}));
+        if (!response.ok || j.success === false) throw new Error(j.error || 'Error al procesar el pedido');
+        const total = Number(j.data?.total ?? totalAmount);
 
-        if (!response.ok) {
-          throw new Error('Error al procesar el pedido');
-        }
+        trackPaymentMethod(selectedMethod === 'yape' ? 'Yape' : 'Transferencia Bancaria', total);
+        trackPurchase('Productos Tienda', total);
 
-        // Track payment with Umami
-        trackPaymentMethod(selectedMethod === 'yape' ? 'Yape' : 'Transferencia Bancaria', totalAmount);
-        trackPurchase('Productos Tienda', totalAmount);
-
-        toast.success('¡Pedido registrado! Se ha enviado un correo con los detalles. Los productos serán entregados una vez confirmado el pago.');
+        toast.success(`¡Pedido registrado por ${soles(total)}! Envía tu comprobante por WhatsApp y te avisamos cuando esté listo.`);
+        onPedidoRegistrado?.();
       } else {
         // Si viene desde matrícula, solo mostrar éxito
         trackPaymentMethod(selectedMethod === 'yape' ? 'Yape' : 'Transferencia Bancaria', totalAmount);
 
         toast.success('Información de pago confirmada. Por favor realice su pago y envíe el comprobante al WhatsApp indicado.');
       }
-      
+
       onClose();
       setSelectedMethod(null);
     } catch (error) {
-      console.error('Error:', error);
-      toast.error('Hubo un error al procesar el pedido. Por favor intente nuevamente.');
+      toast.error(`${(error as Error).message}. Inténtalo de nuevo.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -116,7 +105,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
               Medios de pago
             </DialogTitle>
             <DialogDescription className="text-white/70 text-base sm:text-lg">
-              Total a pagar: <span className="text-[#FCA929] text-xl sm:text-2xl">S/ {totalAmount}</span>
+              Total a pagar: <span className="text-[#FCA929] text-xl sm:text-2xl">{soles(totalAmount)}</span>
             </DialogDescription>
           </div>
           <DialogClose asChild>
@@ -131,6 +120,42 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
             </button>
           </DialogClose>
         </div>
+
+        {esTienda && (
+          <div className="grid sm:grid-cols-2 gap-3 mb-4 sm:mb-6">
+            <label className="sm:col-span-2 block">
+              <span className="block text-white/70 text-sm mb-1.5">Nombre de quien compra</span>
+              <input
+                className="w-full min-h-[44px] rounded-lg bg-zinc-800 border border-white/20 px-4 text-white focus:outline-none focus:border-[#FA7B21]"
+                autoComplete="name"
+                value={contacto.nombre}
+                onChange={(e) => setContacto((c) => ({ ...c, nombre: e.target.value }))}
+              />
+            </label>
+            <label className="block">
+              <span className="block text-white/70 text-sm mb-1.5">Celular (WhatsApp)</span>
+              <input
+                className="w-full min-h-[44px] rounded-lg bg-zinc-800 border border-white/20 px-4 text-white focus:outline-none focus:border-[#FA7B21]"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="9 dígitos"
+                value={contacto.telefono}
+                onChange={(e) => setContacto((c) => ({ ...c, telefono: e.target.value.replace(/\D/g, '').slice(0, 9) }))}
+              />
+            </label>
+            <label className="block">
+              <span className="block text-white/70 text-sm mb-1.5">Correo (opcional)</span>
+              <input
+                className="w-full min-h-[44px] rounded-lg bg-zinc-800 border border-white/20 px-4 text-white focus:outline-none focus:border-[#FA7B21]"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                value={contacto.correo}
+                onChange={(e) => setContacto((c) => ({ ...c, correo: e.target.value }))}
+              />
+            </label>
+          </div>
+        )}
 
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 md:gap-5">
           {/* Yape */}

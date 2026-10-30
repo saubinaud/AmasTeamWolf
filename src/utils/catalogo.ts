@@ -1,7 +1,35 @@
 // Catálogo público y cotización: lo que los formularios de matrícula,
 // renovación y Leadership leen del API. Ningún precio ni código promocional
 // vive aquí; el total siempre lo devuelve POST /api/config/cotizar.
-import { PRECIOS_BASE, PROGRAMA_CLASES, NOMBRES_PROGRAMA, RESPALDO_ROPA } from '../shared/constants/programas';
+//
+// Lo que se muestra (título, beneficios, tachado, cintas, fotos, orden) también
+// sale del API: el bloque `web` de cada ítem, editado en Space ▸ Catálogo ▸ En la web.
+
+/** Presentación de un ítem en la web (sin precio: el precio es `ItemCatalogo.precio`). */
+export interface WebItem {
+  /** Programa: sale en la portada. Producto: sale en la tienda */
+  visible: boolean;
+  /** Programa: tarjeta resaltada. Producto: sale también en la portada */
+  destacado: boolean;
+  orden: number;
+  titulo: string | null;
+  texto: string | null;
+  descripcion: string | null;
+  beneficios: string[];
+  /** Precio tachado; el API solo lo manda si es mayor que el precio real */
+  precio_referencia: number | null;
+  etiqueta: string | null;
+  sello: string | null;
+  nota_precio: string | null;
+  aviso_titulo: string | null;
+  aviso_texto: string | null;
+  renovacion_texto: string | null;
+  renovacion_etiqueta: string | null;
+  renovacion_beneficios: string[];
+  imagenes: string[];
+  colores: string[];
+  categoria_tienda: string | null;
+}
 
 export interface ItemCatalogo {
   id: number;
@@ -23,6 +51,8 @@ export interface ItemCatalogo {
   incluye?: number[];
   /** Programa cuyo uniforme se cobra aparte */
   sin_uniforme?: boolean;
+  /** Presentación en la web; null = no tiene (no sale en portada ni tienda) */
+  web?: WebItem | null;
 }
 
 export type LineaPedido = { item_id: number; cantidad?: number; talla?: string } | { codigo: string; cantidad?: number };
@@ -112,38 +142,23 @@ export function lineasMatricula(programa: ItemCatalogo, polos: CantidadPolos, co
   return lineas;
 }
 
-// ─── Respaldo ────────────────────────────────────────────────────────────────
-// SOLO si GET /api/config/catalogo falla: precios históricos para que la página
-// no quede vacía. Se muestran como referenciales y no se puede enviar hasta que
-// el API cotice (ids negativos = no existen en el catálogo real).
-export function catalogoRespaldo(): ItemCatalogo[] {
-  const base = { descripcion: null, categoria: null, meses: null, usa_talla: false, componentes: [] };
-  const programas: ItemCatalogo[] = Object.keys(PRECIOS_BASE).map((codigo, i) => ({
-    ...base,
-    id: -(i + 1),
-    tipo: 'programa',
-    codigo,
-    nombre: NOMBRES_PROGRAMA[codigo],
-    precio: PRECIOS_BASE[codigo],
-    clases: PROGRAMA_CLASES[codigo],
-    en_inscripcion: ['1mes', 'full', '6meses'].includes(codigo),
-    en_renovacion: codigo !== '1mes',
-    es_adicional: false,
-    sin_uniforme: codigo === '1mes',
-    orden: i,
-  }));
-  const ropa: ItemCatalogo[] = RESPALDO_ROPA.map((r, i) => ({
-    ...base,
-    id: -(100 + i),
-    tipo: r.tipo,
-    codigo: r.codigo,
-    nombre: r.nombre,
-    categoria: r.categoria,
-    precio: r.precio,
-    clases: null,
-    en_inscripcion: false,
-    en_renovacion: false,
-    es_adicional: false,
-  }));
-  return [...programas, ...ropa];
+// ─── Presentación en la web ─────────────────────────────────────────────────
+
+const ordenWeb = (a: ItemCatalogo, b: ItemCatalogo) =>
+  (a.web?.orden ?? 0) - (b.web?.orden ?? 0) || (a.orden ?? 0) - (b.orden ?? 0) || a.nombre.localeCompare(b.nombre);
+
+/** Título comercial o, si no tiene, el nombre del catálogo. */
+export const tituloWeb = (i: ItemCatalogo) => i.web?.titulo || i.nombre;
+
+/** Programas de la portada: visibles en la web, sin los adicionales (Leadership tiene su página). */
+export function programasPortada(items: ItemCatalogo[]) {
+  return items.filter((i) => i.tipo === 'programa' && !i.es_adicional && i.web?.visible).sort(ordenWeb);
 }
+
+/** Productos de la tienda (implementos, ropa y paquetes visibles en la web), en su orden. */
+export function productosTienda(items: ItemCatalogo[]) {
+  return items.filter((i) => i.tipo !== 'programa' && i.web?.visible && i.precio > 0).sort(ordenWeb);
+}
+
+/** Categoría con la que se agrupa un producto en la tienda. */
+export const categoriaTienda = (i: ItemCatalogo) => i.web?.categoria_tienda || 'Otros';

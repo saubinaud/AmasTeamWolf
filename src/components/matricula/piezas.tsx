@@ -27,12 +27,14 @@ export function CabeceraJMA({ onVolver, textoVolver = 'Inicio' }: { onVolver?: (
 }
 
 /** Portada corta del formulario: etiqueta, título, precio desde y lo que incluye. */
-export function Portada({ etiqueta, titulo, bajada, precio, notaPrecio, incluye, respaldo }: {
+export function Portada({ etiqueta, titulo, bajada, precio, precioAntes, notaPrecio, incluye, respaldo }: {
   etiqueta: string;
   titulo: string;
-  bajada?: string;
+  bajada?: string | null;
   precio?: number | null;
-  notaPrecio?: string;
+  /** Precio tachado (Space ▸ Catálogo ▸ En la web) */
+  precioAntes?: number | null;
+  notaPrecio?: string | null;
   incluye?: string[];
   respaldo?: boolean;
 }) {
@@ -42,12 +44,15 @@ export function Portada({ etiqueta, titulo, bajada, precio, notaPrecio, incluye,
       <h1 className={`${cx.h1} mt-2`}>{titulo}</h1>
       {bajada && <p className={`${cx.textoSec} mt-3 text-[16px] leading-relaxed`}>{bajada}</p>}
       {precio != null && (
-        <div className="mt-5 flex items-baseline gap-2">
+        <div className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+          {precioAntes != null && precioAntes > precio && (
+            <span className={`${cx.cifra} text-[18px] text-white/40 line-through`}>{soles(precioAntes)}</span>
+          )}
           <span className={`${cx.cifra} text-[34px] text-white`}>{soles(precio)}</span>
           {notaPrecio && <span className={`${cx.textoApagado} text-[14px]`}>{notaPrecio}</span>}
         </div>
       )}
-      {respaldo && <p className={`${cx.avisoAmbar} mt-3`}>Precios referenciales: no pudimos conectar con la academia. Intenta de nuevo en un momento.</p>}
+      {respaldo && <p className={`${cx.avisoAmbar} mt-3`}>No pudimos conectar con la academia para mostrar el precio. Intenta de nuevo en un momento o escríbenos por WhatsApp.</p>}
       {incluye && incluye.length > 0 && (
         <ul className="mt-5 grid gap-2 sm:grid-cols-2">
           {incluye.map((t) => (

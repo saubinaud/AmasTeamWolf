@@ -1,34 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from './ui/button';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import { OptimizedImage } from './OptimizedImage';
 import { toast } from 'sonner';
-import { allStoreProducts, Implement } from '../data/implements';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
-import { CartDrawerHome, CartItem } from './CartDrawerHome';
-import { PopupPago } from './PopupPago';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
-import { useUmami } from '../hooks/useUmami';
+import { useLayoutContext } from '../layouts/MainLayout';
+import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
+import { productosTienda, categoriaTienda, tituloWeb, soles, type ItemCatalogo } from '../utils/catalogo';
+import { enlaceWhatsApp } from '../config/contacto';
 
 interface TiendaPageProps {
   onNavigate: (page: string) => void;
 }
 
+/**
+ * Tienda: productos, precios, fotos, categorías y orden salen del catálogo del
+ * API (Space ▸ Catálogo ▸ En la web). El carrito es el de toda la web.
+ */
 export function TiendaPage({ onNavigate }: TiendaPageProps) {
-  // Umami analytics
-  const { trackEvent } = useUmami();
+  const { onCartClick, cartItemsCount, onAddToCart } = useLayoutContext();
+  const { items, estado } = useCatalogoPublico();
+  const productos = useMemo(() => productosTienda(items), [items]);
 
-  const [selectedProduct, setSelectedProduct] = useState<Implement | null>(null);
-  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<ItemCatalogo | null>(null);
   const [activeCategory, setActiveCategory] = useState('Todos');
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isPagoOpen, setIsPagoOpen] = useState(false);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [checkoutItems, setCheckoutItems] = useState<CartItem[]>([]);
-  
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -36,76 +34,10 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
     document.body.scrollTop = 0;
   }, []);
 
-  // Load cart from localStorage
-  useEffect(() => {
-    const savedCart = localStorage.getItem('amasCart');
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error loading cart:', error);
-      }
-    }
-  }, []);
-
-  // Save cart to localStorage
-  useEffect(() => {
-    localStorage.setItem('amasCart', JSON.stringify(cartItems));
-  }, [cartItems]);
-
-  // Categorías basadas en el tipo de producto
-  const getCategory = (product: Implement) => {
-    if (['gloves'].includes(product.id)) return 'Guantes';
-    if (['shoes'].includes(product.id)) return 'Zapatos';
-    if (['bostaff', 'combat-weapon', 'nunchaku'].includes(product.id)) return 'Armas';
-    if (['patch', 'membership'].includes(product.id)) return 'Membresías';
-    if (['uniform', 'polo'].includes(product.id)) return 'Uniformes';
-    if (['protection-set'].includes(product.id)) return 'Protecciones';
-    if (['bag', 'headband'].includes(product.id)) return 'Accesorios';
-    return 'Otros';
-  };
-
-  const categories = ['Todos', ...Array.from(new Set(allStoreProducts.map(p => getCategory(p))))];
-  // Filtrar productos: excluir el parche (solo disponible en programa Leadership)
-  const availableProducts = allStoreProducts.filter(p => p.id !== 'patch');
-  
-  const filteredProducts = activeCategory === 'Todos' 
-    ? availableProducts 
-    : availableProducts.filter(p => getCategory(p) === activeCategory);
-
-  const handleOpenProduct = (product: Implement) => {
-    setSelectedProduct(product);
-    const firstColor = product.colors?.[0] || '';
-    setSelectedColor(firstColor);
-  };
-
-  const handleUpdateQuantity = (id: string, variant: string, quantity: number) => {
-    const newCart = cartItems.map(item =>
-      item.id === id && item.variant === variant
-        ? { ...item, quantity }
-        : item
-    );
-    setCartItems(newCart);
-  };
-
-  const handleRemoveItem = (id: string, variant: string) => {
-    setCartItems(cartItems.filter(item => !(item.id === id && item.variant === variant)));
-  };
-
-  const handleCheckout = (total: number, items: CartItem[]) => {
-    setTotalAmount(total);
-    setCheckoutItems(items);
-    setIsPagoOpen(true);
-
-    // Track checkout initiation with Umami
-    trackEvent('Iniciar Checkout Tienda', {
-      valor: total,
-      moneda: 'PEN',
-      cantidad_items: items.length
-    });
-  };
-
-  const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const categories = ['Todos', ...Array.from(new Set(productos.map(categoriaTienda)))];
+  const filteredProducts = activeCategory === 'Todos'
+    ? productos
+    : productos.filter((p) => categoriaTienda(p) === activeCategory);
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -140,7 +72,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
         <HeaderMain
           onNavigate={onNavigate}
           onOpenMatricula={() => {}}
-          onCartClick={() => setIsCartOpen(true)}
+          onCartClick={onCartClick}
           cartItemsCount={cartItemsCount}
           currentPage="tienda"
         />
@@ -200,22 +132,46 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
           </div>
 
           {/* Products Grid */}
+          {estado === 'cargando' ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              {[0, 1, 2, 3, 4].map((i) => <div key={i} className="aspect-[3/4] rounded-lg bg-white/5 animate-pulse" />)}
+            </div>
+          ) : productos.length === 0 ? (
+            <div className="max-w-xl mx-auto text-center bg-zinc-900/70 border border-white/10 rounded-xl p-6 sm:p-8">
+              <p className="text-white/80 text-sm sm:text-base mb-5">Escríbenos y te contamos qué hay disponible y sus precios.</p>
+              <a
+                href={enlaceWhatsApp('Hola, quiero comprar en la tienda')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white px-8 py-4 rounded-lg"
+              >
+                Consultar por WhatsApp
+              </a>
+            </div>
+          ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
             {filteredProducts.map((product) => (
               <div
                 key={product.id}
                 className="cursor-pointer group hover:-translate-y-2 hover:scale-[1.02] transition-transform duration-300"
-                onClick={() => handleOpenProduct(product)}
+                onClick={() => setSelectedProduct(product)}
               >
-                <div className="bg-zinc-900 rounded-lg overflow-hidden border border-white/10 hover:border-[#FA7B21]/50 transition-all duration-300 h-full flex flex-col">
+                <div className="bg-zinc-900 rounded-lg overflow-hidden border border-white/10 hover:border-[#FA7B21]/50 transition-colors duration-300 h-full flex flex-col">
                   <div className="relative aspect-square bg-zinc-800 overflow-hidden">
-                    <OptimizedImage
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      aspectRatio="1/1"
-                      objectFit="cover"
-                    />
+                    {product.web?.imagenes?.[0] && (
+                      <OptimizedImage
+                        src={product.web.imagenes[0]}
+                        alt={tituloWeb(product)}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        aspectRatio="1/1"
+                        objectFit="cover"
+                      />
+                    )}
+                    {product.web?.etiqueta && (
+                      <div className="absolute top-2 right-2 bg-[#FA7B21] text-white text-xs px-2 py-1 rounded-full select-none pointer-events-none">
+                        {product.web.etiqueta}
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                       <span className="text-white text-sm flex items-center gap-2">
                         <ShoppingCart className="w-4 h-4" />
@@ -224,18 +180,22 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
                     </div>
                   </div>
                   <div className="p-3 sm:p-4 flex-1 flex flex-col">
-                    <p className="text-[#FCA929] text-xs mb-1">{getCategory(product)}</p>
+                    <p className="text-[#FCA929] text-xs mb-1">{categoriaTienda(product)}</p>
                     <h3 className="text-white text-sm sm:text-base mb-2 line-clamp-2 flex-1">
-                      {product.name}
+                      {tituloWeb(product)}
                     </h3>
-                    <p className="text-[#FA7B21] text-lg sm:text-xl">
-                      S/ {product.price}
+                    <p className="flex flex-wrap items-baseline gap-x-2">
+                      {product.web?.precio_referencia != null && (
+                        <span className="text-white/40 line-through text-sm">{soles(product.web.precio_referencia)}</span>
+                      )}
+                      <span className="text-[#FA7B21] text-lg sm:text-xl">{soles(product.precio)}</span>
                     </p>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+          )}
         </div>
       </section>
 
@@ -249,56 +209,11 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
         product={selectedProduct}
         isOpen={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
-        onAddToCart={(product) => {
-          const variant = selectedColor || 'Único';
-          const existingItemIndex = cartItems.findIndex(
-            item => item.id === product.id && item.variant === variant
-          );
-
-          if (existingItemIndex >= 0) {
-            const newCart = [...cartItems];
-            newCart[existingItemIndex].quantity += 1;
-            setCartItems(newCart);
-          } else {
-            const newItem: CartItem = {
-              id: product.id,
-              name: product.name,
-              price: product.price,
-              image: product.image,
-              variant: variant,
-              quantity: 1
-            };
-            setCartItems([...cartItems, newItem]);
-          }
-          
-          toast.success(`${product.name} añadido al carrito`);
+        onAddToCart={(item) => {
+          onAddToCart(item);
+          toast.success(`${item.nombre} añadido al carrito`);
         }}
       />
-
-      {/* Cart Drawer */}
-      <CartDrawerHome
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        items={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onCheckout={handleCheckout}
-      />
-
-        {/* Payment Popup */}
-        <PopupPago
-          isOpen={isPagoOpen}
-          onClose={() => {
-            setIsPagoOpen(false);
-            // Limpiar el carrito después de proceder al pago
-            if (checkoutItems.length > 0) {
-              setCartItems([]);
-              setCheckoutItems([]);
-            }
-          }}
-          totalAmount={totalAmount}
-          cartItems={checkoutItems}
-        />
       </div>
     </div>
   );

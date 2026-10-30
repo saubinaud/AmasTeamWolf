@@ -3,7 +3,7 @@
 // devuelve POST /api/config/cotizar; nunca suma precios por su cuenta.
 import { useEffect, useMemo, useState } from 'react';
 import { API_BASE } from '../config/api';
-import { catalogoRespaldo, type Cotizacion, type ItemCatalogo, type PedidoCotizacion } from '../utils/catalogo';
+import { type Cotizacion, type ItemCatalogo, type PedidoCotizacion } from '../utils/catalogo';
 
 type EstadoCatalogo = 'cargando' | 'ok' | 'respaldo';
 
@@ -27,8 +27,8 @@ function pedirCatalogo(): Promise<ItemCatalogo[]> {
 }
 
 /**
- * Catálogo del API. Si falla, `estado = 'respaldo'` y los ítems son los
- * precios históricos de shared/constants/programas.ts (solo referenciales).
+ * Catálogo del API. Si falla, `estado = 'respaldo'` y no hay ítems: la página
+ * no inventa precios (esconde el precio o dice "Consultar" y ofrece WhatsApp).
  */
 export function useCatalogoPublico() {
   const [items, setItems] = useState<ItemCatalogo[]>([]);
@@ -38,7 +38,7 @@ export function useCatalogoPublico() {
     let vigente = true;
     pedirCatalogo()
       .then((data) => { if (vigente) { setItems(data); setEstado('ok'); } })
-      .catch(() => { if (vigente) { setItems(catalogoRespaldo()); setEstado('respaldo'); } });
+      .catch(() => { if (vigente) { setItems([]); setEstado('respaldo'); } });
     return () => { vigente = false; };
   }, []);
 

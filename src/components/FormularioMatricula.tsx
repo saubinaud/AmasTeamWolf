@@ -15,16 +15,18 @@ import {
 import { CampoCodigo, ResumenCotizacion, BarraTotal, EspacioBarra } from './matricula/Resumen';
 import { SeccionFechas, useFechasPrograma } from './matricula/SeccionFechas';
 import {
-  lineasMatricula, piezasRopa, programaPorCodigo, itemPolos, soles,
-  type CantidadPolos, type PedidoCotizacion,
+  lineasMatricula, piezasRopa, programaPorCodigo, itemPolos, soles, tituloWeb,
+  type CantidadPolos, type ItemCatalogo, type PedidoCotizacion,
 } from '../utils/catalogo';
 
+/**
+ * Lo único que la página pone a mano: la etiqueta y un título por si el API no
+ * responde. Título, texto, beneficios, precio y tachado salen del catálogo
+ * (Space ▸ Catálogo ▸ En la web), los mismos de la tarjeta de la portada.
+ */
 export interface PortadaPrograma {
   etiqueta: string;
-  titulo: string;
-  bajada: string;
-  incluye: string[];
-  notaPrecio?: string;
+  tituloRespaldo: string;
 }
 
 interface FormularioMatriculaProps {
@@ -39,6 +41,13 @@ const PERSONAS = {
   nombreAlumno: '', dniAlumno: '', fechaNacimiento: '',
   nombrePadre: '', dniPadre: '', telefono: '', email: '', direccion: '',
 };
+
+/** Clases del catálogo + beneficios de la web (sin repetir las clases si un beneficio ya las dice). */
+function incluyePrograma(programa: ItemCatalogo): string[] {
+  const beneficios = programa.web?.beneficios ?? [];
+  const clases = programa.clases ? `${programa.clases} clases` : null;
+  return clases && !beneficios.some((b) => b.includes(clases)) ? [clases, ...beneficios] : beneficios;
+}
 
 const soloDigitos = (v: string, max: number) => v.replace(/\D/g, '').slice(0, max);
 
@@ -188,11 +197,12 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
       <main className={cx.contenedor}>
         <Portada
           etiqueta={portada.etiqueta}
-          titulo={portada.titulo}
-          bajada={portada.bajada}
+          titulo={programa ? tituloWeb(programa) : portada.tituloRespaldo}
+          bajada={programa?.web?.texto}
           precio={programa?.precio}
-          notaPrecio={portada.notaPrecio}
-          incluye={programa?.clases ? [`${programa.clases} clases`, ...portada.incluye] : portada.incluye}
+          precioAntes={programa?.web?.precio_referencia}
+          notaPrecio={programa?.web?.nota_precio}
+          incluye={programa ? incluyePrograma(programa) : []}
           respaldo={respaldo}
         />
 

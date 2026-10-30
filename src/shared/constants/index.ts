@@ -11,12 +11,7 @@ export {
 } from './feriados';
 export type { FeriadoFijo, FeriadoMovil } from './feriados';
 
-// Programas y precios (solo respaldo si el API no responde)
-export {
-  PROGRAMA_CLASES,
-  PRECIOS_BASE,
-  NOMBRES_PROGRAMA,
-} from './programas';
+// Programas y precios: solo en el catálogo del API (utils/catalogo.ts).
 
 // Los códigos promocionales viven en el API (tabla promociones): se validan cotizando.
 

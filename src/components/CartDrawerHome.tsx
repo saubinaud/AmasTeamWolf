@@ -3,23 +3,32 @@ import { Button } from './ui/button';
 import { X, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
 import { ScrollArea } from './ui/scroll-area';
-
-export interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  variant: string;
-  quantity: number;
-}
+import { useMemo } from 'react';
+import { useCotizacion } from '../hooks/useCatalogoPublico';
+import { lineasCarrito, type ItemCarrito } from '../hooks/useCarrito';
+import { soles } from '../utils/catalogo';
 
 interface CartDrawerHomeProps {
   isOpen: boolean;
   onClose: () => void;
-  items: CartItem[];
-  onUpdateQuantity: (id: string, variant: string, quantity: number) => void;
-  onRemoveItem: (id: string, variant: string) => void;
-  onCheckout: (total: number, items: CartItem[]) => void;
+  items: ItemCarrito[];
+  onUpdateQuantity: (itemId: number, variante: string, cantidad: number) => void;
+  onRemoveItem: (itemId: number, variante: string) => void;
+  /** Total del servidor (cotización al día) */
+  onCheckout: (total: number) => void;
+}
+
+/** "M · #000000" → texto y muestras de color. */
+export function Variante({ texto }: { texto: string }) {
+  if (!texto) return null;
+  const partes = texto.split(' · ');
+  return (
+    <span className="inline-flex items-center gap-1.5 text-white/70 text-xs">
+      {partes.map((p) => (/^#[0-9A-Fa-f]{6}$/.test(p)
+        ? <span key={p} className="inline-block w-3.5 h-3.5 rounded-full border border-white/30" style={{ backgroundColor: p }} title={p} />
+        : <span key={p}>Talla {p}</span>))}
+    </span>
+  );
 }
 
 export function CartDrawerHome({
@@ -30,12 +39,15 @@ export function CartDrawerHome({
   onRemoveItem,
   onCheckout
 }: CartDrawerHomeProps) {
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  // El total lo calcula el servidor con los precios del catálogo
+  const pedido = useMemo(() => (isOpen && items.length ? { lineas: lineasCarrito(items) } : null), [isOpen, items]);
+  const { cotizacion, alDia, cargando, error } = useCotizacion(pedido);
+  const listo = alDia && !!cotizacion?.ok;
+  const total = listo ? cotizacion!.total : null;
 
   const handleCheckout = () => {
-    if (items.length === 0) return;
-    onCheckout(total, items);
-    onClose();
+    if (items.length === 0 || total == null) return;
+    onCheckout(total);
   };
 
   return (
@@ -78,16 +90,16 @@ export function CartDrawerHome({
           <>
             <ScrollArea className="flex-1 px-6 py-4">
               <div className="space-y-4">
-                {items.map((item) => (
+                {items.map((item, idx) => (
                   <div
-                    key={`${item.id}-${item.variant}`}
+                    key={`${item.item_id}-${item.variante}`}
                     className="bg-zinc-800/50 rounded-lg p-4 border border-white/10 hover:border-[#FA7B21]/30 transition-all duration-200"
                   >
                     <div className="flex gap-4">
                       <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0">
                         <OptimizedImage
-                          src={item.image}
-                          alt={item.name}
+                          src={item.imagen ?? ''}
+                          alt={item.nombre}
                           className="w-full h-full object-cover"
                           aspectRatio="1/1"
                           objectFit="cover"
@@ -98,14 +110,12 @@ export function CartDrawerHome({
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="min-w-0">
                             <h4 className="text-white text-sm sm:text-base line-clamp-1">
-                              {item.name}
+                              {item.nombre}
                             </h4>
-                            <p className="text-white/70 text-xs">
-                              Variante: {item.variant}
-                            </p>
+                            <Variante texto={item.variante} />
                           </div>
                           <button
-                            onClick={() => onRemoveItem(item.id, item.variant)}
+                            onClick={() => onRemoveItem(item.item_id, item.variante)}
                             className="p-2 text-white/60 hover:text-red-400 transition-colors duration-200 flex-shrink-0"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -116,17 +126,19 @@ export function CartDrawerHome({
                           <div className="flex items-center gap-2">
                             <Button
                               size="icon"
-                              onClick={() => onUpdateQuantity(item.id, item.variant, Math.max(1, item.quantity - 1))}
+                              disabled={item.cantidad <= 1}
+                              onClick={() => onUpdateQuantity(item.item_id, item.variante, item.cantidad - 1)}
                               className="h-10 w-10 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
                             >
                               <Minus className="w-3 h-3" />
                             </Button>
                             <span className="text-white text-sm w-8 text-center">
-                              {item.quantity}
+                              {item.cantidad}
                             </span>
                             <Button
                               size="icon"
-                              onClick={() => onUpdateQuantity(item.id, item.variant, item.quantity + 1)}
+                              disabled={item.cantidad >= 10}
+                              onClick={() => onUpdateQuantity(item.item_id, item.variante, item.cantidad + 1)}
                               className="h-10 w-10 bg-transparent border border-white/20 text-white hover:bg-white/10 active:scale-95"
                             >
                               <Plus className="w-3 h-3" />
@@ -134,7 +146,7 @@ export function CartDrawerHome({
                           </div>
                           
                           <span className="text-[#FA7B21] text-base sm:text-lg">
-                            S/ {item.price * item.quantity}
+                            {listo && cotizacion!.lineas[idx] ? soles(cotizacion!.lineas[idx].total) : '…'}
                           </span>
                         </div>
                       </div>
@@ -146,18 +158,19 @@ export function CartDrawerHome({
 
             <div className="border-t border-white/10 px-6 py-4 space-y-4 bg-zinc-900/95">
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-white/70 text-sm">
-                  <span>Subtotal:</span>
-                  <span>S/ {total}</span>
-                </div>
+                {cotizacion && alDia && !cotizacion.ok && (
+                  <p className="text-amber-300 text-sm">{cotizacion.errores[0] ?? 'Un producto ya no está disponible'}. Quítalo para seguir.</p>
+                )}
+                {error && !cotizacion && <p className="text-amber-300 text-sm">No pudimos calcular el total. Reintentando…</p>}
                 <div className="flex items-center justify-between text-white text-lg sm:text-xl pt-2 border-t border-white/10">
                   <span>Total:</span>
-                  <span className="text-[#FA7B21] text-2xl">S/ {total}</span>
+                  <span className={`text-[#FA7B21] text-2xl transition-opacity ${cargando ? 'opacity-50' : ''}`}>{total != null ? soles(total) : '…'}</span>
                 </div>
               </div>
-              
+
               <Button
                 onClick={handleCheckout}
+                disabled={total == null}
                 className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-base shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 active:scale-95"
               >
                 Proceder al pago

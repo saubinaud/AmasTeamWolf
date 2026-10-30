@@ -3,27 +3,50 @@ import { Dialog, DialogContent, DialogClose, DialogTitle, DialogDescription } fr
 import { Button } from './ui/button';
 import { X } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
+import { toast } from 'sonner';
+import { TALLAS, soles, tituloWeb, type ItemCatalogo } from '../utils/catalogo';
+import type { ItemCarrito } from '../hooks/useCarrito';
 
 interface ProductDetailDialogProps {
-  product: any | null; // Can be Implement or StoreProduct
+  /** Producto del catálogo (precio, fotos, descripción y colores vienen del API) */
+  product: ItemCatalogo | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddToCart?: (product: any) => void;
+  onAddToCart?: (item: Omit<ItemCarrito, 'cantidad'>) => void;
 }
 
 export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: ProductDetailDialogProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-  
-  // Reset selected image when product changes
+  const [color, setColor] = useState('');
+  const [talla, setTalla] = useState('');
+
+  // Al cambiar de producto: primera foto y primer color
   useEffect(() => {
     setSelectedImageIndex(0);
-  }, [product?.id]);
-  
+    setColor(product?.web?.colores?.[0] ?? '');
+    setTalla('');
+  }, [product?.id, product?.web?.colores]);
+
   if (!product) return null;
 
-  // Obtener array de imágenes directamente del producto
-  const images = product.images || [product.image];
-  const currentImage = images[selectedImageIndex];
+  const w = product.web;
+  const images = w?.imagenes?.length ? w.imagenes : [];
+  const currentImage = images[selectedImageIndex] ?? '';
+  const nombre = tituloWeb(product);
+  const descripcion = w?.descripcion || product.descripcion;
+  const colores = w?.colores ?? [];
+  const antes = w?.precio_referencia ?? null;
+
+  const agregar = () => {
+    if (product.usa_talla && !talla) { toast.error('Elige la talla'); return; }
+    onAddToCart?.({
+      item_id: product.id,
+      nombre,
+      imagen: images[0] ?? null,
+      variante: [talla, colores.length > 1 ? color : ''].filter(Boolean).join(' · '),
+    });
+    onClose();
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -38,9 +61,9 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
           "
           style={{ transform: 'none' }}
       >
-        <DialogTitle className="sr-only">{product.name}</DialogTitle>
+        <DialogTitle className="sr-only">{nombre}</DialogTitle>
         <DialogDescription className="sr-only">
-          {product.longDescription || product.description || `Detalles del producto ${product.name}`}
+          {descripcion || `Detalles del producto ${nombre}`}
         </DialogDescription>
         
         <DialogClose className="absolute right-3 top-3 sm:right-4 sm:top-4 z-50 rounded-full bg-white/10 p-2 hover:bg-white/20 transition-colors">
@@ -54,7 +77,7 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
             <div className="relative w-full flex items-center justify-center flex-1 bg-zinc-800/30 rounded-xl min-h-[300px] sm:min-h-[400px]">
               <OptimizedImage
                 src={currentImage}
-                alt={product.name}
+                alt={nombre}
                 priority={true}
                 className="max-w-full max-h-[500px] rounded-xl"
                 aspectRatio="1/1"
@@ -77,7 +100,7 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
                   >
                     <OptimizedImage
                       src={img}
-                      alt={`${product.name} - imagen ${index + 1}`}
+                      alt={`${nombre} - imagen ${index + 1}`}
                       className="w-full h-full"
                       aspectRatio="1/1"
                       objectFit="cover"
@@ -95,27 +118,19 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
                 className="text-white text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-4 sm:mb-5 md:mb-6 lg:mb-8 leading-tight"
                 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
               >
-                {product.name}
+                {nombre}
               </h2>
 
-              <div className="space-y-4 sm:space-y-5 mb-6 sm:mb-8 md:mb-10">
-                {product.longDescription ? (
-                  <p className="text-white/80 text-sm sm:text-base md:text-lg leading-relaxed">
-                    {product.longDescription}
+              {descripcion && (
+                <div className="space-y-4 sm:space-y-5 mb-6 sm:mb-8 md:mb-10">
+                  <p className="text-white/80 text-sm sm:text-base md:text-lg leading-relaxed whitespace-pre-line">
+                    {descripcion}
                   </p>
-                ) : product.description ? (
-                  <p className="text-white/80 text-sm sm:text-base md:text-lg leading-relaxed">
-                    {product.description}
-                  </p>
-                ) : (
-                  <p className="text-white/80 text-sm sm:text-base md:text-lg leading-relaxed">
-                    Implemento de alta calidad para el programa Leadership Wolf.
-                  </p>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Colores disponibles */}
-              {product.colors && product.colors.length > 0 && (
+              {colores.length > 0 && (
                 <div className="mb-6 sm:mb-8 md:mb-10">
                   <p
                     className="text-white mb-3 sm:mb-4 text-sm sm:text-base md:text-lg"
@@ -123,25 +138,43 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
                   >
                     Colores:
                   </p>
-                  <div className="flex gap-3 sm:gap-4">
-                    {product.colors.map((color: string) => (
-                      <div
-                        key={color}
-                        className="w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full border-2 border-white/20 hover:border-white/40 transition-colors cursor-pointer"
-                        style={{ backgroundColor: color }}
-                        title={color}
+                  <div className="flex flex-wrap gap-3 sm:gap-4">
+                    {colores.map((c) => (
+                      <button
+                        type="button"
+                        key={c}
+                        onClick={() => setColor(c)}
+                        aria-label={`Color ${c}`}
+                        aria-pressed={color === c}
+                        className={`w-11 h-11 md:w-12 md:h-12 rounded-full border-2 transition-colors ${color === c && colores.length > 1 ? 'border-[#FA7B21] ring-2 ring-[#FA7B21]/40' : 'border-white/20 hover:border-white/40'}`}
+                        style={{ backgroundColor: c }}
                       />
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Especificaciones técnicas */}
-              {product.description && product.longDescription && (
-                <div className="bg-white/5 rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 mb-6 sm:mb-8 md:mb-10">
-                  <p className="text-white/70 text-sm sm:text-base">
-                    <strong className="text-white/90">Especificaciones:</strong> {product.description}
+              {product.usa_talla && (
+                <div className="mb-6 sm:mb-8 md:mb-10">
+                  <p
+                    className="text-white mb-3 sm:mb-4 text-sm sm:text-base md:text-lg"
+                    style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+                  >
+                    Talla:
                   </p>
+                  <div className="flex flex-wrap gap-2">
+                    {TALLAS.map((t) => (
+                      <button
+                        type="button"
+                        key={t}
+                        onClick={() => setTalla(t)}
+                        aria-pressed={talla === t}
+                        className={`min-w-[44px] min-h-[44px] px-3 rounded-lg border text-sm transition-colors ${talla === t ? 'border-[#FA7B21] bg-[#FA7B21]/20 text-white' : 'border-white/20 text-white/80 hover:border-white/40'}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -150,19 +183,19 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
             <div className="mt-auto pt-4 sm:pt-5 border-t border-white/10">
               <div className="flex items-center justify-between mb-4 sm:mb-6 md:mb-8">
                 <span className="text-white/60 text-sm sm:text-base md:text-lg">Precio:</span>
-                <span
-                  className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
-                  style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
-                >
-                  S/{product.price}
+                <span className="flex flex-wrap items-baseline justify-end gap-x-3">
+                  {antes != null && <span className="text-white/40 line-through text-lg sm:text-xl">{soles(antes)}</span>}
+                  <span
+                    className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl"
+                    style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
+                  >
+                    {soles(product.precio)}
+                  </span>
                 </span>
               </div>
 
               <Button
-                onClick={() => {
-                  onAddToCart?.(product);
-                  onClose();
-                }}
+                onClick={agregar}
                 className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-4 sm:py-5 md:py-6 text-base sm:text-lg md:text-xl rounded-full transition-transform active:scale-95"
                 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600 }}
               >

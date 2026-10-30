@@ -8,6 +8,7 @@ import { API_BASE } from '../config/api';
 import { useCatalogoPublico, useCotizacion } from '../hooks/useCatalogoPublico';
 import { ContratoFirma } from './ContratoFirma';
 import { cx } from './matricula/tokens';
+import { enlaceWhatsApp } from '../config/contacto';
 import { CabeceraJMA, Portada, Seccion, Campo, CampoFechaNacimiento, SelectorPolos, Exito, irA } from './matricula/piezas';
 import { CampoCodigo, ResumenCotizacion, BarraTotal, EspacioBarra } from './matricula/Resumen';
 import { SeccionFechas, useFechasPrograma } from './matricula/SeccionFechas';
@@ -15,32 +16,6 @@ import {
   lineasMatricula, piezasRopa, programasOfrecidos, itemPolos, soles,
   type CantidadPolos, type ItemCatalogo, type PedidoCotizacion,
 } from '../utils/catalogo';
-
-/** Lo que trae cada plan (texto de marketing; precio y clases vienen del catálogo). */
-const BENEFICIOS: Record<string, { subtitulo: string; beneficios: string[]; destacado?: string }> = {
-  '1mes': {
-    subtitulo: 'Desbloqueado con tu código',
-    beneficios: ['Clases 2 veces por semana', 'Clases recuperables', 'Flexibilidad de horarios'],
-  },
-  full: {
-    subtitulo: '2 veces por semana',
-    beneficios: ['Clases recuperables', '1 congelamiento por inasistencia o viaje', 'Cartilla de deberes y seguimiento', '1 graduación con nuevo cinturón', '2 certificados del nuevo rango'],
-  },
-  '6meses': {
-    subtitulo: '2 veces por semana',
-    destacado: 'Más elegido',
-    beneficios: ['Clases recuperables', '1 congelamiento por inasistencia o viaje', 'Cartilla de deberes y seguimiento', '2 graduaciones con nuevo cinturón', '2 certificados del nuevo rango', '15 días de membresía adicionales', '1 implemento de regalo'],
-  },
-  '12meses_sin': {
-    subtitulo: 'Un año completo',
-    beneficios: ['Clases recuperables', '1 congelamiento por inasistencia o viaje', 'Cartilla de deberes y seguimiento', '4 graduaciones con nuevo cinturón', '4 certificados del nuevo rango'],
-  },
-  '12meses_con': {
-    subtitulo: 'Programa élite',
-    destacado: 'Todo incluido',
-    beneficios: ['Un año completo de clases', '4 graduaciones con ceremonia', 'Guantes, zapatos, bo staff, combat weapon y nunchaku', 'Acceso indefinido a Leadership', '15 días de regalo'],
-  },
-};
 
 interface FormularioRenovacionProps {
   onVolver: () => void;
@@ -50,8 +25,13 @@ interface FormularioRenovacionProps {
 const PERSONAS = { nombreAlumno: '', dniAlumno: '', fechaNacimiento: '', nombrePadre: '', dniPadre: '', email: '', direccion: '' };
 const soloDigitos = (v: string, max: number) => v.replace(/\D/g, '').slice(0, max);
 
+/** Tarjeta de un plan: precio del catálogo; subtítulo, cinta y beneficios de Space ▸ Catálogo ▸ En la web. */
 function TarjetaPlan({ plan, onElegir }: { plan: ItemCatalogo; onElegir: () => void }) {
-  const info = BENEFICIOS[plan.codigo ?? ''] ?? { subtitulo: '', beneficios: [] };
+  const info = {
+    subtitulo: plan.web?.renovacion_texto ?? '',
+    destacado: plan.web?.renovacion_etiqueta ?? null,
+    beneficios: plan.web?.renovacion_beneficios ?? [],
+  };
   const resaltado = !!info.destacado;
   return (
     <div className={`${cx.card} relative flex flex-col p-5 ${resaltado ? 'border-[#F47B20]' : ''}`}>
@@ -97,7 +77,11 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
   useEffect(() => { window.scrollTo(0, 0); }, [codigoPlan]);
 
   const ropa = useMemo(() => piezasRopa(items), [items]);
-  const programa = useMemo(() => items.find((i) => i.tipo === 'programa' && i.codigo === codigoPlan) ?? null, [items, codigoPlan]);
+  // Sin plan elegido no hay programa (ojo: un programa sin código, como "Todos los días", tiene codigo null)
+  const programa = useMemo(
+    () => (codigoPlan ? items.find((i) => i.tipo === 'programa' && i.codigo === codigoPlan) ?? null : null),
+    [items, codigoPlan],
+  );
 
   // Sin plan elegido se cotiza solo el código (para saber si desbloquea un plan)
   const pedido = useMemo<PedidoCotizacion | null>(() => {
@@ -228,6 +212,10 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
           />
           {estado === 'cargando' ? (
             <div className="space-y-4">{[0, 1, 2].map((i) => <div key={i} className="h-64 animate-pulse rounded-2xl bg-white/5" />)}</div>
+          ) : respaldo ? (
+            <a href={enlaceWhatsApp('Hola, quiero renovar el plan de mi hijo')} target="_blank" rel="noopener noreferrer" className={`${cx.btnPrimario} w-full`}>
+              Renovar por WhatsApp
+            </a>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2">
               {planes.map((plan) => <TarjetaPlan key={plan.id} plan={plan} onElegir={() => setCodigoPlan(plan.codigo)} />)}

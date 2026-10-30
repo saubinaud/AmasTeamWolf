@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { TELEFONO, CORREO, DIRECCION } from '../config/contacto';
+import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
+import { programaPorCodigo, programasPortada } from '../utils/catalogo';
 
 interface SEOProps {
   title?: string;
@@ -18,7 +20,17 @@ export function SEO({
   url = 'https://amasteamwolf.com',
   type = 'website'
 }: SEOProps) {
-  
+  // Precios de los datos estructurados: los del catálogo (si el API no responde, se omiten)
+  const { items } = useCatalogoPublico();
+  const precios = [...programasPortada(items), programaPorCodigo(items, 'leadership')]
+    .filter((p): p is NonNullable<typeof p> => !!p && p.precio > 0)
+    .map((p) => p.precio);
+  const priceRange = precios.length
+    ? `S/ ${Math.min(...precios).toLocaleString('en-US')} - S/ ${Math.max(...precios).toLocaleString('en-US')}`
+    : undefined;
+  const precioLeadership = programaPorCodigo(items, 'leadership')?.precio;
+  const precioFull = programaPorCodigo(items, 'full')?.precio;
+
   useEffect(() => {
     // Update document title
     document.title = title;
@@ -110,7 +122,7 @@ export function SEO({
           "logo": "https://amasteamwolf.com/logo.png",
           "image": image,
           "description": description,
-          "priceRange": "S/ 330 - S/ 1,964",
+          "priceRange": priceRange,
           "telephone": TELEFONO,
           "email": CORREO,
           "address": {
@@ -159,9 +171,9 @@ export function SEO({
           },
           "educationalLevel": "Todos los niveles",
           "availableLanguage": "es",
-          "offers": {
+          "offers": precioLeadership == null ? undefined : {
             "@type": "Offer",
-            "price": "1299",
+            "price": String(precioLeadership),
             "priceCurrency": "PEN",
             "availability": "https://schema.org/InStock",
             "url": "https://amasteamwolf.com/leadership",
@@ -177,9 +189,9 @@ export function SEO({
           },
           "educationalLevel": "Todos los niveles",
           "availableLanguage": "es",
-          "offers": {
+          "offers": precioFull == null ? undefined : {
             "@type": "Offer",
-            "price": "869",
+            "price": String(precioFull),
             "priceCurrency": "PEN",
             "availability": "https://schema.org/InStock",
             "url": "https://amasteamwolf.com",
@@ -193,7 +205,7 @@ export function SEO({
           "@id": "https://amasteamwolf.com",
           "url": "https://amasteamwolf.com",
           "telephone": TELEFONO,
-          "priceRange": "S/ 330 - S/ 1,964",
+          "priceRange": priceRange,
           "address": {
             "@type": "PostalAddress",
             "streetAddress": DIRECCION,
@@ -225,7 +237,7 @@ export function SEO({
 
     script.textContent = JSON.stringify(structuredData);
 
-  }, [title, description, keywords, image, url, type]);
+  }, [title, description, keywords, image, url, type, priceRange, precioLeadership, precioFull]);
 
   return null;
 }
@@ -240,7 +252,7 @@ export const seoConfigs = {
   },
   leadership: {
     title: 'Leadership Wolf Program - JMA Team Wolf | Programa de Liderazgo y Artes Marciales',
-    description: 'Leadership Wolf: Programa exclusivo de liderazgo y artes marciales. Incluye Taekwondo, Combat, Bo Staff, Nunchaku y formación en valores. 12 hitos de desarrollo personal. Desde S/ 1,299 con descuento de lanzamiento. ¡Inscríbete ahora!',
+    description: 'Leadership Wolf: Programa exclusivo de liderazgo y artes marciales. Incluye Taekwondo, Combat, Bo Staff, Nunchaku y formación en valores. 12 hitos de desarrollo personal. Precio de lanzamiento. ¡Inscríbete ahora!',
     keywords: 'leadership wolf, leadership program, programa liderazgo Lima, liderazgo artes marciales, JMA leadership, taekwondo leadership, combat training, bo staff, nunchaku, formación líderes niños, desarrollo personal niños, programa integral artes marciales, programa avanzado artes marciales, curso liderazgo juvenil Lima',
     url: 'https://amasteamwolf.com/leadership'
   },

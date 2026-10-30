@@ -1,31 +1,25 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
 import { OptimizedImage } from './OptimizedImage';
 import { toast } from 'sonner';
-import { featuredStoreProducts, Implement } from '../data/implements';
+import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
+import { productosTienda, tituloWeb, soles, type ItemCatalogo } from '../utils/catalogo';
+import type { ItemCarrito } from '../hooks/useCarrito';
 
 interface TiendaSectionProps {
-  onAddToCart: (product: Implement, variant: string, quantity: number) => void;
+  onAddToCart: (item: Omit<ItemCarrito, 'cantidad'>) => void;
   onNavigate: (page: string) => void;
 }
 
+/** Tienda en la portada: los productos marcados "También en la portada" en Space ▸ Catálogo ▸ En la web. */
 export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
-  const [selectedProduct, setSelectedProduct] = useState<Implement | null>(null);
-  const [selectedColor, setSelectedColor] = useState('');
+  const { items } = useCatalogoPublico();
+  const destacados = useMemo(() => productosTienda(items).filter((p) => p.web?.destacado), [items]);
+  const [selectedProduct, setSelectedProduct] = useState<ItemCatalogo | null>(null);
 
-  const handleOpenProduct = (product: Implement) => {
-    setSelectedProduct(product);
-    const firstColor = product.colors?.[0] || '';
-    setSelectedColor(firstColor);
-  };
-
-  const handleAddToCart = (product: Implement) => {
-    const variant = selectedColor || 'Único';
-    onAddToCart(product, variant, 1);
-    toast.success(`${product.name} añadido al carrito`);
-  };
+  if (destacados.length === 0) return null;
 
   return (
     <section id="tienda" className="py-12 sm:py-16 md:py-20 lg:py-24 bg-black relative overflow-hidden">
@@ -63,37 +57,35 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
 
         {/* Product Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-12">
-          {featuredStoreProducts.map((product, index) => (
+          {destacados.map((product) => (
             <div
-              key={index}
-              onClick={() => handleOpenProduct(product)}
-              className="bg-zinc-900/50 border border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#FA7B21]/50 transition-all duration-300 cursor-pointer group"
+              key={product.id}
+              onClick={() => setSelectedProduct(product)}
+              className="bg-zinc-900/50 border border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#FA7B21]/50 transition-colors duration-300 cursor-pointer group"
             >
               <div className="aspect-square bg-zinc-800/50 rounded-lg mb-3 sm:mb-4 overflow-hidden relative group-hover:bg-zinc-800/70 transition-colors">
-                <OptimizedImage
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-                {product.isNew && (
+                {product.web?.imagenes?.[0] && (
+                  <OptimizedImage
+                    src={product.web.imagenes[0]}
+                    alt={tituloWeb(product)}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                )}
+                {product.web?.etiqueta && (
                   <div className="absolute top-2 right-2 bg-[#FA7B21] text-white text-xs px-2 py-1 rounded-full select-none pointer-events-none">
-                    Nuevo
+                    {product.web.etiqueta}
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="text-white text-sm sm:text-base mb-2">{product.name}</h3>
-                <div className="flex items-center justify-between">
-                  <span className="text-[#FCA929] text-base sm:text-lg">S/ {product.price}</span>
-                  {product.colors && product.colors.length > 0 && (
+                <h3 className="text-white text-sm sm:text-base mb-2">{tituloWeb(product)}</h3>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[#FCA929] text-base sm:text-lg">{soles(product.precio)}</span>
+                  {(product.web?.colores?.length ?? 0) > 0 && (
                     <div className="flex gap-1">
-                      {product.colors.slice(0, 3).map((color, idx) => (
-                        <div
-                          key={idx}
-                          className="w-4 h-4 rounded-full border border-white/20"
-                          style={{ backgroundColor: color }}
-                        />
+                      {product.web!.colores.slice(0, 3).map((color) => (
+                        <div key={color} className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: color }} />
                       ))}
                     </div>
                   )}
@@ -123,17 +115,15 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
       </div>
 
       {/* Product Detail Dialog */}
-      {selectedProduct && (
-        <ProductDetailDialog
-          product={selectedProduct}
-          isOpen={!!selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-          onAddToCart={() => {
-            handleAddToCart(selectedProduct);
-            setSelectedProduct(null);
-          }}
-        />
-      )}
+      <ProductDetailDialog
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={(item) => {
+          onAddToCart(item);
+          toast.success(`${item.nombre} añadido al carrito`);
+        }}
+      />
     </section>
   );
 }
