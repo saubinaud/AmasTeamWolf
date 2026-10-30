@@ -1,5 +1,6 @@
 import { Facebook, Instagram, Mail, MapPin, Phone, Clock, Award } from 'lucide-react';
 import { Button } from './ui/button';
+import { TELEFONO, TELEFONO_VISIBLE, CORREO, DIRECCION, DISTRITO } from '../config/contacto';
 
 interface FooterMainProps {
   onNavigate: (page: string) => void;
@@ -135,18 +136,18 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
             <ul className="space-y-3">
               <li className="flex items-start gap-2 text-white/60 text-sm">
                 <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <span>Av. Angamos Este 2741, San Borja, Lima, Perú</span>
+                <span>{DIRECCION}, {DISTRITO}, Lima, Perú</span>
               </li>
               <li className="flex items-start gap-2 text-white/60 text-sm">
                 <Phone className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <a href="tel:+51987654321" className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Telefono" data-umami-event-ubicacion="footer">
-                  ‪+51 989 717 412‬
+                <a href={`tel:${TELEFONO}`} className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Telefono" data-umami-event-ubicacion="footer">
+                  {TELEFONO_VISIBLE}
                 </a>
               </li>
               <li className="flex items-start gap-2 text-white/60 text-sm">
                 <Mail className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <a href="mailto:info@amasteamwolf.com" className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Email" data-umami-event-ubicacion="footer">
-                  amasteamwolf@gmail.com
+                <a href={`mailto:${CORREO}`} className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Email" data-umami-event-ubicacion="footer">
+                  {CORREO}
                 </a>
               </li>
             </ul>

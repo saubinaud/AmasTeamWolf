@@ -9,6 +9,7 @@ import { CalendarCheck, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../ui/utils';
 import { formatDate, toTitleCase, getApiUrl } from '../utils';
+import { enlaceWhatsApp } from '../../../config/contacto';
 
 interface DashboardTabProps {
   user: any;
@@ -423,7 +424,7 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
         <div>
           <Button
             className="w-full h-14 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-medium text-base transition-transform duration-200 hover:scale-[1.01] active:scale-[0.99]"
-            onClick={() => window.open('https://wa.me/51989717412', '_blank')}
+            onClick={() => window.open(enlaceWhatsApp(), '_blank')}
           >
             <Phone className="w-5 h-5 mr-2" /> Soporte WhatsApp
           </Button>

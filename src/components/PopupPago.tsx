@@ -4,6 +4,7 @@ import { X, QrCode, Building2, Loader2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { useUmami } from '../hooks/useUmami';
+import { enlaceWhatsApp, TELEFONO_VISIBLE } from '../config/contacto';
 
 interface CartItem {
   id: string;
@@ -229,8 +230,8 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
         <div className="mt-4 sm:mt-6 bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-lg p-3 sm:p-4">
           <p className="text-white/80 text-xs sm:text-sm">
             📸 Después de realizar el pago, por favor envíe su comprobante al WhatsApp: 
-            <a href="https://wa.me/51989717412" className="text-[#FCA929] hover:underline ml-1">
-              +51 989 717 412
+            <a href={enlaceWhatsApp()} className="text-[#FCA929] hover:underline ml-1">
+              {TELEFONO_VISIBLE}
             </a>
           </p>
         </div>

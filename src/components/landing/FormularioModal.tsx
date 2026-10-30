@@ -6,6 +6,7 @@ import { Label } from '../ui/label';
 import { Textarea } from '../ui/textarea';
 import { toast } from 'sonner';
 import { trackEvent } from '../../utils/pixel';
+import { enlaceWhatsApp } from '../../config/contacto';
 
 interface FormularioModalProps {
   isOpen: boolean;
@@ -72,7 +73,7 @@ export function FormularioModal({ isOpen, onOpenChange }: FormularioModalProps) 
           currency: 'PEN'
         });
 
-        window.open(`https://wa.me/51989717412?text=${message}`, '_blank');
+        window.open(enlaceWhatsApp(message, true), '_blank');
 
         onOpenChange(false);
         setFormData({

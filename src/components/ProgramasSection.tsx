@@ -2,17 +2,27 @@ import { memo } from 'react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Check, Star } from 'lucide-react';
+import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
+import { programaPorCodigo } from '../utils/catalogo';
 
 interface ProgramasSectionProps {
   onOpenMatricula: (programa: 'full' | '1mes' | '6meses') => void;
 }
 
 export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula }: ProgramasSectionProps) {
-  // Variables editables
-  const precioFull = 869;
+  // Precios del catálogo del API (Space ▸ Catálogo); si el API no responde,
+  // los de respaldo de shared/constants/programas.ts.
+  const { items } = useCatalogoPublico();
+  const precio = (codigo: string) => {
+    const v = programaPorCodigo(items, codigo)?.precio;
+    return v == null ? '…' : Number(v).toLocaleString('es-PE');
+  };
+  const precioFull = precio('full');
+  const precio6Meses = precio('6meses');
+  const precio1Mes = precio('1mes');
+  // Precio tachado de referencia: es texto de marketing, no está en el catálogo
   const precioAnteriorFull = 1199;
-  const precio6Meses = 1699;
-  const precio1Mes = 330;
+  const precioFullNum = programaPorCodigo(items, 'full')?.precio;
   const beneficiosFull = [
     'Uniforme completo',
     'Graduación y nuevo cinturón',
@@ -156,7 +166,7 @@ export const ProgramasSection = memo(function ProgramasSection({ onOpenMatricula
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent to-[#FA7B21]/30" />
                     <p className="text-center text-[#FCA929] text-sm sm:text-base px-3 py-1 bg-[#FA7B21]/10 rounded-full">
-                      Ahorra S/ {precioAnteriorFull - precioFull}
+                      Ahorra S/ {precioFullNum != null ? (precioAnteriorFull - Number(precioFullNum)).toLocaleString('es-PE') : '…'}
                     </p>
                     <div className="h-px flex-1 bg-gradient-to-l from-transparent to-[#FA7B21]/30" />
                   </div>
