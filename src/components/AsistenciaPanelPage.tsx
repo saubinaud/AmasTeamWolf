@@ -205,7 +205,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     fetchHorarios();
   }, [autenticada]);
 
-  // ── Load all active students once (public endpoint, for instant client-side search) ──
+  // ── Load all active students once (public endpoint, sin DNI) para buscar por nombre al instante ──
   useEffect(() => {
     if (!autenticada) return;
     const fetchAlumnos = async () => {
@@ -217,7 +217,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
         setTodosAlumnos(list.map((a: any) => ({
           id: a.id,
           nombre_alumno: a.nombre_alumno || '',
-          dni_alumno: a.dni_alumno || '',
+          dni_alumno: '',
           categoria: a.categoria || '',
         })));
       } catch { /* ignore */ }
@@ -225,14 +225,23 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     fetchAlumnos();
   }, [autenticada]);
 
-  // ── Search alumnos client-side (instant) ──
+  // ── Buscar: por nombre en el cliente; por DNI en el servidor (DNI exacto, vuelve enmascarado) ──
   useEffect(() => {
     if (busquedaNombre.length < 2) { setResultadosBusqueda([]); return; }
+    const soloDigitos = busquedaNombre.replace(/[\s\-.]/g, '');
+    if (/^\d+$/.test(soloDigitos)) {
+      if (soloDigitos.length < 8) { setResultadosBusqueda([]); return; }
+      let vivo = true;
+      fetch(`${API_BASE}/asistencia/buscar-alumno?q=${encodeURIComponent(soloDigitos)}`)
+        .then((r) => (r.ok ? r.json() : []))
+        .then((rows) => { if (vivo) setResultadosBusqueda(Array.isArray(rows) ? rows : []); })
+        .catch(() => { if (vivo) setResultadosBusqueda([]); });
+      return () => { vivo = false; };
+    }
     const q = busquedaNombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const filtered = todosAlumnos.filter(a => {
       const nombre = (a.nombre_alumno || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-      const dni = (a.dni_alumno || '');
-      return nombre.includes(q) || dni.includes(q);
+      return nombre.includes(q);
     }).slice(0, 8);
     setResultadosBusqueda(filtered);
   }, [busquedaNombre, todosAlumnos]);
