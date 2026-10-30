@@ -72,6 +72,7 @@ const RenovacionNavidadPage = lazy(() => import('./components/RenovacionNavidadP
 const RegistroActividadNavidadPage = lazy(() => import('./components/RegistroActividadNavidadPage').then(m => ({ default: m.RegistroActividadNavidadPage })));
 const RegistroShowroomPage = lazy(() => import('./components/RegistroShowroomPage').then(m => ({ default: m.RegistroShowroomPage })));
 const RenovacionPage = lazy(() => import('./pages/RenovacionPage').then(m => ({ default: m.RenovacionPage })));
+const FirmarContratoPage = lazy(() => import('./pages/FirmarContratoPage').then(m => ({ default: m.FirmarContratoPage })));
 const TerminosCondicionesPage = lazy(() => import('./components/TerminosCondicionesPage').then(m => ({ default: m.TerminosCondicionesPage })));
 const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ default: m.TorneoPage })));
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
@@ -297,6 +298,16 @@ function RenovacionRoute() {
   );
 }
 
+// Enlace que la academia manda por WhatsApp para firmar el contrato de un plan
+function FirmarContratoRoute() {
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <SEO title="Firma tu contrato - JMA Team Wolf" description="Firma el contrato de inscripción de JMA Team Wolf." keywords="contrato" url="https://amasteamwolf.com/firmar" />
+      <FirmarContratoPage />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 function TerminosRoute() {
   const { onNavigate } = useLayoutContext();
   return (
@@ -421,6 +432,7 @@ export const router = createBrowserRouter([
       { path: '/registro-showroom', element: <RegistroShowroomRoute /> },
       { path: '/renovacion', element: <RenovacionRoute /> },
       { path: '/terminos', element: <TerminosRoute /> },
+      { path: '/firmar/:token', element: <FirmarContratoRoute /> },
       { path: '/torneo', element: <TorneoRoute /> },
       { path: '/asistencia', element: <AsistenciaRoute /> },
       { path: '/asistencia/panel', element: <AsistenciaPanelRoute /> },

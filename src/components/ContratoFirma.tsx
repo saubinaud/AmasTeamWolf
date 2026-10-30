@@ -33,6 +33,8 @@ interface ContratoFirmaProps {
   onFirmaCompleta: (firmaBase64: string) => void;
   /** Lo que eligió el apoderado sobre el uso promocional de imagen */
   onAutorizaImagen: (autoriza: boolean) => void;
+  /** Qué pasa después de firmar (debajo de "Firmado"). Por defecto, lo de la inscripción. */
+  notaFirmado?: string;
 }
 
 /** '2026-10-25' → '25 oct. 2026'; cualquier otro texto se deja tal cual. */
@@ -66,7 +68,7 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: React.ReactN
  * las dos casillas, el botón Firmar y la firma a pantalla completa. Si los
  * datos cambian después de firmar, la firma se borra.
  */
-export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen }: ContratoFirmaProps) {
+export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen, notaFirmado }: ContratoFirmaProps) {
   const { texto, error, reintentar } = useTextoContrato();
   const [firma, setFirma] = useState<string | null>(null);
   const [aceptado, setAceptado] = useState(false);
@@ -221,7 +223,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen }: Cont
           </div>
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1.5 text-[15px] font-bold text-emerald-200"><CheckCircle className="h-4 w-4" /> Firmado</p>
-            <p className={`${cx.textoApagado} text-[13px]`}>Al enviar, el PDF llega a tu correo.</p>
+            <p className={`${cx.textoApagado} text-[13px]`}>{notaFirmado ?? 'Al enviar, el PDF llega a tu correo.'}</p>
           </div>
           <button type="button" onClick={volverAFirmar} className={`${cx.btnSecundario} shrink-0 px-3`}>Volver a firmar</button>
         </div>
