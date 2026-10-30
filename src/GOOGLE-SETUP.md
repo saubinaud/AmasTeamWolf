@@ -112,7 +112,7 @@ function RegistroComponent() {
 - Centro de taekwondo
 - Academia deportiva
 
-**Ubicación**: Av. Angamos Este 2741, San Borja, Lima, Perú
+**Ubicación**: Av. San Luis 2083, San Borja, Lima, Perú
 
 **Área de servicio**: San Borja, Surco, La Molina, Miraflores
 

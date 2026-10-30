@@ -5,7 +5,7 @@ export const WHATSAPP = '51989717412';
 export const TELEFONO = `+${WHATSAPP}`;
 export const TELEFONO_VISIBLE = '+51 989 717 412';
 export const CORREO = 'amasteamwolf@gmail.com';
-export const DIRECCION = 'Av. Angamos Este 2741';
+export const DIRECCION = 'Av. San Luis 2083';
 export const DISTRITO = 'San Borja';
 
 /** Enlace de WhatsApp, con mensaje opcional (ya codificado o en texto plano). */

@@ -1,5 +1,6 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { ScrollReveal } from './ScrollReveal';
+import { DIRECCION, DISTRITO } from '../../config/contacto';
 
 const faqs = [
   {
@@ -20,7 +21,7 @@ const faqs = [
   },
   {
     q: '¿Dónde están ubicados?',
-    a: 'Av. Angamos Este 2741, San Borja (A 2 cuadras de Plaza San Borja Norte). Fácil acceso, estacionamiento disponible.'
+    a: `${DIRECCION}, ${DISTRITO}, Lima.`
   },
   {
     q: '¿La clase de prueba tiene costo?',
@@ -55,7 +56,7 @@ export function FAQSection() {
                   {i === 4 && (
                     <div className="mt-6 w-full h-80 bg-black/20 rounded-xl overflow-hidden">
                       <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.3842647892637!2d-77.00711968519444!3d-12.097438991447896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c85b3c3c3c3d%3A0x3c3c3c3c3c3c3c3c!2sAv.%20Angamos%20Este%202741%2C%20San%20Borja%2C%20Lima!5e0!3m2!1sen!2spe!4v1234567890"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(`${DIRECCION}, ${DISTRITO}, Lima, Perú`)}&output=embed`}
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}

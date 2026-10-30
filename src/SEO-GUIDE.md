@@ -107,7 +107,7 @@ Academia de artes marciales AMAS Team Wolf en San Borja, Lima.
 Programas de Taekwondo, Leadership Wolf y Combat para niños y jóvenes. 
 Formación integral con valores. ¡Matrícula abierta! ☎ +51 989 717 412
 
-Av. Angamos Este 2741, San Borja · Lima · +51 989 717 412
+Av. San Luis 2083, San Borja · Lima · +51 989 717 412
 
 ► Programas Disponibles  ► Matrícula Online  ► Ver Tienda
 ```
@@ -121,7 +121,6 @@ Se han implementado tags específicos para SEO local:
 ```javascript
 geo.region: "PE-LIM"
 geo.placename: "San Borja, Lima"
-geo.position: "-12.097438;-77.004928"
 ```
 
 Esto ayuda a aparecer en búsquedas como:
@@ -221,7 +220,7 @@ Consigue enlaces desde:
 Asegúrate de mantener consistente en TODOS lados:
 
 - **Nombre**: AMAS Team Wolf
-- **Dirección**: Av. Angamos Este 2741, San Borja, Lima, Perú
+- **Dirección**: Av. San Luis 2083, San Borja, Lima, Perú
 - **Teléfono**: +51 989 717 412
 - **Email**: amasteamwolf@gmail.com
 - **Horarios**: 

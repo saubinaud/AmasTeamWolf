@@ -69,8 +69,6 @@ export function SEO({
     // Geo tags for local SEO
     updateMetaTag('geo.region', 'PE-LIM');
     updateMetaTag('geo.placename', 'San Borja, Lima');
-    updateMetaTag('geo.position', '-12.097438;-77.004928');
-    updateMetaTag('ICBM', '-12.097438, -77.004928');
 
     // Business/Organization
     updateMetaTag('og:phone_number', TELEFONO, true);
@@ -78,7 +76,6 @@ export function SEO({
     updateMetaTag('og:street-address', DIRECCION, true);
     updateMetaTag('og:locality', 'San Borja', true);
     updateMetaTag('og:region', 'Lima', true);
-    updateMetaTag('og:postal-code', '15036', true);
     updateMetaTag('og:country-name', 'Perú', true);
 
     // Canonical URL
@@ -121,13 +118,7 @@ export function SEO({
             "streetAddress": DIRECCION,
             "addressLocality": "San Borja",
             "addressRegion": "Lima",
-            "postalCode": "15036",
             "addressCountry": "PE"
-          },
-          "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": "-12.097438",
-            "longitude": "-77.004928"
           },
           "openingHoursSpecification": [
             {
@@ -208,13 +199,7 @@ export function SEO({
             "streetAddress": DIRECCION,
             "addressLocality": "San Borja",
             "addressRegion": "Lima",
-            "postalCode": "15036",
             "addressCountry": "PE"
-          },
-          "geo": {
-            "@type": "GeoCoordinates",
-            "latitude": -12.097438,
-            "longitude": -77.004928
           },
           "openingHoursSpecification": [
             {
