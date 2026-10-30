@@ -27,6 +27,8 @@ export interface WebItem {
   renovacion_etiqueta: string | null;
   renovacion_beneficios: string[];
   imagenes: string[];
+  /** Las mismas fotos a 600 px (WebP) para tarjetas; las de afuera vienen igual */
+  imagenes_tarjeta?: string[];
   colores: string[];
   categoria_tienda: string | null;
 }
@@ -162,3 +164,7 @@ export function productosTienda(items: ItemCatalogo[]) {
 
 /** Categoría con la que se agrupa un producto en la tienda. */
 export const categoriaTienda = (i: ItemCatalogo) => i.web?.categoria_tienda || 'Otros';
+
+/** La foto de la tarjeta: la versión de 600 px si el API la manda, si no la grande. */
+export const fotoTarjeta = (w: { imagenes?: string[]; imagenes_tarjeta?: string[] } | null | undefined): string | undefined =>
+  w?.imagenes_tarjeta?.[0] || w?.imagenes?.[0];

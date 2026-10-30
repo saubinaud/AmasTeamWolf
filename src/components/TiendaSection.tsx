@@ -5,7 +5,7 @@ import { ProductDetailDialog } from './ProductDetailDialog';
 import { OptimizedImage } from './OptimizedImage';
 import { toast } from 'sonner';
 import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
-import { productosTienda, tituloWeb, soles, type ItemCatalogo } from '../utils/catalogo';
+import { productosTienda, tituloWeb, soles, type ItemCatalogo, fotoTarjeta } from '../utils/catalogo';
 import type { ItemCarrito } from '../hooks/useCarrito';
 
 interface TiendaSectionProps {
@@ -66,7 +66,7 @@ export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
               <div className="aspect-square bg-zinc-800/50 rounded-lg mb-3 sm:mb-4 overflow-hidden relative group-hover:bg-zinc-800/70 transition-colors">
                 {product.web?.imagenes?.[0] && (
                   <OptimizedImage
-                    src={product.web.imagenes[0]}
+                    src={fotoTarjeta(product.web)}
                     alt={tituloWeb(product)}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"

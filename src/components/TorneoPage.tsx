@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { toast, Toaster } from 'sonner';
 import {
+    ImagePlus,
+    X,
     Trophy,
     Heart,
     Flame,
@@ -28,6 +30,7 @@ import {
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
 import { API_BASE } from '../config/api';
+import { aDataUrl, comprimirImagen } from '../utils/comprimirImagen';
 
 // ============================================================
 // ICON MAPPING — modalidad.icono string -> lucide component
@@ -188,6 +191,26 @@ export function TorneoPage({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [successData, setSuccessData] = useState<{ precio_total: number; descuento: number; implementos_faltantes: string[] } | null>(null);
+
+    // Comprobante de pago (opcional): se comprime en el celular antes de mandarlo
+    const [comprobante, setComprobante] = useState<Blob | null>(null);
+    const [preparandoComprobante, setPreparandoComprobante] = useState(false);
+    const comprobanteInput = useRef<HTMLInputElement>(null);
+    const comprobantePrevia = React.useMemo(() => (comprobante ? URL.createObjectURL(comprobante) : null), [comprobante]);
+    useEffect(() => () => { if (comprobantePrevia) URL.revokeObjectURL(comprobantePrevia); }, [comprobantePrevia]);
+    const elegirComprobante = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const f = e.target.files?.[0];
+        e.target.value = '';
+        if (!f) return;
+        setPreparandoComprobante(true);
+        try {
+            setComprobante(await comprimirImagen(f, 'comprobante'));
+        } catch (err) {
+            toast.error((err as Error).message, { position: 'top-center' });
+        } finally {
+            setPreparandoComprobante(false);
+        }
+    };
 
     // FAQ accordion
     const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -379,6 +402,7 @@ export function TorneoPage({
                 body: JSON.stringify({
                     alumno_id: consultaResult.alumno.id,
                     modalidades: selectedModalidades,
+                    ...(comprobante ? { comprobante_base64: await aDataUrl(comprobante) } : {}),
                 }),
             });
 
@@ -956,6 +980,33 @@ export function TorneoPage({
                                                                     S/ {total}
                                                                 </p>
                                                             </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* ===== Comprobante de pago (opcional) ===== */}
+                                            {selectedModalidades.length > 0 && (
+                                                <div className="mt-6 bg-zinc-900/60 border border-white/10 rounded-2xl p-5">
+                                                    <p className="text-white font-bold text-sm md:text-base">Comprobante de pago <span className="text-white/40 font-normal">(opcional)</span></p>
+                                                    <p className="text-white/50 text-xs md:text-sm mt-1">Si ya pagaste, sube la captura del Yape o de la transferencia.</p>
+                                                    <input ref={comprobanteInput} type="file" accept="image/*" className="hidden" onChange={elegirComprobante} data-testid="comprobante-input" />
+                                                    <div className="mt-4 flex items-center gap-4">
+                                                        {comprobantePrevia && (
+                                                            <img src={comprobantePrevia} alt="Comprobante" className="w-20 h-20 object-cover rounded-xl border border-white/10" />
+                                                        )}
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <button type="button" onClick={() => comprobanteInput.current?.click()} disabled={preparandoComprobante}
+                                                                className="inline-flex items-center gap-2 min-h-[44px] px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white text-sm font-semibold transition-colors disabled:opacity-50">
+                                                                {preparandoComprobante ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
+                                                                {comprobante ? 'Cambiar imagen' : 'Subir imagen'}
+                                                            </button>
+                                                            {comprobante && (
+                                                                <button type="button" onClick={() => setComprobante(null)}
+                                                                    className="inline-flex items-center gap-2 min-h-[44px] px-4 rounded-xl text-white/60 hover:text-white text-sm transition-colors">
+                                                                    <X className="w-4 h-4" /> Quitar
+                                                                </button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>

@@ -9,7 +9,7 @@ import { FooterMain } from './FooterMain';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
 import { useLayoutContext } from '../layouts/MainLayout';
 import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
-import { productosTienda, categoriaTienda, tituloWeb, soles, type ItemCatalogo } from '../utils/catalogo';
+import { productosTienda, categoriaTienda, tituloWeb, soles, type ItemCatalogo, fotoTarjeta } from '../utils/catalogo';
 import { enlaceWhatsApp } from '../config/contacto';
 
 interface TiendaPageProps {
@@ -160,7 +160,7 @@ export function TiendaPage({ onNavigate }: TiendaPageProps) {
                   <div className="relative aspect-square bg-zinc-800 overflow-hidden">
                     {product.web?.imagenes?.[0] && (
                       <OptimizedImage
-                        src={product.web.imagenes[0]}
+                        src={fotoTarjeta(product.web)}
                         alt={tituloWeb(product)}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         aspectRatio="1/1"

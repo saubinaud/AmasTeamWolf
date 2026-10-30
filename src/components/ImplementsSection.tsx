@@ -2,7 +2,7 @@ import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { FadeIn } from './FadeIn';
 import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
-import { programaPorCodigo, soles, tituloWeb, type ItemCatalogo } from '../utils/catalogo';
+import { programaPorCodigo, soles, tituloWeb, type ItemCatalogo, fotoTarjeta } from '../utils/catalogo';
 
 /** Implementos que trae Leadership: los del catálogo, con su precio y su foto de la tienda. */
 export function ImplementsSection() {
@@ -35,7 +35,7 @@ export function ImplementsSection() {
                 <div className="aspect-square overflow-hidden relative bg-zinc-800">
                   {implement.web?.imagenes?.[0] && (
                     <img
-                      src={implement.web.imagenes[0]}
+                      src={fotoTarjeta(implement.web)}
                       alt={tituloWeb(implement)}
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-400 hover:scale-110"
