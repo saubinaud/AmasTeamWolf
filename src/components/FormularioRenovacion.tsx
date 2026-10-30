@@ -97,7 +97,9 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
   useEffect(() => { window.scrollTo(0, 0); }, [codigoPlan]);
 
   const ropa = useMemo(() => piezasRopa(items), [items]);
-  const programa = useMemo(() => items.find((i) => i.tipo === 'programa' && i.codigo === codigoPlan) ?? null, [items, codigoPlan]);
+  // Sin plan elegido no hay programa: un programa del catálogo sin código (creado
+  // en Space sin llenarlo) coincidía con null y abría el formulario con él
+  const programa = useMemo(() => (codigoPlan ? items.find((i) => i.tipo === 'programa' && i.codigo === codigoPlan) ?? null : null), [items, codigoPlan]);
 
   // Sin plan elegido se cotiza solo el código (para saber si desbloquea un plan)
   const pedido = useMemo<PedidoCotizacion | null>(() => {

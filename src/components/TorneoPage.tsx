@@ -88,8 +88,9 @@ interface TorneoData {
 }
 
 interface AlumnoData {
+    id: number;
     nombre: string;
-    dni: string;
+    categoria?: string;
 }
 
 interface ConsultaResult {
@@ -267,16 +268,20 @@ export function TorneoPage({
         dniStatus === 'found' &&
         selectedModalidades.length > 0;
 
-    // ---- DNI lookup ----
-    const lookupDni = async (dniValue: string) => {
+    // ---- Consulta del alumno: por DNI que escribe la familia, o por id si lo
+    // eligió en la búsqueda por nombre (el API ya no devuelve DNIs completos) ----
+    const lookupDni = (dniValue: string) => {
         if (!dniValue || dniValue.length < 6) return;
+        return consultarAlumno(`dni=${encodeURIComponent(dniValue)}`);
+    };
+    const consultarAlumno = async (filtro: string) => {
         setIsLookingUp(true);
         setDniError('');
         setDniStatus('idle');
         setConsultaResult(null);
         setSelectedModalidades([]);
         try {
-            const res = await fetch(`${API_BASE}/torneo/consultar?dni=${encodeURIComponent(dniValue)}`);
+            const res = await fetch(`${API_BASE}/torneo/consultar?${filtro}`);
             if (!res.ok) {
                 setDniStatus('not_found');
                 setDniError('Alumno no encontrado. Verifica los datos.');
@@ -286,7 +291,7 @@ export function TorneoPage({
             if (data?.busqueda) return; // ignore name search results
             if (!data?.encontrado || !data?.alumno) {
                 setDniStatus('not_found');
-                setDniError('Este DNI no está registrado en JMA Team Wolf.');
+                setDniError('No encontramos a este alumno en JMA Team Wolf.');
                 return;
             }
             setDniStatus('found');
@@ -311,11 +316,11 @@ export function TorneoPage({
         } catch {}
     };
 
-    const selectFromNameResults = (alumno: { dni: string }) => {
+    const selectFromNameResults = (alumno: { id: number; nombre: string }) => {
         setShowNameResults(false);
         setNameResults([]);
-        setDni(alumno.dni);
-        lookupDni(alumno.dni);
+        setDni(alumno.nombre);
+        consultarAlumno(`id=${alumno.id}`);
     };
 
     // ---- Handlers ----
@@ -372,7 +377,7 @@ export function TorneoPage({
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    dni_alumno: dni.trim(),
+                    alumno_id: consultaResult.alumno.id,
                     modalidades: selectedModalidades,
                 }),
             });

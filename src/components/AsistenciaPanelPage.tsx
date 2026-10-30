@@ -8,6 +8,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { toast } from 'sonner';
 import { API_BASE } from '../config/api';
+import { entrarConPin, fetchPanel, olvidarTokenPanel, tokenPanel } from '../utils/panelAcceso';
 
 // ── Types ──
 
@@ -46,8 +47,6 @@ interface HorarioHoy {
 }
 
 // ── Constants ──
-
-const PIN_PROFESORA = '2026';
 
 const NOMBRES_DIA: Record<number, string> = {
   0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miércoles',
@@ -98,6 +97,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const [autenticada, setAutenticada] = useState(skipAuth);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [entrando, setEntrando] = useState(false);
 
   // Daily QR
   const [sesionDiaria, setSesionDiaria] = useState<SesionDiaria | null>(null);
@@ -135,8 +135,19 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   // ── Auth persistence ──
   useEffect(() => {
     if (skipAuth) { setAutenticada(true); return; }
-    if (sessionStorage.getItem('amas_panel_auth') === 'true') setAutenticada(true);
+    if (tokenPanel('asistencia')) setAutenticada(true);
   }, [skipAuth]);
+
+  // Token vencido o rechazado: de vuelta a la pantalla del PIN
+  const alVencer = useCallback(() => {
+    if (skipAuth) return;
+    setAutenticada(false);
+    setSesionDiaria(null);
+  }, [skipAuth]);
+  const pedir = useCallback(
+    (url: string, init: RequestInit = {}) => fetchPanel('asistencia', url, init, alVencer),
+    [alVencer],
+  );
 
   // ── Countdown every second (for live QR timer) ──
   useEffect(() => {
@@ -149,7 +160,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     if (!autenticada) return;
     const fetchOrGenerateDiario = async () => {
       try {
-        const r = await fetch(`${API_BASE}/qr/diario-activo`);
+        const r = await pedir(`${API_BASE}/qr/diario-activo`);
         if (r.ok) {
           const d = await r.json();
           if (d?.success && d.activo) {
@@ -158,7 +169,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           }
         }
         // No hay QR activo → generar automáticamente
-        const gen = await fetch(`${API_BASE}/qr/generar-diario`, {
+        const gen = await pedir(`${API_BASE}/qr/generar-diario`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sede_id: 1 }),
@@ -177,12 +188,12 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   // ── Fetch today's attendances + poll every 15s ──
   const fetchAsistencias = useCallback(async () => {
     try {
-      const r = await fetch(`${API_BASE}/asistencia/hoy`);
+      const r = await pedir(`${API_BASE}/asistencia/hoy`);
       if (!r.ok) return;
       const d = await r.json();
       if (Array.isArray(d)) setAsistencias(d);
     } catch { /* retry */ }
-  }, []);
+  }, [pedir]);
 
   useEffect(() => {
     if (!autenticada) return;
@@ -210,7 +221,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     if (!autenticada) return;
     const fetchAlumnos = async () => {
       try {
-        const r = await fetch(`${API_BASE}/asistencia/alumnos-activos`);
+        const r = await pedir(`${API_BASE}/asistencia/alumnos-activos`);
         if (!r.ok) return;
         const d = await r.json();
         const list = Array.isArray(d?.data) ? d.data : [];
@@ -232,7 +243,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     if (/^\d+$/.test(soloDigitos)) {
       if (soloDigitos.length < 8) { setResultadosBusqueda([]); return; }
       let vivo = true;
-      fetch(`${API_BASE}/asistencia/buscar-alumno?q=${encodeURIComponent(soloDigitos)}`)
+      pedir(`${API_BASE}/asistencia/buscar-alumno?q=${encodeURIComponent(soloDigitos)}`)
         .then((r) => (r.ok ? r.json() : []))
         .then((rows) => { if (vivo) setResultadosBusqueda(Array.isArray(rows) ? rows : []); })
         .catch(() => { if (vivo) setResultadosBusqueda([]); });
@@ -244,33 +255,37 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
       return nombre.includes(q);
     }).slice(0, 8);
     setResultadosBusqueda(filtered);
-  }, [busquedaNombre, todosAlumnos]);
+  }, [busquedaNombre, todosAlumnos, pedir]);
 
   // ── Handlers ──
 
-  const handlePin = (e: React.FormEvent) => {
+  // El PIN lo comprueba el API (variable ASISTENCIA_PANEL_PIN) y devuelve un token corto
+  const handlePin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pin === PIN_PROFESORA) {
+    setEntrando(true);
+    const r = await entrarConPin('asistencia', pin);
+    setEntrando(false);
+    if (r.token) {
       setAutenticada(true);
-      sessionStorage.setItem('amas_panel_auth', 'true');
       setPinError(false);
+      setPin('');
     } else {
       setPinError(true);
       setPin('');
-      toast.error('PIN incorrecto');
+      toast.error(r.error || 'PIN incorrecto');
     }
   };
 
   const handleLogout = () => {
     setAutenticada(false);
-    sessionStorage.removeItem('amas_panel_auth');
+    olvidarTokenPanel('asistencia');
     setSesionDiaria(null);
   };
 
   const generarQRDiario = async () => {
     setGenerandoDiario(true);
     try {
-      const r = await fetch(`${API_BASE}/qr/generar-diario`, {
+      const r = await pedir(`${API_BASE}/qr/generar-diario`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sede_id: 1 }),
@@ -290,7 +305,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const reiniciarQRDiario = async () => {
     setReiniciandoDiario(true);
     try {
-      const r = await fetch(`${API_BASE}/qr/reiniciar-diario`, {
+      const r = await pedir(`${API_BASE}/qr/reiniciar-diario`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -307,7 +322,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
   const registrarPorNombre = async (alumno: AlumnoBusqueda) => {
     setRegistrandoPorNombre(true);
     try {
-      const r = await fetch(`${API_BASE}/asistencia/por-nombre`, {
+      const r = await pedir(`${API_BASE}/asistencia/por-nombre`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -337,7 +352,7 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
     setRegistrandoDni(true);
     setResultadoManual(null);
     try {
-      const r = await fetch(`${API_BASE}/asistencia`, {
+      const r = await pedir(`${API_BASE}/asistencia`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dni_alumno: dniManual, token_qr: sesionDiaria.token }),
@@ -383,14 +398,14 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
             </div>
             <form onSubmit={handlePin} className="space-y-4">
               <Input
-                type="password" inputMode="numeric" pattern="[0-9]*" maxLength={4}
+                type="password" inputMode="numeric" pattern="[0-9]*" maxLength={8}
                 value={pin}
                 onChange={(e) => { setPin(e.target.value.replace(/\D/g, '')); setPinError(false); }}
                 placeholder="••••" autoFocus autoComplete="off"
                 style={{ fontSize: '16px' }}
                 className={`bg-white border-stone-300 text-stone-900 text-center text-2xl tracking-[0.5em] h-14 ${pinError ? 'border-red-500 animate-shake' : ''}`}
               />
-              <Button type="submit" disabled={pin.length < 4}
+              <Button type="submit" disabled={pin.length < 4 || entrando}
                 className="w-full h-12 bg-[#e8590c] hover:bg-[#c2410c] text-white font-semibold disabled:opacity-40">
                 Ingresar
               </Button>

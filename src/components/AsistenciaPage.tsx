@@ -61,7 +61,9 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
     }
     setBuscando(true);
     try {
-      const res = await fetch(`${API_BASE}/asistencia/buscar-alumno?q=${encodeURIComponent(term)}`);
+      // La búsqueda pide el QR del día (el API no responde sin él)
+      if (!tokenQr) { setResultadosBusqueda([]); return; }
+      const res = await fetch(`${API_BASE}/asistencia/buscar-alumno?q=${encodeURIComponent(term)}&token=${encodeURIComponent(tokenQr)}`);
       if (res.ok) {
         const data = await res.json();
         setResultadosBusqueda(data);
@@ -71,7 +73,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
     } finally {
       setBuscando(false);
     }
-  }, []);
+  }, [tokenQr]);
 
   useEffect(() => {
     const timer = setTimeout(() => buscarAlumno(busqueda), 300);

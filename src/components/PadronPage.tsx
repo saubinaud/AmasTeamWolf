@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Search, Loader2, Trophy, User, ShieldCheck, Lock, Medal, Users2, Sparkles, X, Plus, Send, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { API_BASE } from '../config/api';
+import { fetchPanel, guardarTokenPanel, tokenPanel } from '../utils/panelAcceso';
 
 // --- Opciones del formulario de inscripción (fieles al Google Form original) ---
 const DUENOS_ESCUELA = [
@@ -87,7 +88,8 @@ export function PadronPage(_props: PadronPageProps) {
         const json = await res.json();
         if (json.success) {
           setConfig(json.data);
-          if (!json.data.requiere_clave) setAcceso(true);
+          // Con clave, el API exige el token de /acceso en cada búsqueda
+          if (!json.data.requiere_clave || tokenPanel('padron')) setAcceso(true);
         } else {
           setConfig({ requiere_clave: false, titulo: 'Consulta de competidores', mensaje: null });
           setAcceso(true);
@@ -122,6 +124,7 @@ export function PadronPage(_props: PadronPageProps) {
       });
       const json = await res.json();
       if (json.success && json.data.acceso) {
+        if (json.data.token) guardarTokenPanel('padron', json.data.token);
         setAcceso(true);
       } else {
         toast.error('Clave incorrecta');
@@ -143,7 +146,7 @@ export function PadronPage(_props: PadronPageProps) {
     try {
       const params = new URLSearchParams({ q: texto.trim() });
       if (torneo) params.set('torneo_id', String(torneo));
-      const res = await fetch(`${API_BASE}/padron/buscar?${params.toString()}`);
+      const res = await fetchPanel('padron', `${API_BASE}/padron/buscar?${params.toString()}`, {}, () => setAcceso(false));
       const json = await res.json();
       if (json.success) setResultados(json.data);
       else toast.error(json.error || 'No se pudo buscar');
