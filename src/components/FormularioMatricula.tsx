@@ -117,7 +117,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
         horarioSabado: h.horarioSabado,
         horarioManana: h.horarioManana,
         horarioTarde: h.horarioSemana,
-        diasSemana: manana ? 'Martes, Jueves y Sábado' : h.diasSemana,
+        diasSemana: manana ? h.diasManana : h.diasSemana,
       } : null,
       tallaUniforme: pideTallaUniforme ? tallaUniforme : 'No aplica',
       tallasPolos,

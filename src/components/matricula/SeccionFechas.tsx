@@ -11,13 +11,13 @@ import {
   NOMBRES_DIA,
   aYmd,
   calcularFechaFin,
-  calcularHorarios,
   deYmd,
   diasPermitidos,
   etiquetaFecha,
   fechaLarga,
   obtenerFechasDisponiblesInicio,
   obtenerNombreDia,
+  horariosDesdePlan,
   type PlanFechas,
   type Turno,
 } from '../../utils/matricula';
@@ -38,7 +38,8 @@ export function useFechasPrograma(fechaNacimiento: string, clasesTotales: number
   const [cargando, setCargando] = useState(false);
   const pedido = useRef(0);
 
-  const horarios = useMemo(() => (fechaNacimiento ? calcularHorarios(fechaNacimiento) : null), [fechaNacimiento]);
+  // Horario de su edad: lo manda el API con la vista previa (tabla horarios + días del programa)
+  const horarios = useMemo(() => (fechaNacimiento ? horariosDesdePlan(plan?.horario ?? null) : null), [fechaNacimiento, plan]);
   const categoria = horarios?.categoria ?? '';
   const sinDefinir = fechaInicio === SIN_FECHA;
 
@@ -78,8 +79,8 @@ export function useFechasPrograma(fechaNacimiento: string, clasesTotales: number
   const permitidos = useMemo(() => {
     const delServidor = plan?.dias_por_turno?.[turno];
     if (delServidor && delServidor.length) return delServidor.map((d) => NOMBRES_DIA[d]);
-    return diasPermitidos(turno, categoria);
-  }, [plan, turno, categoria]);
+    return diasPermitidos();
+  }, [plan, turno]);
 
   // Al cambiar turno o categoría se quitan los días que ya no valen
   useEffect(() => {
@@ -110,6 +111,9 @@ export function useFechasPrograma(fechaNacimiento: string, clasesTotales: number
   const avisos = plan && fechaInicio && !sinDefinir ? plan.avisos.map((a) => a.mensaje) : [];
   const error = plan && fechaInicio && !sinDefinir ? plan.errores.find((e) => !INCOMPLETO.has(e.codigo))?.mensaje ?? null : null;
 
+  // Sin clases en la mañana para su edad: el turno es la tarde
+  useEffect(() => { if (horarios && !horarios.horarioManana && turno === 'manana') setTurno('tarde'); }, [horarios, turno]);
+
   const reset = useCallback(() => { setTurno('tarde'); setFechaInicio(''); setDias([]); }, []);
 
   return {
@@ -136,21 +140,28 @@ export function SeccionFechas({ f, hayNacimiento }: { f: FechasPrograma; hayNaci
   const diasTurno = (t: Turno) => listaCorta((f.diasPorTurno?.[t] ?? []).map((d) => NOMBRES_DIA[d]));
   return (
     <div className="space-y-6">
-      {h?.horarioSemana && (
+      {h && (h.horarioSemana || h.horarioManana) && (
         <div>
-          <p className={cx.label}>Turno</p>
-          <Chips<Turno>
-            etiqueta="Turno"
-            columnas="grid-cols-2"
-            valor={f.turno}
-            onCambio={f.setTurno}
-            opciones={[
-              { valor: 'manana', etiqueta: 'Mañana', detalle: `${diasTurno('manana') || 'Mar, jue y sáb'} · ${h.horarioManana}` },
-              { valor: 'tarde', etiqueta: 'Tarde', detalle: `${diasTurno('tarde') || h.diasSemana} · ${h.horarioSemana}` },
-            ]}
-          />
+          {/* Mañana solo si su edad tiene clase en la mañana */}
+          {h.horarioManana && h.horarioSemana ? (
+            <>
+              <p className={cx.label}>Turno</p>
+              <Chips<Turno>
+                etiqueta="Turno"
+                columnas="grid-cols-2"
+                valor={f.turno}
+                onCambio={f.setTurno}
+                opciones={[
+                  { valor: 'manana', etiqueta: 'Mañana', detalle: `${diasTurno('manana') || h.diasManana} · ${h.horarioManana}` },
+                  { valor: 'tarde', etiqueta: 'Tarde', detalle: `${diasTurno('tarde') || h.diasSemana} · ${h.horarioSemana}` },
+                ]}
+              />
+            </>
+          ) : (
+            <p className={cx.label}>Horario: {diasTurno('tarde') || h.diasSemana} · {h.horarioSemana}</p>
+          )}
           <p className={cx.ayuda}>
-            {h.categoria ? `Categoría ${h.categoria}. ` : ''}Sábados: {h.horarioSabado}.
+            {h.categoria ? `Categoría ${h.categoria}. ` : ''}{h.horarioSabado ? `Sábados: ${h.horarioSabado}.` : 'Sin clase los sábados.'}
           </p>
         </div>
       )}

@@ -153,7 +153,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
         horarioSabado: h.horarioSabado,
         horarioManana: h.horarioManana,
         horarioTarde: h.horarioSemana,
-        diasSemana: manana ? 'Martes, Jueves y Sábado' : h.diasSemana,
+        diasSemana: manana ? h.diasManana : h.diasSemana,
       } : null,
       tallasPolos,
       nombrePadre: p.nombrePadre.trim(),

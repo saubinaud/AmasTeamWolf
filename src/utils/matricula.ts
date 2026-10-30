@@ -26,6 +26,13 @@ export interface PlanFechas {
   avisos: AvisoFechas[];
   dias_por_turno: { manana: number[] | null; tarde: number[] | null } | null;
   proximas_fechas: string[];
+  /** Horario de su edad (tabla horarios), ya con los días del programa */
+  horario: {
+    categoria: string | null;
+    tarde: { hora_texto: string; texto: string } | null;
+    manana: { hora_texto: string; texto: string } | null;
+    sabado: string | null;
+  } | null;
 }
 
 /** "mar 3 nov" a partir de YYYY-MM-DD, sin pasar por la zona del navegador. */
@@ -38,7 +45,9 @@ export interface HorariosInfo {
   horarioSemana: string;
   horarioSabado: string;
   diasSemana: string;
+  diasManana: string;
   categoria: string;
+  /** Vacío si su edad no tiene clase en la mañana */
   horarioManana: string;
 }
 
@@ -63,70 +72,25 @@ export function fechaLarga(ymd: string, conAnio = false): string {
   });
 }
 
-/** RESPALDO SIN CONEXIÓN: días de clase posibles según turno y categoría (el API los saca de la tabla horarios). */
-export function diasPermitidos(turno: Turno, categoria: string): string[] {
-  if (turno === 'manana') return ['Martes', 'Jueves', 'Sábado'];
-  if (categoria === 'Juniors') return ['Lunes', 'Miércoles', 'Viernes'];
-  if (categoria === 'Adolescentes') return ['Martes', 'Jueves'];
+/** RESPALDO SIN CONEXIÓN: de lunes a sábado (el API los saca de la tabla horarios y del programa, y valida al registrar). */
+export function diasPermitidos(): string[] {
   return ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 }
 
-// Calcular horarios y categoría según la edad (en meses) del alumno.
-export function calcularHorarios(fechaNacimiento: string): HorariosInfo {
-  const hoy = new Date();
-  const nacimiento = new Date(fechaNacimiento);
-  const edadMeses = Math.floor((hoy.getTime() - nacimiento.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-  const edadAnios = Math.floor(edadMeses / 12);
-
-  let horarioSemana = "";
-  let horarioSabado = "";
-  let horarioManana = "";
-  let diasSemana = "Lunes a Viernes";
-  let categoria = "";
-
-  if (edadMeses >= 11 && edadMeses <= 15) {
-    horarioSemana = "3:00 PM";
-    horarioSabado = "9:00 AM";
-    horarioManana = "9:00 AM";
-  } else if (edadMeses >= 16 && edadMeses <= 20) {
-    horarioSemana = "3:30 PM";
-    horarioSabado = "9:30 AM";
-    horarioManana = "9:30 AM";
-  } else if (edadMeses >= 21 && edadMeses <= 26) {
-    horarioSemana = "4:00 PM";
-    horarioSabado = "10:00 AM";
-    horarioManana = "10:00 AM";
-  } else if (edadMeses >= 27 && edadMeses <= 32) {
-    horarioSemana = "4:30 PM";
-    horarioSabado = "10:30 AM";
-    horarioManana = "10:30 AM";
-  } else if (edadMeses >= 33 && edadMeses <= 38) {
-    horarioSemana = "5:00 PM";
-    horarioSabado = "11:00 AM";
-    horarioManana = "11:00 AM";
-  } else if (edadMeses >= 39 && edadMeses <= 48) {
-    horarioSemana = "5:30 PM";
-    horarioSabado = "11:30 AM";
-    horarioManana = "11:30 AM";
-  } else if (edadMeses >= 49 && edadMeses <= 71) {
-    horarioSemana = "6:00 PM";
-    horarioSabado = "12:00 PM";
-    horarioManana = "12:00 PM";
-  } else if (edadAnios >= 6 && edadAnios <= 11) {
-    horarioSemana = "6:30 PM";
-    horarioSabado = "12:30 PM";
-    horarioManana = "12:30 PM";
-    diasSemana = "Lunes, Miércoles y Viernes";
-    categoria = "Juniors";
-  } else if (edadAnios >= 12 && edadAnios <= 17) {
-    horarioSemana = "6:30 PM";
-    horarioSabado = "1:30 PM";
-    horarioManana = "1:30 PM";
-    diasSemana = "Martes y Jueves";
-    categoria = "Adolescentes";
-  }
-
-  return { horarioSemana, horarioSabado, horarioManana, diasSemana, categoria };
+/**
+ * Horario de su edad tal como lo manda el API en /fechas/plan (sale de la tabla
+ * horarios de la academia; antes estaba escrito aquí a mano y quedaba viejo).
+ */
+export function horariosDesdePlan(h: PlanFechas['horario']): HorariosInfo | null {
+  if (!h || (!h.tarde && !h.manana)) return null;
+  return {
+    horarioSemana: h.tarde?.hora_texto ?? '',
+    horarioSabado: h.sabado ?? '',
+    horarioManana: h.manana?.hora_texto ?? '',
+    diasSemana: h.tarde?.texto ?? '',
+    diasManana: h.manana?.texto ?? '',
+    categoria: h.categoria ?? '',
+  };
 }
 
 // ───────────── RESPALDO SIN CONEXIÓN ─────────────
