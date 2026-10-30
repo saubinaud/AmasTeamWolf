@@ -34,9 +34,12 @@ export function AccountLinkingStep({ onComplete, onLogout }: AccountLinkingStepP
         setSearchResult(null);
 
         try {
+            let token: string | null = null;
+            try { token = localStorage.getItem('amasToken'); } catch { /* modo privado */ }
             const response = await fetch(VINCULAR_API_URL, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                // El API pide la sesión de la familia para buscar por DNI
+                headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
                 body: JSON.stringify({
                     action: 'buscar',
                     dni_alumno: dniAlumno,

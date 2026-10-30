@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Play, Pause, RotateCcw, ChevronRight, ChevronLeft, Lock, MapPin, Timer, Undo2 } from 'lucide-react';
 import { API_BASE } from '../config/api';
+import { entrarConPin, fetchPanel, tokenPanel } from '../utils/panelAcceso';
 
 // ── Types ──
 
@@ -24,8 +25,6 @@ interface LogEntry { id: number; alumno_id: number; tipo: string; valor: number;
 
 // ── Constants ──
 
-const PIN_MARCADOR = '2026';
-const AUTH_KEY = 'amas_marcador_auth';
 const DEFAULT_CONFIG: TorneoConfig = {
   duracion_round_seg: 90,
   max_rounds: 3,
@@ -41,7 +40,8 @@ const DEFAULT_CONFIG: TorneoConfig = {
 
 export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
   // Auth
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem(AUTH_KEY) === 'true');
+  // El PIN lo comprueba el API (variable MARCADOR_PIN) y devuelve un token corto
+  const [authed, setAuthed] = useState(() => !!tokenPanel('marcador'));
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
 
@@ -187,18 +187,21 @@ export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
 
   // ── Actions ──
 
-  const handlePin = () => {
-    if (pin === PIN_MARCADOR) {
-      sessionStorage.setItem(AUTH_KEY, 'true');
+  const handlePin = async () => {
+    const r = await entrarConPin('marcador', pin);
+    if (r.token) {
       setAuthed(true);
       setPinError(false);
+      setPin('');
     } else { setPinError(true); setPin(''); }
   };
+  // Escribir puntajes pide el token; si venció, se vuelve a pedir el PIN
+  const escribir = (url: string, init: RequestInit) => fetchPanel('marcador', url, init, () => setAuthed(false));
 
   const registerPunto = async (alumnoId: number, tipo: string, valor: number) => {
     if (!combate) return;
     try {
-      const res = await fetch(`${API_BASE}/torneo/combates/${combate.id}/punto`, {
+      const res = await escribir(`${API_BASE}/torneo/combates/${combate.id}/punto`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ alumno_id: alumnoId, tipo, valor, round: roundActual, juez_id: selectedJuez?.id }),
@@ -215,7 +218,8 @@ export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
     const lastEntry = log.find(l => l.alumno_id === alumnoId);
     if (!lastEntry) return;
     try {
-      await fetch(`${API_BASE}/torneo/puntaje-log/${lastEntry.id}`, { method: 'DELETE' });
+      const r = await escribir(`${API_BASE}/torneo/puntaje-log/${lastEntry.id}`, { method: 'DELETE' });
+      if (!r.ok) return;
       setLog(prev => prev.filter(l => l.id !== lastEntry.id));
       if (combate) reloadScores(combate.id);
     } catch {}
@@ -233,11 +237,12 @@ export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
   const changeEstado = async (newEstado: string) => {
     if (!combate) return;
     try {
-      await fetch(`${API_BASE}/torneo/combates/${combate.id}/estado`, {
+      const r = await escribir(`${API_BASE}/torneo/combates/${combate.id}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: newEstado }),
       });
+      if (!r.ok) return;
       setCombates(prev => prev.map(c => c.id === combate.id ? { ...c, estado: newEstado } : c));
     } catch {}
   };
@@ -256,14 +261,14 @@ export function MarcadorPage({ onNavigate: _onNavigate }: MarcadorPageProps) {
         </div>
         <div className="w-full max-w-xs space-y-4">
           <input
-            type="password" inputMode="numeric" maxLength={4}
-            placeholder="PIN de 4 dígitos" value={pin}
+            type="password" inputMode="numeric" maxLength={8}
+            placeholder="PIN" value={pin}
             onChange={e => { setPin(e.target.value.replace(/\D/g, '')); setPinError(false); }}
             onKeyDown={e => e.key === 'Enter' && handlePin()}
             className="w-full text-center text-3xl tracking-[0.5em] py-4 bg-zinc-900 border border-white/10 rounded-xl text-white placeholder:text-white/30 placeholder:text-base placeholder:tracking-normal focus:outline-none focus:border-amber-500/50"
           />
           {pinError && <p className="text-rose-400 text-sm text-center">PIN incorrecto</p>}
-          <button onClick={handlePin} disabled={pin.length !== 4}
+          <button onClick={handlePin} disabled={pin.length < 4}
             className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold transition-colors">
             Ingresar
           </button>
