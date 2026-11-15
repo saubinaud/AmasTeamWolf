@@ -27,7 +27,7 @@ export function BannerOmYoga() {
               Nuevo
             </span>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              OM <span className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">Yoga</span>
+              Om<span className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">Yoga</span>
             </h2>
             <p className="mt-2 max-w-md text-white/70">
               {terminado

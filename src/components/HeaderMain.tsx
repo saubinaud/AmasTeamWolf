@@ -144,7 +144,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                       }}
                       className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors flex items-center justify-between"
                     >
-                      OM Yoga
+                      OmYoga
                       <span className="rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Nuevo</span>
                     </button>
                   </div>
@@ -295,7 +295,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                     className="flex w-full items-center gap-2 text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
                     style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                   >
-                    OM Yoga
+                    OmYoga
                     <span className="rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Nuevo</span>
                   </button>
                 </div>

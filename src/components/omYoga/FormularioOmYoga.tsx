@@ -105,7 +105,7 @@ export function FormularioOmYoga() {
 
   const whatsapp = (
     <a
-      href={enlaceWhatsApp('Hola, quiero información sobre OM Yoga')}
+      href={enlaceWhatsApp('Hola, quiero información sobre OmYoga')}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 px-5 py-3 text-sm text-white/90 transition hover:border-[#FCA929]/60 hover:text-white"
@@ -150,7 +150,7 @@ export function FormularioOmYoga() {
     return (
       <div className="text-center py-6">
         <h3 className="text-xl font-semibold text-white">Las inscripciones cerraron</h3>
-        <p className="mt-2 mb-6 text-white/60">Escríbenos y te avisamos de las próximas clases de OM Yoga.</p>
+        <p className="mt-2 mb-6 text-white/60">Escríbenos y te avisamos de las próximas clases de OmYoga.</p>
         {whatsapp}
       </div>
     );

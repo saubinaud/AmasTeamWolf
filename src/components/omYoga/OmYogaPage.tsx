@@ -48,7 +48,7 @@ function VideoOmYoga() {
           playsInline
           preload="metadata"
           onEnded={() => { if (ref.current) { ref.current.muted = true; ref.current.loop = true; void ref.current.play(); setMudo(true); } }}
-          aria-label="Celeste, instructora principal, presenta el programa OM Yoga"
+          aria-label="Celeste, instructora principal, presenta el programa OmYoga"
         />
         <button
           type="button"
@@ -123,8 +123,7 @@ export function OmYogaPage() {
               </div>
 
               <h1 className="mt-6 text-6xl font-bold leading-[0.9] tracking-tight sm:text-7xl lg:text-8xl">
-                OM<br />
-                <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FFE08A] bg-clip-text text-transparent">Yoga</span>
+                Om<span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FFE08A] bg-clip-text text-transparent">Yoga</span>
               </h1>
 
               <p className="mt-6 max-w-md text-lg leading-relaxed text-white/70 sm:text-xl">
@@ -197,7 +196,7 @@ export function OmYogaPage() {
         <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
             <figure className="relative mx-auto w-full max-w-sm overflow-hidden rounded-[28px] border border-white/10 md:max-w-none">
-              <img src={OM_YOGA.fotoInstructora} alt="Celeste, instructora principal de OM Yoga, con los ojos cerrados" loading="lazy"
+              <img src={OM_YOGA.fotoInstructora} alt="Celeste, instructora principal de OmYoga, con los ojos cerrados" loading="lazy"
                 width={640} height={800} className="aspect-[4/5] w-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
               <figcaption className="absolute inset-x-0 bottom-0 p-6">

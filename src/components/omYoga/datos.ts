@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 /**
- * OM Yoga: una sola fuente para la landing (/om-yoga), el banner de la portada y el menú.
+ * OmYoga: una sola fuente para la landing (/om-yoga), el banner de la portada y el menú.
  * La hora de la clase va en HORA_CLASE; mientras sea null la web dice que se confirma por WhatsApp.
  */
 export const OM_YOGA = {

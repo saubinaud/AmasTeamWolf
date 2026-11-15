@@ -34,7 +34,7 @@ export function PaseClase() {
           style={{ background: 'radial-gradient(circle at 35% 35%, #FFF3C4 0%, #FFE08A 30%, #FCA929 65%, rgba(250,123,33,0) 72%)' }} />
         <div className="relative">
           <p className="text-sm font-medium text-white/85">Clase de prueba · Hatha Yoga</p>
-          <p className="mt-1 text-4xl font-bold tracking-tight text-white sm:text-5xl">OM Yoga</p>
+          <p className="mt-1 text-4xl font-bold tracking-tight text-white sm:text-5xl">OmYoga</p>
           <span className="mt-5 inline-flex items-center rounded-full bg-white px-4 py-1.5 text-sm font-bold uppercase tracking-wider text-[#C2410C]">
             Gratis
           </span>

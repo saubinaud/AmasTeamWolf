@@ -5,7 +5,7 @@ interface Props {
   compacta?: boolean;
 }
 
-/** Cuenta regresiva hasta el cierre de inscripciones de OM Yoga (martes 17, 23:59). */
+/** Cuenta regresiva hasta el cierre de inscripciones de OmYoga (martes 17, 23:59). */
 export function CuentaRegresiva({ compacta = false }: Props) {
   const r = useCuentaRegresiva(OM_YOGA.cierre);
 
