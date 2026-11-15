@@ -31,7 +31,7 @@ export function BannerOmYoga() {
             </h2>
             <p className="mt-2 max-w-md text-white/70">
               {terminado
-                ? 'Hatha Yoga para adultos con Celeste, en San Borja.'
+                ? `Hatha Yoga para adultos con Celeste. ${OM_YOGA.horario}, en San Borja.`
                 : `Hatha Yoga para adultos. Clase de prueba gratis el ${OM_YOGA.fechaClase.toLowerCase()}.`}
             </p>
           </div>
@@ -42,7 +42,7 @@ export function BannerOmYoga() {
               </p>
             )}
             <span className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FA7B21] to-[#FCA929] px-6 py-3 font-semibold text-white shadow-lg shadow-[#FA7B21]/30">
-              {terminado ? 'Conocer el programa' : 'Reservar mi clase gratis'}
+              {terminado ? 'Ver planes' : 'Reservar mi clase gratis'}
               <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
             </span>
           </div>

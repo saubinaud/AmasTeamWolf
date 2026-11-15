@@ -2,17 +2,20 @@ import { useEffect, useState } from 'react';
 
 /**
  * OmYoga: una sola fuente para la landing (/om-yoga), el banner de la portada y el menú.
- * La hora de la clase va en HORA_CLASE; mientras sea null la web dice que se confirma por WhatsApp.
+ * Los precios NO van aquí: salen del catálogo (Space ▸ Catálogo, códigos de PLANES).
  */
 export const OM_YOGA = {
   ruta: '/om-yoga',
   slugFormulario: 'om-yoga',
   /** Cierre de inscripciones: martes 17-nov-2026, 23:59:59 hora de Lima */
   cierre: new Date('2026-11-17T23:59:59-05:00'),
-  /** Fin del día de la clase: después de esto el banner deja de hablar de la clase de prueba */
-  finClase: new Date('2026-11-18T23:59:59-05:00'),
+  /** Fin de la clase de prueba (8:00 a 9:00 p. m.): desde aquí la landing muestra los planes */
+  finClase: new Date('2026-11-18T21:00:00-05:00'),
   fechaClase: 'Miércoles 18 de noviembre',
-  HORA_CLASE: null as string | null,
+  HORA_CLASE: '8:00 p. m.' as string | null,
+  horario: 'Lunes y miércoles, 8:00 p. m.',
+  /** Planes en el catálogo (precio, beneficios y cinta se editan en Space ▸ Catálogo) */
+  PLANES: ['omyoga-mensual', 'omyoga-trimestral'],
   video: '/media/om-yoga.mp4',
   poster: '/media/om-yoga-poster.jpg',
   fotoInstructora: '/media/om-yoga-celeste.jpg',
@@ -68,3 +71,13 @@ export function useCuentaRegresiva(hasta: Date): Restante {
 }
 
 export const dos = (n: number) => String(n).padStart(2, '0');
+
+export type Fase = 'inscripcion' | 'cerrado' | 'programa';
+
+/** En qué momento está OmYoga: inscribiendo a la clase de prueba, cerrado, o ya con planes. */
+export function useFase(): Fase {
+  const cierre = useCuentaRegresiva(OM_YOGA.cierre);
+  const clase = useCuentaRegresiva(OM_YOGA.finClase);
+  if (clase.terminado) return 'programa';
+  return cierre.terminado ? 'cerrado' : 'inscripcion';
+}

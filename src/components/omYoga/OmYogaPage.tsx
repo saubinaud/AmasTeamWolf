@@ -6,13 +6,16 @@ import { useLayoutContext } from '../../layouts/MainLayout';
 import { CuentaRegresiva } from './CuentaRegresiva';
 import { FormularioOmYoga } from './FormularioOmYoga';
 import { PaseClase } from './PaseClase';
-import { OM_YOGA, useCuentaRegresiva } from './datos';
+import { OM_YOGA, useCuentaRegresiva, useFase } from './datos';
+import { PlanesOmYoga } from './PlanesOmYoga';
 
 const SOL = 'radial-gradient(circle at 35% 35%, #FFE08A 0%, #FCA929 38%, #FA7B21 70%, #C2410C 100%)';
 const LUNA = 'radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E4E4E7 40%, #A1A1AA 85%, #71717A 100%)';
 
 const irAlFormulario = () =>
   document.getElementById('inscripcion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+const irAPlanes = () =>
+  document.getElementById('planes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
 /** Video del hero: arranca sin sonido (trae subtítulos) y con un toque se escucha desde el inicio. */
 function VideoOmYoga() {
@@ -90,6 +93,9 @@ export function OmYogaPage() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   const formRef = useRef<HTMLElement>(null);
   const [formVisible, setFormVisible] = useState(false);
+  // Hasta el martes 17: clase de prueba. Desde el fin de la clase (miércoles 18, 9 p. m.): planes
+  const fase = useFase();
+  const programa = fase === 'programa';
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => {
@@ -98,8 +104,9 @@ export function OmYogaPage() {
     const io = new IntersectionObserver(([e]) => setFormVisible(e.isIntersecting), { threshold: 0.1 });
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [programa]);
 
+  const chip = 'rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80';
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0A0705] text-white">
@@ -127,8 +134,10 @@ export function OmYogaPage() {
               </h1>
 
               <p className="mt-6 max-w-md text-lg leading-relaxed text-white/70 sm:text-xl">
-                Equilibra la energía que te activa y la que te deja descansar.
-                Tu primera clase es <strong className="font-semibold text-white">totalmente gratis</strong>.
+                Equilibra la energía que te activa y la que te deja descansar.{' '}
+                {programa
+                  ? <>Hatha Yoga para adultos con <strong className="font-semibold text-white">Celeste</strong>, en San Borja.</>
+                  : <>Tu primera clase es <strong className="font-semibold text-white">totalmente gratis</strong>.</>}
               </p>
             </div>
 
@@ -139,19 +148,25 @@ export function OmYogaPage() {
             <div className="lg:col-start-1 lg:self-start lg:pt-6">
 
               <div className="flex flex-wrap gap-2 text-sm">
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">{OM_YOGA.fechaClase}</span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">San Borja</span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">Adultos</span>
+                {programa ? (
+                  <span className={chip}>{OM_YOGA.horario}</span>
+                ) : (
+                  <span className={chip}>{OM_YOGA.fechaClase}, {OM_YOGA.HORA_CLASE}</span>
+                )}
+                <span className={chip}>San Borja</span>
+                <span className={chip}>Adultos</span>
               </div>
 
-              <div className="mt-9">
-                <p className="mb-3 text-sm text-white/55">Inscripciones abiertas hasta el martes 17, 11:59 p. m.</p>
-                <CuentaRegresiva />
-              </div>
+              {!programa && (
+                <div className="mt-9">
+                  <p className="mb-3 text-sm text-white/55">Inscripciones abiertas hasta el martes 17, 11:59 p. m.</p>
+                  <CuentaRegresiva />
+                </div>
+              )}
 
-              <button onClick={irAlFormulario}
+              <button onClick={programa ? irAPlanes : irAlFormulario}
                 className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FA7B21] to-[#FCA929] px-8 py-4 text-base font-semibold text-white shadow-lg shadow-[#FA7B21]/30 transition hover:shadow-[#FA7B21]/50 active:scale-[0.98] sm:w-auto">
-                Reservar mi clase gratis <ArrowDown className="h-4 w-4" />
+                {programa ? 'Ver planes' : 'Reservar mi clase gratis'} <ArrowDown className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -209,16 +224,23 @@ export function OmYogaPage() {
               <blockquote className="mt-6 text-2xl font-medium leading-snug text-white sm:text-3xl">
                 <span className="text-[#FA7B21]">«</span>Quiero invitarte a practicar con nosotros en nuestro programa, en San Luis, San Borja. Te esperamos.<span className="text-[#FA7B21]">»</span>
               </blockquote>
-              <button onClick={irAlFormulario}
+              <button onClick={programa ? irAPlanes : irAlFormulario}
                 className="mt-8 inline-flex items-center gap-2 text-[#FCA929] transition-colors duration-150 hover:text-white">
-                Reservar mi clase con Celeste <ArrowDown className="h-4 w-4" />
+                {programa ? 'Practicar con Celeste' : 'Reservar mi clase con Celeste'} <ArrowDown className="h-4 w-4" />
               </button>
             </div>
           </div>
         </section>
 
-        {/* RESERVA: el pase de la clase y el formulario */}
-        <section id="inscripcion" ref={formRef} className="container mx-auto scroll-mt-24 px-4 pt-16 pb-28 md:py-24">
+        {/* PLANES: después de la clase de prueba (precios del catálogo) */}
+        {programa && (
+          <section id="planes" className="container mx-auto scroll-mt-24 px-4 pt-16 pb-24 md:py-24">
+            <PlanesOmYoga />
+          </section>
+        )}
+
+        {/* RESERVA: el pase de la clase y el formulario (hasta que pasa la clase) */}
+        {!programa && <section id="inscripcion" ref={formRef} className="container mx-auto scroll-mt-24 px-4 pt-16 pb-28 md:py-24">
           <div className="mx-auto mb-10 max-w-2xl text-center md:mb-14">
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
               Reserva tu{' '}
@@ -244,12 +266,12 @@ export function OmYogaPage() {
               </div>
             </div>
           </div>
-        </section>
+        </section>}
 
         <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
       </div>
 
-      <BarraMovil oculta={formVisible} />
+      {!programa && <BarraMovil oculta={formVisible} />}
     </div>
   );
 }
