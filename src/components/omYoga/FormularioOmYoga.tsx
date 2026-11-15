@@ -3,6 +3,14 @@ import { CheckCircle2, Loader2, MessageCircle } from 'lucide-react';
 import { API_BASE } from '../../config/api';
 import { enlaceWhatsApp } from '../../config/contacto';
 import { OM_YOGA, CAMPOS, EXPERIENCIAS, useCuentaRegresiva } from './datos';
+import { EntradaTarjeta, type Entrada } from '../entrada/EntradaTarjeta';
+
+const CLAVE_ENTRADA = 'om-yoga-entrada';
+
+/** La entrada guardada en este teléfono: si vuelve a la página, ve su entrada en vez del formulario. */
+function entradaGuardada(): Entrada | null {
+  try { const v = localStorage.getItem(CLAVE_ENTRADA); return v ? JSON.parse(v) : null; } catch { return null; }
+}
 
 type Estado = 'cargando' | 'listo' | 'enviando' | 'enviado' | 'sin-formulario';
 
@@ -31,6 +39,7 @@ export function FormularioOmYoga() {
   const [errores, setErrores] = useState<Partial<Record<keyof Campos, string>>>({});
   const [errorEnvio, setErrorEnvio] = useState('');
   const caja = useRef<HTMLDivElement>(null);
+  const [entrada, setEntrada] = useState<Entrada | null>(entradaGuardada);
 
   useEffect(() => {
     let vivo = true;
@@ -81,6 +90,11 @@ export function FormularioOmYoga() {
       });
       const json = await r.json().catch(() => null);
       if (!r.ok || !json?.success) throw new Error(json?.message || json?.error);
+      const nueva: Entrada | null = json.data?.entrada ?? null;
+      if (nueva) {
+        setEntrada(nueva);
+        try { localStorage.setItem(CLAVE_ENTRADA, JSON.stringify(nueva)); } catch { /* sin almacenamiento: igual se ve */ }
+      }
       setEstado('enviado');
       requestAnimationFrame(() => caja.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
     } catch (err) {
@@ -99,6 +113,21 @@ export function FormularioOmYoga() {
       <MessageCircle className="h-4 w-4" /> Escríbenos por WhatsApp
     </a>
   );
+
+  // Con entrada (recién inscrito o volviendo desde este teléfono): la entrada en vez del formulario
+  if (entrada) {
+    return (
+      <div ref={caja} aria-live="polite">
+        <p className="mb-1 text-center text-2xl font-semibold text-white">Tu lugar está reservado</p>
+        <p className="mb-6 text-center text-white/60">Guarda tu entrada: la mostrarás al llegar.</p>
+        <EntradaTarjeta entrada={entrada} />
+        <button type="button" onClick={() => { try { localStorage.removeItem(CLAVE_ENTRADA); } catch { /* */ } setEntrada(null); setCampos(VACIO); setEstado('listo'); }}
+          className="mt-4 w-full text-center text-sm text-white/45 underline-offset-4 hover:text-white/70 hover:underline">
+          Inscribir a otra persona
+        </button>
+      </div>
+    );
+  }
 
   if (estado === 'enviado') {
     return (

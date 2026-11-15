@@ -169,18 +169,26 @@ export function OmYogaPage() {
           </div>
 
           <div className="mx-auto mt-12 grid max-w-5xl gap-5 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
-            <article className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#FA7B21]/[0.12] to-white/[0.02] p-8">
-              <div className="h-16 w-16 rounded-full shadow-[0_0_60px_rgba(250,123,33,0.55)]" style={{ background: SOL }} />
-              <h3 className="mt-6 text-4xl font-bold tracking-tight">HA</h3>
-              <p className="mt-1 text-sm uppercase tracking-[0.16em] text-[#FCA929]">Energía solar</p>
-              <p className="mt-4 text-white/65 leading-relaxed">Los momentos de activación y de movimiento: fuerza, calor y presencia en cada postura.</p>
+            <article className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#FA7B21]/[0.12] to-white/[0.02] p-6 sm:p-8">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 shrink-0 rounded-full shadow-[0_0_48px_rgba(250,123,33,0.55)]" style={{ background: SOL }} />
+                <div>
+                  <h3 className="text-3xl font-bold leading-none tracking-tight">HA</h3>
+                  <p className="mt-1.5 text-sm uppercase tracking-[0.16em] text-[#FCA929]">Energía solar</p>
+                </div>
+              </div>
+              <p className="mt-5 text-white/65 leading-relaxed">Los momentos de activación y de movimiento: fuerza, calor y presencia en cada postura.</p>
             </article>
             <div className="hidden items-center justify-center text-3xl font-light text-white/30 md:flex">+</div>
-            <article className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-8">
-              <div className="h-16 w-16 rounded-full shadow-[0_0_60px_rgba(228,228,231,0.25)]" style={{ background: LUNA }} />
-              <h3 className="mt-6 text-4xl font-bold tracking-tight">THA</h3>
-              <p className="mt-1 text-sm uppercase tracking-[0.16em] text-zinc-300">Energía lunar</p>
-              <p className="mt-4 text-white/65 leading-relaxed">El descanso que lleva a la relajación profunda: respiración, calma y recuperación.</p>
+            <article className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-6 sm:p-8">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 shrink-0 rounded-full shadow-[0_0_48px_rgba(228,228,231,0.25)]" style={{ background: LUNA }} />
+                <div>
+                  <h3 className="text-3xl font-bold leading-none tracking-tight">THA</h3>
+                  <p className="mt-1.5 text-sm uppercase tracking-[0.16em] text-zinc-300">Energía lunar</p>
+                </div>
+              </div>
+              <p className="mt-5 text-white/65 leading-relaxed">El descanso que lleva a la relajación profunda: respiración, calma y recuperación.</p>
             </article>
           </div>
         </section>
@@ -189,8 +197,8 @@ export function OmYogaPage() {
         <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
             <figure className="relative mx-auto w-full max-w-sm overflow-hidden rounded-[28px] border border-white/10 md:max-w-none">
-              <img src={OM_YOGA.fotoInstructora} alt="Celeste, instructora principal de OM Yoga" loading="lazy"
-                width={656} height={820} className="aspect-[4/5] w-full object-cover" />
+              <img src={OM_YOGA.fotoInstructora} alt="Celeste, instructora principal de OM Yoga, con los ojos cerrados" loading="lazy"
+                width={640} height={800} className="aspect-[4/5] w-full object-cover" />
               <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
               <figcaption className="absolute inset-x-0 bottom-0 p-6">
                 <p className="text-2xl font-semibold text-white">Celeste</p>

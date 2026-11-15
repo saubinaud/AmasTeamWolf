@@ -7,6 +7,7 @@ import {
   AlertCircle, Loader2, ArrowLeft, ChevronRight
 } from 'lucide-react';
 import { enlaceWhatsApp } from '../config/contacto';
+import { EntradaTarjeta, type Entrada } from './entrada/EntradaTarjeta';
 
 // --- Types ---
 
@@ -136,6 +137,8 @@ export default function FormularioPublicoPage() {
   const [datos, setDatos] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Formularios con entrada (Space ▸ Formularios ▸ Entrada con QR): el API la devuelve al responder
+  const [entrada, setEntrada] = useState<Entrada | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   // Fetch form data
@@ -267,6 +270,8 @@ export default function FormularioPublicoPage() {
         const errData = await res.json().catch(() => null);
         throw new Error(errData?.message || 'Error al enviar el formulario');
       }
+      const okData = await res.json().catch(() => null);
+      if (okData?.data?.entrada) setEntrada(okData.data.entrada);
 
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -395,9 +400,13 @@ export default function FormularioPublicoPage() {
               <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
                 {formConfig.mensaje_exito || 'Respuesta enviada con \u00e9xito'}
               </h2>
-              <p className="text-white/50 text-sm mb-8 leading-relaxed">
-                Gracias por completar el formulario. Tu respuesta ha sido registrada.
-              </p>
+              {entrada ? (
+                <div className="mx-auto mb-8 max-w-sm"><EntradaTarjeta entrada={entrada} /></div>
+              ) : (
+                <p className="text-white/50 text-sm mb-8 leading-relaxed">
+                  Gracias por completar el formulario. Tu respuesta ha sido registrada.
+                </p>
+              )}
 
               <a
                 href="/"

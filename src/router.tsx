@@ -83,6 +83,7 @@ const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({
 const RutaGuerrero = lazy(() => import('./components/aula').then(m => ({ default: m.RutaGuerrero })));
 const FormularioPublicoPage = lazy(() => import('./components/FormularioPublicoPage'));
 const OmYogaPage = lazy(() => import('./components/omYoga/OmYogaPage').then(m => ({ default: m.OmYogaPage })));
+const EntradaPage = lazy(() => import('./components/entrada/EntradaPage').then(m => ({ default: m.EntradaPage })));
 const PadronPage = lazy(() => import('./components/PadronPage').then(m => ({ default: m.PadronPage })));
 
 // SEO configs
@@ -413,6 +414,15 @@ function OmYogaRoute() {
   );
 }
 
+function EntradaRoute() {
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <SEO title="Tu entrada - JMA Team Wolf" description="Tu entrada con código QR." keywords="entrada" url="https://amasteamwolf.com/entrada" />
+      <EntradaPage />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 // Redirect /space to the standalone Space app
 function SpaceRedirect() {
   React.useEffect(() => {
@@ -456,6 +466,7 @@ export const router = createBrowserRouter([
       { path: '/formulario/:slug', element: <FormularioRoute /> },
       { path: '/padron', element: <PadronRoute /> },
       { path: '/om-yoga', element: <OmYogaRoute /> },
+      { path: '/entrada/:token', element: <EntradaRoute /> },
       { path: '/yoga', element: <Navigate to="/om-yoga" replace /> },
       { path: '/space/*', element: <SpaceRedirect /> },
       // Redirect aliases
