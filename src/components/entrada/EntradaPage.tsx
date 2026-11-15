@@ -7,7 +7,7 @@ import { EntradaTarjeta, type Entrada } from './EntradaTarjeta';
 
 /**
  * amasteamwolf.com/entrada/:token — la entrada de un formulario. Es la URL que va
- * dentro del QR y de los pases de Wallet: quien la abre ve su entrada; el equipo
+ * dentro del QR (web y correo): quien la abre ve su entrada; el equipo
  * la valida desde Space ▸ Validar entradas.
  */
 export function EntradaPage() {

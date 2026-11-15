@@ -66,7 +66,7 @@ export function FormularioOmYoga() {
     const e: typeof errores = {};
     if (campos.nombre.trim().length < 3) e.nombre = 'Escribe tu nombre y apellido';
     if (campos.whatsapp.replace(/\D/g, '').length < 9) e.whatsapp = 'Escribe un número de 9 dígitos';
-    if (campos.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campos.correo)) e.correo = 'Revisa el correo';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(campos.correo.trim())) e.correo = campos.correo.trim() ? 'Revisa el correo' : 'Escribe tu correo: ahí te llega tu entrada';
     if (!campos.experiencia) e.experiencia = 'Elige una opción';
     setErrores(e);
     return Object.keys(e).length === 0;
@@ -119,7 +119,7 @@ export function FormularioOmYoga() {
     return (
       <div ref={caja} aria-live="polite">
         <p className="mb-1 text-center text-2xl font-semibold text-white">Tu lugar está reservado</p>
-        <p className="mb-6 text-center text-white/60">Guarda tu entrada: la mostrarás al llegar.</p>
+        <p className="mb-6 text-center text-white/60">Te la enviamos también a tu correo. Muéstrala al llegar.</p>
         <EntradaTarjeta entrada={entrada} />
         <button type="button" onClick={() => { try { localStorage.removeItem(CLAVE_ENTRADA); } catch { /* */ } setEntrada(null); setCampos(VACIO); setEstado('listo'); }}
           className="mt-4 w-full text-center text-sm text-white/45 underline-offset-4 hover:text-white/70 hover:underline">
@@ -187,7 +187,7 @@ export function FormularioOmYoga() {
         </div>
         <div>
           <label htmlFor="om-correo" className="mb-2 block text-sm text-white/75">
-            Correo <span className="text-white/35">(opcional)</span>
+            Correo
           </label>
           <input id="om-correo" className={input} type="email" inputMode="email" autoComplete="email" placeholder="tu@correo.com"
             value={campos.correo} onChange={(e) => cambiar('correo', e.target.value)} />
