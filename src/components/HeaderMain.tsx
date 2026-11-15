@@ -120,7 +120,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
               onMouseEnter={handleMouseEnterProgramas}
               onMouseLeave={handleMouseLeaveProgramas}
             >
-              <button className={`flex items-center gap-1 ${linkStyles(currentPage === 'leadership' || currentPage === 'home')}`}>
+              <button className={`flex items-center gap-1 ${linkStyles(currentPage === 'leadership' || currentPage === 'home' || currentPage === 'om-yoga')}`}>
                 Programas
                 <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasDesktopOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -142,6 +142,16 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                       className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors"
                     >
                       Leadership Wolf
+                    </button>
+                    <button
+                      onClick={() => {
+                        onNavigate('om-yoga');
+                        setIsProgramasDesktopOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors flex items-center justify-between"
+                    >
+                      OM Yoga
+                      <span className="rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Nuevo</span>
                     </button>
                   </div>
                 </div>
@@ -254,7 +264,7 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             <div>
               <button
                 onClick={() => setIsProgramasOpen(!isProgramasOpen)}
-                className={`flex items-center justify-between w-full transition-colors text-left py-2 text-base ${currentPage === 'leadership' || currentPage === 'home' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
+                className={`flex items-center justify-between w-full transition-colors text-left py-2 text-base ${currentPage === 'leadership' || currentPage === 'home' || currentPage === 'om-yoga' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
                 style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
               >
                 Programas
@@ -281,6 +291,18 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                     style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                   >
                     Leadership Wolf
+                  </button>
+                  <button
+                    onClick={() => {
+                      onNavigate('om-yoga');
+                      setIsMobileMenuOpen(false);
+                      setIsProgramasOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
+                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    OM Yoga
+                    <span className="rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Nuevo</span>
                   </button>
                 </div>
               )}

@@ -1,0 +1,251 @@
+import { useEffect, useRef, useState } from 'react';
+import { CalendarDays, Clock, MapPin, Gift, Users, Volume2, VolumeX, ArrowDown } from 'lucide-react';
+import { HeaderMain } from '../HeaderMain';
+import { FooterMain } from '../FooterMain';
+import { useLayoutContext } from '../../layouts/MainLayout';
+import { CuentaRegresiva } from './CuentaRegresiva';
+import { FormularioOmYoga } from './FormularioOmYoga';
+import { OM_YOGA, useCuentaRegresiva } from './datos';
+
+const SOL = 'radial-gradient(circle at 35% 35%, #FFE08A 0%, #FCA929 38%, #FA7B21 70%, #C2410C 100%)';
+const LUNA = 'radial-gradient(circle at 35% 35%, #FFFFFF 0%, #E4E4E7 40%, #A1A1AA 85%, #71717A 100%)';
+
+const irAlFormulario = () =>
+  document.getElementById('inscripcion')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+/** Video del hero: arranca sin sonido (trae subtítulos) y con un toque se escucha desde el inicio. */
+function VideoOmYoga() {
+  const ref = useRef<HTMLVideoElement>(null);
+  const [mudo, setMudo] = useState(true);
+
+  const alternarSonido = () => {
+    const v = ref.current;
+    if (!v) return;
+    if (mudo) {
+      v.currentTime = 0;
+      v.muted = false;
+      v.loop = false;
+      void v.play();
+    } else {
+      v.muted = true;
+    }
+    setMudo(!mudo);
+  };
+
+  return (
+    <div className="relative">
+      <div className="absolute -inset-6 rounded-[2.5rem] bg-[#FA7B21]/20 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black shadow-2xl shadow-black/60">
+        <video
+          ref={ref}
+          className="block aspect-video w-full object-cover"
+          src={OM_YOGA.video}
+          poster={OM_YOGA.poster}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onEnded={() => { if (ref.current) { ref.current.muted = true; ref.current.loop = true; void ref.current.play(); setMudo(true); } }}
+          aria-label="Celeste, instructora principal, presenta el programa OM Yoga"
+        />
+        <button
+          type="button"
+          onClick={alternarSonido}
+          className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-black/60 px-4 py-2.5 text-sm text-white backdrop-blur-md transition hover:bg-black/75 active:scale-95"
+        >
+          {mudo ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          {mudo ? 'Ver con sonido' : 'Silenciar'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Barra fija en el celular mientras el formulario no está a la vista. */
+function BarraMovil({ oculta }: { oculta: boolean }) {
+  const { terminado } = useCuentaRegresiva(OM_YOGA.cierre);
+  if (terminado) return null;
+  return (
+    <div
+      className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/85 px-4 pt-3 backdrop-blur-xl transition-transform duration-300 md:hidden ${oculta ? 'translate-y-full' : ''}`}
+      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+    >
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-white/45">Cierra en</p>
+          <CuentaRegresiva compacta />
+        </div>
+        <button onClick={irAlFormulario}
+          className="rounded-xl bg-gradient-to-r from-[#FA7B21] to-[#FCA929] px-5 py-3 text-sm font-semibold text-white active:scale-95">
+          Reservar gratis
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function OmYogaPage() {
+  const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
+  const formRef = useRef<HTMLElement>(null);
+  const [formVisible, setFormVisible] = useState(false);
+
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => {
+    const el = formRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setFormVisible(e.isIntersecting), { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const hora = OM_YOGA.HORA_CLASE ?? 'Te la confirmamos por WhatsApp';
+  const detalles = [
+    { icono: CalendarDays, titulo: 'Fecha', texto: OM_YOGA.fechaClase },
+    { icono: Clock, titulo: 'Hora', texto: hora },
+    { icono: MapPin, titulo: 'Lugar', texto: 'Av. San Luis 2083, San Borja' },
+    { icono: Gift, titulo: 'Precio', texto: 'Gratis: es la primera clase de prueba' },
+    { icono: Users, titulo: 'Para', texto: 'Adultos, con o sin experiencia' },
+  ];
+
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-[#0A0705] text-white">
+      {/* Fondo: sol cálido arriba, luna fría abajo */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -top-40 -left-32 h-[34rem] w-[34rem] rounded-full opacity-25 blur-3xl" style={{ background: SOL }} />
+        <div className="absolute -bottom-48 -right-40 h-[30rem] w-[30rem] rounded-full opacity-[0.08] blur-3xl" style={{ background: LUNA }} />
+      </div>
+
+      <div className="relative z-10">
+        <HeaderMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick}
+          cartItemsCount={cartItemsCount} currentPage="om-yoga" />
+
+        {/* HERO */}
+        <section className="container mx-auto px-4 pt-28 pb-16 sm:pt-32 md:pb-24 lg:pt-36">
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.15fr] lg:gap-x-16 lg:gap-y-0">
+            <div className="lg:col-start-1 lg:self-end">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#FA7B21]/30 bg-[#FA7B21]/10 px-4 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#FCA929] animate-pulse" />
+                <span className="text-xs uppercase tracking-[0.18em] text-[#FCA929]">Nuevo programa · Hatha Yoga</span>
+              </div>
+
+              <h1 className="mt-6 text-6xl font-bold leading-[0.9] tracking-tight sm:text-7xl lg:text-8xl">
+                OM<br />
+                <span className="bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FFE08A] bg-clip-text text-transparent">Yoga</span>
+              </h1>
+
+              <p className="mt-6 max-w-md text-lg leading-relaxed text-white/70 sm:text-xl">
+                Equilibra la energía que te activa y la que te deja descansar.
+                Tu primera clase es <strong className="font-semibold text-white">totalmente gratis</strong>.
+              </p>
+            </div>
+
+            <div className="lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-center">
+              <VideoOmYoga />
+            </div>
+
+            <div className="lg:col-start-1 lg:self-start lg:pt-6">
+
+              <div className="flex flex-wrap gap-2 text-sm">
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">{OM_YOGA.fechaClase}</span>
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">San Borja</span>
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-white/80">Adultos</span>
+              </div>
+
+              <div className="mt-9">
+                <p className="mb-3 text-sm text-white/55">Inscripciones abiertas hasta el martes 17, 11:59 p. m.</p>
+                <CuentaRegresiva />
+              </div>
+
+              <button onClick={irAlFormulario}
+                className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#FA7B21] to-[#FCA929] px-8 py-4 text-base font-semibold text-white shadow-lg shadow-[#FA7B21]/30 transition hover:shadow-[#FA7B21]/50 active:scale-[0.98] sm:w-auto">
+                Reservar mi clase gratis <ArrowDown className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* HA + THA */}
+        <section className="container mx-auto px-4 py-16 md:py-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-xs uppercase tracking-[0.2em] text-[#FCA929]">Qué es Hatha Yoga</p>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl md:text-5xl">Dos energías, un mismo cuerpo</h2>
+            <p className="mt-5 text-white/60 sm:text-lg">
+              El Hatha Yoga busca equilibrar las dos energías del organismo, en paralelo a cómo funciona tu sistema nervioso.
+            </p>
+          </div>
+
+          <div className="mx-auto mt-12 grid max-w-5xl gap-5 md:grid-cols-[1fr_auto_1fr] md:items-stretch">
+            <article className="rounded-3xl border border-white/10 bg-gradient-to-b from-[#FA7B21]/[0.12] to-white/[0.02] p-8">
+              <div className="h-16 w-16 rounded-full shadow-[0_0_60px_rgba(250,123,33,0.55)]" style={{ background: SOL }} />
+              <h3 className="mt-6 text-4xl font-bold tracking-tight">HA</h3>
+              <p className="mt-1 text-sm uppercase tracking-[0.16em] text-[#FCA929]">Energía solar</p>
+              <p className="mt-4 text-white/65 leading-relaxed">Los momentos de activación y de movimiento: fuerza, calor y presencia en cada postura.</p>
+            </article>
+            <div className="hidden items-center justify-center text-3xl font-light text-white/30 md:flex">+</div>
+            <article className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.08] to-white/[0.02] p-8">
+              <div className="h-16 w-16 rounded-full shadow-[0_0_60px_rgba(228,228,231,0.25)]" style={{ background: LUNA }} />
+              <h3 className="mt-6 text-4xl font-bold tracking-tight">THA</h3>
+              <p className="mt-1 text-sm uppercase tracking-[0.16em] text-zinc-300">Energía lunar</p>
+              <p className="mt-4 text-white/65 leading-relaxed">El descanso que lleva a la relajación profunda: respiración, calma y recuperación.</p>
+            </article>
+          </div>
+        </section>
+
+        {/* INSTRUCTORA */}
+        <section className="container mx-auto px-4 py-16 md:py-24">
+          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-14">
+            <div className="overflow-hidden rounded-3xl border border-white/10">
+              <img src={OM_YOGA.fotoInstructora} alt="Celeste practicando una postura de Hatha Yoga" loading="lazy"
+                className="aspect-[5/4] w-full object-cover" />
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#FCA929]">Tu instructora</p>
+              <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Celeste</h2>
+              <p className="mt-1 text-white/50">Instructora principal de OM Yoga</p>
+              <blockquote className="mt-6 border-l-2 border-[#FA7B21] pl-5 text-lg leading-relaxed text-white/80 sm:text-xl">
+                «Quiero invitarte a practicar con nosotros en nuestro programa, en San Luis, San Borja. Te esperamos.»
+              </blockquote>
+            </div>
+          </div>
+        </section>
+
+        {/* DETALLES + FORMULARIO */}
+        <section id="inscripcion" ref={formRef} className="container mx-auto scroll-mt-24 px-4 pt-16 pb-28 md:py-24">
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#FCA929]">Clase de prueba</p>
+              <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">Reserva tu lugar</h2>
+              <p className="mt-4 text-white/60">Inscríbete ahora para poder entrar a la primera clase. Toma menos de un minuto.</p>
+              <ul className="mt-8 space-y-3">
+                {detalles.map(({ icono: Icono, titulo, texto }) => (
+                  <li key={titulo} className="flex items-start gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FA7B21]/15 text-[#FCA929]">
+                      <Icono className="h-5 w-5" />
+                    </span>
+                    <span>
+                      <span className="block text-xs uppercase tracking-[0.14em] text-white/40">{titulo}</span>
+                      <span className="block text-white/90">{texto}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/50 backdrop-blur sm:p-8">
+              <div className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-7">
+                <p className="text-sm text-white/55">Las inscripciones cierran en</p>
+                <CuentaRegresiva />
+              </div>
+              <FormularioOmYoga />
+            </div>
+          </div>
+        </section>
+
+        <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
+      </div>
+
+      <BarraMovil oculta={formVisible} />
+    </div>
+  );
+}

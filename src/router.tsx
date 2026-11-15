@@ -82,6 +82,7 @@ const ProfesorAsistenciaPage = lazy(() => import('./components/ProfesorAsistenci
 const MarcadorPage = lazy(() => import('./components/MarcadorPage').then(m => ({ default: m.MarcadorPage })));
 const RutaGuerrero = lazy(() => import('./components/aula').then(m => ({ default: m.RutaGuerrero })));
 const FormularioPublicoPage = lazy(() => import('./components/FormularioPublicoPage'));
+const OmYogaPage = lazy(() => import('./components/omYoga/OmYogaPage').then(m => ({ default: m.OmYogaPage })));
 const PadronPage = lazy(() => import('./components/PadronPage').then(m => ({ default: m.PadronPage })));
 
 // SEO configs
@@ -403,6 +404,15 @@ function PadronRoute() {
   );
 }
 
+function OmYogaRoute() {
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <SEO title="OM Yoga: clase de prueba gratis - JMA Team Wolf" description="Hatha Yoga para adultos con Celeste en San Borja. Primera clase de prueba gratis el miércoles 18 de noviembre: inscríbete." keywords="yoga San Borja, hatha yoga Lima, clase de yoga gratis, OM Yoga, yoga adultos" url="https://amasteamwolf.com/om-yoga" image="https://amasteamwolf.com/media/om-yoga-poster.jpg" />
+      <OmYogaPage />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 // Redirect /space to the standalone Space app
 function SpaceRedirect() {
   React.useEffect(() => {
@@ -445,6 +455,8 @@ export const router = createBrowserRouter([
       { path: '/clases/:rutaId/:claseId', element: <ClasesRoute /> },
       { path: '/formulario/:slug', element: <FormularioRoute /> },
       { path: '/padron', element: <PadronRoute /> },
+      { path: '/om-yoga', element: <OmYogaRoute /> },
+      { path: '/yoga', element: <Navigate to="/om-yoga" replace /> },
       { path: '/space/*', element: <SpaceRedirect /> },
       // Redirect aliases
       { path: '/renovar', element: <Navigate to="/renovacion" replace /> },

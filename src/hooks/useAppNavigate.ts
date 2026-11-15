@@ -17,6 +17,7 @@ const PAGE_TO_PATH: Record<string, string> = {
   'registro-actividad-navidad': '/navidad',
   'registro-showroom': '/registro-showroom',
   torneo: '/torneo',
+  'om-yoga': '/om-yoga',
   asistencia: '/asistencia',
   'asistencia-panel': '/asistencia/panel',
   'consulta-asistencia': '/consulta-asistencia',

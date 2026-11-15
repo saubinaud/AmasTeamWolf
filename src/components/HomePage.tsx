@@ -7,6 +7,7 @@ import { NosotrosSection } from './NosotrosSection';
 import { FooterMain } from './FooterMain';
 import { useLayoutContext } from '../layouts/MainLayout';
 import { NetworkStatusIndicator } from './NetworkStatusIndicator';
+import { BannerOmYoga } from './omYoga/BannerOmYoga';
 
 interface HomePageProps {
   onNavigate: (page: string) => void;
@@ -93,6 +94,8 @@ export function HomePage({ onNavigate }: HomePageProps) {
         <NetworkStatusIndicator />
         
         <HeroHome onOpenMatricula={() => handleOpenMatricula('full')} />
+
+        <BannerOmYoga />
         
         <LazySection>
           <ProgramasSection onOpenMatricula={handleOpenMatricula} />
