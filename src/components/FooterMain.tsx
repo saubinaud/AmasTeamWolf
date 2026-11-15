@@ -20,20 +20,14 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
           {/* Logo and Description */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex flex-col">
-                <span 
-                  className="text-xl tracking-wider"
-                  style={{
-                    background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}
-                >
-                  JMA
-                </span>
-                <span className="text-white text-sm -mt-1 tracking-wide">Team Wolf</span>
-              </div>
+              <img
+                src="/marca/logo-completo-oscuro-800.png"
+                alt="Team Wolf, centro de entrenamiento × JMA"
+                width={800}
+                height={258}
+                loading="lazy"
+                className="h-14 w-auto"
+              />
             </div>
             <p className="text-white/60 text-sm mb-4">
               Formando líderes a través de las artes marciales. Disciplina, respeto y crecimiento personal.

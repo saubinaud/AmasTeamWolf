@@ -47,8 +47,9 @@ export default function MainLayout() {
   };
 
   const handleEnrollProgram = (codigo?: string) => {
-    // Algunos botones pasan el evento del clic: eso cuenta como "sin código"
-    const pagina = PAGINA_MATRICULA[typeof codigo === 'string' && codigo ? codigo : 'leadership'];
+    // Algunos botones pasan el evento del clic: eso cuenta como "sin código".
+    // Sin código va al programa principal (3 meses), no a Leadership (adicional para alumnos).
+    const pagina = PAGINA_MATRICULA[typeof codigo === 'string' && codigo ? codigo : 'full'];
     if (pagina) handleNavigate(pagina);
     else window.open(enlaceWhatsApp('Hola, quiero matricular a mi hijo'), '_blank', 'noopener');
   };

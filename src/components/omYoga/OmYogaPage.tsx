@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarDays, Clock, MapPin, Gift, Users, Volume2, VolumeX, ArrowDown } from 'lucide-react';
+import { Volume2, VolumeX, ArrowDown } from 'lucide-react';
 import { HeaderMain } from '../HeaderMain';
 import { FooterMain } from '../FooterMain';
 import { useLayoutContext } from '../../layouts/MainLayout';
 import { CuentaRegresiva } from './CuentaRegresiva';
 import { FormularioOmYoga } from './FormularioOmYoga';
+import { PaseClase } from './PaseClase';
 import { OM_YOGA, useCuentaRegresiva } from './datos';
 
 const SOL = 'radial-gradient(circle at 35% 35%, #FFE08A 0%, #FCA929 38%, #FA7B21 70%, #C2410C 100%)';
@@ -99,14 +100,6 @@ export function OmYogaPage() {
     return () => io.disconnect();
   }, []);
 
-  const hora = OM_YOGA.HORA_CLASE ?? 'Te la confirmamos por WhatsApp';
-  const detalles = [
-    { icono: CalendarDays, titulo: 'Fecha', texto: OM_YOGA.fechaClase },
-    { icono: Clock, titulo: 'Hora', texto: hora },
-    { icono: MapPin, titulo: 'Lugar', texto: 'Av. San Luis 2083, San Borja' },
-    { icono: Gift, titulo: 'Precio', texto: 'Gratis: es la primera clase de prueba' },
-    { icono: Users, titulo: 'Para', texto: 'Adultos, con o sin experiencia' },
-  ];
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0A0705] text-white">
@@ -194,50 +187,54 @@ export function OmYogaPage() {
 
         {/* INSTRUCTORA */}
         <section className="container mx-auto px-4 py-16 md:py-24">
-          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-2 md:gap-14">
-            <div className="overflow-hidden rounded-3xl border border-white/10">
-              <img src={OM_YOGA.fotoInstructora} alt="Celeste practicando una postura de Hatha Yoga" loading="lazy"
-                className="aspect-[5/4] w-full object-cover" />
-            </div>
+          <div className="mx-auto grid max-w-5xl items-center gap-10 md:grid-cols-[0.9fr_1.1fr] md:gap-16">
+            <figure className="relative mx-auto w-full max-w-sm overflow-hidden rounded-[28px] border border-white/10 md:max-w-none">
+              <img src={OM_YOGA.fotoInstructora} alt="Celeste, instructora principal de OM Yoga" loading="lazy"
+                width={656} height={820} className="aspect-[4/5] w-full object-cover" />
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+              <figcaption className="absolute inset-x-0 bottom-0 p-6">
+                <p className="text-2xl font-semibold text-white">Celeste</p>
+                <p className="text-sm text-white/70">Instructora principal · Hatha Yoga</p>
+              </figcaption>
+            </figure>
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-[#FCA929]">Tu instructora</p>
-              <h2 className="mt-4 text-3xl font-semibold sm:text-4xl">Celeste</h2>
-              <p className="mt-1 text-white/50">Instructora principal de OM Yoga</p>
-              <blockquote className="mt-6 border-l-2 border-[#FA7B21] pl-5 text-lg leading-relaxed text-white/80 sm:text-xl">
-                «Quiero invitarte a practicar con nosotros en nuestro programa, en San Luis, San Borja. Te esperamos.»
+              <blockquote className="mt-6 text-2xl font-medium leading-snug text-white sm:text-3xl">
+                <span className="text-[#FA7B21]">«</span>Quiero invitarte a practicar con nosotros en nuestro programa, en San Luis, San Borja. Te esperamos.<span className="text-[#FA7B21]">»</span>
               </blockquote>
+              <button onClick={irAlFormulario}
+                className="mt-8 inline-flex items-center gap-2 text-[#FCA929] transition-colors duration-150 hover:text-white">
+                Reservar mi clase con Celeste <ArrowDown className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </section>
 
-        {/* DETALLES + FORMULARIO */}
+        {/* RESERVA: el pase de la clase y el formulario */}
         <section id="inscripcion" ref={formRef} className="container mx-auto scroll-mt-24 px-4 pt-16 pb-28 md:py-24">
-          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-[#FCA929]">Clase de prueba</p>
-              <h2 className="mt-4 text-3xl font-semibold leading-tight sm:text-4xl">Reserva tu lugar</h2>
-              <p className="mt-4 text-white/60">Inscríbete ahora para poder entrar a la primera clase. Toma menos de un minuto.</p>
-              <ul className="mt-8 space-y-3">
-                {detalles.map(({ icono: Icono, titulo, texto }) => (
-                  <li key={titulo} className="flex items-start gap-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#FA7B21]/15 text-[#FCA929]">
-                      <Icono className="h-5 w-5" />
-                    </span>
-                    <span>
-                      <span className="block text-xs uppercase tracking-[0.14em] text-white/40">{titulo}</span>
-                      <span className="block text-white/90">{texto}</span>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="mx-auto mb-10 max-w-2xl text-center md:mb-14">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              Reserva tu{' '}
+              <span className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] bg-clip-text text-transparent">lugar</span>
+            </h2>
+            <p className="mt-4 text-white/60 sm:text-lg">Inscríbete ahora para poder entrar a la primera clase. Toma menos de un minuto.</p>
+          </div>
 
-            <div className="rounded-3xl border border-white/10 bg-zinc-950/80 p-6 shadow-2xl shadow-black/50 backdrop-blur sm:p-8">
-              <div className="mb-7 flex flex-col gap-4 border-b border-white/10 pb-7">
-                <p className="text-sm text-white/55">Las inscripciones cierran en</p>
-                <CuentaRegresiva />
+          <div className="mx-auto grid max-w-5xl items-start gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-8">
+            <PaseClase />
+
+            <div className="relative">
+              <div className="pointer-events-none absolute -inset-px rounded-[28px] bg-gradient-to-b from-[#FA7B21]/50 via-white/10 to-white/5" />
+              <div className="relative rounded-[27px] bg-zinc-950 p-6 sm:p-8">
+                <div className="mb-7 flex items-center justify-between gap-3 border-b border-white/[0.07] pb-6">
+                  <p className="font-semibold text-white">Tus datos</p>
+                  <p className="flex items-center gap-2 rounded-full bg-white/[0.06] px-3 py-1.5 text-sm text-white/70">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#FA7B21] animate-pulse" />
+                    Cierra en <CuentaRegresiva compacta />
+                  </p>
+                </div>
+                <FormularioOmYoga />
               </div>
-              <FormularioOmYoga />
             </div>
           </div>
         </section>

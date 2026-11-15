@@ -94,19 +94,13 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
             className="flex items-center gap-2 sm:gap-3 group"
             style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
           >
-            <div className="flex flex-col">
-              <span
-                className="text-base sm:text-lg md:text-lg transition-all duration-300"
-                style={{
-                  background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
-              >
-                JMA Team Wolf
-              </span>
-            </div>
+            <img
+              src="/marca/logo-completo-oscuro-800.png"
+              alt="Team Wolf, centro de entrenamiento × JMA"
+              width={800}
+              height={258}
+              className="h-9 sm:h-11 w-auto transition-opacity duration-150 group-hover:opacity-90"
+            />
           </button>
 
           {/* ========================================== */}
