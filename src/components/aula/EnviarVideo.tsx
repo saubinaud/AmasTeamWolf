@@ -118,7 +118,7 @@ export function EnviarVideo({ claseId, onSuccess }: EnviarVideoProps) {
       {!file && (
         <button
           onClick={() => inputRef.current?.click()}
-          className="h-36 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-3 text-white/40 hover:text-white/60 hover:border-[#FA7B21]/30 transition-all active:scale-[0.98]"
+          className="h-36 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center gap-3 text-white/40 hover:text-white/60 hover:border-[#FA7B21]/30 transition-[color,background-color,border-color,transform] active:scale-[0.98]"
         >
           <div className="w-14 h-14 rounded-full bg-[#FA7B21]/10 flex items-center justify-center">
             <Video className="w-7 h-7 text-[#FA7B21]" />
@@ -163,7 +163,7 @@ export function EnviarVideo({ claseId, onSuccess }: EnviarVideoProps) {
         <div className="space-y-2">
           <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] h-3 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] h-3 rounded-full transition-[width] duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
@@ -192,7 +192,7 @@ export function EnviarVideo({ claseId, onSuccess }: EnviarVideoProps) {
       {file && !loading && (
         <button
           onClick={handleSubmit}
-          className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-[#FA7B21]/20"
+          className="w-full h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-[color,background-color,border-color,transform,box-shadow] active:scale-[0.98] shadow-lg shadow-[#FA7B21]/20"
         >
           <Video className="w-5 h-5" />
           Enviar video a mi profesor

@@ -25,7 +25,7 @@ const Label = ({ children, className = "" }: any) => (
 
 const Input = ({ className = "", ...props }: any) => (
   <input 
-    className={`w-full bg-black/20 border-2 border-white/20 rounded-xl px-4 py-3.5 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/30 transition-all text-base font-medium ${className}`}
+    className={`w-full bg-black/20 border-2 border-white/20 rounded-xl px-4 py-3.5 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#FF6700] focus:ring-2 focus:ring-[#FF6700]/30 transition-colors text-base font-medium ${className}`}
     {...props}
   />
 );
@@ -40,7 +40,7 @@ const Button = ({ children, className = "", disabled, onClick, variant = "primar
     <button 
       onClick={onClick}
       disabled={disabled}
-      className={`w-full py-4 rounded-xl transition-all active:translate-y-0.5 ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`w-full py-4 rounded-xl transition-[color,background-color,border-color,transform,opacity] active:translate-y-0.5 ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       {...props}
     >
       {children}
@@ -344,7 +344,7 @@ export function RegistroActividadNavidadPage({
                   <button
                     type="button"
                     onClick={() => handleAttendance('confirmado')}
-                    className={`relative p-5 md:p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 group ${
+                    className={`relative p-5 md:p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-[color,background-color,border-color,opacity,transform] duration-300 group ${
                       formData.asistencia === 'confirmado'
                         ? 'border-[#FF6700] bg-[#FF6700]/20 text-white shadow-[0_0_20px_rgba(255,103,0,0.4)] scale-[1.02]'
                         : 'border-white/20 bg-white/5 text-gray-300 hover:border-[#FF6700]/50 hover:bg-[#FF6700]/10 hover:text-white'
@@ -362,7 +362,7 @@ export function RegistroActividadNavidadPage({
                   <button
                     type="button"
                     onClick={() => handleAttendance('no_asistire')}
-                    className={`relative p-5 md:p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-all duration-300 group ${
+                    className={`relative p-5 md:p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-3 transition-[color,background-color,border-color,opacity,transform] duration-300 group ${
                       formData.asistencia === 'no_asistire'
                         ? 'border-red-500 bg-red-500/20 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)] scale-[1.02]'
                         : 'border-white/20 bg-white/5 text-gray-300 hover:border-red-400/50 hover:bg-red-500/10 hover:text-white'
@@ -461,7 +461,7 @@ export function RegistroActividadNavidadPage({
                   <span className="absolute inset-0 bg-gradient-to-r from-[#FF6700] via-[#ffaa00] to-[#FF6700] animate-gradient-xy" />
                   
                   {/* Contenido del botón */}
-                  <span className="relative flex items-center justify-center gap-3 bg-[#0a1510] hover:bg-[#0a1510]/90 text-white py-4 md:py-5 px-6 rounded-2xl transition-all duration-200 uppercase tracking-widest font-bold text-base md:text-lg lg:text-xl">
+                  <span className="relative flex items-center justify-center gap-3 bg-[#0a1510] hover:bg-[#0a1510]/90 text-white py-4 md:py-5 px-6 rounded-2xl transition-colors duration-200 uppercase tracking-widest font-bold text-base md:text-lg lg:text-xl">
                     {isSubmitting ? (
                       <>
                         ENVIANDO... <Loader2 className="w-6 h-6 md:w-7 md:h-7 animate-spin text-[#FF6700]"/>

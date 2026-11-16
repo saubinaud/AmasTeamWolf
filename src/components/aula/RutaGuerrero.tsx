@@ -104,7 +104,7 @@ export function RutaGuerrero() {
         <p className="text-red-400 text-center">{error}</p>
         <button
           onClick={() => { setLoading(true); fetchRutas(); }}
-          className="px-6 py-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl active:scale-95 transition-all"
+          className="px-6 py-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl active:scale-95 transition-[color,background-color,border-color,transform]"
         >
           Reintentar
         </button>

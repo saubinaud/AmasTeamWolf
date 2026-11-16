@@ -266,7 +266,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                 <Button
                   onClick={scrollToForm}
                   size="lg"
-                  className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-bold px-10 py-7 text-xl shadow-2xl shadow-red-600/50 border-2 border-red-400/30 animate-pulse hover:animate-none transition-all hover:scale-105"
+                  className="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-bold px-10 py-7 text-xl shadow-2xl shadow-red-600/50 border-2 border-red-400/30 animate-pulse hover:animate-none transition-[transform,box-shadow] hover:scale-105"
                 >
                   🎁 Renovar ahora
                 </Button>
@@ -282,7 +282,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Block 1 */}
-                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-colors">
                     <div className="mb-4">
                       <Calendar className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -295,7 +295,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </div>
 
                   {/* Block 2 */}
-                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-colors">
                     <div className="mb-4">
                       <Gift className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -308,7 +308,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </div>
 
                   {/* Block 3 */}
-                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-colors">
                     <div className="mb-4">
                       <Rocket className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -321,7 +321,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                   </div>
 
                   {/* Block 4 */}
-                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-all">
+                  <div className="bg-zinc-900/80 border border-[#FA7B21]/30 rounded-xl p-6 text-center hover:border-[#FA7B21]/60 transition-colors">
                     <div className="mb-4">
                       <Dumbbell className="w-12 h-12 text-[#FCA929] mx-auto" />
                     </div>
@@ -467,7 +467,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                             type="button"
                             onClick={() => handleInputChange('plan', '3-meses')}
                             disabled={isSubmitting}
-                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${formData.plan === '3-meses'
+                            className={`w-full text-left p-5 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] ${formData.plan === '3-meses'
                               ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
                               : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
                               } ${formErrors.plan ? 'border-red-500' : ''}`}
@@ -491,7 +491,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                             type="button"
                             onClick={() => handleInputChange('plan', '6-meses')}
                             disabled={isSubmitting}
-                            className={`w-full text-left p-5 rounded-lg border-2 transition-all ${formData.plan === '6-meses'
+                            className={`w-full text-left p-5 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] ${formData.plan === '6-meses'
                               ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
                               : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
                               } ${formErrors.plan ? 'border-red-500' : ''}`}
@@ -521,7 +521,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                             type="button"
                             onClick={() => handleInputChange('plan', 'no-decido')}
                             disabled={isSubmitting}
-                            className={`w-full text-left p-4 rounded-lg border-2 transition-all ${formData.plan === 'no-decido'
+                            className={`w-full text-left p-4 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] ${formData.plan === 'no-decido'
                               ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
                               : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
                               } ${formErrors.plan ? 'border-red-500' : ''}`}
@@ -560,7 +560,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                             type="button"
                             onClick={() => handleInputChange('experiencia', 'excelente')}
                             disabled={isSubmitting}
-                            className={`p-4 rounded-lg border-2 transition-all ${formData.experiencia === 'excelente'
+                            className={`p-4 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] ${formData.experiencia === 'excelente'
                               ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
                               : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
                               }`}
@@ -576,7 +576,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                             type="button"
                             onClick={() => handleInputChange('experiencia', 'buena')}
                             disabled={isSubmitting}
-                            className={`p-4 rounded-lg border-2 transition-all ${formData.experiencia === 'buena'
+                            className={`p-4 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] ${formData.experiencia === 'buena'
                               ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
                               : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
                               }`}
@@ -592,7 +592,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                             type="button"
                             onClick={() => handleInputChange('experiencia', 'podria-mejorar')}
                             disabled={isSubmitting}
-                            className={`p-4 rounded-lg border-2 transition-all ${formData.experiencia === 'podria-mejorar'
+                            className={`p-4 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] ${formData.experiencia === 'podria-mejorar'
                               ? 'bg-[#FA7B21]/20 border-[#FA7B21] shadow-lg shadow-[#FA7B21]/30'
                               : 'bg-zinc-800/80 border-zinc-700 hover:border-[#FA7B21]/50 hover:bg-zinc-800'
                               }`}
@@ -623,7 +623,7 @@ export function RenovacionNavidadPage({ onNavigate, onOpenMatricula, onCartClick
                     {/* Submit Button */}
                     <Button
                       type="submit"
-                      className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-bold py-7 text-xl shadow-2xl shadow-red-600/50 border-2 border-red-400/30 hover:scale-105 transition-all"
+                      className="w-full bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-bold py-7 text-xl shadow-2xl shadow-red-600/50 border-2 border-red-400/30 hover:scale-105 transition-[transform,box-shadow]"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? '⏳ Enviando...' : '🎁 Asegurar mi renovación'}

@@ -34,7 +34,7 @@ const Label = ({ children, className = "" }: any) => (
 
 const Input = ({ className = "", ...props }: any) => (
   <input
-    className={`w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
+    className={`w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-colors duration-200 text-base font-medium ${className}`}
     {...props}
   />
 );
@@ -248,7 +248,7 @@ const TestimonialsSection = () => {
           <div className="relative z-10 flex items-center justify-center gap-6 mt-8">
             <button
               onClick={goToPrevious}
-              className="p-3 rounded-full bg-white/10 hover:bg-[#FA7B21] transition-all duration-300 hover:scale-110"
+              className="p-3 rounded-full bg-white/10 hover:bg-[#FA7B21] transition-[color,background-color,border-color,transform] duration-300 hover:scale-110"
               aria-label="Anterior"
             >
               <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-white" />
@@ -263,7 +263,7 @@ const TestimonialsSection = () => {
                     setCurrentIndex(i);
                     setIsAutoPlaying(false);
                   }}
-                  className={`transition-all duration-300 rounded-full ${i === currentIndex
+                  className={`transition-[color,background-color,border-color,opacity,transform] duration-300 rounded-full ${i === currentIndex
                       ? 'w-10 h-3 bg-gradient-to-r from-[#FA7B21] to-[#ff8800]'
                       : 'w-3 h-3 bg-white/30 hover:bg-white/50'
                     }`}
@@ -274,7 +274,7 @@ const TestimonialsSection = () => {
 
             <button
               onClick={goToNext}
-              className="p-3 rounded-full bg-white/10 hover:bg-[#FA7B21] transition-all duration-300 hover:scale-110"
+              className="p-3 rounded-full bg-white/10 hover:bg-[#FA7B21] transition-[color,background-color,border-color,transform] duration-300 hover:scale-110"
               aria-label="Siguiente"
             >
               <ChevronRight className="w-5 h-5 md:w-6 md:h-6 text-white" />
@@ -667,7 +667,7 @@ export function RegistroShowroomPage({
 
                   <button
                     onClick={handleReset}
-                    className="group relative px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] text-white text-base md:text-lg font-bold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-xl"
+                    className="group relative px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] text-white text-base md:text-lg font-bold rounded-2xl overflow-hidden transition-[transform,box-shadow] duration-300 hover:scale-105 shadow-xl"
                   >
                     <span className="absolute inset-0 bg-gradient-to-r from-[#ff8800] to-[#FCA929] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     <span className="relative z-10">Registrar otra persona</span>
@@ -842,7 +842,7 @@ export function RegistroShowroomPage({
                       disabled={isSubmitting}
                       data-umami-event="Click Boton Showroom"
                       data-umami-event-tipo="registro"
-                      className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mb-2 gap-3 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
+                      className="group relative w-full overflow-hidden rounded-2xl transition-[color,background-color,border-color,transform,box-shadow,opacity] duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mb-2 gap-3 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
                     >
                       {/* Animated gradient background */}
                       <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy" />

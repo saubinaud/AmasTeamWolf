@@ -23,7 +23,7 @@ export function ProgresoBar({ completadas, total, puntos, color }: ProgresoBarPr
       </div>
       <div className="w-full h-2.5 bg-zinc-800 rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
+          className="h-full rounded-full transition-[width] duration-700 ease-out"
           style={{
             width: `${porcentaje}%`,
             background: `linear-gradient(90deg, ${color}, #FCA929)`,

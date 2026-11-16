@@ -92,7 +92,7 @@ export function ProductDetailDialog({ product, isOpen, onClose, onAddToCart }: P
                   <button
                     key={index}
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-lg overflow-hidden border-2 transition-[color,background-color,border-color,opacity,transform] ${
                       selectedImageIndex === index
                         ? 'border-[#FA7B21] scale-105'
                         : 'border-white/20 hover:border-white/40'

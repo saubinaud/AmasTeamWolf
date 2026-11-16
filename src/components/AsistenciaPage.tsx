@@ -282,7 +282,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
           <div className="flex gap-1 bg-zinc-800/60 rounded-lg p-1 mb-6">
             <button
               onClick={() => { setModo('nombre'); setResultado(null); }}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-[color,background-color,border-color,opacity,transform] ${
                 modo === 'nombre'
                   ? 'bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white shadow-sm'
                   : 'text-white/50 hover:text-white/80'
@@ -292,7 +292,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
             </button>
             <button
               onClick={() => { setModo('dni'); setResultado(null); }}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition-all ${
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition-[color,background-color,border-color,opacity,transform] ${
                 modo === 'dni'
                   ? 'bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white shadow-sm'
                   : 'text-white/50 hover:text-white/80'
@@ -335,7 +335,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
                       key={alumno.id}
                       onClick={() => registrarPorNombre(alumno)}
                       disabled={isSubmitting}
-                      className="w-full text-left bg-zinc-800/60 hover:bg-zinc-700/60 border border-white/[0.06] hover:border-[#FA7B21]/30 rounded-xl px-4 py-3 transition-all disabled:opacity-50"
+                      className="w-full text-left bg-zinc-800/60 hover:bg-zinc-700/60 border border-white/[0.06] hover:border-[#FA7B21]/30 rounded-xl px-4 py-3 transition-[color,background-color,border-color,opacity] disabled:opacity-50"
                     >
                       <div className="flex items-center justify-between">
                         <div>
@@ -421,7 +421,7 @@ export function AsistenciaPage({ onNavigate }: AsistenciaPageProps) {
                     <button
                       type="button"
                       onClick={() => onNavigate('renovacion')}
-                      className="block w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-sm font-semibold hover:from-[#F36A15] hover:to-[#FA7B21] transition-all"
+                      className="block w-full mt-2 py-2.5 rounded-lg bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-sm font-semibold hover:from-[#F36A15] hover:to-[#FA7B21] transition-[color,background-color,border-color,opacity,transform]"
                     >
                       Renovar programa
                     </button>

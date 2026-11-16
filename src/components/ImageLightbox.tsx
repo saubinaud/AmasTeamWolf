@@ -57,7 +57,7 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
       {/* Close Button */}
       <button
         onClick={onClose}
-        className="absolute top-6 right-6 z-[10000] bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all duration-300 group"
+        className="absolute top-6 right-6 z-[10000] bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors duration-300 group"
         aria-label="Cerrar"
       >
         <X className="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" />
@@ -70,7 +70,7 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
             e.stopPropagation();
             handlePrevious();
           }}
-          className="absolute left-6 z-[10000] bg-white/10 hover:bg-white/20 p-4 rounded-full transition-all duration-300"
+          className="absolute left-6 z-[10000] bg-white/10 hover:bg-white/20 p-4 rounded-full transition-colors duration-300"
           aria-label="Anterior"
         >
           <ChevronLeft className="w-8 h-8 text-white" />
@@ -84,7 +84,7 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
             e.stopPropagation();
             handleNext();
           }}
-          className="absolute right-6 z-[10000] bg-white/10 hover:bg-white/20 p-4 rounded-full transition-all duration-300"
+          className="absolute right-6 z-[10000] bg-white/10 hover:bg-white/20 p-4 rounded-full transition-colors duration-300"
           aria-label="Siguiente"
         >
           <ChevronRight className="w-8 h-8 text-white" />
@@ -129,7 +129,7 @@ export function ImageLightbox({ images, isOpen, currentIndex, onClose }: ImageLi
                 e.stopPropagation();
                 setIndex(i);
               }}
-              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+              className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-[color,background-color,border-color,opacity,transform] duration-300 ${
                 i === index 
                   ? 'border-[#FA7B21] scale-110' 
                   : 'border-white/30 hover:border-white/60 opacity-60 hover:opacity-100'

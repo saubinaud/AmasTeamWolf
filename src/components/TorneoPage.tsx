@@ -116,7 +116,7 @@ const Label = ({ children, className = "" }: { children: React.ReactNode; classN
 
 const Input = ({ className = "", ...props }: any) => (
     <input
-        className={`w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-all duration-200 text-base font-medium ${className}`}
+        className={`w-full bg-white/10 border-2 border-white/30 rounded-2xl px-5 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-[#FA7B21] focus:ring-4 focus:ring-[#FA7B21]/30 focus:bg-white/20 transition-colors duration-200 text-base font-medium ${className}`}
         {...props}
     />
 );
@@ -476,7 +476,7 @@ export function TorneoPage({
                         <p className="text-white/50 mb-8">Cuando se programe un nuevo torneo, lo veras aqui. Mantente atento a nuestras redes.</p>
                         <button
                             onClick={() => onNavigate('home')}
-                            className="px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105"
+                            className="px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-bold rounded-2xl transition-transform duration-300 hover:scale-105"
                         >
                             Volver al Inicio
                         </button>
@@ -503,15 +503,15 @@ export function TorneoPage({
                 </div>
                 <main className="flex-1 flex items-center justify-center px-4 py-32">
                     <div className="animate-fade-in-up relative max-w-lg w-full">
-                        <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#ff8800]/30 rounded-3xl blur-3xl" />
+                        <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/30 to-[#FCA929]/30 rounded-3xl blur-3xl" />
                         <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-4 border-[#FA7B21] rounded-3xl p-8 md:p-12 text-center shadow-2xl overflow-hidden">
                             <div className="absolute top-0 right-0 w-40 h-40 bg-[#FA7B21]/20 rounded-full blur-3xl" />
-                            <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#ff8800]/20 rounded-full blur-3xl" />
+                            <div className="absolute bottom-0 left-0 w-40 h-40 bg-[#FCA929]/20 rounded-full blur-3xl" />
                             <div className="relative z-10">
                                 <div className="mb-8 flex justify-center">
                                     <div className="relative">
-                                        <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-full blur-2xl opacity-50 animate-pulse" />
-                                        <div className="relative w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-full flex items-center justify-center shadow-2xl">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-full blur-2xl opacity-50 animate-pulse" />
+                                        <div className="relative w-28 h-28 md:w-36 md:h-36 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-full flex items-center justify-center shadow-2xl">
                                             <svg className="w-14 h-14 md:w-20 md:h-20 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                             </svg>
@@ -556,9 +556,9 @@ export function TorneoPage({
                                 </p>
                                 <button
                                     onClick={() => onNavigate('home')}
-                                    className="group relative px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] text-white text-base md:text-lg font-bold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 shadow-xl"
+                                    className="group relative px-8 py-4 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white text-base md:text-lg font-bold rounded-2xl overflow-hidden transition-[transform,box-shadow] duration-300 hover:scale-105 shadow-xl"
                                 >
-                                    <span className="absolute inset-0 bg-gradient-to-r from-[#ff8800] to-[#FCA929] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <span className="absolute inset-0 bg-gradient-to-r from-[#FCA929] to-[#FCA929] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     <span className="relative z-10">Volver al Inicio</span>
                                 </button>
                             </div>
@@ -596,7 +596,7 @@ export function TorneoPage({
                 {/* Floating particles */}
                 <div className="absolute inset-0 z-0 opacity-30">
                     <div className="absolute top-20 left-10 w-2 h-2 bg-[#FA7B21] rounded-full animate-ping" style={{ animationDelay: '0s' }} />
-                    <div className="absolute top-40 right-20 w-2 h-2 bg-[#ff8800] rounded-full animate-ping" style={{ animationDelay: '1s' }} />
+                    <div className="absolute top-40 right-20 w-2 h-2 bg-[#FCA929] rounded-full animate-ping" style={{ animationDelay: '1s' }} />
                     <div className="absolute bottom-40 left-1/4 w-2 h-2 bg-[#FCA929] rounded-full animate-ping" style={{ animationDelay: '2s' }} />
                 </div>
 
@@ -604,7 +604,7 @@ export function TorneoPage({
                 <div className="relative z-10 max-w-5xl mx-auto text-center animate-fade-in-up">
                     {/* Badge */}
                     <div className="mb-6">
-                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] px-6 py-3 rounded-full shadow-2xl border-2 border-white/20">
+                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] px-6 py-3 rounded-full shadow-2xl border-2 border-white/20">
                             <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white animate-pulse" />
                             <span className="text-white font-black text-sm md:text-lg uppercase tracking-wider">
                                 {torneoPasado(torneo.fecha) ? 'Torneo finalizado' : 'Inscripciones abiertas'}
@@ -660,9 +660,9 @@ export function TorneoPage({
                     <div className="mt-4">
                         <button
                             onClick={scrollToForm}
-                            className="group relative w-full max-w-md mx-auto overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.03] active:scale-95 block"
+                            className="group relative w-full max-w-md mx-auto overflow-hidden rounded-2xl transition-[color,background-color,border-color,transform] duration-300 hover:scale-[1.03] active:scale-95 block"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FCA929] animate-gradient-xy" />
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                             <span className="relative flex items-center justify-center gap-3 px-10 py-5 md:py-6 text-white text-lg md:text-2xl font-black uppercase tracking-wider">
                                 Inscribir a mi hijo
@@ -715,8 +715,8 @@ export function TorneoPage({
                                 className="group relative animate-fade-in-up"
                                 style={{ animationDelay: `${i * 100}ms` }}
                             >
-                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl px-6 py-5 md:px-8 md:py-6 hover:border-[#FA7B21]/50 transition-all duration-500 flex items-center gap-5">
-                                    <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-xl flex items-center justify-center shadow-lg shadow-[#FA7B21]/20 group-hover:scale-110 transition-transform duration-300">
+                                <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl px-6 py-5 md:px-8 md:py-6 hover:border-[#FA7B21]/50 transition-colors duration-500 flex items-center gap-5">
+                                    <div className="w-12 h-12 flex-shrink-0 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-xl flex items-center justify-center shadow-lg shadow-[#FA7B21]/20 group-hover:scale-110 transition-transform duration-300">
                                         <item.Icon className="w-6 h-6 text-white" />
                                     </div>
                                     <div>
@@ -735,7 +735,7 @@ export function TorneoPage({
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12 md:mb-16 animate-fade-in-up">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-                            Como <span className="text-[#FA7B21]">funciona</span>?
+                            ¿Cómo <span className="text-[#FA7B21]">funciona</span>?
                         </h2>
                         <p className="text-white/60 text-lg md:text-xl">
                             3 pasos simples para inscribir a tu hijo
@@ -750,10 +750,10 @@ export function TorneoPage({
                         ].map((item, i) => (
                             <div
                                 key={i}
-                                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-3xl p-6 text-center hover:border-[#FA7B21]/50 transition-all duration-300 animate-fade-in-up"
+                                className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-3xl p-6 text-center hover:border-[#FA7B21]/50 transition-colors duration-300 animate-fade-in-up"
                                 style={{ animationDelay: `${i * 120}ms` }}
                             >
-                                <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-[#FA7B21] to-[#ff8800] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#FA7B21]/20">
+                                <div className="w-12 h-12 mx-auto mb-4 bg-gradient-to-br from-[#FA7B21] to-[#FCA929] rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-[#FA7B21]/20">
                                     {item.step}
                                 </div>
                                 <div className="flex justify-center mb-3">
@@ -766,7 +766,7 @@ export function TorneoPage({
 
                     {/* Nota sobre entrada */}
                     <div className="max-w-3xl mx-auto mt-12 animate-fade-in-up">
-                        <div className="flex items-start gap-3 bg-gradient-to-r from-[#FA7B21]/10 to-[#ff8800]/10 border border-[#FA7B21]/30 rounded-2xl px-6 py-4">
+                        <div className="flex items-start gap-3 bg-gradient-to-r from-[#FA7B21]/10 to-[#FCA929]/10 border border-[#FA7B21]/30 rounded-2xl px-6 py-4">
                             <Lightbulb className="w-5 h-5 text-[#FCA929] flex-shrink-0 mt-0.5" />
                             <p className="text-white/60 text-sm leading-relaxed">
                                 Entrada al evento: <span className="text-white font-semibold">S/25</span> (personas de 12 a 60 años, pago en puerta)
@@ -781,13 +781,13 @@ export function TorneoPage({
                 <div className="max-w-2xl mx-auto">
                     <div className="relative animate-fade-in-up">
                         {/* Glow effect */}
-                        <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/20 to-[#ff8800]/20 rounded-3xl blur-3xl" />
+                        <div className="absolute -inset-4 bg-gradient-to-r from-[#FA7B21]/20 to-[#FCA929]/20 rounded-3xl blur-3xl" />
 
                         <div className="relative bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/50 rounded-3xl p-6 md:p-8 lg:p-10 shadow-2xl overflow-hidden">
                             {/* Decorative top bar */}
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929]" />
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FCA929]" />
                             <div className="absolute top-10 right-10 w-32 h-32 bg-[#FA7B21]/10 rounded-full blur-3xl" />
-                            <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#ff8800]/10 rounded-full blur-3xl" />
+                            <div className="absolute bottom-10 left-10 w-32 h-32 bg-[#FCA929]/10 rounded-full blur-3xl" />
 
                             <div className="relative z-10">
                                 {/* Form title */}
@@ -910,14 +910,14 @@ export function TorneoPage({
                                                                 key={mod.id}
                                                                 type="button"
                                                                 onClick={() => toggleModalidad(mod.nombre)}
-                                                                className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-all duration-200 ${selected
+                                                                className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition-colors duration-200 ${selected
                                                                     ? 'bg-[#FA7B21]/20 border-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/20'
                                                                     : 'bg-white/5 border-white/20 text-white/70 hover:border-white/40 hover:bg-white/10'
                                                                     }`}
                                                             >
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${selected
-                                                                        ? 'bg-gradient-to-br from-[#FA7B21] to-[#ff8800]'
+                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${selected
+                                                                        ? 'bg-gradient-to-br from-[#FA7B21] to-[#FCA929]'
                                                                         : 'bg-white/10'
                                                                         }`}>
                                                                         <IconComponent className={`w-5 h-5 ${selected ? 'text-white' : 'text-white/50'}`} />
@@ -936,8 +936,8 @@ export function TorneoPage({
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <div className={`w-6 h-6 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-all duration-200 ${selected
-                                                                        ? 'bg-gradient-to-br from-[#FA7B21] to-[#ff8800] border-[#FA7B21] shadow-md shadow-[#FA7B21]/30'
+                                                                    <div className={`w-6 h-6 rounded-lg border-2 flex-shrink-0 flex items-center justify-center transition-colors duration-200 ${selected
+                                                                        ? 'bg-gradient-to-br from-[#FA7B21] to-[#FCA929] border-[#FA7B21] shadow-md shadow-[#FA7B21]/30'
                                                                         : 'border-white/30'
                                                                         }`}>
                                                                         {selected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
@@ -952,8 +952,8 @@ export function TorneoPage({
                                             {/* ===== STEP 4: Price summary ===== */}
                                             {selectedModalidades.length > 0 && (
                                                 <div className="relative animate-fade-in-up">
-                                                    <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] rounded-2xl blur opacity-20" />
-                                                    <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#ff8800]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 md:p-6">
+                                                    <div className="absolute -inset-1 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-2xl blur opacity-20" />
+                                                    <div className="relative bg-gradient-to-r from-[#FA7B21]/15 to-[#FCA929]/15 border-2 border-[#FA7B21]/40 rounded-2xl p-5 md:p-6">
                                                         <div className="flex items-center gap-2 mb-4">
                                                             <Shield className="w-5 h-5 text-[#FA7B21]" />
                                                             <p className="text-white font-bold text-sm md:text-base">Resumen de inscripcion</p>
@@ -1026,9 +1026,9 @@ export function TorneoPage({
                                                     type="button"
                                                     disabled={!isFormValid || isSubmitting}
                                                     onClick={handleSubmit}
-                                                    className="group relative w-full overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 mb-2 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
+                                                    className="group relative w-full overflow-hidden rounded-2xl transition-[color,background-color,border-color,transform,box-shadow,opacity] duration-300 hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 mb-2 shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50"
                                                 >
-                                                    <div className={`absolute inset-0 ${isFormValid && !isSubmitting ? 'bg-gradient-to-r from-[#FA7B21] via-[#ff8800] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
+                                                    <div className={`absolute inset-0 ${isFormValid && !isSubmitting ? 'bg-gradient-to-r from-[#FA7B21] via-[#FCA929] to-[#FCA929] animate-gradient-xy' : 'bg-zinc-800'}`} />
                                                     {isFormValid && !isSubmitting && (
                                                         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                                                     )}
@@ -1069,7 +1069,7 @@ export function TorneoPage({
                         {FAQ_ITEMS.map((item, i) => (
                             <div
                                 key={i}
-                                className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl overflow-hidden transition-all duration-300 hover:border-[#FA7B21]/40"
+                                className="bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] border-2 border-[#FA7B21]/20 rounded-2xl overflow-hidden transition-colors duration-300 hover:border-[#FA7B21]/40"
                             >
                                 <button
                                     type="button"
@@ -1082,7 +1082,7 @@ export function TorneoPage({
                                     />
                                 </button>
                                 <div
-                                    className={`overflow-hidden transition-all duration-300 ${openFaq === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+                                    className={`overflow-hidden transition-[color,background-color,border-color,opacity] duration-300 ${openFaq === i ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
                                 >
                                     <p className="px-6 pb-5 text-white/60 text-sm leading-relaxed">
                                         {item.a}
@@ -1119,7 +1119,7 @@ export function TorneoPage({
                                         <button
                                             type="button"
                                             onClick={() => setExpandedPista(isExpanded ? null : pista.id)}
-                                            className="relative overflow-hidden rounded-2xl border border-white/10 min-h-[180px] bg-zinc-900/50 text-left transition-all duration-300 hover:border-[#FCA929]/30"
+                                            className="relative overflow-hidden rounded-2xl border border-white/10 min-h-[180px] bg-zinc-900/50 text-left transition-colors duration-300 hover:border-[#FCA929]/30"
                                         >
                                             <div className="flex h-full min-h-[180px]">
                                                 {/* Left - Red */}

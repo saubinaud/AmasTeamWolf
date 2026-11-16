@@ -447,16 +447,16 @@ export function MapaAventura({ rutaId, onSelectClase, onBack }: Props) {
         {/* Controls */}
         <div data-controls className="absolute bottom-6 right-4 flex flex-col gap-2 z-50" onPointerDown={e => e.stopPropagation()}>
           <button onClick={() => setSc(s => clamp(s * 1.4, SCALE_MIN, SCALE_MAX))}
-            className="w-12 h-12 rounded-2xl bg-black/80 backdrop-blur border border-[#FA7B21]/20 flex items-center justify-center text-[#FA7B21] hover:bg-[#FA7B21]/20 active:scale-90 transition-all shadow-xl">
+            className="w-12 h-12 rounded-2xl bg-black/80 backdrop-blur border border-[#FA7B21]/20 flex items-center justify-center text-[#FA7B21] hover:bg-[#FA7B21]/20 active:scale-90 transition-[color,background-color,border-color,transform,box-shadow] shadow-xl">
             <Plus className="w-5 h-5" />
           </button>
           <button onClick={() => setSc(s => clamp(s / 1.4, SCALE_MIN, SCALE_MAX))}
-            className="w-12 h-12 rounded-2xl bg-black/80 backdrop-blur border border-[#FA7B21]/20 flex items-center justify-center text-[#FA7B21] hover:bg-[#FA7B21]/20 active:scale-90 transition-all shadow-xl">
+            className="w-12 h-12 rounded-2xl bg-black/80 backdrop-blur border border-[#FA7B21]/20 flex items-center justify-center text-[#FA7B21] hover:bg-[#FA7B21]/20 active:scale-90 transition-[color,background-color,border-color,transform,box-shadow] shadow-xl">
             <Minus className="w-5 h-5" />
           </button>
           <div className="h-1" />
           <button onClick={centerCurrent}
-            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center text-white active:scale-90 transition-all shadow-xl shadow-[#FA7B21]/30">
+            className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center text-white active:scale-90 transition-[color,background-color,border-color,transform,box-shadow] shadow-xl shadow-[#FA7B21]/30">
             <Locate className="w-5 h-5" />
           </button>
         </div>

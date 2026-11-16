@@ -155,7 +155,7 @@ export function LeadershipRoadmap() {
                 </div>
 
                 {/* Contenido de la etapa */}
-                <Card className="flex-1 bg-zinc-800/50 border-white/10 hover:border-[#FA7B21]/50 transition-all">
+                <Card className="flex-1 bg-zinc-800/50 border-white/10 hover:border-[#FA7B21]/50 transition-colors">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4 mb-4 md:hidden">
                       <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FA7B21] to-[#E65C0F] flex items-center justify-center flex-shrink-0 border-2 border-white">

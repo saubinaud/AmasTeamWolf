@@ -329,7 +329,7 @@ export default function FormularioPublicoPage() {
           <p className="text-white/40 text-sm mb-8 leading-relaxed">{error}</p>
           <a
             href="/"
-            className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+            className="inline-flex items-center gap-2 px-8 py-4 text-white font-semibold rounded-2xl transition-[color,background-color,border-color,transform] duration-300 hover:scale-105 active:scale-95"
             style={{ background: `linear-gradient(135deg, ${accent}, #FCA929)` }}
           >
             <ArrowLeft className="w-4 h-4" />
@@ -410,7 +410,7 @@ export default function FormularioPublicoPage() {
 
               <a
                 href="/"
-                className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-[color,background-color,border-color,transform] duration-300 hover:scale-105 active:scale-95"
                 style={{
                   background: `linear-gradient(135deg, ${accent}, #FCA929)`,
                   boxShadow: `0 4px 20px ${accent}30`,
@@ -570,7 +570,7 @@ export default function FormularioPublicoPage() {
                               <button
                                 type="submit"
                                 disabled={submitting}
-                                className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                                className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-[color,background-color,border-color,transform,opacity] duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                                 style={{
                                   background: `linear-gradient(135deg, ${accent}, #FCA929)`,
                                   fontSize: '16px',
@@ -608,7 +608,7 @@ export default function FormularioPublicoPage() {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                        className="group w-full relative py-4 px-6 text-white font-bold text-base rounded-2xl transition-[color,background-color,border-color,transform,opacity] duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                         style={{
                           background: `linear-gradient(135deg, ${accent}, #FCA929)`,
                           fontSize: '16px',
@@ -669,7 +669,7 @@ export default function FormularioPublicoPage() {
           href={enlaceWhatsApp()}
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95"
+          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-[color,background-color,border-color,transform,box-shadow] duration-300 hover:scale-110 active:scale-95"
           style={{
             background: '#25D366',
             boxShadow: '0 4px 20px rgba(37,211,102,0.4)',
@@ -797,7 +797,7 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
 
   const inputBaseClass = [
     'w-full bg-zinc-800/50 border rounded-xl px-4 py-3 text-white placeholder:text-white/30',
-    'outline-none transition-all duration-200 fp-input-focus',
+    'outline-none transition-[color,background-color,border-color,opacity,transform] duration-200 fp-input-focus',
     error ? 'fp-input-error border-red-400' : 'border-white/10 hover:border-white/20',
   ].join(' ');
 
@@ -846,7 +846,7 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
               className="sr-only"
             />
             <div
-              className="w-5 h-5 rounded-lg border-2 transition-all duration-200 flex items-center justify-center"
+              className="w-5 h-5 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] duration-200 flex items-center justify-center"
               style={{
                 borderColor: isChecked ? accent : 'rgba(255,255,255,0.2)',
                 backgroundColor: isChecked ? accent : 'transparent',
@@ -924,7 +924,7 @@ function BlockRenderer({ bloque, value, onChange, error, accent }: BlockRenderer
               onClick={() => onChange(String(star))}
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
-              className="p-1.5 transition-all duration-150 fp-star-hover rounded-lg hover:bg-white/5"
+              className="p-1.5 transition-colors duration-150 fp-star-hover rounded-lg hover:bg-white/5"
               style={{ minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <Star
@@ -1068,7 +1068,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
                   const firstInput = formEl?.querySelector('input, select, textarea');
                   if (firstInput) (firstInput as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }}
-                className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-[color,background-color,border-color,transform] duration-300 hover:scale-105 active:scale-95"
                 style={{
                   background: `linear-gradient(135deg, ${accent}, #FCA929)`,
                   boxShadow: `0 4px 25px ${accent}40`,
@@ -1093,7 +1093,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
             {cards.map((card: any, idx: number) => (
               <div
                 key={idx}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-all duration-300 hover:border-orange-500/40 hover:scale-[1.03] hover:bg-white/[0.07] group"
+                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 transition-[color,background-color,border-color,transform] duration-300 hover:border-orange-500/40 hover:scale-[1.03] hover:bg-white/[0.07] group"
                 style={{ animationDelay: `${idx * 0.08}s` }}
               >
                 <span className="text-3xl block mb-3">{card.emoji || ''}</span>
@@ -1175,7 +1175,7 @@ function RichBlockRenderer({ bloque, accent }: RichBlockRendererProps) {
                   href={config?.button_url || '#'}
                   target={config?.button_url?.startsWith('http') ? '_blank' : undefined}
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-all duration-300 hover:scale-105 active:scale-95"
+                  className="inline-flex items-center gap-2 px-8 py-4 text-white font-bold rounded-2xl transition-[color,background-color,border-color,transform] duration-300 hover:scale-105 active:scale-95"
                   style={{
                     background: `linear-gradient(135deg, ${accent}, #FCA929)`,
                     boxShadow: `0 4px 25px ${accent}40`,
@@ -1266,7 +1266,7 @@ function FaqBlock({ contenido, config, accent }: { contenido?: string; config?: 
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center justify-between bg-white/5 backdrop-blur-sm border rounded-2xl px-6 py-5 text-left transition-all duration-200 hover:bg-white/[0.07]"
+          className="w-full flex items-center justify-between bg-white/5 backdrop-blur-sm border rounded-2xl px-6 py-5 text-left transition-colors duration-200 hover:bg-white/[0.07]"
           style={{ borderColor: open ? `${accent}40` : 'rgba(255,255,255,0.1)' }}
         >
           <span className="text-white font-semibold text-sm md:text-base pr-4">{contenido}</span>
