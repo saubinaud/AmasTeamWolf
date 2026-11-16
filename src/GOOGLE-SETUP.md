@@ -10,7 +10,7 @@
 ### 2. **Agregar la Propiedad**
 1. Haz clic en "Agregar propiedad"
 2. Selecciona "Prefijo de URL"
-3. Ingresa: `https://amasteamwolf.com`
+3. Ingresa: `https://teamwolfxjma.com`
 4. Haz clic en "Continuar"
 
 ### 3. **Verificar la Propiedad**
@@ -118,7 +118,7 @@ function RegistroComponent() {
 
 **Teléfono**: +51 989 717 412
 
-**Sitio web**: https://amasteamwolf.com
+**Sitio web**: https://teamwolfxjma.com
 
 **Horarios**:
 - Lunes a Viernes: 15:00 - 20:30
@@ -182,22 +182,22 @@ Publica al menos 1 vez por semana:
 
 1. **Rich Results Test**
    - URL: https://search.google.com/test/rich-results
-   - Ingresa: `https://amasteamwolf.com`
+   - Ingresa: `https://teamwolfxjma.com`
    - Verifica que detecte: Organization, LocalBusiness, Course
 
 2. **Mobile-Friendly Test**
    - URL: https://search.google.com/test/mobile-friendly
-   - Ingresa: `https://amasteamwolf.com`
+   - Ingresa: `https://teamwolfxjma.com`
    - Debe decir: "La página es compatible con dispositivos móviles"
 
 3. **PageSpeed Insights**
    - URL: https://pagespeed.web.dev/
-   - Ingresa: `https://amasteamwolf.com`
+   - Ingresa: `https://teamwolfxjma.com`
    - Objetivo: >90 en móvil y desktop
 
 4. **Schema Markup Validator**
    - URL: https://validator.schema.org/
-   - Ingresa: `https://amasteamwolf.com`
+   - Ingresa: `https://teamwolfxjma.com`
    - Verifica que no haya errores en el JSON-LD
 
 ---

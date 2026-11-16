@@ -5,47 +5,47 @@
   
   <!-- Página Principal -->
   <url>
-    <loc>https://amasteamwolf.com/</loc>
+    <loc>https://teamwolfxjma.com/</loc>
     <lastmod>2025-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="es-pe" href="https://amasteamwolf.com/" />
+    <xhtml:link rel="alternate" hreflang="es-pe" href="https://teamwolfxjma.com/" />
   </url>
 
   <!-- Leadership Wolf Program -->
   <url>
-    <loc>https://amasteamwolf.com/leadership</loc>
+    <loc>https://teamwolfxjma.com/leadership</loc>
     <lastmod>2025-01-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es-pe" href="https://amasteamwolf.com/leadership" />
+    <xhtml:link rel="alternate" hreflang="es-pe" href="https://teamwolfxjma.com/leadership" />
   </url>
 
   <!-- Tienda -->
   <url>
-    <loc>https://amasteamwolf.com/tienda</loc>
+    <loc>https://teamwolfxjma.com/tienda</loc>
     <lastmod>2025-01-08</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="es-pe" href="https://amasteamwolf.com/tienda" />
+    <xhtml:link rel="alternate" hreflang="es-pe" href="https://teamwolfxjma.com/tienda" />
   </url>
 
   <!-- Graduaciones -->
   <url>
-    <loc>https://amasteamwolf.com/graduacion</loc>
+    <loc>https://teamwolfxjma.com/graduacion</loc>
     <lastmod>2025-01-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="es-pe" href="https://amasteamwolf.com/graduacion" />
+    <xhtml:link rel="alternate" hreflang="es-pe" href="https://teamwolfxjma.com/graduacion" />
   </url>
 
   <!-- Clase de Prueba -->
   <url>
-    <loc>https://amasteamwolf.com/clase-prueba</loc>
+    <loc>https://teamwolfxjma.com/clase-prueba</loc>
     <lastmod>2025-01-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="es-pe" href="https://amasteamwolf.com/clase-prueba" />
+    <xhtml:link rel="alternate" hreflang="es-pe" href="https://teamwolfxjma.com/clase-prueba" />
   </url>
 
 </urlset>

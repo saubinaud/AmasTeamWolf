@@ -53,28 +53,28 @@ export function BreadcrumbSEO({ items }: BreadcrumbSEOProps) {
 export const breadcrumbConfigs = {
   home: {
     items: [
-      { name: 'Inicio', url: 'https://amasteamwolf.com/' }
+      { name: 'Inicio', url: 'https://teamwolfxjma.com/' }
     ],
     currentPage: 'Inicio'
   },
   leadership: {
     items: [
-      { name: 'Inicio', url: 'https://amasteamwolf.com/' },
-      { name: 'Leadership Wolf', url: 'https://amasteamwolf.com/leadership' }
+      { name: 'Inicio', url: 'https://teamwolfxjma.com/' },
+      { name: 'Leadership Wolf', url: 'https://teamwolfxjma.com/leadership' }
     ],
     currentPage: 'Leadership Wolf'
   },
   tienda: {
     items: [
-      { name: 'Inicio', url: 'https://amasteamwolf.com/' },
-      { name: 'Tienda', url: 'https://amasteamwolf.com/tienda' }
+      { name: 'Inicio', url: 'https://teamwolfxjma.com/' },
+      { name: 'Tienda', url: 'https://teamwolfxjma.com/tienda' }
     ],
     currentPage: 'Tienda'
   },
   graduacion: {
     items: [
-      { name: 'Inicio', url: 'https://amasteamwolf.com/' },
-      { name: 'Graduaciones', url: 'https://amasteamwolf.com/graduacion' }
+      { name: 'Inicio', url: 'https://teamwolfxjma.com/' },
+      { name: 'Graduaciones', url: 'https://teamwolfxjma.com/graduacion' }
     ],
     currentPage: 'Graduaciones'
   }

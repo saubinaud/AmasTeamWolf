@@ -6,7 +6,7 @@ import { enlaceWhatsApp } from '../../config/contacto';
 import { EntradaTarjeta, type Entrada } from './EntradaTarjeta';
 
 /**
- * amasteamwolf.com/entrada/:token — la entrada de un formulario. Es la URL que va
+ * teamwolfxjma.com/entrada/:token — la entrada de un formulario. Es la URL que va
  * dentro del QR (web y correo): quien la abre ve su entrada; el equipo
  * la valida desde Space ▸ Validar entradas.
  */

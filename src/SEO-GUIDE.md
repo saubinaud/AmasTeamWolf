@@ -100,7 +100,7 @@ cinturones taekwondo, logros estudiantes artes marciales
 ### Ejemplo de Rich Snippet:
 ```
 🥋 AMAS Team Wolf - Academia de Artes Marciales en San Borja
-https://amasteamwolf.com
+https://teamwolfxjma.com
 ★★★★★ (Horarios: Lun-Vie 3:00PM-8:30PM | Sáb 9:00AM-1:00PM)
 
 Academia de artes marciales AMAS Team Wolf en San Borja, Lima. 

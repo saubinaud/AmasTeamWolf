@@ -8,7 +8,7 @@ Landing page optimizada para conversión diseñada específicamente para captar 
 
 ## 🌐 URL de Acceso
 
-**URL**: `https://amasteamwolf.com/conversion`
+**URL**: `https://teamwolfxjma.com/conversion`
 
 Esta página está optimizada para:
 - Campañas de Facebook Ads
@@ -358,7 +358,7 @@ La landing está **100% funcional** y lista para recibir tráfico.
 
 **Próximo paso**: Configurar campaña publicitaria y empezar a generar leads.
 
-**URL de la landing**: `https://amasteamwolf.com/conversion`
+**URL de la landing**: `https://teamwolfxjma.com/conversion`
 
 ---
 

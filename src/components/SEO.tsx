@@ -17,7 +17,7 @@ export function SEO({
   description = 'JMA Team Wolf: Academia líder en artes marciales en San Borja, Lima. Programas de Taekwondo, Leadership Wolf, Combat, Bo Staff y más. Formamos líderes con disciplina, respeto y valores. Matrícula abierta para niños y jóvenes.',
   keywords = 'JMA Team Wolf, artes marciales Lima, taekwondo San Borja, leadership program, leadership wolf, academia artes marciales Perú, clases taekwondo niños, combat, bo staff, nunchaku, formación integral, disciplina, respeto, valores, matrícula artes marciales, gimnasio San Borja, defensa personal Lima',
   image = 'https://res.cloudinary.com/dkoocok3j/image/upload/w_1200,h_630,c_fill,g_center,q_auto,f_auto/v1761500577/5_daew00.png',
-  url = 'https://amasteamwolf.com',
+  url = 'https://teamwolfxjma.com',
   type = 'website'
 }: SEOProps) {
   // Precios de los datos estructurados: los del catálogo (si el API no responde, se omiten)
@@ -115,11 +115,11 @@ export function SEO({
       "@graph": [
         {
           "@type": "SportsActivityLocation",
-          "@id": "https://amasteamwolf.com/#organization",
+          "@id": "https://teamwolfxjma.com/#organization",
           "name": "JMA Team Wolf",
           "alternateName": ["JMA Team Wolf Academy", "Academia JMA Team Wolf", "AMAS Team Wolf"],
-          "url": "https://amasteamwolf.com",
-          "logo": "https://amasteamwolf.com/logo.png",
+          "url": "https://teamwolfxjma.com",
+          "logo": "https://teamwolfxjma.com/logo.png",
           "image": image,
           "description": description,
           "priceRange": priceRange,
@@ -153,12 +153,12 @@ export function SEO({
         },
         {
           "@type": "WebSite",
-          "@id": "https://amasteamwolf.com/#website",
-          "url": "https://amasteamwolf.com",
+          "@id": "https://teamwolfxjma.com/#website",
+          "url": "https://teamwolfxjma.com",
           "name": "JMA Team Wolf",
           "description": description,
           "publisher": {
-            "@id": "https://amasteamwolf.com/#organization"
+            "@id": "https://teamwolfxjma.com/#organization"
           },
           "inLanguage": "es-PE"
         },
@@ -167,7 +167,7 @@ export function SEO({
           "name": "Leadership Wolf Program",
           "description": "Programa completo de liderazgo y artes marciales para niños y jóvenes. Incluye formación en Taekwondo, Combat, Bo Staff, Nunchaku y desarrollo de valores.",
           "provider": {
-            "@id": "https://amasteamwolf.com/#organization"
+            "@id": "https://teamwolfxjma.com/#organization"
           },
           "educationalLevel": "Todos los niveles",
           "availableLanguage": "es",
@@ -176,7 +176,7 @@ export function SEO({
             "price": String(precioLeadership),
             "priceCurrency": "PEN",
             "availability": "https://schema.org/InStock",
-            "url": "https://amasteamwolf.com/leadership",
+            "url": "https://teamwolfxjma.com/leadership",
             "validFrom": "2024-01-01"
           }
         },
@@ -185,7 +185,7 @@ export function SEO({
           "name": "Programa Full 3 Meses",
           "description": "Programa integral de artes marciales de 3 meses. Incluye uniforme completo, graduación, certificado oficial y seguimiento personalizado.",
           "provider": {
-            "@id": "https://amasteamwolf.com/#organization"
+            "@id": "https://teamwolfxjma.com/#organization"
           },
           "educationalLevel": "Todos los niveles",
           "availableLanguage": "es",
@@ -194,7 +194,7 @@ export function SEO({
             "price": String(precioFull),
             "priceCurrency": "PEN",
             "availability": "https://schema.org/InStock",
-            "url": "https://amasteamwolf.com",
+            "url": "https://teamwolfxjma.com",
             "validFrom": "2024-01-01"
           }
         },
@@ -202,8 +202,8 @@ export function SEO({
           "@type": "LocalBusiness",
           "name": "JMA Team Wolf - Academia de Artes Marciales",
           "image": image,
-          "@id": "https://amasteamwolf.com",
-          "url": "https://amasteamwolf.com",
+          "@id": "https://teamwolfxjma.com",
+          "url": "https://teamwolfxjma.com",
           "telephone": TELEFONO,
           "priceRange": priceRange,
           "address": {
@@ -248,30 +248,30 @@ export const seoConfigs = {
     title: 'JMA Team Wolf - Academia de Artes Marciales en San Borja | Taekwondo Lima',
     description: 'Academia de artes marciales JMA Team Wolf en San Borja, Lima. Programas de Taekwondo, Leadership Wolf y Combat para niños y jóvenes. Formación integral con valores. ¡Matrícula abierta! ☎ +51 989 717 412',
     keywords: 'JMA Team Wolf, artes marciales Lima, taekwondo San Borja, academia artes marciales Perú, clases taekwondo niños Lima, gimnasio artes marciales San Borja, defensa personal niños, formación integral Lima, valores niños, disciplina respeto, mejor academia taekwondo Lima, escuela artes marciales San Borja',
-    url: 'https://amasteamwolf.com'
+    url: 'https://teamwolfxjma.com'
   },
   leadership: {
     title: 'Leadership Wolf Program - JMA Team Wolf | Programa de Liderazgo y Artes Marciales',
     description: 'Leadership Wolf: Programa exclusivo de liderazgo y artes marciales. Incluye Taekwondo, Combat, Bo Staff, Nunchaku y formación en valores. 12 hitos de desarrollo personal. Precio de lanzamiento. ¡Inscríbete ahora!',
     keywords: 'leadership wolf, leadership program, programa liderazgo Lima, liderazgo artes marciales, JMA leadership, taekwondo leadership, combat training, bo staff, nunchaku, formación líderes niños, desarrollo personal niños, programa integral artes marciales, programa avanzado artes marciales, curso liderazgo juvenil Lima',
-    url: 'https://amasteamwolf.com/leadership'
+    url: 'https://teamwolfxjma.com/leadership'
   },
   tienda: {
     title: 'Tienda JMA Team Wolf - Uniformes y Equipamiento de Artes Marciales',
     description: 'Tienda oficial JMA Team Wolf. Uniformes de Taekwondo, equipamiento Combat, Bo Staff, Nunchaku y más. Productos de calidad para artes marciales. Envío disponible en Lima.',
     keywords: 'tienda artes marciales Lima, uniformes taekwondo, dobok, combat gear, bo staff comprar, nunchaku Lima, equipamiento artes marciales Perú, JMA Team Wolf tienda, comprar uniforme taekwondo Lima, venta dobok San Borja',
-    url: 'https://amasteamwolf.com/tienda'
+    url: 'https://teamwolfxjma.com/tienda'
   },
   graduacion: {
     title: 'Graduaciones JMA Team Wolf - Ceremonias y Logros de Nuestros Estudiantes',
     description: 'Conoce las graduaciones y ceremonias de JMA Team Wolf. Galería de logros de nuestros estudiantes en artes marciales. Celebramos el esfuerzo y dedicación con certificados oficiales.',
     keywords: 'graduaciones taekwondo, ceremonias artes marciales Lima, graduación JMA Team Wolf, certificados taekwondo, cinturones taekwondo, logros estudiantes artes marciales, exámenes de grado taekwondo Lima, ceremonia cinturones artes marciales San Borja',
-    url: 'https://amasteamwolf.com/graduacion'
+    url: 'https://teamwolfxjma.com/graduacion'
   },
   clasePrueba: {
     title: 'Clase de Prueba Taekwondo S/ 40 | JMA Team Wolf San Borja - Niños desde 1 año',
     description: '¡Reserva tu clase de prueba de Taekwondo por S/ 40 (GRATIS al inscribirse)! Para niños desde 1 año. Desarrolla confianza, disciplina y respeto. 20 años formando líderes en San Borja, Lima. ☎ +51 989 717 412',
     keywords: 'clase prueba taekwondo Lima, clase de prueba artes marciales San Borja, taekwondo para niños Lima, clases taekwondo niños San Borja, academia infantil artes marciales, formación niños disciplina, confianza niños Lima, taekwondo niños tímidos, disciplina niños berrinches, baby wolf, taekwondo bebés Lima, primera clase taekwondo gratis',
-    url: 'https://amasteamwolf.com/clase-prueba'
+    url: 'https://teamwolfxjma.com/clase-prueba'
   }
 };

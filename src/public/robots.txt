@@ -7,7 +7,7 @@ Allow: /graduacion
 Allow: /clase-prueba
 
 # Sitemap
-Sitemap: https://amasteamwolf.com/sitemap.xml
+Sitemap: https://teamwolfxjma.com/sitemap.xml
 
 # Crawl-delay (opcional, para ser amigables con los bots)
 Crawl-delay: 1
