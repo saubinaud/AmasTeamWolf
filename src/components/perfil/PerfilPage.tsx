@@ -7,7 +7,6 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../ui/utils';
-import { AccountLinkingStep } from '../AccountLinkingStep';
 import { HeaderMain } from '../HeaderMain';
 import { PerfilHeader } from './PerfilHeader';
 import { DashboardTab } from './tabs/DashboardTab';
@@ -15,6 +14,8 @@ import { AsistenciaTab } from './tabs/AsistenciaTab';
 import { PlanTab } from './tabs/PlanTab';
 import { GraduacionTab } from './tabs/GraduacionTab';
 import { MensajesTab } from './tabs/MensajesTab';
+import { estadoDelPlan } from './utils';
+import { ElegirHijo } from './ElegirHijo';
 
 interface PerfilPageProps {
   onNavigate: (page: string) => void;
@@ -35,7 +36,7 @@ function useIsMobile() {
 type Section = 'home' | 'calendar' | 'plan' | 'messages' | 'graduacion';
 
 export function PerfilPage({ onNavigate }: PerfilPageProps) {
-  const { user, logout, refreshUserData } = useAuth();
+  const { user, logout, refreshUserData, debeElegirHijo } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeSection, setActiveSection] = useState<Section>('home');
@@ -58,31 +59,19 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
     onNavigate('home');
   };
 
-  // ── Derived state ──
-  const diasRestantes = (() => {
-    if (!user?.matricula?.fechaFin) return 0;
-    const fin = new Date(user.matricula.fechaFin);
-    return Math.ceil((fin.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-  })();
-
-  const diasVencido = diasRestantes < 0 ? Math.abs(diasRestantes) : 0;
-  const estaVencido = diasRestantes < 0;
-  const estaPorVencer = diasRestantes >= 0 && diasRestantes <= (isMobile ? 7 : 15);
-  const bloqueadoPorVencimiento = diasVencido > 30;
+  // ── Estado del plan: tal cual lo calcula el API (v_plan_alumno) ──
+  const plan = estadoDelPlan(user);
+  const estaVencido = plan.vencido;
+  const estaPorVencer = plan.porVencer;
+  const diasVencido = plan.diasDesdeVencimiento ?? 0;
+  const bloqueadoPorVencimiento = estaVencido && diasVencido > 30;
   const isPagado = user?.pagos?.estadoPago?.toLowerCase().includes('pagado');
-  const hasLinkedProfile = user && user.estudiante && user.estudiante.nombre;
 
-  // ── Guard: not linked ──
-  if (!hasLinkedProfile) {
-    return (
-      <AccountLinkingStep
-        onComplete={async () => {
-          await refreshUserData();
-        }}
-        onLogout={handleLogout}
-      />
-    );
-  }
+  // La sesión siempre trae un alumno (AuthGuard): mientras carga, nada
+  if (!user) return null;
+
+  // Familia con varios hijos que recién entró: primero a cuál ver
+  if (debeElegirHijo && user.hijos.length > 1) return <ElegirHijo />;
 
   // ── Guard: blocked by 30+ days expired ──
   if (bloqueadoPorVencimiento) {
@@ -95,7 +84,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
           <h1 className="text-2xl font-bold text-white mb-2">Membresia Vencida</h1>
           <p className="text-zinc-500 mb-8 text-sm">Tu plan vencio hace mas de 30 dias.</p>
           <Button
-            onClick={() => onNavigate('planes')}
+            onClick={() => onNavigate('renovacion')}
             className="w-full h-14 bg-red-500 hover:bg-red-400 text-white font-semibold rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Zap className="w-5 h-5 mr-2" /> Renovar Ahora
@@ -145,7 +134,7 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
       {/* Header for navigation */}
       <HeaderMain
         onNavigate={onNavigate}
-        onOpenMatricula={() => onNavigate('planes')}
+        onOpenMatricula={() => onNavigate('renovacion')}
         onCartClick={() => { }}
         cartItemsCount={0}
         currentPage="perfil"
@@ -189,12 +178,16 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
               <AlertTriangle className={cn("w-5 h-5 flex-shrink-0", estaVencido ? "text-red-400" : "text-amber-400")} />
               <div className="flex-1 min-w-0">
                 <p className={cn("text-sm font-medium", estaVencido ? "text-red-300" : "text-amber-300")}>
-                  {estaVencido ? `Vencido hace ${diasVencido} dias` : `${user?.matricula?.clasesRestantes ?? diasRestantes} clases restantes`}
+                  {estaVencido
+                    ? (diasVencido > 0 ? `Vencido hace ${diasVencido} dias` : 'Tu plan vencio')
+                    : plan.diasParaVencer !== null
+                      ? `Vence en ${plan.diasParaVencer} dias · ${user.matricula.clasesRestantes} clases restantes`
+                      : `${user.matricula.clasesRestantes} clases restantes`}
                 </p>
               </div>
               <Button
                 size="sm"
-                onClick={() => onNavigate('planes')}
+                onClick={() => onNavigate('renovacion')}
                 className={cn("h-9 px-4 text-xs rounded-xl font-medium", estaVencido ? "bg-red-500 hover:bg-red-400" : "bg-amber-500 hover:bg-amber-400 text-black")}
               >
                 Renovar
@@ -211,7 +204,11 @@ export function PerfilPage({ onNavigate }: PerfilPageProps) {
                 <AlertTriangle className={cn("w-6 h-6", estaVencido ? "text-red-400" : "text-amber-400")} />
                 <div>
                   <p className={cn("font-semibold", estaVencido ? "text-red-300" : "text-amber-300")}>
-                    {estaVencido ? `Programa vencido hace ${diasVencido} dias` : `Solo quedan ${diasRestantes} dias`}
+                    {estaVencido
+                      ? (diasVencido > 0 ? `Programa vencido hace ${diasVencido} dias` : 'Tu programa vencio')
+                      : plan.diasParaVencer !== null
+                        ? `Solo quedan ${plan.diasParaVencer} dias`
+                        : `Quedan ${user.matricula.clasesRestantes} clases`}
                   </p>
                   <p className="text-white/60 text-sm">Renueva ahora para continuar entrenando</p>
                 </div>

@@ -3,6 +3,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { cn } from '../ui/utils';
 import { getIniciales, toTitleCase } from './utils';
+import { SelectorHijo } from './SelectorHijo';
 
 interface PerfilHeaderProps {
   user: any;
@@ -17,9 +18,9 @@ export function PerfilHeader({ user, onRefresh, onLogout, isRefreshing, isPagado
   if (isMobile) {
     return (
       <div className="py-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative transition-transform duration-200 hover:scale-105">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="relative shrink-0 transition-transform duration-200 hover:scale-105">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FA7B21] to-orange-600 flex items-center justify-center text-xl font-bold shadow-lg shadow-[#FA7B21]/20">
                 {getIniciales(user.estudiante?.nombre || '')}
               </div>
@@ -28,12 +29,12 @@ export function PerfilHeader({ user, onRefresh, onLogout, isRefreshing, isPagado
                 isPagado ? "bg-emerald-500" : "bg-amber-500"
               )} />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold leading-tight">{user.estudiante?.nombre}</h1>
-              <p className="text-sm text-zinc-500">{user.matricula?.programa}</p>
+            <div className="min-w-0">
+              <h1 className="text-lg font-semibold leading-tight truncate">{user.estudiante?.nombre}</h1>
+              <p className="text-sm text-zinc-500 truncate">{user.matricula?.programa}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={onRefresh}
               className="w-10 h-10 rounded-full flex items-center justify-center text-zinc-500 hover:text-white hover:bg-white/5 transition-all duration-200 hover:scale-110 active:scale-90"
@@ -48,6 +49,8 @@ export function PerfilHeader({ user, onRefresh, onLogout, isRefreshing, isPagado
             </button>
           </div>
         </div>
+        {/* Familias con varios hijos: debajo, para no comerse el nombre */}
+        {user.hijos?.length > 1 && <div className="mt-4"><SelectorHijo alIzquierda /></div>}
       </div>
     );
   }
@@ -95,6 +98,7 @@ export function PerfilHeader({ user, onRefresh, onLogout, isRefreshing, isPagado
         </div>
 
         <div className="flex items-center gap-3">
+          <SelectorHijo />
           <Button
             onClick={onRefresh}
             variant="outline"
