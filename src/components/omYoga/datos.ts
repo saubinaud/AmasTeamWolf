@@ -17,8 +17,6 @@ export const OM_YOGA = {
   /** Planes en el catálogo (precio, beneficios y cinta se editan en Space ▸ Catálogo) */
   PLANES: ['omyoga-mensual', 'omyoga-trimestral'],
   video: '/media/om-yoga-v2.mp4',
-  /** El video no trae subtítulos quemados: van en esta pista (se ven también sin sonido) */
-  subtitulos: '/media/om-yoga-v2.vtt',
   poster: '/media/om-yoga-v2-poster.jpg',
   fotoInstructora: '/media/om-yoga-celeste.jpg',
 };

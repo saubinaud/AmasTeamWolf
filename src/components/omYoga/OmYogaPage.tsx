@@ -17,7 +17,7 @@ const irAlFormulario = () =>
 const irAPlanes = () =>
   document.getElementById('planes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-/** Video del hero: arranca sin sonido, con subtítulos (pista VTT), y con un toque se escucha desde el inicio. */
+/** Video del hero: arranca sin sonido y con un toque se escucha desde el inicio. */
 function VideoOmYoga() {
   const ref = useRef<HTMLVideoElement>(null);
   const [mudo, setMudo] = useState(true);
@@ -52,9 +52,7 @@ function VideoOmYoga() {
           preload="metadata"
           onEnded={() => { if (ref.current) { ref.current.muted = true; ref.current.loop = true; void ref.current.play(); setMudo(true); } }}
           aria-label="Celeste, instructora principal, presenta el programa OmYoga"
-        >
-          <track kind="captions" src={OM_YOGA.subtitulos} srcLang="es" label="Español" default />
-        </video>
+        />
         <button
           type="button"
           onClick={alternarSonido}
