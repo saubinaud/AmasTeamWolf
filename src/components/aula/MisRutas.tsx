@@ -36,7 +36,7 @@ function RutaCard({ ruta, index, onSelectRuta }: { ruta: RutaResumen; index: num
     <button
       key={ruta.id}
       onClick={() => onSelectRuta(ruta.id)}
-      className="w-full bg-zinc-900/80 rounded-2xl p-5 flex items-center gap-4 transition-all active:scale-[0.98] text-left group animate-fade-in"
+      className="w-full bg-zinc-900/80 rounded-2xl p-5 flex items-center gap-4 transition-[color,background-color,border-color,transform] active:scale-[0.98] text-left group animate-fade-in"
       style={{
         animationDelay: `${index * 0.08}s`,
         borderWidth: 2,
@@ -65,7 +65,7 @@ function RutaCard({ ruta, index, onSelectRuta }: { ruta: RutaResumen; index: num
         <div className="flex items-center gap-3 mt-2.5">
           <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-700 ease-out"
+              className="h-full rounded-full transition-[width] duration-700 ease-out"
               style={{
                 width: `${pct}%`,
                 background: isComplete
@@ -88,7 +88,7 @@ function RutaCard({ ruta, index, onSelectRuta }: { ruta: RutaResumen; index: num
           <Star className="w-3.5 h-3.5 fill-[#FCA929]" />
           {ruta.progreso.puntos}
         </span>
-        <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 transition-all" />
+        <ChevronRight className="w-5 h-5 text-white/20 group-hover:text-white/50 group-hover:translate-x-0.5 transition-[color,background-color,border-color,transform]" />
       </div>
     </button>
   );

@@ -1,22 +1,13 @@
 import { timelineMilestones } from '../data/timeline';
-import { Check } from 'lucide-react';
+import { Check, Shield, Crosshair, Users, Star, Sparkles, Briefcase, Medal, Swords, GraduationCap, Layers, ScrollText, Trophy } from 'lucide-react';
+import { ui } from '../styles/marca';
 import { FadeIn } from './FadeIn';
 
-// Iconos para cada etapa
-const stageIcons = [
-  '🐺', // 1 - Fundamentos del Lobo
-  '🎯', // 2 - Precisión con Propósito
-  '👥', // 3 - Trabajo en Equipo
-  '⭐', // 4 - Liderazgo en Acción
-  '✨', // 5 - Estilo Personal
-  '📦', // 6 - Mentalidad Profesional
-  '🏅', // 7 - Demostración de Maestría
-  '⚔️', // 8 - Combate Avanzado
-  '🎓', // 9 - Liderazgo del Lobo
-  '🛡️', // 10 - Armas Múltiples
-  '📜', // 11 - Filosofía del Guerrero
-  '🏆', // 12 - Ascenso del Lobo
-];
+// Ícono de cada hito
+const stageIcons = [Shield, Crosshair, Users, Star, Sparkles, Briefcase, Medal, Swords, GraduationCap, Layers, ScrollText, Trophy];
+
+/** "FUNDAMENTOS DEL LOBO" → "Fundamentos del lobo" */
+const frase = (t: string) => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
 
 export function LeadershipTimeline() {
   return (
@@ -28,8 +19,9 @@ export function LeadershipTimeline() {
 
       <div className="container mx-auto px-4">
         <FadeIn className="text-center mb-8 sm:mb-12 md:mb-16">
-        <h2 className="text-white mb-3 sm:mb-4">🏆 EL CAMINO LEADERSHIP en 12 Hitos</h2>
-        <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-3xl mx-auto">
+        <p className={ui.antetitulo}>El recorrido</p>
+        <h2 className={`mt-4 ${ui.h2}`}>El camino Leadership en 12 hitos</h2>
+        <p className={`mt-4 max-w-3xl mx-auto ${ui.bajada}`}>
           Un viaje estructurado donde cada hito prepara el siguiente
         </p>
         </FadeIn>
@@ -55,25 +47,25 @@ export function LeadershipTimeline() {
                 >
                   {/* Card - Padding reducido pero texto legible */}
                   <div className={`w-full md:w-[calc(50%-2rem)] ${isEven ? 'md:text-right' : 'md:text-left'} text-left pl-12 md:pl-0`}>
-                    <div className="bg-zinc-900/60 border border-[#FA7B21]/30 rounded-lg md:rounded-2xl px-3 py-3 md:p-8 hover:border-[#FA7B21]/50 transition-all duration-300 group relative overflow-hidden">
+                    <div className="bg-zinc-900/60 border border-[#FA7B21]/30 rounded-lg md:rounded-2xl px-3 py-3 md:p-8 hover:border-[#FA7B21]/50 transition-colors duration-300 group relative overflow-hidden">
                       {/* Glow effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/5 to-[#FCA929]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                       <div className={`relative flex ${isEven ? 'md:flex-row-reverse' : 'md:flex-row'} flex-row md:flex-row items-start gap-3 md:gap-4`}>
                         {/* Icon */}
-                        <div className="text-3xl md:text-5xl flex-shrink-0">
-                          {stageIcons[index]}
+                        <div className="flex h-10 w-10 md:h-14 md:w-14 flex-shrink-0 items-center justify-center rounded-xl bg-[#FA7B21]/15">
+                          {(() => { const Icono = stageIcons[index] ?? Star; return <Icono className="h-5 w-5 md:h-7 md:w-7 text-[#FCA929]" strokeWidth={1.75} />; })()}
                         </div>
 
                         <div className="flex-1 min-w-0">
                           {/* Badge */}
                           <div className="inline-block px-2 py-0.5 md:px-3 md:py-1 bg-[#FA7B21] rounded-full text-white text-[10px] md:text-xs mb-2 md:mb-3">
-                            HITO {milestone.month}
+                            Hito {milestone.month}
                           </div>
 
                           {/* Title */}
                           <h3 className="text-white text-sm md:text-2xl lg:text-3xl mb-1 md:mb-2 leading-snug md:leading-normal">
-                            {milestone.title}
+                            {frase(milestone.title)}
                           </h3>
 
                           {/* Description */}
@@ -117,12 +109,6 @@ export function LeadershipTimeline() {
           </div>
         </div>
 
-        {/* CTA final */}
-        <FadeIn className="mt-8 sm:mt-12 md:mt-16 text-center">
-          <div className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] rounded-full text-white">
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl">🏆 12 hitos de transformación completa</span>
-          </div>
-        </FadeIn>
       </div>
     </section>
   );

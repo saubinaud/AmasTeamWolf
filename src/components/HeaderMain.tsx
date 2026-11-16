@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, ChevronDown, ShoppingCart, User } from 'lucide-react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import { useAuth } from '../contexts/AuthContext';
+import { EnlaceInterno } from './EnlaceInterno';
+import { rutaDe, clicInterno } from '../hooks/useAppNavigate';
+import { ui } from '../styles/marca';
 
 interface HeaderMainProps {
-  // Usamos la nueva firma que soporta secciones
   onNavigate: (page: string, sectionId?: string) => void;
   onOpenMatricula: () => void;
   onCartClick: () => void;
@@ -13,372 +13,225 @@ interface HeaderMainProps {
   currentPage?: string;
 }
 
+/** Programas del menú: todos con URL real. */
+const PROGRAMAS: { page: string; section?: string; texto: string; nuevo?: boolean }[] = [
+  { page: 'home', section: 'programas', texto: 'Taekwondo para niños' },
+  { page: 'leadership', texto: 'Leadership Wolf' },
+  { page: 'clase-prueba', texto: 'Clase de prueba' },
+  { page: 'om-yoga', texto: 'OmYoga', nuevo: true },
+];
+
+const PAGINAS_PROGRAMAS = ['home', 'leadership', 'om-yoga', 'clase-prueba'];
+
+const insigniaNuevo = 'rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white';
+const enlaceEscritorio = (activo: boolean) =>
+  `inline-flex min-h-[44px] items-center gap-1 px-1 text-sm lg:text-base transition-colors duration-150 ${
+    activo ? 'font-semibold text-[#FCA929]' : 'text-white/80 hover:text-white'
+  }`;
+const enlaceMovil = (activo: boolean) =>
+  `flex min-h-[48px] w-full items-center gap-2 text-left text-base transition-colors duration-150 ${
+    activo ? 'font-semibold text-[#FCA929]' : 'text-white/85 hover:text-white'
+  }`;
+const botonIcono =
+  'relative inline-flex h-11 w-11 items-center justify-center rounded-xl text-white transition-colors duration-150 hover:bg-white/[0.06] hover:text-[#FCA929]';
+
+function Contador({ n }: { n: number }) {
+  if (n <= 0) return null;
+  return (
+    <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#FA7B21] px-1 text-[11px] font-semibold text-white">
+      {n}
+    </span>
+  );
+}
+
 export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount, currentPage }: HeaderMainProps) {
   const { isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isProgramasOpen, setIsProgramasOpen] = useState(false);
-  const [isProgramasDesktopOpen, setIsProgramasDesktopOpen] = useState(false);
-  const [closeTimeout, setCloseTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [menuMovil, setMenuMovil] = useState(false);
+  const [programasMovil, setProgramasMovil] = useState(false);
+  const [programasEscritorio, setProgramasEscritorio] = useState(false);
+  const cierre = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const alDesplazar = () => setIsScrolled(window.scrollY > 20);
+    alDesplazar();
+    window.addEventListener('scroll', alDesplazar, { passive: true });
+    return () => window.removeEventListener('scroll', alDesplazar);
   }, []);
 
-  // Limpiar timeout al desmontar
-  useEffect(() => {
-    return () => {
-      if (closeTimeout) {
-        clearTimeout(closeTimeout);
-      }
-    };
-  }, [closeTimeout]);
+  useEffect(() => () => { if (cierre.current) clearTimeout(cierre.current); }, []);
 
-  const handleMouseEnterProgramas = () => {
-    if (closeTimeout) {
-      clearTimeout(closeTimeout);
-      setCloseTimeout(null);
-    }
-    setIsProgramasDesktopOpen(true);
+  const abrirProgramas = () => {
+    if (cierre.current) clearTimeout(cierre.current);
+    setProgramasEscritorio(true);
+  };
+  const cerrarProgramas = () => {
+    cierre.current = setTimeout(() => setProgramasEscritorio(false), 200);
+  };
+  const cerrarTodo = () => {
+    setMenuMovil(false);
+    setProgramasMovil(false);
+    setProgramasEscritorio(false);
   };
 
-  const handleMouseLeaveProgramas = () => {
-    const timeout = setTimeout(() => {
-      setIsProgramasDesktopOpen(false);
-    }, 200);
-    setCloseTimeout(timeout);
-  };
-
-  // --- LÓGICA DE NAVEGACIÓN UNIFICADA ---
-  const handleNavigateToSection = (sectionId: string) => {
-    // 1. Cerrar menús visualmente primero (UX más rápida)
-    setIsMobileMenuOpen(false);
-    setIsProgramasOpen(false);
-    setIsProgramasDesktopOpen(false);
-
-    // 2. Ejecutar la navegación
-    onNavigate('home', sectionId);
-  };
-
-  // Estilos comunes para links (para asegurar consistencia visual)
-  const linkStyles = (active?: boolean) =>
-    active
-      ? "text-[#FA7B21] font-semibold transition-colors text-sm md:text-sm lg:text-base"
-      : "text-white/80 hover:text-[#FA7B21] transition-colors text-sm md:text-sm lg:text-base";
+  const enProgramas = PAGINAS_PROGRAMAS.includes(currentPage ?? '');
+  const cuenta = isAuthenticated ? 'perfil' : 'inicio-sesion';
+  const textoCuenta = isAuthenticated ? 'Mi perfil' : 'Acceso';
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 transition-all duration-500"
-      style={{
-        zIndex: 9999,
-        background: isScrolled
-          ? 'linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.80))'
-          : 'linear-gradient(to bottom, rgba(250, 123, 33, 0.12), rgba(252, 169, 41, 0.08), rgba(0, 0, 0, 0.25))',
-        boxShadow: isScrolled
-          ? '0 10px 40px rgba(250, 123, 33, 0.25), 0 0 80px rgba(250, 123, 33, 0.1)'
-          : '0 8px 32px rgba(250, 123, 33, 0.15), 0 0 60px rgba(250, 123, 33, 0.05)',
-        borderBottom: isScrolled
-          ? '1px solid rgba(250, 123, 33, 0.3)'
-          : '1px solid rgba(250, 123, 33, 0.15)'
-      }}
+      className={`fixed inset-x-0 top-0 border-b transition-colors duration-300 ${
+        isScrolled || menuMovil ? 'border-white/10 bg-black/90 backdrop-blur-xl' : 'border-transparent bg-gradient-to-b from-black/70 to-transparent'
+      }`}
+      style={{ zIndex: 9999 }}
     >
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-          {/* Logo */}
-          <button
-            onClick={() => onNavigate('home')}
-            className="flex items-center gap-2 sm:gap-3 group"
-            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+        <div className="flex h-16 items-center justify-between sm:h-20">
+          <a
+            href="/"
+            onClick={(e) => clicInterno(e, () => { cerrarTodo(); onNavigate('home'); })}
+            className="flex min-h-[44px] items-center"
+            aria-label="Team Wolf × JMA, inicio"
           >
             <img
               src="/marca/logo-completo-oscuro-800.png"
               alt="Team Wolf, centro de entrenamiento × JMA"
               width={800}
               height={258}
-              className="h-9 sm:h-11 w-auto transition-opacity duration-150 group-hover:opacity-90"
+              className="h-9 w-auto sm:h-11"
             />
-          </button>
+          </a>
 
-          {/* ========================================== */}
-          {/* DESKTOP NAVIGATION               */}
-          {/* ========================================== */}
-          <nav className="hidden md:flex items-center gap-4 md:gap-5 lg:gap-6">
-
-            {/* 1. Programas (Dropdown) */}
-            <div
-              className="relative programas-dropdown"
-              onMouseEnter={handleMouseEnterProgramas}
-              onMouseLeave={handleMouseLeaveProgramas}
-            >
-              <button className={`flex items-center gap-1 ${linkStyles(currentPage === 'leadership' || currentPage === 'home' || currentPage === 'om-yoga')}`}>
+          {/* Escritorio */}
+          <nav className="hidden items-center gap-4 md:flex lg:gap-6" aria-label="Principal">
+            <div className="relative" onMouseEnter={abrirProgramas} onMouseLeave={cerrarProgramas}>
+              <button
+                type="button"
+                onClick={() => setProgramasEscritorio((v) => !v)}
+                aria-expanded={programasEscritorio}
+                className={enlaceEscritorio(enProgramas)}
+              >
                 Programas
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasDesktopOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${programasEscritorio ? 'rotate-180' : ''}`} />
               </button>
 
-              {isProgramasDesktopOpen && (
-                <div className="absolute left-0 top-full mt-2 w-56 bg-black/95 rounded-lg border border-[#FA7B21]/30 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="py-2">
-                    <button
-                      onClick={() => handleNavigateToSection('programas')}
-                      className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors"
+              {programasEscritorio && (
+                <div className="absolute left-0 top-full mt-1 w-60 overflow-hidden rounded-2xl border border-white/10 bg-zinc-950/95 py-2 shadow-xl shadow-black/50 backdrop-blur-xl">
+                  {PROGRAMAS.map((p) => (
+                    <EnlaceInterno
+                      key={p.texto}
+                      page={p.page}
+                      section={p.section}
+                      onNavigate={onNavigate}
+                      alNavegar={cerrarTodo}
+                      className="flex min-h-[44px] items-center justify-between px-4 text-sm text-white/80 transition-colors duration-150 hover:bg-white/[0.05] hover:text-white"
                     >
-                      Basic Program
-                    </button>
-                    <button
-                      onClick={() => {
-                        onNavigate('leadership');
-                        setIsProgramasDesktopOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors"
-                    >
-                      Leadership Wolf
-                    </button>
-                    <button
-                      onClick={() => {
-                        onNavigate('clase-prueba');
-                        setIsProgramasDesktopOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors"
-                    >
-                      Clase de prueba
-                    </button>
-                    <button
-                      onClick={() => {
-                        onNavigate('om-yoga');
-                        setIsProgramasDesktopOpen(false);
-                      }}
-                      className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors flex items-center justify-between"
-                    >
-                      OmYoga
-                      <span className="rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Nuevo</span>
-                    </button>
-                  </div>
+                      {p.texto}
+                      {p.nuevo && <span className={insigniaNuevo}>Nuevo</span>}
+                    </EnlaceInterno>
+                  ))}
                 </div>
               )}
             </div>
 
-            {/* 2. Tienda */}
-            <button onClick={() => handleNavigateToSection('tienda')} className={linkStyles(currentPage === 'tienda')}>
+            <EnlaceInterno page="tienda" onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceEscritorio(currentPage === 'tienda')}>
               Tienda
-            </button>
-
-            {/* 3. Nosotros */}
-            <button onClick={() => handleNavigateToSection('nosotros')} className={linkStyles()}>
+            </EnlaceInterno>
+            <EnlaceInterno page="home" section="nosotros" onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceEscritorio(false)}>
               Nosotros
-            </button>
-
-            {/* 4. Graduaciones */}
-            <button onClick={() => onNavigate('graduacion')} className={linkStyles(currentPage === 'graduacion')}>
+            </EnlaceInterno>
+            <EnlaceInterno page="graduacion" onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceEscritorio(currentPage === 'graduacion')}>
               Graduaciones
-            </button>
+            </EnlaceInterno>
           </nav>
 
-          {/* Desktop CTA Buttons (Carrito, Perfil, Matricular) */}
-          <div className="hidden md:flex items-center gap-3">
-            <Button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCartClick(); }}
-              variant="ghost"
-              size="icon"
-              aria-label="Carrito de compras"
-              className="relative text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
-            >
+          <div className="hidden items-center gap-2 md:flex lg:gap-3">
+            <button type="button" onClick={onCartClick} aria-label="Carrito de compras" className={botonIcono}>
               <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#FA7B21] text-white text-xs">
-                  {cartItemsCount}
-                </Badge>
-              )}
-            </Button>
-
-            <Button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion');
-              }}
-              variant="ghost"
-              className={`${linkStyles(currentPage === 'perfil')} flex items-center`}
-            >
-              <User className="h-5 w-5 mr-2" />
-              {isAuthenticated ? 'Mi Perfil' : 'Acceso'}
-            </Button>
-
-            <Button
-              type="button"
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onOpenMatricula(); }}
-              className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 text-sm lg:text-base active:scale-95"
-            >
+              <Contador n={cartItemsCount} />
+            </button>
+            <EnlaceInterno page={cuenta} onNavigate={onNavigate} className={enlaceEscritorio(currentPage === 'perfil')}>
+              <User className="mr-1 h-5 w-5" />
+              {textoCuenta}
+            </EnlaceInterno>
+            <button type="button" onClick={() => onOpenMatricula()} className={ui.btnPrimarySm}>
               Matricular
-            </Button>
+            </button>
           </div>
 
-          {/* ========================================== */}
-          {/* MOBILE MENU BUTTONS              */}
-          {/* ========================================== */}
-          <div className="flex md:hidden items-center gap-2">
-            <Button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onCartClick(); }}
-              variant="ghost"
-              size="icon"
-              aria-label="Carrito de compras"
-              className="relative text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            >
+          {/* Celular */}
+          <div className="flex items-center gap-1 md:hidden">
+            <button type="button" onClick={onCartClick} aria-label="Carrito de compras" className={botonIcono}>
               <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#FA7B21] text-white text-xs">
-                  {cartItemsCount}
-                </Badge>
-              )}
-            </Button>
-
-            <Button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMobileMenuOpen(!isMobileMenuOpen); }}
-              variant="ghost"
-              size="icon"
-              aria-label={isMobileMenuOpen ? 'Cerrar menu' : 'Abrir menu'}
-              className="text-white hover:text-[#FCA929] hover:bg-[#FA7B21]/10"
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              <Contador n={cartItemsCount} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setMenuMovil((v) => !v)}
+              aria-label={menuMovil ? 'Cerrar menú' : 'Abrir menú'}
+              aria-expanded={menuMovil}
+              className={botonIcono}
             >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+              {menuMovil ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ========================================== */}
-      {/* MOBILE MENU CONTENT              */}
-      {/* ========================================== */}
-      {isMobileMenuOpen && (
-        <div
-          className="md:hidden border-t border-[#FA7B21]/30 animate-in slide-in-from-top-4 duration-300"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.98))',
-            boxShadow: '0 20px 50px rgba(250, 123, 33, 0.2), inset 0 1px 0 rgba(250, 123, 33, 0.1)'
-          }}
-        >
-          <nav className="container mx-auto px-4 py-6 flex flex-col gap-4">
-
-            {/* 1. Programas (Dropdown Mobile) */}
-            <div>
-              <button
-                onClick={() => setIsProgramasOpen(!isProgramasOpen)}
-                className={`flex items-center justify-between w-full transition-colors text-left py-2 text-base ${currentPage === 'leadership' || currentPage === 'home' || currentPage === 'om-yoga' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
-                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-              >
-                Programas
-                <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isProgramasOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isProgramasOpen && (
-                <div className="pl-4 mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <button
-                    onClick={() => handleNavigateToSection('programas')}
-                    className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
-                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-                  >
-                    {/* CORREGIDO: Ahora coincide con Desktop */}
-                    Basic Program
-                  </button>
-                  <button
-                    onClick={() => {
-                      onNavigate('leadership');
-                      setIsMobileMenuOpen(false);
-                      setIsProgramasOpen(false);
-                    }}
-                    className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
-                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-                  >
-                    Leadership Wolf
-                  </button>
-                  <button
-                    onClick={() => {
-                      onNavigate('clase-prueba');
-                      setIsMobileMenuOpen(false);
-                      setIsProgramasOpen(false);
-                    }}
-                    className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
-                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-                  >
-                    Clase de prueba
-                  </button>
-                  <button
-                    onClick={() => {
-                      onNavigate('om-yoga');
-                      setIsMobileMenuOpen(false);
-                      setIsProgramasOpen(false);
-                    }}
-                    className="flex w-full items-center gap-2 text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
-                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-                  >
-                    OmYoga
-                    <span className="rounded-full bg-[#FA7B21] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">Nuevo</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 2. Tienda */}
+      {menuMovil && (
+        <div className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-white/10 bg-black/95 md:hidden">
+          <nav className="container mx-auto flex flex-col px-4 py-4" aria-label="Principal">
             <button
-              onClick={() => handleNavigateToSection('tienda')}
-              className={`transition-colors text-left py-2 text-base ${currentPage === 'tienda' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              type="button"
+              onClick={() => setProgramasMovil((v) => !v)}
+              aria-expanded={programasMovil}
+              className={`${enlaceMovil(enProgramas)} justify-between`}
             >
+              Programas
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${programasMovil ? 'rotate-180' : ''}`} />
+            </button>
+            {programasMovil && (
+              <div className="mb-2 border-l border-white/10 pl-4">
+                {PROGRAMAS.map((p) => (
+                  <EnlaceInterno
+                    key={p.texto}
+                    page={p.page}
+                    section={p.section}
+                    onNavigate={onNavigate}
+                    alNavegar={cerrarTodo}
+                    className="flex min-h-[44px] items-center gap-2 text-[15px] text-white/70 transition-colors duration-150 hover:text-white"
+                  >
+                    {p.texto}
+                    {p.nuevo && <span className={insigniaNuevo}>Nuevo</span>}
+                  </EnlaceInterno>
+                ))}
+              </div>
+            )}
+            <EnlaceInterno page="tienda" onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceMovil(currentPage === 'tienda')}>
               Tienda
-            </button>
-
-            {/* 3. Nosotros */}
-            <button
-              onClick={() => handleNavigateToSection('nosotros')}
-              className="text-white/80 hover:text-[#FA7B21] transition-colors text-left py-2 text-base"
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            >
+            </EnlaceInterno>
+            <EnlaceInterno page="home" section="nosotros" onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceMovil(false)}>
               Nosotros
-            </button>
-
-            {/* 4. Graduaciones */}
-            <button
-              onClick={() => {
-                onNavigate('graduacion');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`transition-colors text-left py-2 text-base ${currentPage === 'graduacion' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            >
+            </EnlaceInterno>
+            <EnlaceInterno page="graduacion" onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceMovil(currentPage === 'graduacion')}>
               Graduaciones
-            </button>
-
-            {/* Botón de perfil/login móvil */}
-            <button
-              onClick={() => {
-                onNavigate(isAuthenticated ? 'perfil' : 'inicio-sesion');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`transition-colors text-left py-2 text-base flex items-center gap-2 ${currentPage === 'perfil' ? 'text-[#FA7B21] font-semibold' : 'text-white/80 hover:text-[#FA7B21]'}`}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
-            >
+            </EnlaceInterno>
+            <EnlaceInterno page={cuenta} onNavigate={onNavigate} alNavegar={cerrarTodo} className={enlaceMovil(currentPage === 'perfil')}>
               <User className="h-5 w-5" />
-              {isAuthenticated ? 'Mi Perfil' : 'Acceso'}
-            </button>
+              {textoCuenta}
+            </EnlaceInterno>
 
-            <div className="pt-4 border-t border-white/10">
-              <Button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onOpenMatricula();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 py-3 active:scale-95"
-                style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            <div className="mt-3 grid gap-2 border-t border-white/10 pt-4">
+              <a
+                href={rutaDe('clase-prueba')}
+                onClick={(e) => clicInterno(e, () => { cerrarTodo(); onNavigate('clase-prueba'); })}
+                className={ui.btnPrimary}
               >
-                Matricular ahora
-              </Button>
+                Agendar clase de prueba
+              </a>
+              <button type="button" onClick={() => { cerrarTodo(); onOpenMatricula(); }} className={ui.btnSecondary}>
+                Matricular
+              </button>
             </div>
           </nav>
         </div>

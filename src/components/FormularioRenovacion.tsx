@@ -34,9 +34,9 @@ function TarjetaPlan({ plan, onElegir }: { plan: ItemCatalogo; onElegir: () => v
   };
   const resaltado = !!info.destacado;
   return (
-    <div className={`${cx.card} relative flex flex-col p-5 ${resaltado ? 'border-[#F47B20]' : ''}`}>
+    <div className={`${cx.card} relative flex flex-col p-5 ${resaltado ? 'border-[#FA7B21]' : ''}`}>
       {info.destacado && (
-        <span className={`${cx.display} absolute -top-3 left-5 rounded-full bg-[#F47B20] px-3 py-1 text-[11px] uppercase tracking-wider text-[#231F20]`}>
+        <span className={`${cx.display} absolute -top-3 left-5 rounded-full bg-[#FA7B21] px-3 py-1 text-[11px] uppercase tracking-wider text-[#231F20]`}>
           {info.destacado}
         </span>
       )}
@@ -47,7 +47,7 @@ function TarjetaPlan({ plan, onElegir }: { plan: ItemCatalogo; onElegir: () => v
         <ul className="mt-4 space-y-2">
           {info.beneficios.map((b) => (
             <li key={b} className="flex items-start gap-2.5 text-[14px] text-white/75">
-              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#F47B20]" />
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA7B21]" />
               {b}
             </li>
           ))}

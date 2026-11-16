@@ -1,206 +1,135 @@
 import { Facebook, Instagram, Mail, MapPin, Phone, Clock, CalendarCheck } from 'lucide-react';
-import { Button } from './ui/button';
 import { TELEFONO, TELEFONO_VISIBLE, CORREO, DIRECCION, DISTRITO } from '../config/contacto';
+import { EnlaceInterno } from './EnlaceInterno';
+import { HORARIO } from '../config/horario';
+import { ui } from '../styles/marca';
 
 interface FooterMainProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, sectionId?: string) => void;
   onOpenMatricula: () => void;
   /** Acción principal del pie: la clase de prueba de taekwondo, o ninguna (p. ej. en OmYoga, que es para adultos) */
   accion?: 'clase-prueba' | 'ninguna';
 }
 
-export function FooterMain({ onNavigate, onOpenMatricula, accion = 'clase-prueba' }: FooterMainProps) {
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    element?.scrollIntoView({ behavior: 'smooth' });
-  };
+const ENLACES: { page: string; section?: string; texto: string }[] = [
+  { page: 'home', texto: 'Inicio' },
+  { page: 'home', section: 'programas', texto: 'Programas' },
+  { page: 'clase-prueba', texto: 'Clase de prueba' },
+  { page: 'leadership', texto: 'Leadership' },
+  { page: 'graduacion', texto: 'Graduaciones' },
+  { page: 'tienda', texto: 'Tienda' },
+  { page: 'renovacion', texto: 'Renovar membresía' },
+];
 
+const redes = 'flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 text-white/60 transition-colors duration-150 hover:border-white/25 hover:text-[#FCA929]';
+const tituloColumna = 'mb-4 text-sm font-semibold uppercase tracking-[0.14em] text-white/45';
+const enlaceLista = `inline-flex min-h-[40px] items-center text-sm ${ui.enlace}`;
+
+export function FooterMain({ onNavigate, onOpenMatricula, accion = 'clase-prueba' }: FooterMainProps) {
   return (
-    <footer id="contacto" className="bg-black border-t border-white/10">
+    <footer id="contacto" className="border-t border-white/10 bg-black">
       <div className="container mx-auto px-4 py-12 sm:py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-12 mb-12">
-          {/* Logo and Description */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-4">
-              <img
-                src="/marca/logo-completo-oscuro-800.png"
-                alt="Team Wolf, centro de entrenamiento × JMA"
-                width={800}
-                height={258}
-                loading="lazy"
-                className="h-14 w-auto"
-              />
-            </div>
-            <p className="text-white/60 text-sm mb-4">
-              Formando líderes a través de las artes marciales. Disciplina, respeto y crecimiento personal.
+        <div className="mb-12 grid gap-10 sm:gap-12 md:grid-cols-2 lg:grid-cols-4">
+          <div>
+            <img
+              src="/marca/logo-completo-oscuro-800.png"
+              alt="Team Wolf, centro de entrenamiento × JMA"
+              width={800}
+              height={258}
+              loading="lazy"
+              className="mb-4 h-14 w-auto"
+            />
+            <p className="mb-5 text-sm text-white/60">
+              Taekwondo y formación para niños en {DISTRITO}. Disciplina, respeto y confianza en cada clase.
             </p>
-            {/* Social Media */}
-            <div className="flex gap-3">
-              <a
-                href="https://www.facebook.com/profile.php?id=100077646492633"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center text-white/60 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-all"
-              >
-                <Facebook className="w-5 h-5" />
+            <div className="flex gap-2">
+              <a href="https://www.facebook.com/profile.php?id=100077646492633" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className={redes}>
+                <Facebook className="h-5 w-5" />
               </a>
-              <a
-                href="https://www.instagram.com/amas_teamwolf/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center text-white/60 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-all"
-              >
-                <Instagram className="w-5 h-5" />
+              <a href="https://www.instagram.com/amas_teamwolf/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className={redes}>
+                <Instagram className="h-5 w-5" />
               </a>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-white mb-4 text-lg">Enlaces rápidos</h3>
-            <ul className="space-y-2">
+          <nav aria-label="Enlaces del pie">
+            <h3 className={tituloColumna}>Enlaces</h3>
+            <ul>
+              {ENLACES.map((e) => (
+                <li key={e.texto}>
+                  <EnlaceInterno page={e.page} section={e.section} onNavigate={onNavigate} className={enlaceLista}>
+                    {e.texto}
+                  </EnlaceInterno>
+                </li>
+              ))}
               <li>
-                <button
-                  onClick={() => scrollToSection('hero')}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                >
-                  Inicio
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection('programas')}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                >
-                  Programas
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('leadership')}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                >
-                  Leadership
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('graduacion')}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                >
-                  Graduaciones
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => scrollToSection('tienda')}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                >
-                  Tienda
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onOpenMatricula();
-                  }}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                  style={{
-                    touchAction: 'manipulation',
-                    WebkitTapHighlightColor: 'transparent'
-                  }}
-                >
+                <button type="button" onClick={() => onOpenMatricula()} className={enlaceLista}>
                   Matrícula
                 </button>
               </li>
-              <li>
-                <button
-                  onClick={() => onNavigate('renovacion')}
-                  className="text-white/60 hover:text-[#FCA929] transition-colors text-sm"
-                >
-                  Renovar Membresía
-                </button>
-              </li>
             </ul>
-          </div>
+          </nav>
 
-          {/* Contact Info */}
           <div>
-            <h3 className="text-white mb-4 text-lg">Contacto</h3>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-2 text-white/60 text-sm">
-                <MapPin className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
+            <h3 className={tituloColumna}>Contacto</h3>
+            <ul className="space-y-3 text-sm text-white/60">
+              <li className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#FCA929]" />
                 <span>{DIRECCION}, {DISTRITO}, Lima, Perú</span>
               </li>
-              <li className="flex items-start gap-2 text-white/60 text-sm">
-                <Phone className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <a href={`tel:${TELEFONO}`} className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Telefono" data-umami-event-ubicacion="footer">
+              <li className="flex items-start gap-2">
+                <Phone className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#FCA929]" />
+                <a href={`tel:${TELEFONO}`} className={ui.enlace} data-umami-event="Click Telefono" data-umami-event-ubicacion="footer">
                   {TELEFONO_VISIBLE}
                 </a>
               </li>
-              <li className="flex items-start gap-2 text-white/60 text-sm">
-                <Mail className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <a href={`mailto:${CORREO}`} className="hover:text-[#FCA929] transition-colors" data-umami-event="Click Email" data-umami-event-ubicacion="footer">
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#FCA929]" />
+                <a href={`mailto:${CORREO}`} className={`${ui.enlace} break-all`} data-umami-event="Click Email" data-umami-event-ubicacion="footer">
                   {CORREO}
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Schedule */}
           <div>
-            <h3 className="text-white mb-4 text-lg">Horarios</h3>
-            <ul className="space-y-2 text-white/60 text-sm">
-              <li className="flex items-start gap-2">
-                <Clock className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <div>
-                  <p>Lunes a Viernes:</p>
-                  <p className="text-white">3:00 PM - 8:30 PM</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Clock className="w-5 h-5 flex-shrink-0 mt-0.5 text-[#FCA929]" />
-                <div>
-                  <p>Sábados:</p>
-                  <p className="text-white">9:00 AM - 1:00 PM</p>
-                </div>
-              </li>
+            <h3 className={tituloColumna}>Horarios</h3>
+            <ul className="space-y-3 text-sm text-white/60">
+              {HORARIO.map((h) => (
+                <li key={h.dias} className="flex items-start gap-2">
+                  <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#FCA929]" />
+                  <div>
+                    <p>{h.dias}</p>
+                    <p className="text-white">{h.horas}</p>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
         </div>
 
-        {/* Acción principal: agendar la clase de prueba */}
-        {accion === 'clase-prueba' && <div className="mb-8">
-          <Button
-            onClick={() => onNavigate('clase-prueba')}
-            className="w-full sm:w-auto mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-shadow duration-150 px-8 py-6 text-base sm:text-lg"
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent'
-            }}
-          >
-            <CalendarCheck className="w-5 h-5" />
-            Agendar clase de prueba
-          </Button>
-        </div>}
+        {accion === 'clase-prueba' && (
+          <div className="mb-10 flex justify-center">
+            <EnlaceInterno
+              page="clase-prueba"
+              onNavigate={onNavigate}
+              className={`${ui.btnPrimary} w-full sm:w-auto`}
+              data-umami-event="Click Clase de prueba"
+              data-umami-event-ubicacion="footer"
+            >
+              <CalendarCheck className="h-5 w-5" />
+              Agendar clase de prueba
+            </EnlaceInterno>
+          </div>
+        )}
 
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
-          <p className="text-white/40 text-sm">
+        <div className="flex flex-col items-center justify-center gap-2 border-t border-white/10 pt-8 text-center sm:flex-row sm:gap-4">
+          <p className="text-sm text-white/40">
             © {new Date().getFullYear()} Team Wolf × JMA. Todos los derechos reservados.
           </p>
-          <a
-            href="/terminos"
-            onClick={(e) => {
-              e.preventDefault();
-              onNavigate('terminos');
-            }}
-            className="text-white/60 text-sm underline underline-offset-4 hover:text-[#FCA929] transition-colors py-2"
-          >
+          <EnlaceInterno page="terminos" onNavigate={onNavigate} className={`py-2 text-sm underline underline-offset-4 ${ui.enlace}`}>
             Términos y condiciones
-          </a>
+          </EnlaceInterno>
         </div>
       </div>
     </footer>

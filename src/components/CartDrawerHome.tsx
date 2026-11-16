@@ -93,7 +93,7 @@ export function CartDrawerHome({
                 {items.map((item, idx) => (
                   <div
                     key={`${item.item_id}-${item.variante}`}
-                    className="bg-zinc-800/50 rounded-lg p-4 border border-white/10 hover:border-[#FA7B21]/30 transition-all duration-200"
+                    className="bg-zinc-800/50 rounded-lg p-4 border border-white/10 hover:border-[#FA7B21]/30 transition-colors duration-200"
                   >
                     <div className="flex gap-4">
                       <div className="w-20 h-20 rounded-lg overflow-hidden bg-zinc-800 flex-shrink-0">
@@ -171,7 +171,7 @@ export function CartDrawerHome({
               <Button
                 onClick={handleCheckout}
                 disabled={total == null}
-                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-base shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 active:scale-95"
+                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white py-6 text-base shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-[color,background-color,border-color,transform,box-shadow] duration-300 active:scale-95"
               >
                 Proceder al pago
               </Button>

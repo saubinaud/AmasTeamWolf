@@ -48,7 +48,7 @@ function resaltarClausula(t: string, n: number) {
   const marca = `cláusula ${n}`;
   const i = t.indexOf(marca);
   if (i < 0) return t;
-  return <>{t.slice(0, i)}<strong className="text-[#F47B20]">{marca}</strong>{t.slice(i + marca.length)}</>;
+  return <>{t.slice(0, i)}<strong className="text-[#FA7B21]">{marca}</strong>{t.slice(i + marca.length)}</>;
 }
 
 const unir = (...partes: (string | false | null | undefined)[]) => partes.filter(Boolean).join(' · ');
@@ -148,7 +148,7 @@ export function ContratoFirma({ datos, onFirmaCompleta, onAutorizaImagen, notaFi
         <ul className="space-y-2.5">
           {texto.resumen.map((r) => (
             <li key={r.clausula} className={`${cx.textoSec} flex gap-2.5 text-[15px] leading-relaxed`}>
-              <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#F47B20]" />
+              <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA7B21]" />
               <span>{r.texto} <span className={`${cx.textoApagado} whitespace-nowrap text-[12px]`}>Cláusula {r.clausula}</span></span>
             </li>
           ))}

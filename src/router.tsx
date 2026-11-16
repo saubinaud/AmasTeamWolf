@@ -35,7 +35,7 @@ class LazyErrorBoundary extends React.Component<
             <p className="text-white/50 text-sm mb-6">Revisa tu conexión a internet</p>
             <button
               onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
-              className="px-6 py-3 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-xl active:scale-95 transition-all"
+              className={ui.btnPrimary}
             >
               Reintentar
             </button>
@@ -88,6 +88,7 @@ const PadronPage = lazy(() => import('./components/PadronPage').then(m => ({ def
 
 // SEO configs
 import { seoConfigs } from './components/SEO';
+import { ui } from './styles/marca';
 
 // Loading section (inline sections within leadership page)
 function LoadingSection() {
@@ -119,14 +120,13 @@ function HomeRoute() {
 
 function LeadershipRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
+  // Sin código, onOpenMatricula lleva al programa de 3 meses: aquí va a Leadership
+  const inscribir = () => onOpenMatricula('leadership');
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className={`relative overflow-hidden ${ui.pagina}`}>
       <SEO {...seoConfigs.leadership} />
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
-        <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at 20% 50%, rgba(250, 123, 33, 0.15) 0%, transparent 50%)' }} />
-        <div className="absolute inset-0 opacity-20" style={{ background: 'radial-gradient(circle at 80% 50%, rgba(252, 169, 41, 0.2) 0%, transparent 60%)' }} />
-        <div className="absolute inset-0 opacity-5" style={{ backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`, backgroundSize: '100px 100px' }} />
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-[#FA7B21]/15 blur-3xl" />
       </div>
       <div className="relative z-10">
         <LazyErrorBoundary>
@@ -139,14 +139,14 @@ function LeadershipRoute() {
               currentPage="leadership"
             />
             <NetworkStatusIndicator />
-            <HeroLeadershipFinal />
+            <HeroLeadershipFinal onEnrollClick={inscribir} />
             <Suspense fallback={<LoadingSection />}>
               <LeadershipTimeline />
             </Suspense>
             <Suspense fallback={<LoadingSection />}>
               <ImplementsSection />
             </Suspense>
-            <LeadershipProgramCard onEnrollClick={onOpenMatricula} />
+            <LeadershipProgramCard onEnrollClick={inscribir} />
             <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
           </Suspense>
         </LazyErrorBoundary>

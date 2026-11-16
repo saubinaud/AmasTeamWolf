@@ -233,7 +233,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
         {canSubmitVideo && !showEnviar && !showCodigo && (
           <button
             onClick={() => setShowEnviar(true)}
-            className="h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-[#FA7B21]/20"
+            className="h-14 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-[color,background-color,border-color,transform,box-shadow] active:scale-[0.98] shadow-lg shadow-[#FA7B21]/20"
           >
             <Send className="w-5 h-5" />
             Enviar mi video
@@ -243,7 +243,7 @@ export function ClaseDetalle({ claseId, rutaId, totalClases, onBack, onRefresh }
         {canUseCodigo && !showEnviar && !showCodigo && (
           <button
             onClick={() => setShowCodigo(true)}
-            className="h-14 bg-zinc-800/80 hover:bg-zinc-700 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] border border-white/5"
+            className="h-14 bg-zinc-800/80 hover:bg-zinc-700 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 transition-[color,background-color,border-color,transform] active:scale-[0.98] border border-white/5"
           >
             <Key className="w-5 h-5 text-[#FCA929]" />
             Tengo un codigo

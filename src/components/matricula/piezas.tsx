@@ -40,7 +40,7 @@ export function Portada({ etiqueta, titulo, bajada, precio, precioAntes, notaPre
 }) {
   return (
     <section className="pt-7 pb-5">
-      <p className={`${cx.display} text-[12px] uppercase tracking-[0.14em] text-[#F47B20]`}>{etiqueta}</p>
+      <p className={`${cx.display} text-[12px] uppercase tracking-[0.14em] text-[#FA7B21]`}>{etiqueta}</p>
       <h1 className={`${cx.h1} mt-2`}>{titulo}</h1>
       {bajada && <p className={`${cx.textoSec} mt-3 text-[16px] leading-relaxed`}>{bajada}</p>}
       {precio != null && (
@@ -57,7 +57,7 @@ export function Portada({ etiqueta, titulo, bajada, precio, precioAntes, notaPre
         <ul className="mt-5 grid gap-2 sm:grid-cols-2">
           {incluye.map((t) => (
             <li key={t} className="flex items-start gap-2.5 text-[15px] text-white/80">
-              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#F47B20]" />
+              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA7B21]" />
               {t}
             </li>
           ))}
@@ -78,7 +78,7 @@ export function Seccion({ id, numero, titulo, descripcion, children }: {
     <section id={id} className={`${cx.card} ${cx.cardPad} scroll-mt-24`}>
       <div className="mb-5 flex items-start gap-3">
         {numero != null && (
-          <span className={`${cx.display} flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F47B20] text-[15px] text-[#231F20]`}>
+          <span className={`${cx.display} flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#FA7B21] text-[15px] text-[#231F20]`}>
             {numero}
           </span>
         )}
@@ -244,7 +244,7 @@ export function Casilla({ marcada, onCambio, titulo, detalle, derecha }: {
       onClick={() => onCambio(!marcada)}
       className={`flex min-h-[56px] w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors duration-100 ${marcada ? cx.opcionOn : cx.opcionOff}`}
     >
-      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ${marcada ? 'border-[#F47B20] bg-[#F47B20]' : 'border-white/30'}`}>
+      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 ${marcada ? 'border-[#FA7B21] bg-[#FA7B21]' : 'border-white/30'}`}>
         {marcada && (
           <svg viewBox="0 0 16 16" className="h-4 w-4 text-[#231F20]" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M3 8.5l3.2 3L13 4.5" /></svg>
         )}
@@ -280,7 +280,7 @@ export function Exito({ titulo, texto, total, onPagar, onInicio }: {
       <p className={`${cx.textoSec} mx-auto mt-3 max-w-md text-[16px] leading-relaxed`}>{texto}</p>
       <div className={`${cx.card} mx-auto mt-8 max-w-sm px-6 py-5`}>
         <p className="text-[13px] font-bold uppercase tracking-wider text-white/50">Total a pagar</p>
-        <p className={`${cx.cifra} mt-1 text-[36px] text-[#F47B20]`}>{soles(total)}</p>
+        <p className={`${cx.cifra} mt-1 text-[36px] text-[#FA7B21]`}>{soles(total)}</p>
       </div>
       <div className="mx-auto mt-8 flex max-w-sm flex-col gap-3">
         <button type="button" onClick={onPagar} className={cx.btnPrimario}>Ver cómo pagar</button>

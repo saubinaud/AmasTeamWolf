@@ -1,128 +1,56 @@
 import { useMemo, useState } from 'react';
-import { Button } from './ui/button';
 import { ArrowRight } from 'lucide-react';
 import { ProductDetailDialog } from './ProductDetailDialog';
-import { OptimizedImage } from './OptimizedImage';
+import { TarjetaProducto } from './TarjetaProducto';
+import { EnlaceInterno } from './EnlaceInterno';
 import { toast } from 'sonner';
 import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
-import { productosTienda, tituloWeb, soles, type ItemCatalogo, fotoTarjeta } from '../utils/catalogo';
+import { productosTienda, type ItemCatalogo } from '../utils/catalogo';
 import type { ItemCarrito } from '../hooks/useCarrito';
+import { ui } from '../styles/marca';
 
 interface TiendaSectionProps {
   onAddToCart: (item: Omit<ItemCarrito, 'cantidad'>) => void;
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, sectionId?: string) => void;
 }
 
 /** Tienda en la portada: los productos marcados "También en la portada" en Space ▸ Catálogo ▸ En la web. */
 export function TiendaSection({ onAddToCart, onNavigate }: TiendaSectionProps) {
   const { items } = useCatalogoPublico();
   const destacados = useMemo(() => productosTienda(items).filter((p) => p.web?.destacado), [items]);
-  const [selectedProduct, setSelectedProduct] = useState<ItemCatalogo | null>(null);
+  const [seleccionado, setSeleccionado] = useState<ItemCatalogo | null>(null);
 
   if (destacados.length === 0) return null;
 
+  const agregar = (item: Omit<ItemCarrito, 'cantidad'>) => {
+    onAddToCart(item);
+    toast.success(`${item.nombre} añadido al carrito`);
+  };
+
   return (
-    <section id="tienda" className="py-12 sm:py-16 md:py-20 lg:py-24 bg-black relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(252, 169, 41, 0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(252, 169, 41, 0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}
-        />
+    <section id="tienda" className={`${ui.seccion} scroll-mt-20`}>
+      <div className="mx-auto mb-8 flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between md:mb-10">
+        <div>
+          <p className={ui.antetitulo}>Tienda</p>
+          <h2 className={`mt-4 ${ui.h2}`}>Uniformes e implementos</h2>
+          <p className={`mt-3 ${ui.bajada}`}>Lo que usan los alumnos en clase.</p>
+        </div>
+        <EnlaceInterno page="tienda" onNavigate={onNavigate} className={`${ui.btnGhost} self-start sm:self-auto`} data-umami-event="Click Ver Tienda" data-umami-event-ubicacion="home">
+          Ver toda la tienda <ArrowRight className="h-4 w-4" />
+        </EnlaceInterno>
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 sm:mb-16">
-          <h2 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 px-4"
-            style={{
-              background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 50%, #FA7B21 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            Tienda JMA
-          </h2>
-          <p className="text-white/70 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
-            Equípate con lo mejor. Productos de calidad para tu entrenamiento.
-          </p>
-        </div>
-
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-8 sm:mb-12">
-          {destacados.map((product) => (
-            <div
-              key={product.id}
-              onClick={() => setSelectedProduct(product)}
-              className="bg-zinc-900/50 border border-white/10 rounded-xl p-3 sm:p-4 hover:border-[#FA7B21]/50 transition-colors duration-300 cursor-pointer group"
-            >
-              <div className="aspect-square bg-zinc-800/50 rounded-lg mb-3 sm:mb-4 overflow-hidden relative group-hover:bg-zinc-800/70 transition-colors">
-                {product.web?.imagenes?.[0] && (
-                  <OptimizedImage
-                    src={fotoTarjeta(product.web)}
-                    alt={tituloWeb(product)}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                )}
-                {product.web?.etiqueta && (
-                  <div className="absolute top-2 right-2 bg-[#FA7B21] text-white text-xs px-2 py-1 rounded-full select-none pointer-events-none">
-                    {product.web.etiqueta}
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="text-white text-sm sm:text-base mb-2">{tituloWeb(product)}</h3>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[#FCA929] text-base sm:text-lg">{soles(product.precio)}</span>
-                  {(product.web?.colores?.length ?? 0) > 0 && (
-                    <div className="flex gap-1">
-                      {product.web!.colores.slice(0, 3).map((color) => (
-                        <div key={color} className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: color }} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* View All Button */}
-        <div className="text-center">
-          <Button
-            onClick={() => onNavigate('tienda')}
-            size="lg"
-            data-umami-event="Click Ver Tienda"
-            data-umami-event-ubicacion="home"
-            className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white px-8 sm:px-12 py-5 sm:py-6 text-sm sm:text-base shadow-2xl shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 group active:scale-95"
-            style={{
-              touchAction: 'manipulation',
-              WebkitTapHighlightColor: 'transparent'
-            }}
-          >
-            <span className="pointer-events-none">Ver toda la tienda</span>
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform pointer-events-none" />
-          </Button>
-        </div>
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+        {destacados.map((p) => (
+          <TarjetaProducto key={p.id} producto={p} onVer={() => setSeleccionado(p)} onAgregar={agregar} />
+        ))}
       </div>
 
-      {/* Product Detail Dialog */}
       <ProductDetailDialog
-        product={selectedProduct}
-        isOpen={!!selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        onAddToCart={(item) => {
-          onAddToCart(item);
-          toast.success(`${item.nombre} añadido al carrito`);
-        }}
+        product={seleccionado}
+        isOpen={!!seleccionado}
+        onClose={() => setSeleccionado(null)}
+        onAddToCart={agregar}
       />
     </section>
   );

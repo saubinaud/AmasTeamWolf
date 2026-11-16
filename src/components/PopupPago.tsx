@@ -161,7 +161,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
           {/* Yape */}
           <button
             onClick={() => setSelectedMethod(selectedMethod === 'yape' ? null : 'yape')}
-            className={`p-4 sm:p-6 rounded-lg border-2 transition-all duration-300 text-left ${
+            className={`p-4 sm:p-6 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] duration-300 text-left ${
               selectedMethod === 'yape'
                 ? 'border-[#FA7B21] bg-[#FA7B21]/10'
                 : 'border-white/20 hover:border-white/40 bg-zinc-800/50'
@@ -202,7 +202,7 @@ export const PopupPago = memo(function PopupPago({ isOpen, onClose, totalAmount,
           {/* Transferencia */}
           <button
             onClick={() => setSelectedMethod(selectedMethod === 'transfer' ? null : 'transfer')}
-            className={`p-4 sm:p-6 rounded-lg border-2 transition-all duration-300 text-left ${
+            className={`p-4 sm:p-6 rounded-lg border-2 transition-[color,background-color,border-color,opacity,transform] duration-300 text-left ${
               selectedMethod === 'transfer'
                 ? 'border-[#FA7B21] bg-[#FA7B21]/10'
                 : 'border-white/20 hover:border-white/40 bg-zinc-800/50'

@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react';
 import { HeaderMain } from '../HeaderMain';
 import { FooterMain } from '../FooterMain';
 import { trackEvent } from '../../utils/pixel';
+import { ui } from '../../styles/marca';
 
 import { HeroSection } from './HeroSection';
 import { ProblemasSection } from './ProblemasSection';
 import { MetodologiaSection } from './MetodologiaSection';
-import { TestimoniosSection } from './TestimoniosSection';
+import { IncluyeSection } from './IncluyeSection';
 import { GaleriaSection } from './GaleriaSection';
-import { TrustSignalsSection } from './TrustSignalsSection';
-import { ComparativaSection } from './ComparativaSection';
 import { ProcesoSection } from './ProcesoSection';
 import { FAQSection } from './FAQSection';
 import { FormularioModal } from './FormularioModal';
@@ -23,56 +22,46 @@ interface LandingConversionProps {
   cartItemsCount: number;
 }
 
+/** /clase-prueba: todo lleva a agendar la clase. */
 export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, cartItemsCount }: LandingConversionProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
-
-  const openTrialModal = () => {
-    setIsModalOpen(true);
-  };
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const abrir = () => setModalAbierto(true);
+  const irA = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    trackEvent('ViewContent', {
-      content_name: 'LandingPage',
-      content_category: 'Landing'
-    });
+    trackEvent('ViewContent', { content_name: 'LandingPage', content_category: 'Landing' });
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
-      <HeaderMain
-        onNavigate={onNavigate}
-        onOpenMatricula={onOpenMatricula}
-        onCartClick={onCartClick}
-        cartItemsCount={cartItemsCount}
-      />
+    <div className={`relative overflow-hidden ${ui.pagina}`}>
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-[#FA7B21]/15 blur-3xl" />
+      </div>
 
-      <HeroSection onOpenTrialModal={openTrialModal} onScrollToSection={scrollToSection} />
-      <ProblemasSection />
-      <MetodologiaSection onOpenTrialModal={openTrialModal} />
-      <TestimoniosSection />
-      <GaleriaSection />
-      <TrustSignalsSection />
-      <ComparativaSection />
-      <ProcesoSection onOpenTrialModal={openTrialModal} />
-      <FAQSection />
+      <div className="relative z-10">
+        <HeaderMain
+          onNavigate={onNavigate}
+          onOpenMatricula={onOpenMatricula}
+          onCartClick={onCartClick}
+          cartItemsCount={cartItemsCount}
+          currentPage="clase-prueba"
+        />
 
-      <FormularioModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
+        <HeroSection onOpenTrialModal={abrir} onScrollToSection={irA} />
+        <ProblemasSection />
+        <MetodologiaSection onOpenTrialModal={abrir} />
+        <IncluyeSection onOpenTrialModal={abrir} />
+        <GaleriaSection />
+        <ProcesoSection onOpenTrialModal={abrir} />
+        <FAQSection />
+        <CTAFinalSection onOpenTrialModal={abrir} />
 
-      <CTAFinalSection onOpenTrialModal={openTrialModal} />
+        <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} accion="ninguna" />
+      </div>
+
+      <FormularioModal isOpen={modalAbierto} onOpenChange={setModalAbierto} />
       <WhatsAppButton />
-
-      <FooterMain
-        onNavigate={onNavigate}
-        onOpenMatricula={onOpenMatricula}
-      />
     </div>
   );
 }

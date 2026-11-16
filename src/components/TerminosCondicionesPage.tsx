@@ -75,7 +75,7 @@ export function TerminosCondicionesPage({ onNavigate }: TerminosCondicionesPageP
                         </p>
                         <button
                             onClick={() => onNavigate('home')}
-                            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white rounded-lg hover:from-[#F36A15] hover:to-[#FA7B21] transition-all"
+                            className="mt-4 px-6 py-2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] text-white rounded-lg hover:from-[#F36A15] hover:to-[#FA7B21] transition-[color,background-color,border-color,opacity,transform]"
                         >
                             Aceptar y Volver
                         </button>

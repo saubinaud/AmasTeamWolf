@@ -116,7 +116,7 @@ export function InputCodigo({ onSuccess }: InputCodigoProps) {
       <button
         onClick={handleSubmit}
         disabled={loading || codigo.replace(/^WOLF-?/i, '').replace(/-/g, '').length < 4}
-        className="h-14 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
+        className="h-14 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-[color,background-color,border-color,transform,opacity] active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none"
       >
         {loading ? (
           <Loader2 className="w-5 h-5 animate-spin" />

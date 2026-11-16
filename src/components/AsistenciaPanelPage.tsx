@@ -436,12 +436,12 @@ export function AsistenciaPanelPage({ onNavigate, skipAuth = false, embedMode = 
           <div className="flex items-center gap-1">
             <span className="text-[#e8590c] text-xs font-bold mr-1">{asistencias.length} hoy</span>
             <button onClick={fetchAsistencias} aria-label="Actualizar"
-              className="p-2 text-stone-400 hover:text-stone-800 active:scale-95 transition-all">
+              className="p-2 text-stone-400 hover:text-stone-800 active:scale-95 transition-[color,background-color,border-color,transform]">
               <RefreshCw className="w-4 h-4" />
             </button>
             {!embedMode && (
               <button onClick={handleLogout} aria-label="Cerrar sesión"
-                className="p-2 text-stone-400 hover:text-red-400 active:scale-95 transition-all">
+                className="p-2 text-stone-400 hover:text-red-400 active:scale-95 transition-[color,background-color,border-color,transform]">
                 <LogOut className="w-4 h-4" />
               </button>
             )}
