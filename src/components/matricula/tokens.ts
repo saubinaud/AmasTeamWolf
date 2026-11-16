@@ -1,10 +1,12 @@
 // Tokens de los formularios públicos (matrícula, renovación, Leadership).
-// Marca JMA: naranja #F47B20, negro #231F20, Arial Black en títulos y cifras,
+// Marca: el naranja #FA7B21 de toda la web (src/styles/marca.ts), negro #231F20, Arial Black en títulos y cifras,
 // Arial en el texto. Ningún hex suelto en los componentes: todo sale de aquí.
 
+import { marca as web } from '../../styles/marca';
+
 export const marca = {
-  naranja: '#F47B20',
-  naranjaOscuro: '#D9661A',
+  naranja: web.naranja,
+  naranjaOscuro: web.naranjaOscuro,
   negro: '#231F20',
 } as const;
 
@@ -30,24 +32,24 @@ export const cx = {
   ayuda: 'text-[13px] text-white/55 mt-1.5',
   input:
     'w-full h-12 rounded-xl bg-[#2E2829] border border-white/15 px-4 text-[16px] text-white placeholder:text-white/35 ' +
-    'outline-none transition-colors duration-100 focus:border-[#F47B20]',
+    'outline-none transition-colors duration-100 focus:border-[#FA7B21]',
 
   // Opción tocable (chips, tarjetas de fecha, días)
   opcion:
     'min-h-[48px] rounded-xl border px-3 text-[15px] font-bold transition-colors duration-100 ' +
     'flex items-center justify-center text-center select-none',
   opcionOff: 'border-white/15 bg-[#2E2829] text-white/85 active:bg-white/10',
-  opcionOn: 'border-[#F47B20] bg-[#F47B20]/15 text-white',
+  opcionOn: 'border-[#FA7B21] bg-[#FA7B21]/15 text-white',
   opcionBloq: 'border-white/5 bg-transparent text-white/25 cursor-not-allowed',
 
   btnPrimario:
-    `${display} h-14 rounded-xl bg-[#F47B20] px-6 text-[17px] text-[#231F20] transition-colors duration-100 ` +
-    'active:bg-[#D9661A] hover:bg-[#FF8A30] disabled:bg-white/15 disabled:text-white/40 disabled:cursor-not-allowed ' +
+    `${display} h-14 rounded-xl bg-[#FA7B21] px-6 text-[17px] text-[#231F20] transition-colors duration-100 ` +
+    'active:bg-[#E0661A] hover:bg-[#FC8A32] disabled:bg-white/15 disabled:text-white/40 disabled:cursor-not-allowed ' +
     'flex items-center justify-center gap-2',
   btnSecundario:
     'h-12 rounded-xl border border-white/20 px-5 text-[15px] font-bold text-white transition-colors duration-100 ' +
     'hover:border-white/40 active:bg-white/10 disabled:text-white/30 disabled:border-white/10',
-  btnTexto: 'min-h-[44px] px-2 text-[14px] font-bold text-[#F47B20] underline-offset-4 hover:underline',
+  btnTexto: 'min-h-[44px] px-2 text-[14px] font-bold text-[#FA7B21] underline-offset-4 hover:underline',
 
   avisoOk: 'rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-[14px] text-emerald-200',
   avisoAmbar: 'rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-3 text-[14px] text-amber-100',

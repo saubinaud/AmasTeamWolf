@@ -115,7 +115,7 @@ export function ResumenCotizacion({ cotizacion, alDia, error, respaldo, etiqueta
       {!c.ok && <p className={cx.avisoError}>{c.errores[0]}</p>}
       <div className={`${cx.divisor} flex items-baseline justify-between pt-4`}>
         <span className={`${cx.display} text-[15px] text-white`}>TOTAL</span>
-        <span className={`${cx.cifra} text-[28px] text-[#F47B20]`}>{soles(c.total)}</span>
+        <span className={`${cx.cifra} text-[28px] text-[#FA7B21]`}>{soles(c.total)}</span>
       </div>
     </div>
   );

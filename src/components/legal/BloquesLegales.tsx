@@ -15,7 +15,7 @@ export function BloquesLegales({ bloques, compacto = false }: { bloques: Bloque[
             <ul key={i} className="space-y-2.5">
               {b.items.map((it, j) => (
                 <li key={j} className="flex gap-2.5">
-                  <span className="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#F47B20]" />
+                  <span className="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA7B21]" />
                   <span>{it.etiqueta && <strong className="text-white">{it.etiqueta}: </strong>}{it.texto}</span>
                 </li>
               ))}
@@ -24,7 +24,7 @@ export function BloquesLegales({ bloques, compacto = false }: { bloques: Bloque[
         }
         if (b.tipo === 'formula') {
           return (
-            <p key={i} className="rounded-lg border border-[#F47B20]/25 bg-[#F47B20]/10 px-4 py-3 text-[15px] font-semibold text-white">
+            <p key={i} className="rounded-lg border border-[#FA7B21]/25 bg-[#FA7B21]/10 px-4 py-3 text-[15px] font-semibold text-white">
               {b.texto}
             </p>
           );
