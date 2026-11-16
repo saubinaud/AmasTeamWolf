@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditoría web y portal</title>
+<style>
+  :root {
+    --fondo: #f6f4f1; --hoja: #ffffff; --tinta: #1c1917; --sec: #57534e; --apagado: #a8a29e;
+    --linea: #e7e5e4; --marca: #e8701a; --critico: #be123c; --alto: #c2410c; --medio: #a16207; --ok: #15803d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fondo: #0c0a09; --hoja: #1c1917; --tinta: #f5f5f4; --sec: #d6d3d1; --apagado: #78716c;
+      --linea: #292524; --marca: #fb923c; --critico: #fb7185; --alto: #fb923c; --medio: #facc15; --ok: #4ade80; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fondo); color: var(--tinta); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 48px 20px 120px; }
+  h1 { font-size: 30px; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.02em; }
+  h2 { font-size: 21px; margin: 0 0 14px; letter-spacing: -0.01em; }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  .fecha { color: var(--apagado); font-size: 14px; margin-bottom: 28px; }
+  section { background: var(--hoja); border: 1px solid var(--linea); border-radius: 16px; padding: 24px; margin: 0 0 18px; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0; padding-left: 20px; } li { margin: 4px 0; }
+  code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: color-mix(in srgb, var(--linea) 60%, transparent); padding: 1px 5px; border-radius: 5px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; }
+  .critico { color: var(--critico); border: 1px solid var(--critico); }
+  .alto { color: var(--alto); border: 1px solid var(--alto); }
+  .medio { color: var(--medio); border: 1px solid var(--medio); }
+  .ok { color: var(--ok); border: 1px solid var(--ok); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  th { color: var(--apagado); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .sec { color: var(--sec); }
+  @media (max-width: 600px) { main { padding-top: 28px; } section { padding: 18px; } h1 { font-size: 25px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Auditoría de la web y del portal de familias</h1>
+  <div class="fecha">Team Wolf × JMA · 16 de noviembre de 2026 · teamwolfxjma.com</div>
+
+  <section>
+    <h2>En corto</h2>
+    <p>La web funciona y no tiene errores de JavaScript, pero <strong>la portada no vende la clase de prueba</strong>: no muestra niños, edades ni sede, y no enlazaba a <code>/clase-prueba</code>. Además hay <strong>cifras que se contradicen</strong> (3 años y 20 años de experiencia) y <strong>promesas sin respaldo</strong> (cupos fijos, porcentajes, certificación internacional).</p>
+    <p>El portal de familias pide sesión en todo lo privado y el código por correo está bien hecho. Lo grave: <strong>los hermanos que comparten apoderado quedan mal resueltos</strong>, <strong>congelar desde el portal hace perder días</strong> y con solo un DNI se pueden averiguar datos y la rutina de un niño.</p>
+  </section>
+
+  <section>
+    <h2>Ya arreglado y publicado (16-nov)</h2>
+    <ul>
+      <li>Imagen de fondo caída en el cierre de <code>/clase-prueba</code> (URL de Cloudinary mal escrita).</li>
+      <li>El botón verde de WhatsApp abría el formulario: ahora abre WhatsApp.</li>
+      <li>El torneo del 12 de julio seguía como "Torneo Abierto": ahora dice "Torneo finalizado" cuando la fecha pasó, y el lugar vacío ya no sale.</li>
+      <li>Tildes del torneo (¿Por qué participar?, más, únicos, participará, inscripción, años).</li>
+      <li>Pie: año automático; el botón principal pasa de "Ver Graduaciones Recientes" a "Agendar clase de prueba" (en OmYoga no sale).</li>
+      <li>"Clase de prueba" en el menú Programas (escritorio y celular).</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Portal de familias</h2>
+    <h3>Cómo entra hoy un padre</h3>
+    <p class="sec">DNI del alumno o del apoderado → si no tiene contraseña, código de 6 dígitos al correo (15 min, 5 intentos) → crea contraseña → sesión de 12 horas. El perfil tiene Inicio, Asistencias, Plan, Graduación y Mensajes.</p>
+    <h3>Problemas</h3>
+    <ul>
+      <li><span class="tag critico">Crítico</span><strong>Hermanos con el mismo apoderado.</strong> Con el DNI del padre se ve un solo hijo, y no siempre el mismo; puede volver a pedir crear contraseña o rechazar la correcta, porque la contraseña es por alumno y no por familia. <code>AlumnoService.js:20-27</code>, <code>auth.js:421</code>.</li>
+      <li><span class="tag alto">Alto</span><strong>Congelar desde el portal no sigue las reglas de Space.</strong> No revisa topes ni plan vigente, y al descongelar no extiende el fin del plan: la familia pierde esos días. <code>auth.js:467-494</code>.</li>
+      <li><span class="tag alto">Alto</span><strong>Averiguar datos con un DNI.</strong> El login dice si el DNI existe; el límite por DNI se esquiva con espacios o guiones; <code>/consulta-asistencia</code> da sin sesión el nombre del niño y sus últimas 50 asistencias con turno.</li>
+      <li><span class="tag alto">Alto</span><strong>Cambiar correo sin confirmar.</strong> Con una sesión abierta se cambia el correo (y el DNI del apoderado) sin código: quien robe la sesión se queda con la cuenta. <code>auth.js:511-548</code>.</li>
+      <li><span class="tag medio">Medio</span>Banner "quedan 0 días" a quien no tiene fecha de fin; tardanzas contadas como faltas; la pestaña Graduación busca por apellido y puede mostrar la de otro niño; los botones "Renovar" van a una página que no existe.</li>
+      <li><span class="tag medio">Medio</span>CORS sigue aceptando el dominio vencido amasteamwolf.com: si alguien lo compra, podría montar un login falso.</li>
+      <li><span class="tag ok">Bien</span>Todo lo privado responde 401 sin sesión; el código de acceso es de un uso, con HMAC y comparación segura; el API no arranca sin su secreto.</li>
+    </ul>
+    <h3>Lo que la familia no ve y Space ya tiene</h3>
+    <p class="sec">Estado real del plan y días que quedan, historial de planes, horario del alumno, contrato firmado en PDF, foto, implementos pendientes y saldo.</p>
+  </section>
+
+  <section>
+    <h2>Web pública</h2>
+    <table>
+      <tr><th>Página</th><th>Qué frena la inscripción</th></tr>
+      <tr><td>Portada</td><td>Hero de pantalla completa sin niños, edades, sede ni horario; dos títulos principales. Tarjetas de programa recargadas (cinta, sello, emoji, recuadro) con el precio al fondo.</td></tr>
+      <tr><td>Clase de prueba</td><td>"Últimos 15 cupos" fijo, "60% de nuestros alumnos…", "certificación internacional", tabla contra "otras academias"; "resultados en 2 meses" y en otra parte "3 meses". La tabla comparativa no se ve en celular. Fecha con control nativo.</td></tr>
+      <tr><td>Leadership</td><td>El precio aparece al final, después de 12 hitos; el hero está vacío.</td></tr>
+      <tr><td>Graduaciones</td><td>"Ver graduados" lleva a "No hay graduados para mostrar".</td></tr>
+      <tr><td>Tienda</td><td>Las tarjetas no tienen botón de agregar; fotos con el logo AMAS.</td></tr>
+      <tr><td>Matrícula y renovación</td><td>Funcionan bien, pero con otro naranja, otra fuente y otro fondo: al pasar de la portada parece otra web.</td></tr>
+    </table>
+    <h3>Transversal</h3>
+    <ul>
+      <li>El naranja de la marca está escrito a mano 691 veces en 66 archivos, con 5 variantes de botón principal. No hay un archivo de estilos comunes.</li>
+      <li><code>transition-all</code> en 150 lugares; la animación de entrada dura 1 s y probablemente deja huecos negros al bajar.</li>
+      <li>El menú usa botones en vez de enlaces: no se pueden abrir en otra pestaña y Google no los sigue.</li>
+      <li>Emojis como íconos (🥋, ✨, 🐺) y fotos con la marca vieja AMAS.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Plan propuesto, en orden</h2>
+    <ul>
+      <li><span class="tag critico">1</span><strong>Portal: seguridad y datos.</strong> Entrada por familia con "¿cuál de tus hijos?"; respuesta igual en el login; límite por DNI normalizado; cambiar correo con código; cerrar <code>/consulta-asistencia</code>; sacar el dominio viejo de CORS.</li>
+      <li><span class="tag critico">2</span><strong>Portal: congelar como solicitud</strong> que se aprueba en Space con sus reglas; plan, días y estados leídos de la base (sin banners falsos); renovar que lleve a la renovación real.</li>
+      <li><span class="tag alto">3</span><strong>Estilos comunes de la web</strong> (un naranja, un botón principal, tarjetas y campos), tomando como base el de matrícula: así portada, programas y matrícula se ven como una sola web.</li>
+      <li><span class="tag alto">4</span><strong>Portada nueva</strong> con el criterio de OmYoga: foto real, edades, San Borja, horarios y "Agendar clase de prueba" como acción principal; tarjetas de programa limpias con el precio arriba.</li>
+      <li><span class="tag alto">5</span><strong>Clase de prueba sin promesas sin respaldo</strong>, comparativa legible en celular y selector de fecha propio.</li>
+      <li><span class="tag medio">6</span><strong>Leadership, tienda y graduaciones:</strong> precio y botón arriba, agregar al carrito visible, graduaciones solo cuando haya.</li>
+      <li><span class="tag medio">7</span><strong>Portal con lo que ya tiene Space:</strong> horario, contrato PDF, foto, implementos y saldo.</li>
+      <li><span class="tag medio">8</span>Limpieza: <code>transition-all</code>, menú con enlaces, código muerto de Logto.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Decisiones que necesito</h2>
+    <ul>
+      <li><strong>Años de experiencia y número de alumnos reales</strong> (la web dice 3 y 20 años; 300+ alumnos).</li>
+      <li>¿Se mantienen "certificación internacional", "60% de alumnos…" y la tabla contra otras academias? Si no hay respaldo, los quito.</li>
+      <li>Precio actual de la clase de prueba (la web dice S/ 40).</li>
+      <li>¿Fotos nuevas sin la marca AMAS? Si tienes, déjalas en una carpeta y las uso.</li>
+    </ul>
+  </section>
+</main>
+<script src="_panel-de-notas.js" data-documento="amas-web/docs/auditoria-web-y-portal-2026-11.html" data-titulo="Auditoría web y portal" defer></script>
+</body>
+</html>
