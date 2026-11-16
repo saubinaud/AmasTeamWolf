@@ -23,6 +23,12 @@ interface Matricula {
   clasesTotales: number;
   clasesAsistidas: number;
   clasesRestantes: number;
+  /** Estado del plan según v_plan_alumno (null: sin plan) */
+  estadoPlan: string | null;
+  vigente: boolean;
+  diasParaVencer: number | null;
+  vencioEl: string | null;
+  diasDesdeVencimiento: number | null;
 }
 
 interface Clase {
@@ -84,6 +90,7 @@ interface ProximaGraduacion {
   fecha: string;
   horario: string;
   turno: string;
+  rango: string;
   cinturonDesde: string;
   cinturonHasta: string;
 }
@@ -99,7 +106,8 @@ interface MensajeData {
 
 interface Asistencia {
   fecha: string;
-  estado: 'asistio' | 'falta' | 'tardanza' | 'justificado';
+  /** asistio y tardanza cuentan como clase tomada */
+  estado: 'asistio' | 'falta' | 'tardanza';
 }
 
 interface Congelacion {
@@ -129,6 +137,7 @@ interface ImplementoData {
   precio: number;
   fechaAdquisicion: string;
   observaciones: string | null;
+  entregado: boolean;
 }
 
 interface ReferidoData {
@@ -137,7 +146,44 @@ interface ReferidoData {
   canjeado: boolean;
 }
 
+export interface Hijo {
+  id: number;
+  nombre: string;
+  estado: string;
+  programa: string | null;
+  estadoPlan: string | null;
+  cinturon: string;
+}
+
+export interface SolicitudCongelamiento {
+  id: number;
+  fechaInicio: string;
+  fechaFin: string;
+  dias: number;
+  motivo: string | null;
+  estado: 'pendiente' | 'aprobada' | 'rechazada' | 'cancelada';
+  respuesta: string | null;
+}
+
+interface CongelamientoInfo {
+  puede: boolean;
+  motivo: string | null;
+  topeDias: number;
+  anticipacionMaxDias: number;
+  solicitudes: SolicitudCongelamiento[];
+}
+
+interface LineaHorario {
+  clase: string | null;
+  dias: number[];
+  horaInicio: string;
+  horaFin: string | null;
+  pista: string | null;
+}
+
 interface UserData {
+  alumnoId: number;
+  hijos: Hijo[];
   familia: FamiliaData;
   historialCinturones: CinturonHistorial[];
   proximaGraduacion: ProximaGraduacion | null;
@@ -156,20 +202,25 @@ interface UserData {
   referidos: ReferidoData[];
   torneos: TorneoData[];
   implementos: ImplementoData[];
+  congelamiento: CongelamientoInfo;
+  horario: LineaHorario[];
+  contrato: { url: string; firmadoAt: string } | null;
 }
 
 interface LoginResult {
   success: boolean;
   error?: string;
-  needsPassword?: boolean;
-  hasEmail?: boolean;
+  /** La familia tiene más de un hijo: la web pregunta a cuál ver */
+  elegirHijo?: boolean;
+  hijos?: Hijo[];
 }
 
 export type PropositoCodigo = 'crear' | 'recuperar';
 
 interface CodeResult {
   success: boolean;
-  emailHint?: string;
+  /** Mensaje del API: el mismo exista o no el DNI */
+  mensaje?: string;
   error?: string;
 }
 
@@ -183,6 +234,12 @@ interface AuthContextType {
   verifyCode: (dni: string, code: string) => Promise<{ success: boolean; error?: string }>;
   /** Pone la contraseña con el código recibido por correo (crear la primera o restablecerla). */
   setPassword: (dni: string, code: string, password: string, proposito?: PropositoCodigo) => Promise<LoginResult>;
+  /** Cambia el hijo que se ve (familias con más de un alumno) */
+  elegirHijo: (alumnoId: number) => Promise<{ success: boolean; error?: string }>;
+  /** Recién entró una familia con varios hijos: el perfil pregunta a cuál ver */
+  debeElegirHijo: boolean;
+  /** La familia ya eligió (o siguió con el que abrió) */
+  terminarEleccion: () => void;
   logout: () => void;
   refreshUserData: () => Promise<void>;
 }
@@ -191,8 +248,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const AUTH_API = `${API_BASE}/auth`;
 
+const estadoAsistencia = (asistio: string): Asistencia['estado'] =>
+  asistio === 'Sí' ? 'asistio' : asistio === 'Tardanza' ? 'tardanza' : 'falta';
+
+const transformHijo = (h: any): Hijo => ({
+  id: Number(h.id),
+  nombre: h.nombre || '',
+  estado: h.estado || '',
+  programa: h.programa ?? null,
+  estadoPlan: h.estado_plan ?? null,
+  cinturon: h.cinturon || 'Blanco',
+});
+
 function transformProfile(data: any): UserData {
+  const plan = data.plan || null;
+  const cong = data.congelamiento || {};
   return {
+    alumnoId: Number(data.alumno_id),
+    hijos: Array.isArray(data.hijos) ? data.hijos.map(transformHijo) : [],
     familia: {
       email: data.apoderado_correo || '',
       nombreFamilia: data.apoderado_nombre || data.nombre_apoderado || 'Familia',
@@ -212,6 +285,11 @@ function transformProfile(data: any): UserData {
       clasesTotales: Number(data.clases_totales) || 0,
       clasesAsistidas: Number(data.clases_asistidas) || 0,
       clasesRestantes: Number(data.clases_restantes) || 0,
+      estadoPlan: plan?.estado_plan ?? null,
+      vigente: Boolean(plan?.vigente),
+      diasParaVencer: plan?.dias_para_vencer ?? null,
+      vencioEl: plan?.vencio_el ?? null,
+      diasDesdeVencimiento: plan?.dias_desde_vencimiento ?? null,
     },
     clases: data.dias_tentativos ? [{ horario: data.dias_tentativos }] : [],
     pagos: {
@@ -241,8 +319,8 @@ function transformProfile(data: any): UserData {
       fechaNacimiento: data.fecha_nacimiento || '',
       edad: calculateAge(data.fecha_nacimiento),
       categoria: data.categoria || '',
-      tallaUniforme: data.talla_uniforme || 'S',
-      tallaPolo: data.talla_polo || 'S',
+      tallaUniforme: data.talla_uniforme || 'Sin registrar',
+      tallaPolo: data.talla_polo || 'Sin registrar',
       cinturonActual: data.cinturon_actual || 'Blanco',
     },
     historialCinturones: Array.isArray(data.historial_cinturones)
@@ -253,6 +331,7 @@ function transformProfile(data: any): UserData {
           fecha: data.proxima_graduacion.fecha_graduacion,
           horario: data.proxima_graduacion.horario || '',
           turno: data.proxima_graduacion.turno || '',
+          rango: data.proxima_graduacion.rango || '',
           cinturonDesde: data.proxima_graduacion.cinturon_desde || '',
           cinturonHasta: data.proxima_graduacion.cinturon_hasta || '',
         }
@@ -270,7 +349,7 @@ function transformProfile(data: any): UserData {
     asistencias: Array.isArray(data.asistencias)
       ? data.asistencias.map((a: any) => ({
           fecha: a.fecha,
-          estado: a.asistio === 'Sí' ? 'asistio' as const : 'falta' as const,
+          estado: estadoAsistencia(a.asistio),
         }))
       : [],
     congelaciones: Array.isArray(data.congelaciones)
@@ -314,8 +393,36 @@ function transformProfile(data: any): UserData {
           precio: Number(imp.precio) || 0,
           fechaAdquisicion: imp.fecha_adquisicion ?? '',
           observaciones: (imp.observaciones as string | null) ?? null,
+          entregado: Boolean(imp.entregado),
         }))
       : [],
+    congelamiento: {
+      puede: Boolean(cong.puede),
+      motivo: cong.motivo ?? null,
+      topeDias: Number(cong.tope_dias) || 0,
+      anticipacionMaxDias: Number(cong.anticipacion_max_dias) || 60,
+      solicitudes: Array.isArray(cong.solicitudes)
+        ? cong.solicitudes.map((s: any) => ({
+            id: Number(s.id),
+            fechaInicio: s.fecha_inicio,
+            fechaFin: s.fecha_fin,
+            dias: Number(s.dias) || 0,
+            motivo: s.motivo ?? null,
+            estado: s.estado,
+            respuesta: s.respuesta ?? null,
+          }))
+        : [],
+    },
+    horario: Array.isArray(data.horario?.lineas)
+      ? data.horario.lineas.map((l: any) => ({
+          clase: l.clase ?? null,
+          dias: Array.isArray(l.dias) ? l.dias.map(Number) : [],
+          horaInicio: l.hora_inicio || '',
+          horaFin: l.hora_fin ?? null,
+          pista: l.pista ?? null,
+        }))
+      : [],
+    contrato: data.contrato?.url ? { url: data.contrato.url, firmadoAt: data.contrato.firmado_at || '' } : null,
   };
 }
 
@@ -333,6 +440,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserData | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [debeElegirHijo, setDebeElegirHijo] = useState(false);
+  const terminarEleccion = useCallback(() => setDebeElegirHijo(false), []);
 
   // Restore session on mount
   useEffect(() => {
@@ -359,6 +468,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  /** Guarda la sesión que devuelven login, crear contraseña y elegir hijo. */
+  const guardarSesion = useCallback((data: any): LoginResult => {
+    const userData = transformProfile({ ...data.perfil, hijos: data.hijos });
+    localStorage.setItem('amasToken', data.token);
+    localStorage.setItem('amasUserProfile', JSON.stringify(userData));
+    setToken(data.token);
+    setUser(userData);
+    return { success: true, elegirHijo: Boolean(data.elegir_hijo), hijos: userData.hijos };
+  }, []);
+
   const login = useCallback(async (dni: string, password: string): Promise<LoginResult> => {
     try {
       const res = await fetch(`${AUTH_API}/login`, {
@@ -367,26 +486,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ dni, password }),
       });
       const data = await res.json();
-
-      if (data.needsPassword) {
-        return { success: false, needsPassword: true, hasEmail: data.hasEmail };
-      }
-      if (!res.ok) {
-        return { success: false, error: data.error || 'Error de autenticación' };
-      }
+      if (!res.ok) return { success: false, error: data.error || 'Error de autenticación' };
       if (data.success && data.token) {
-        const userData = transformProfile(data.perfil);
-        localStorage.setItem('amasToken', data.token);
-        localStorage.setItem('amasUserProfile', JSON.stringify(userData));
-        setToken(data.token);
-        setUser(userData);
-        return { success: true };
+        setDebeElegirHijo(Boolean(data.elegir_hijo));
+        return guardarSesion(data);
       }
       return { success: false, error: data.error || 'Error desconocido' };
     } catch {
       return { success: false, error: 'Error de conexión' };
     }
-  }, []);
+  }, [guardarSesion]);
+
+  const elegirHijo = useCallback(async (alumnoId: number) => {
+    const actual = token || localStorage.getItem('amasToken');
+    if (!actual) return { success: false, error: 'Sesión vencida' };
+    try {
+      const res = await fetch(`${AUTH_API}/elegir-hijo`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${actual}` },
+        body: JSON.stringify({ alumno_id: alumnoId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) return { success: false, error: data.error || 'No se pudo cambiar' };
+      guardarSesion(data);
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Error de conexión' };
+    }
+  }, [token, guardarSesion]);
 
   const requestCode = useCallback(async (dni: string, proposito: PropositoCodigo = 'crear'): Promise<CodeResult> => {
     try {
@@ -397,7 +524,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error };
-      return { success: true, emailHint: data.emailHint };
+      return { success: true, mensaje: data.mensaje };
     } catch {
       return { success: false, error: 'Error de conexión' };
     }
@@ -430,24 +557,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error };
       if (data.success && data.token) {
-        const userData = transformProfile(data.perfil);
-        localStorage.setItem('amasToken', data.token);
-        localStorage.setItem('amasUserProfile', JSON.stringify(userData));
-        setToken(data.token);
-        setUser(userData);
-        return { success: true };
+        setDebeElegirHijo(Boolean(data.elegir_hijo));
+        return guardarSesion(data);
       }
       return { success: false, error: data.error || 'Error desconocido' };
     } catch {
       return { success: false, error: 'Error de conexión' };
     }
-  }, []);
+  }, [guardarSesion]);
 
   const logout = useCallback(() => {
     localStorage.removeItem('amasToken');
     localStorage.removeItem('amasUserProfile');
-    localStorage.removeItem('amasAuthId');
-    localStorage.removeItem('amasSessionTimestamp');
+    setDebeElegirHijo(false);
     setToken(null);
     setUser(null);
   }, []);
@@ -471,7 +593,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!token && user !== null;
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, requestCode, verifyCode, setPassword, logout, refreshUserData }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, requestCode, verifyCode, setPassword, elegirHijo, debeElegirHijo, terminarEleccion, logout, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

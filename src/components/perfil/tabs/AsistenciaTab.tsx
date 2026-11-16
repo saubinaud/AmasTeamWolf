@@ -7,6 +7,7 @@ import {
 import { format, addDays, subDays, addMonths, subMonths, isSameDay, isToday, startOfMonth, eachDayOfInterval, startOfWeek, isSameMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '../../ui/utils';
+import { cuentaComoClase } from '../utils';
 
 interface AsistenciaTabProps {
   user: any;
@@ -40,7 +41,8 @@ export function AsistenciaTab({ user, isMobile }: AsistenciaTabProps) {
     }
   };
 
-  const totalAsistencias = user?.asistencias?.filter((a: any) => a.estado === 'asistio').length || 0;
+  // Asistió o llegó tarde: las dos son clase tomada (v_plan_alumno)
+  const totalAsistencias = user?.asistencias?.filter((a: any) => cuentaComoClase(a.estado)).length || 0;
 
   // Mobile day strip
   const calendarDays = useMemo(() => {
@@ -100,7 +102,7 @@ export function AsistenciaTab({ user, isMobile }: AsistenciaTabProps) {
           <div className="flex justify-center gap-2">
             {calendarDays.map((day) => {
               const attendance = getAttendanceForDay(day);
-              const hasAttendance = attendance?.estado === 'asistio';
+              const hasAttendance = cuentaComoClase(attendance?.estado);
               const isCurrentDay = isToday(day);
               const isCenterDay = isSameDay(day, calendarCenterDate);
 
@@ -155,6 +157,22 @@ export function AsistenciaTab({ user, isMobile }: AsistenciaTabProps) {
                 </div>
               );
             }
+            if (attendance?.estado === 'tardanza') {
+              return (
+                <div className="flex items-center justify-center gap-4 py-5 px-6 bg-amber-500/10 rounded-2xl border border-amber-500/20">
+                  <Clock className="w-7 h-7 text-amber-400" />
+                  <span className="text-amber-300 font-semibold text-lg">Llegó tarde (cuenta como clase)</span>
+                </div>
+              );
+            }
+            if (attendance?.estado === 'falta') {
+              return (
+                <div className="flex items-center justify-center gap-4 py-5 px-6 bg-red-500/10 rounded-2xl border border-red-500/20">
+                  <X className="w-7 h-7 text-red-400" />
+                  <span className="text-red-300 font-semibold text-lg">Falta</span>
+                </div>
+              );
+            }
             return (
               <div className="flex items-center justify-center gap-3 py-5 px-6 bg-zinc-800/50 rounded-2xl border border-white/5">
                 <Clock className="w-6 h-6 text-zinc-500" />
@@ -177,7 +195,7 @@ export function AsistenciaTab({ user, isMobile }: AsistenciaTabProps) {
                 const d = new Date(a.fecha);
                 return d.getMonth() === calendarCenterDate.getMonth() &&
                   d.getFullYear() === calendarCenterDate.getFullYear() &&
-                  a.estado === 'asistio';
+                  cuentaComoClase(a.estado);
               }).length || 0}
             </p>
           </div>
@@ -284,7 +302,7 @@ export function AsistenciaTab({ user, isMobile }: AsistenciaTabProps) {
                   )}>
                     {asistencia.estado === 'asistio' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
                     {asistencia.estado === 'falta' && <X className="w-4 h-4 text-red-400" />}
-                    {asistencia.estado === 'justificada' && <Clock className="w-4 h-4 text-amber-400" />}
+                    {asistencia.estado === 'tardanza' && <Clock className="w-4 h-4 text-amber-400" />}
                   </div>
                 )}
               </div>

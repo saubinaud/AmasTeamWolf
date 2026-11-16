@@ -3,10 +3,14 @@ import { Lock, ArrowLeft, Eye, EyeOff, Loader2, Mail } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth, type PropositoCodigo } from '../contexts/AuthContext';
 
-// Crear la primera contraseña y "Olvidé mi contraseña" siguen el mismo camino:
-// DNI → código que llega al correo del apoderado → contraseña nueva. Sin el
-// código, el API no deja poner contraseña.
+// La cuenta es de la familia: se entra con el DNI del apoderado (o el de un hijo)
+// y una sola contraseña. Crear la primera contraseña y "Olvidé mi contraseña"
+// siguen el mismo camino: DNI → código al correo de la familia → contraseña
+// nueva. El API responde igual exista o no el DNI. Con más de un hijo, el perfil
+// pregunta a cuál ver al entrar (perfil/ElegirHijo) y se cambia desde su cabecera.
 type Step = 'login' | 'codigo' | 'set-password';
+
+const PASSWORD_MIN = 8;
 
 interface InicioSesionPageProps {
   onNavigate: (page: string) => void;
@@ -25,18 +29,17 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
   const [loading, setLoading] = useState(false);
   const [proposito, setProposito] = useState<PropositoCodigo>('crear');
   const [codigo, setCodigo] = useState('');
-  const [emailHint, setEmailHint] = useState('');
-  const [sinCorreo, setSinCorreo] = useState(false);
+  const [avisoCodigo, setAvisoCodigo] = useState('');
 
   /** Pasa al paso del código y lo pide (crear la primera contraseña o recuperarla). */
-  const irACodigo = async (p: PropositoCodigo, hasEmail = true) => {
+  const irACodigo = async (p: PropositoCodigo) => {
+    if (!dni) { setError('Ingresa tu DNI para recibir el código'); return; }
     setProposito(p);
     setCodigo('');
-    setEmailHint('');
+    setAvisoCodigo('');
     setError('');
     setStep('codigo');
-    setSinCorreo(!hasEmail);
-    if (hasEmail) await enviarCodigo(p);
+    await enviarCodigo(p);
   };
 
   const enviarCodigo = async (p: PropositoCodigo = proposito) => {
@@ -45,12 +48,15 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     setError('');
     const r = await requestCode(dni, p);
     setLoading(false);
-    if (r.success) {
-      setEmailHint(r.emailHint || '');
-      setSinCorreo(false);
-    } else {
-      setError(r.error || 'No pudimos enviar el código');
-    }
+    if (r.success) setAvisoCodigo(r.mensaje || 'Si el DNI está registrado, enviamos un código al correo de la familia.');
+    else setError(r.error || 'No pudimos enviar el código');
+  };
+
+  /** Después de entrar: a /clases si venía de ahí, o al perfil. */
+  const irAlDestino = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('redirect') === 'clases') window.location.href = '/clases';
+    else onNavigate('perfil');
   };
 
   const handleVerificar = async () => {
@@ -65,29 +71,12 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
 
   const handleLogin = async () => {
     if (!dni) { setError('Ingresa tu DNI'); return; }
+    if (!password) { setError('Ingresa tu contraseña. Si es tu primera vez, toca «Crear mi contraseña».'); return; }
 
     setLoading(true);
     setError('');
-
-    if (!password) {
-      // Sin contraseña: verificar si existe y si necesita crearla
-      const result = await login(dni, '');
-      setLoading(false);
-      if (result.needsPassword) {
-        await irACodigo('crear', result.hasEmail !== false);
-        return;
-      }
-      setError('Ingresa tu contraseña');
-      return;
-    }
-
     const result = await login(dni, password);
     setLoading(false);
-
-    if (result.needsPassword) {
-      await irACodigo('crear', result.hasEmail !== false);
-      return;
-    }
 
     if (result.success) {
       // Store credentials for browser auto-fill (fingerprint/Face ID)
@@ -99,21 +88,14 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
           await navigator.credentials.store(cred);
         } catch { /* silent */ }
       }
-      // Redirect to /clases if came from there, otherwise perfil
-      const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get('redirect');
-      if (redirectTo === 'clases') {
-        window.location.href = '/clases';
-      } else {
-        onNavigate('perfil');
-      }
+      irAlDestino();
     } else {
       setError(result.error || 'Error al iniciar sesión');
     }
   };
 
   const handleSetPassword = async () => {
-    if (newPassword.length < 6) { setError('Mínimo 6 caracteres'); return; }
+    if (newPassword.length < PASSWORD_MIN) { setError(`Mínimo ${PASSWORD_MIN} caracteres`); return; }
     if (newPassword !== confirmPassword) { setError('Las contraseñas no coinciden'); return; }
 
     setLoading(true);
@@ -122,13 +104,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
     setLoading(false);
 
     if (result.success) {
-      const params = new URLSearchParams(window.location.search);
-      const redirectTo = params.get('redirect');
-      if (redirectTo === 'clases') {
-        window.location.href = '/clases';
-      } else {
-        onNavigate('perfil');
-      }
+      irAlDestino();
     } else {
       setError(result.error || 'No se pudo guardar la contraseña');
       // Código vencido o ya usado: se vuelve a pedir
@@ -161,10 +137,10 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
             </h2>
             <p className="mt-2 text-white/60 text-sm">
               {step === 'login'
-                ? 'Ingresa con tu DNI de apoderado'
+                ? 'Una sola cuenta para toda la familia: entra con tu DNI de apoderado'
                 : step === 'codigo'
-                  ? `Te enviamos un código de 6 dígitos al correo registrado del DNI ${dni}.`
-                  : 'Elige una contraseña de al menos 6 caracteres.'}
+                  ? 'Escribe el código de 6 dígitos que llega al correo de la familia.'
+                  : `Elige una contraseña de al menos ${PASSWORD_MIN} caracteres. Será la de toda la familia.`}
             </p>
           </div>
 
@@ -227,11 +203,17 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
               </Button>
 
               <div className="flex items-center justify-between gap-3 pt-2 text-xs">
-                <span className="text-white/40">¿Primera vez? Ingresa tu DNI y presiona Entrar</span>
                 <button
                   type="button"
-                  onClick={() => (dni ? irACodigo('recuperar') : setError('Ingresa tu DNI para recuperar tu contraseña'))}
-                  className="shrink-0 text-[#FCA929] hover:text-[#FA7B21] font-medium transition-colors"
+                  onClick={() => irACodigo('crear')}
+                  className="text-left text-[#FCA929] hover:text-[#FA7B21] font-medium transition-colors"
+                >
+                  ¿Primera vez? Crear mi contraseña
+                </button>
+                <button
+                  type="button"
+                  onClick={() => irACodigo('recuperar')}
+                  className="shrink-0 text-white/50 hover:text-white/80 font-medium transition-colors"
                 >
                   Olvidé mi contraseña
                 </button>
@@ -242,54 +224,46 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
           {/* Step: Código del correo */}
           {step === 'codigo' && (
             <form onSubmit={e => { e.preventDefault(); handleVerificar(); }} className="space-y-4">
-              {sinCorreo ? (
-                <div className="p-3 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-lg text-sm text-white/80 text-center">
-                  No hay un correo registrado para este DNI. Escríbenos por WhatsApp y lo actualizamos.
+              {avisoCodigo && (
+                <div className="flex items-start gap-2 p-3 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-lg text-sm text-white/80">
+                  <Mail className="w-4 h-4 mt-0.5 shrink-0 text-[#FCA929]" />
+                  <span>{avisoCodigo} El código vence en 15 minutos.</span>
                 </div>
-              ) : (
-                <>
-                  {emailHint && (
-                    <div className="flex items-center justify-center gap-2 p-3 bg-[#FA7B21]/10 border border-[#FA7B21]/20 rounded-lg text-sm text-white/80">
-                      <Mail className="w-4 h-4 shrink-0 text-[#FCA929]" />
-                      Revisa {emailHint} (y la carpeta de spam). Vence en 15 minutos.
-                    </div>
-                  )}
-                  <div>
-                    <label htmlFor="codigo" className="block text-white/70 text-sm mb-1.5">Código</label>
-                    <input
-                      id="codigo"
-                      name="one-time-code"
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      maxLength={6}
-                      value={codigo}
-                      onChange={e => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="000000"
-                      className="w-full px-4 py-3 bg-zinc-800 border border-white/10 rounded-lg text-white text-center text-2xl tracking-[0.5em] placeholder-white/20 focus:outline-none focus:border-[#FA7B21]/50 focus:ring-1 focus:ring-[#FA7B21]/30 transition-colors"
-                      autoFocus
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={loading || codigo.length !== 6}
-                    className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
-                    Continuar
-                  </Button>
-
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => enviarCodigo()}
-                    className="w-full text-center text-[#FCA929] hover:text-[#FA7B21] text-sm transition-colors disabled:opacity-50"
-                  >
-                    Enviar otro código
-                  </button>
-                </>
               )}
+              <div>
+                <label htmlFor="codigo" className="block text-white/70 text-sm mb-1.5">Código</label>
+                <input
+                  id="codigo"
+                  name="one-time-code"
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={codigo}
+                  onChange={e => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  className="w-full px-4 py-3 bg-zinc-800 border border-white/10 rounded-lg text-white text-center text-2xl tracking-[0.5em] placeholder-white/20 focus:outline-none focus:border-[#FA7B21]/50 focus:ring-1 focus:ring-[#FA7B21]/30 transition-colors"
+                  autoFocus
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading || codigo.length !== 6}
+                className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}
+                Continuar
+              </Button>
+
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => enviarCodigo()}
+                className="w-full text-center text-[#FCA929] hover:text-[#FA7B21] text-sm transition-colors disabled:opacity-50"
+              >
+                Enviar otro código
+              </button>
 
               <button type="button" onClick={() => { setStep('login'); setError(''); }} className="w-full text-center text-white/50 hover:text-white/70 text-sm transition-colors">
                 Volver al login
@@ -313,7 +287,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
                     autoComplete="new-password"
                     onChange={e => setNewPassword(e.target.value)}
                     onKeyDown={e => handleKeyDown(e, handleSetPassword)}
-                    placeholder="Mínimo 6 caracteres"
+                    placeholder={`Mínimo ${PASSWORD_MIN} caracteres`}
                     className="w-full px-4 py-3 bg-zinc-800 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:border-[#FA7B21]/50 focus:ring-1 focus:ring-[#FA7B21]/30 transition-colors pr-12"
                     autoFocus
                   />
@@ -341,7 +315,7 @@ export function InicioSesionPage({ onNavigate }: InicioSesionPageProps) {
 
               <Button
                 onClick={handleSetPassword}
-                disabled={loading || newPassword.length < 6}
+                disabled={loading || newPassword.length < PASSWORD_MIN}
                 className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white font-semibold py-6 text-lg shadow-lg shadow-[#FA7B21]/30 transition-all hover:scale-[1.02] disabled:opacity-50"
               >
                 {loading ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Lock className="w-5 h-5 mr-2" />}

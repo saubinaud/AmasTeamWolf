@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Award, Shield, Clock, Zap, Calendar, AlertTriangle, ArrowRight, CalendarCheck } from 'lucide-react';
+import { Award, Shield, Clock, Zap, Calendar, ArrowRight, CalendarCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { cn } from '../../ui/utils';
-import { formatDate, getApiUrl, parseSpanishDate } from '../utils';
+import { formatDate } from '../utils';
 import { useCinturones } from '../../../hooks/useCinturones';
 import { BeltDisplay } from '../BeltDisplay';
 
@@ -14,74 +12,10 @@ interface GraduacionTabProps {
 
 export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
   const { color: colorCinturon, siguiente: siguienteCinturon, progreso: progresoCinturon } = useCinturones();
-  const [graduacionDate, setGraduacionDate] = useState<string | null>(null);
-  const [graduationError, setGraduationError] = useState<string | null>(null);
-  const [graduationLoaded, setGraduationLoaded] = useState(false);
-  const [userGraduation, setUserGraduation] = useState<any>(null);
-
-  // Fetch Graduation Date
-  useEffect(() => {
-    setGraduationError(null);
-    const url = getApiUrl('/graduacion');
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-        return res.json();
-      })
-      .then(data => {
-        let dates: Date[] = [];
-        const items = Array.isArray(data) ? data : (data.records || [data]);
-
-        let foundUserItem: any = null;
-        const normalize = (s: string) => s?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "";
-        const userFullName = normalize(user.estudiante?.nombre || "");
-
-        items.forEach((item: any) => {
-          if (item.NOMBRE || item.APELLIDO) {
-            const n = normalize(item.NOMBRE || "");
-            const a = normalize(item.APELLIDO || "");
-            if ((n && userFullName.includes(n)) || (a && userFullName.includes(a))) {
-              foundUserItem = item;
-            }
-          }
-
-          const d = item?.date || item?.fecha || item?.graduationDate || item?.start;
-
-          if (item?.FECHA) {
-            const parsed = parseSpanishDate(item.FECHA);
-            if (parsed) dates.push(parsed);
-            if (foundUserItem === item && parsed) {
-              foundUserItem.parsedDate = parsed;
-            }
-          } else if (d) {
-            const parsed = new Date(d);
-            dates.push(parsed);
-            if (foundUserItem === item) foundUserItem.parsedDate = parsed;
-          }
-        });
-
-        if (foundUserItem) {
-          setUserGraduation(foundUserItem);
-          if (foundUserItem.parsedDate) {
-            setGraduacionDate(foundUserItem.parsedDate.toISOString());
-          }
-        } else {
-          setUserGraduation(null);
-          dates = dates.filter(d => !isNaN(d.getTime())).sort((a, b) => a.getTime() - b.getTime());
-          const now = new Date();
-          const nextDate = dates.find(d => d >= now) || dates[dates.length - 1];
-          if (nextDate) {
-            setGraduacionDate(nextDate.toISOString());
-          }
-        }
-        setGraduationLoaded(true);
-      })
-      .catch(err => {
-        console.error('Error fetching graduation date:', err);
-        setGraduationError(err.message);
-        setGraduationLoaded(true);
-      });
-  }, [user.estudiante?.nombre]);
+  // Su graduación: la que trae /me por alumno_id (proxima_graduacion), nunca
+  // cruzando la lista pública por nombre.
+  const g = user?.proximaGraduacion || null;
+  const graduacionDate: string | null = g?.fecha || null;
 
   if (isMobile) {
     return (
@@ -289,37 +223,16 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
         <div className="bg-gradient-to-br from-[#FA7B21]/10 to-[#FCA929]/5 border border-[#FA7B21]/20 rounded-2xl p-6 mb-8 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#FA7B21]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-          {userGraduation ? (
+          {g ? (
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="text-center md:text-left">
-                <h4 className={cn(
-                  "text-sm uppercase tracking-wider font-bold mb-2 flex items-center gap-2 justify-center md:justify-start",
-                  (() => {
-                    const d = graduacionDate ? new Date(graduacionDate) : new Date();
-                    const now = new Date();
-                    d.setHours(0, 0, 0, 0);
-                    now.setHours(0, 0, 0, 0);
-                    return d.getTime() < now.getTime() ? "text-zinc-400" : "text-[#FCA929]";
-                  })()
-                )}>
-                  {(() => {
-                    const d = graduacionDate ? new Date(graduacionDate) : new Date();
-                    const now = new Date();
-                    d.setHours(0, 0, 0, 0);
-                    now.setHours(0, 0, 0, 0);
-                    const isPast = d.getTime() < now.getTime();
-                    const isTodayGrad = d.getTime() === now.getTime();
-                    return (
-                      <>
-                        <Award className="w-4 h-4" />
-                        {isPast ? "Ultima Graduacion" : isTodayGrad ? "Dia de la Graduacion!" : "Proxima Graduacion"}
-                      </>
-                    );
-                  })()}
+                <h4 className="text-sm uppercase tracking-wider font-bold mb-2 flex items-center gap-2 justify-center md:justify-start text-[#FCA929]">
+                  <Award className="w-4 h-4" />
+                  {graduacionDate && formatDate(graduacionDate) === formatDate(new Date()) ? 'Dia de la Graduacion!' : 'Proxima Graduacion'}
                 </h4>
                 <div className="flex flex-col">
                   <span className="text-4xl font-bold text-white mb-1">
-                    {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : (graduationLoaded ? 'Sin fecha programada' : 'Cargando...')}
+                    {graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : 'Fecha por confirmar'}
                   </span>
                   <span className="text-[#FCA929] text-lg capitalize font-medium">
                     {graduacionDate ? format(new Date(graduacionDate), "EEEE", { locale: es }) : ''}
@@ -332,46 +245,31 @@ export function GraduacionTab({ user, isMobile }: GraduacionTabProps) {
                   <p className="text-white/40 text-xs uppercase mb-1">Horario</p>
                   <div className="flex items-center justify-center gap-2 font-bold text-white">
                     <Clock className="w-4 h-4 text-[#FCA929]" />
-                    {userGraduation.HORARIO || '-'}
+                    {g.horario || '-'}
                   </div>
                 </div>
                 <div className="bg-black/20 rounded-xl p-4 border border-white/5 text-center min-w-[100px]">
                   <p className="text-white/40 text-xs uppercase mb-1">Turno</p>
                   <div className="flex items-center justify-center gap-2 font-bold text-white leading-tight">
                     <Zap className="w-4 h-4 text-[#FCA929]" />
-                    {userGraduation.TURNO || '-'}
+                    {g.turno || '-'}
                   </div>
                 </div>
               </div>
 
-              {userGraduation.RANGO && (
+              {(g.rango || g.cinturonHasta) && (
                 <div className="bg-[#FA7B21]/20 rounded-xl p-4 border border-[#FA7B21]/30">
                   <p className="text-[#FCA929] text-xs uppercase font-bold text-center">Rango</p>
-                  <p className="text-white font-medium text-center">{userGraduation.RANGO}</p>
+                  <p className="text-white font-medium text-center">{g.rango || `${g.cinturonDesde || '-'} → ${g.cinturonHasta}`}</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="relative z-10 flex items-center justify-between">
               <div>
-                <h4 className="text-white/60 text-sm uppercase tracking-wider font-medium mb-1">Proxima Fecha General</h4>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-white">
-                    {graduationError ? (
-                      <span className="text-red-400 text-lg flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5" />
-                        Error de conexion
-                      </span>
-                    ) : (
-                      graduacionDate ? format(new Date(graduacionDate), "d 'de' MMMM", { locale: es }) : (graduationLoaded ? 'Sin fecha programada' : 'Cargando...')
-                    )}
-                  </span>
-                </div>
-                {graduacionDate && !graduationError && (
-                  <p className="text-white/30 text-xs mt-1 bg-white/5 py-1 px-3 rounded-full inline-block border border-white/5">
-                    No estas programado para esta fecha
-                  </p>
-                )}
+                <h4 className="text-white/60 text-sm uppercase tracking-wider font-medium mb-1">Proxima Graduacion</h4>
+                <span className="text-2xl font-bold text-white">Aun no tiene una fecha programada</span>
+                <p className="text-white/40 text-sm mt-1">La academia te avisara cuando este listo para graduarse.</p>
               </div>
               <div className="w-14 h-14 bg-zinc-800 rounded-xl flex items-center justify-center border border-white/5">
                 <CalendarCheck className="w-7 h-7 text-zinc-500" />

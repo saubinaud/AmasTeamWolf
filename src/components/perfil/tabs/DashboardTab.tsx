@@ -3,13 +3,46 @@ import { Button } from '../../ui/button';
 import { Badge } from '../../ui/badge';
 import {
   User, Phone, CheckCircle2, Clock, Award, Shield, Zap,
-  Pencil, Save, X, Mail, MapPin, Gift, Copy, Users, Package
+  Pencil, Save, X, Mail, MapPin, Gift, Copy, Users, Package, FileText, CalendarDays
 } from 'lucide-react';
 import { CalendarCheck, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../ui/utils';
-import { formatDate, toTitleCase, getApiUrl } from '../utils';
+import { formatDate, toTitleCase, pedirApi, estadoDelPlan, cuentaComoClase, textoLineaHorario } from '../utils';
 import { enlaceWhatsApp } from '../../../config/contacto';
+import { CambiarCorreo } from '../CambiarCorreo';
+
+/** Clases de la semana (v_alumno_horario) y el contrato firmado del plan. */
+function HorarioYContrato({ user, grande = false }: { user: any; grande?: boolean }) {
+  const lineas = user?.horario || [];
+  return (
+    <div className={grande ? 'space-y-4' : 'bg-zinc-900/40 rounded-2xl border border-white/5 p-4 space-y-3'}>
+      <div className="flex items-center gap-2">
+        <CalendarDays className="w-4 h-4 text-[#FCA929]" />
+        <h4 className={grande ? 'text-sm font-medium text-white/60' : 'text-xs text-zinc-500 font-medium uppercase tracking-wider'}>Sus clases</h4>
+      </div>
+      {lineas.length > 0 ? (
+        <ul className="space-y-1.5">
+          {lineas.map((l: any, i: number) => (
+            <li key={i} className="text-sm text-zinc-200">{textoLineaHorario(l)}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-zinc-500">Aún no tiene horario asignado. Consúltalo con la academia.</p>
+      )}
+      {user?.contrato?.url && (
+        <a
+          href={user.contrato.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-sm font-medium text-[#FA7B21] hover:text-[#FCA929]"
+        >
+          <FileText className="w-4 h-4" /> Ver contrato firmado
+        </a>
+      )}
+    </div>
+  );
+}
 
 interface DashboardTabProps {
   user: any;
@@ -22,27 +55,21 @@ interface DashboardTabProps {
 export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectionChange, onRefresh }: DashboardTabProps) {
   // Apoderado edit state
   const [isEditingApoderado, setIsEditingApoderado] = useState(false);
+  // El DNI del apoderado lo cambia la academia; el correo, con código (CambiarCorreo)
   const [apoderadoForm, setApoderadoForm] = useState({
     nombre_apoderado: '',
-    dni_apoderado: '',
-    correo: '',
     telefono: '',
     direccion: '',
   });
   const [isSavingApoderado, setIsSavingApoderado] = useState(false);
 
-  const totalAsistencias = user?.matricula?.clasesAsistidas || user?.asistencias?.filter((a: any) => a.estado === 'asistio').length || 0;
+  const totalAsistencias = user?.matricula?.clasesAsistidas || user?.asistencias?.filter((a: any) => cuentaComoClase(a.estado)).length || 0;
 
-  const diasRestantes = useMemo(() => {
-    if (!user?.matricula?.fechaFin) return 0;
-    const hoy = new Date();
-    const fin = new Date(user.matricula.fechaFin);
-    return Math.ceil((fin.getTime() - hoy.getTime()) / (1000 * 60 * 60 * 24));
-  }, [user?.matricula?.fechaFin]);
-
-  const estaVencido = diasRestantes < 0;
-  const diasVencido = estaVencido ? Math.abs(diasRestantes) : 0;
-  const estaPorVencer = diasRestantes >= 0 && diasRestantes <= (isMobile ? 7 : 15);
+  // Estado del plan: lo que dice el API (v_plan_alumno)
+  const plan = estadoDelPlan(user);
+  const estaVencido = plan.vencido;
+  const estaPorVencer = plan.porVencer;
+  const diasVencido = plan.diasDesdeVencimiento ?? 0;
   const progress = useMemo(() => {
     const total = user?.matricula?.clasesTotales || 0;
     if (total === 0) return 0;
@@ -61,8 +88,6 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
   const startEditApoderado = () => {
     setApoderadoForm({
       nombre_apoderado: user?.familia?.nombreFamilia || '',
-      dni_apoderado: user?.familia?.dniFamilia || '',
-      correo: user?.familia?.email || '',
       telefono: user?.familia?.telefono || '',
       direccion: user?.familia?.direccion || '',
     });
@@ -76,19 +101,13 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
   const saveApoderado = async () => {
     setIsSavingApoderado(true);
     try {
-      const token = localStorage.getItem('amasToken');
-      const res = await fetch(getApiUrl('/auth/perfil'), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(apoderadoForm),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
+      const r = await pedirApi<{ success?: boolean; error?: string }>('/auth/perfil', { method: 'PUT', body: apoderadoForm });
+      if (r.ok && r.data.success) {
         toast.success('Datos actualizados');
         setIsEditingApoderado(false);
         await onRefresh();
       } else {
-        toast.error(data.error || 'Error al guardar');
+        toast.error(r.data.error || 'Error al guardar');
       }
     } catch {
       toast.error('Error de conexion');
@@ -128,7 +147,7 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
                   className={cn("font-bold", estaVencido ? "text-red-400" : "text-white")}
                   style={{ fontSize: '1.75rem' }}
                 >
-                  {user?.matricula?.clasesRestantes ?? Math.abs(diasRestantes)}
+                  {user?.matricula?.clasesRestantes ?? 0}
                 </span>
                 <span className="text-[10px] text-zinc-500 uppercase tracking-wide">
                   {estaVencido ? 'Vencido' : 'Clases'}
@@ -273,8 +292,6 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
               <div className="p-4 space-y-3">
                 {[
                   { icon: User, label: 'Nombre', key: 'nombre_apoderado' as const },
-                  { icon: Shield, label: 'DNI Apoderado', key: 'dni_apoderado' as const },
-                  { icon: Mail, label: 'Correo', key: 'correo' as const },
                   { icon: Phone, label: 'Telefono', key: 'telefono' as const },
                   { icon: MapPin, label: 'Direccion', key: 'direccion' as const },
                 ].map((item) => (
@@ -285,7 +302,7 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
                     <div className="flex-1">
                       <label className="text-[10px] text-zinc-500 uppercase tracking-wide block mb-1">{item.label}</label>
                       <input
-                        type={item.key === 'correo' ? 'email' : 'text'}
+                        type="text"
                         value={apoderadoForm[item.key]}
                         onChange={(e) => setApoderadoForm(prev => ({ ...prev, [item.key]: e.target.value }))}
                         className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-[#FA7B21]/50"
@@ -293,6 +310,8 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
                     </div>
                   </div>
                 ))}
+                <CambiarCorreo actual={user?.familia?.email || ''} onCambiado={onRefresh} />
+                <p className="text-[11px] text-zinc-500">El DNI del apoderado lo cambia la academia: escríbenos por WhatsApp. Estos datos se guardan para todos tus hijos.</p>
               </div>
             ) : (
               <>
@@ -389,6 +408,8 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
           </div>
         </div>
 
+        <HorarioYContrato user={user} />
+
         {/* Mis Implementos */}
         <div className="bg-zinc-900/40 rounded-2xl border border-white/5 p-4">
           <div className="flex items-center gap-2 mb-3">
@@ -404,6 +425,7 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-sm text-zinc-300 truncate">{imp.tipo || '-'}</span>
                     {imp.talla && <span className="text-[10px] text-zinc-500 bg-white/5 px-1.5 py-0.5 rounded shrink-0">T: {imp.talla}</span>}
+                    {!imp.entregado && <span className="text-[10px] text-amber-300 bg-amber-500/15 px-1.5 py-0.5 rounded shrink-0">Por entregar</span>}
                   </div>
                   <span className="text-[10px] text-zinc-600 shrink-0 ml-2">
                     {imp.fechaAdquisicion
@@ -463,18 +485,18 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
               estaPorVencer ? "bg-amber-500/20 text-amber-400" :
                 "bg-[#FA7B21]/20 text-[#FCA929]"
           )}>
-            {estaVencido ? 'Vencido' : estaPorVencer ? 'Por vencer' : 'Vigente'}
+            {plan.etiqueta}
           </Badge>
         </div>
-        <p className="text-white/60 text-sm mb-1">Dias restantes</p>
+        <p className="text-white/60 text-sm mb-1">{estaVencido ? 'Dias desde que vencio' : 'Dias restantes'}</p>
         <p className={cn(
           "text-4xl font-bold",
           estaVencido ? "text-red-400" : estaPorVencer ? "text-amber-400" : "text-white"
         )}>
-          {estaVencido ? diasVencido : diasRestantes}
+          {estaVencido ? diasVencido : (plan.diasParaVencer ?? '—')}
         </p>
         <p className="text-white/40 text-xs mt-2">
-          hasta {formatDate(user?.matricula?.fechaFin)}
+          {user?.matricula?.fechaFin ? `hasta ${formatDate(user.matricula.fechaFin)}` : 'Sin fecha de fin'}
         </p>
       </div>
 
@@ -525,14 +547,40 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
             </div>
             <div>
               <p className="text-white/40 text-sm">Horario</p>
-              <p className="text-white text-lg">{user?.clases?.[0]?.horario || '-'}</p>
+              {user?.horario?.length ? (
+                user.horario.map((l: any, i: number) => <p key={i} className="text-white text-lg">{textoLineaHorario(l)}</p>)
+              ) : (
+                <p className="text-white text-lg">{user?.clases?.[0]?.horario || 'Sin horario asignado'}</p>
+              )}
             </div>
             <div>
               <p className="text-white/40 text-sm">Talla Uniforme</p>
-              <p className="text-white text-lg">{user?.estudiante?.tallaUniforme || '-'}</p>
+              <p className="text-white text-lg">{user?.estudiante?.tallaUniforme || 'Sin registrar'}</p>
             </div>
           </div>
         </div>
+        {user?.contrato?.url && (
+          <a
+            href={user.contrato.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2 text-sm font-medium text-[#FA7B21] hover:text-[#FCA929]"
+          >
+            <FileText className="w-4 h-4" /> Ver contrato firmado
+          </a>
+        )}
+        {user?.implementos?.some((i: any) => !i.entregado) && (
+          <div className="mt-6 pt-6 border-t border-white/5">
+            <p className="text-white/40 text-sm mb-2">Implementos por entregar</p>
+            <div className="flex flex-wrap gap-2">
+              {user.implementos.filter((i: any) => !i.entregado).map((i: any) => (
+                <span key={i.id} className="text-xs text-amber-300 bg-amber-500/15 px-2.5 py-1 rounded-lg">
+                  {i.tipo}{i.talla ? ` · ${i.talla}` : ''}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Mi informacion (Apoderado) - Desktop */}
@@ -561,8 +609,6 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
           <div className="grid grid-cols-2 gap-4">
             {[
               { icon: User, label: 'Nombre', key: 'nombre_apoderado' as const },
-              { icon: Shield, label: 'DNI Apoderado', key: 'dni_apoderado' as const },
-              { icon: Mail, label: 'Correo', key: 'correo' as const },
               { icon: Phone, label: 'Telefono', key: 'telefono' as const },
               { icon: MapPin, label: 'Direccion', key: 'direccion' as const, colSpan: true },
             ].map((item) => (
@@ -571,7 +617,7 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
                 <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
                   <item.icon className="w-4 h-4 text-[#FCA929] flex-shrink-0" />
                   <input
-                    type={item.key === 'correo' ? 'email' : 'text'}
+                    type="text"
                     value={apoderadoForm[item.key]}
                     onChange={(e) => setApoderadoForm(prev => ({ ...prev, [item.key]: e.target.value }))}
                     className="flex-1 bg-transparent border-none text-white text-sm placeholder-zinc-600 focus:outline-none"
@@ -579,6 +625,10 @@ export function DashboardTab({ user, isMobile, onNavigate: _onNavigate, onSectio
                 </div>
               </div>
             ))}
+            <div className="col-span-2 p-3 bg-white/5 rounded-xl">
+              <CambiarCorreo actual={user?.familia?.email || ''} onCambiado={onRefresh} />
+            </div>
+            <p className="col-span-2 text-xs text-white/40">El DNI del apoderado lo cambia la academia: escríbenos por WhatsApp. Estos datos se guardan para todos tus hijos.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-6">
