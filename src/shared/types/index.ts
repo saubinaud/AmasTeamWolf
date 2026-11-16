@@ -107,12 +107,6 @@ export type {
 } from './contrato';
 
 export type {
-  VerificationCode,
-  LoginResult,
-  CodeResult,
-} from './auth';
-
-export type {
   ApiResponse,
   ApiError,
   PaginatedResponse,
