@@ -1,136 +1,77 @@
-import { Button } from './ui/button';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { CalendarCheck, Clock, MapPin } from 'lucide-react';
+import { EnlaceInterno } from './EnlaceInterno';
+import { DIRECCION, DISTRITO } from '../config/contacto';
+import { HORARIO } from '../config/horario';
+import { ui } from '../styles/marca';
+
+// Foto real de la academia (alumno en clase con su profesora), recortada en
+// Cloudinary para que no salga el letrero con la marca anterior.
+const FOTO = (ancho: number) =>
+  `https://res.cloudinary.com/dkoocok3j/image/upload/c_crop,w_0.71,h_0.66,x_0,y_0.24,g_north_west/w_${ancho},q_auto,f_auto/v1763125698/Requested_Photos_and_Videos_8660_vy633p.jpg`;
 
 interface HeroHomeProps {
-  onOpenMatricula: () => void;
+  onNavigate: (page: string, sectionId?: string) => void;
 }
 
-export function HeroHome({ onOpenMatricula }: HeroHomeProps) {
-  const scrollToProgramas = () => {
-    const element = document.getElementById('programas');
-    element?.scrollIntoView({ behavior: 'smooth' });
-  };
+export function HeroHome({ onNavigate }: HeroHomeProps) {
+  const verProgramas = () => document.getElementById('programas')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
-    <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Advanced Gradient Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
-        
-        {/* Static gradient overlays - sin animaciones */}
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: 'radial-gradient(circle at 20% 50%, rgba(250, 123, 33, 0.15) 0%, transparent 50%)'
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            background: 'radial-gradient(circle at 80% 50%, rgba(252, 169, 41, 0.2) 0%, transparent 60%)'
-          }}
-        />
-
-        {/* Grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(252, 169, 41, 0.5) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(252, 169, 41, 0.5) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}
-        />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-4 pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 md:pb-20">
-        <div className="max-w-4xl md:max-w-5xl lg:max-w-6xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-4 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8">
-            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-[#FCA929]" />
-            <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Academia JMA Team Wolf</span>
-          </div>
-
-          {/* Main Title */}
-          <div className="mb-6 sm:mb-8 md:mb-10">
-            <div className="relative inline-block mb-4">
-              <h1
-                className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl relative z-10 px-4"
-                style={{
-                  background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 25%, #FDCB6E 50%, #FCA929 75%, #FA7B21 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
-              >
-                Formamos líderes
-              </h1>
-            </div>
-            <h1 
-              className="text-2xl sm:text-3xl md:text-3xl lg:text-4xl xl:text-5xl mb-4 px-4"
-              style={{
-                background: 'linear-gradient(to right, #fef2f2, #ffffff, #fef2f2)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}
-            >
-              desde pequeños
-            </h1>
-          </div>
-          
-          <p className="text-white/80 text-base sm:text-lg md:text-xl lg:text-2xl mb-8 sm:mb-10 md:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
-            Descubre el programa ideal para tu hijo y empieza hoy. Disciplina, respeto y crecimiento personal a través del taekwondo.
+    <section id="hero" className="container mx-auto px-4 pt-24 pb-14 sm:pt-28 md:pb-20 lg:pt-32">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+        <div>
+          <p className={ui.antetitulo}>Team Wolf × JMA</p>
+          <h1 className={`mt-4 ${ui.h1}`}>
+            Taekwondo para niños en <span className={ui.resalte}>{DISTRITO}</span>
+          </h1>
+          <p className={`mt-5 max-w-xl ${ui.bajada}`}>
+            Formamos líderes desde pequeños: disciplina, respeto y confianza a través del taekwondo, con seguimiento de su avance en cada etapa.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center px-4">
-            <Button
+          <ul className="mt-7 flex flex-col gap-2 text-sm text-white/75 sm:flex-row sm:flex-wrap">
+            <li className={ui.chip}>
+              <MapPin className="h-4 w-4 text-[#FCA929]" /> {DIRECCION}, {DISTRITO}
+            </li>
+            <li className={ui.chip}>
+              <Clock className="h-4 w-4 text-[#FCA929]" /> {HORARIO.map((h) => h.corto).join(' · ')}
+            </li>
+          </ul>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <EnlaceInterno
+              page="clase-prueba"
+              onNavigate={onNavigate}
+              className={`${ui.btnPrimary} w-full sm:w-auto`}
+              data-umami-event="Click Clase de prueba"
+              data-umami-event-ubicacion="hero"
+            >
+              <CalendarCheck className="h-5 w-5" /> Agendar clase de prueba
+            </EnlaceInterno>
+            <button
               type="button"
-              onClick={scrollToProgramas}
-              size="lg"
+              onClick={verProgramas}
               data-umami-event="Click Ver Programas"
               data-umami-event-ubicacion="hero"
-              className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto shadow-2xl shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 relative overflow-hidden group active:scale-95"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
+              className={`${ui.btnSecondary} w-full sm:w-auto`}
             >
-              <span className="relative z-10 pointer-events-none">Ver programas</span>
-            </Button>
-            
-            <Button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onOpenMatricula();
-              }}
-              size="lg"
-              data-umami-event="Click Matricular Ahora"
-              data-umami-event-ubicacion="hero"
-              className="bg-transparent border border-[#FA7B21]/30 text-white hover:bg-[#FA7B21]/10 hover:border-[#FA7B21]/50 px-6 sm:px-10 py-5 sm:py-7 text-base sm:text-lg w-full sm:w-auto transition-all duration-300 active:scale-95"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              Matricular ahora
-            </Button>
+              Ver programas
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 pointer-events-none select-none">
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-white/40 text-xs sm:text-sm">Desliza para explorar</span>
-          <ChevronDown className="text-[#FCA929]/60 h-5 w-5 sm:h-6 sm:w-6 animate-bounce" />
-        </div>
+        <figure className="relative mx-auto w-full max-w-md lg:max-w-none">
+          <div aria-hidden className="pointer-events-none absolute -inset-6 rounded-[2.5rem] bg-[#FA7B21]/15 blur-3xl" />
+          <img
+            src={FOTO(800)}
+            srcSet={`${FOTO(480)} 480w, ${FOTO(800)} 800w, ${FOTO(1100)} 1100w`}
+            sizes="(min-width: 1024px) 40vw, (min-width: 640px) 28rem, 100vw"
+            alt="Alumno de Team Wolf practicando taekwondo con su profesora en la academia de San Borja"
+            width={800}
+            height={992}
+            loading="eager"
+            className="relative aspect-[4/3] w-full rounded-3xl border border-white/10 object-cover object-[50%_35%] sm:aspect-[4/5]"
+          />
+        </figure>
       </div>
     </section>
   );

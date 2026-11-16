@@ -1,129 +1,64 @@
-import { Award, Users, Target, Heart } from 'lucide-react';
+import { Award, Users, Target, Heart, MapPin, Clock, ArrowUpRight } from 'lucide-react';
+import { DIRECCION, DISTRITO } from '../config/contacto';
+import { HORARIO } from '../config/horario';
+import { ui } from '../styles/marca';
+
+const MAPA = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${DIRECCION}, ${DISTRITO}, Lima`)}`;
+
+const VALORES = [
+  { icono: Award, titulo: 'Disciplina', texto: 'Hábitos que se notan dentro y fuera del tatami' },
+  { icono: Heart, titulo: 'Respeto', texto: 'Por los compañeros, los profesores y uno mismo' },
+  { icono: Target, titulo: 'Excelencia', texto: 'Mejorar un poco en cada clase' },
+  { icono: Users, titulo: 'Comunidad', texto: 'Familias que entrenan y celebran juntas' },
+];
 
 export function NosotrosSection() {
-  const values = [
-    {
-      icon: <Award className="w-8 h-8" />,
-      title: 'Disciplina',
-      description: 'Formamos hábitos que transforman vidas'
-    },
-    {
-      icon: <Heart className="w-8 h-8" />,
-      title: 'Respeto',
-      description: 'Cultivamos valores fundamentales'
-    },
-    {
-      icon: <Target className="w-8 h-8" />,
-      title: 'Excelencia',
-      description: 'Buscamos la mejora continua'
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: 'Comunidad',
-      description: 'Creamos familia y pertenencia'
-    }
-  ];
-
   return (
-    <section id="nosotros" className="py-12 sm:py-16 md:py-20 lg:py-24 bg-gradient-to-b from-zinc-950 to-black relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(252, 169, 41, 0.3) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(252, 169, 41, 0.3) 1px, transparent 1px)
-            `,
-            backgroundSize: '50px 50px'
-          }}
-        />
-      </div>
-
-      {/* Glowing orbs */}
-      <div className="absolute top-20 left-10 w-72 h-72 bg-[#FA7B21]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl pointer-events-none" />
-      
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 bg-[#431C28]/30 border border-[#FA7B21]/30 rounded-full px-6 py-2 mb-6">
-            <div className="w-2 h-2 bg-[#FCA929] rounded-full" />
-            <span className="text-[#FCA929] text-xs sm:text-sm uppercase tracking-wider">Nuestra Filosofía</span>
-          </div>
-          <h2 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-3 sm:mb-4 px-4"
-            style={{
-              background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 50%, #FA7B21 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-          >
-            Nosotros
-          </h2>
-          <p className="text-white/80 text-sm sm:text-base md:text-lg max-w-3xl mx-auto px-4 leading-relaxed">
-            En <span className="text-[#FCA929] font-semibold">JMA Team Wolf</span> creemos que el taekwondo va más allá del deporte:
-            Es una herramienta para forjar carácter, disciplina y propósito.
-            Cada entrenamiento es una oportunidad para aprender a superarse,
-            liderar con el ejemplo y crecer como persona dentro y fuera del tatami.
+    <section id="nosotros" className={`${ui.seccion} scroll-mt-20`}>
+      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+        <div>
+          <p className={ui.antetitulo}>Nosotros</p>
+          <h2 className={`mt-4 ${ui.h2}`}>Más que un deporte</h2>
+          <p className={`mt-5 ${ui.bajada}`}>
+            En Team Wolf × JMA creemos que el taekwondo es una herramienta para forjar carácter, disciplina y propósito.
+            Cada entrenamiento es una oportunidad para superarse, liderar con el ejemplo y crecer como persona.
           </p>
+          <p className="mt-4 leading-relaxed text-white/60">
+            Guiamos a cada alumno en su desarrollo físico, mental y emocional, con valores de respeto, perseverancia y confianza.
+          </p>
+
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+            {VALORES.map(({ icono: Icono, titulo, texto }) => (
+              <li key={titulo} className="flex items-start gap-3">
+                <Icono className="mt-0.5 h-5 w-5 shrink-0 text-[#FCA929]" strokeWidth={1.75} />
+                <div>
+                  <p className="font-semibold text-white">{titulo}</p>
+                  <p className="text-sm text-white/55">{texto}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Mission Statement */}
-        <div className="max-w-4xl mx-auto mb-12 sm:mb-16">
-          <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border-2 border-[#FA7B21]/30 rounded-2xl p-6 sm:p-8 md:p-10">
-            <div className="flex items-start gap-4">
-              <div>
-                <h3 className="text-white text-xl sm:text-2xl mb-3">
-                  Nuestra Misión
-                </h3>
-                <p className="text-white/80 text-sm sm:text-base leading-relaxed">
-                  Formamos líderes capaces de inspirar a otros a través del taekwondo.
-                  Nuestro propósito es guiar a cada alumno en un proceso de desarrollo físico, mental y emocional,
-                  cultivando valores de respeto, perseverancia y confianza.
-                  En cada clase, promovemos la excelencia, el compromiso y el trabajo en equipo.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Values Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {values.map((value, index) => (
-            <div
-              key={index}
-              className="bg-zinc-900/50 border border-white/10 rounded-xl p-6 hover:border-[#FA7B21]/30 transition-all duration-300"
-            >
-              <div className="text-[#FCA929] mb-4">
-                {value.icon}
-              </div>
-              <h4 className="text-white text-lg mb-2">
-                {value.title}
-              </h4>
-              <p className="text-white/70 text-sm">
-                {value.description}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-6 sm:gap-8 max-w-3xl mx-auto">
-          {[
-            { number: '300+', label: 'Estudiantes' },
-            { number: '1', label: 'Sede' },
-            { number: '3', label: 'Años' }
-          ].map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-[#FCA929] text-3xl sm:text-4xl md:text-5xl mb-2">
-                {stat.number}
-              </div>
-              <div className="text-white/70 text-sm sm:text-base">
-                {stat.label}
-              </div>
-            </div>
-          ))}
+        {/* Datos prácticos de la sede */}
+        <div className={`${ui.card} self-start overflow-hidden`}>
+          <p className="px-6 pt-6 text-sm font-semibold text-white sm:px-8 sm:pt-8">La academia</p>
+          <ul className="divide-y divide-white/[0.07] px-6 pb-2 sm:px-8">
+            <li>
+              <a href={MAPA} target="_blank" rel="noopener noreferrer" className="group flex min-h-[56px] items-center gap-4 py-4">
+                <MapPin className="h-5 w-5 shrink-0 text-[#FCA929]" strokeWidth={1.75} />
+                <span className="flex-1 text-white/90">{DIRECCION}, {DISTRITO}, Lima</span>
+                <ArrowUpRight className="h-4 w-4 text-white/40 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+            </li>
+            {HORARIO.map((h) => (
+              <li key={h.dias} className="flex items-center gap-4 py-4">
+                <Clock className="h-5 w-5 shrink-0 text-[#FCA929]" strokeWidth={1.75} />
+                <span className="w-32 shrink-0 text-sm text-white/45">{h.dias}</span>
+                <span className="text-white/90">{h.horas}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </section>
