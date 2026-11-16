@@ -17,7 +17,7 @@ const irAlFormulario = () =>
 const irAPlanes = () =>
   document.getElementById('planes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-/** Video del hero: arranca sin sonido (trae subtítulos) y con un toque se escucha desde el inicio. */
+/** Video del hero: arranca sin sonido, con subtítulos (pista VTT), y con un toque se escucha desde el inicio. */
 function VideoOmYoga() {
   const ref = useRef<HTMLVideoElement>(null);
   const [mudo, setMudo] = useState(true);
@@ -52,14 +52,17 @@ function VideoOmYoga() {
           preload="metadata"
           onEnded={() => { if (ref.current) { ref.current.muted = true; ref.current.loop = true; void ref.current.play(); setMudo(true); } }}
           aria-label="Celeste, instructora principal, presenta el programa OmYoga"
-        />
+        >
+          <track kind="captions" src={OM_YOGA.subtitulos} srcLang="es" label="Español" default />
+        </video>
         <button
           type="button"
           onClick={alternarSonido}
-          className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-black/60 px-4 py-2.5 text-sm text-white backdrop-blur-md transition hover:bg-black/75 active:scale-95"
+          aria-label={mudo ? 'Ver con sonido' : 'Silenciar'}
+          className="absolute right-2.5 top-2.5 flex h-10 min-w-10 items-center justify-center gap-2 rounded-full bg-black/60 px-2.5 text-sm text-white backdrop-blur-md transition hover:bg-black/75 active:scale-95 sm:right-3 sm:top-3 sm:h-auto sm:px-4 sm:py-2.5"
         >
           {mudo ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-          {mudo ? 'Ver con sonido' : 'Silenciar'}
+          <span className="hidden sm:inline">{mudo ? 'Ver con sonido' : 'Silenciar'}</span>
         </button>
       </div>
     </div>

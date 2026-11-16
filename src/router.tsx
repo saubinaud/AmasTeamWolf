@@ -408,7 +408,7 @@ function PadronRoute() {
 function OmYogaRoute() {
   return (
     <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="OmYoga: clase de prueba gratis - JMA Team Wolf" description="Hatha Yoga para adultos con Celeste en San Borja. Primera clase de prueba gratis el miércoles 18 de noviembre: inscríbete." keywords="yoga San Borja, hatha yoga Lima, clase de yoga gratis, OmYoga, yoga adultos" url="https://teamwolfxjma.com/om-yoga" image="https://teamwolfxjma.com/media/om-yoga-poster.jpg" />
+      <SEO title="OmYoga: clase de prueba gratis - JMA Team Wolf" description="Hatha Yoga para adultos con Celeste en San Borja. Primera clase de prueba gratis el miércoles 18 de noviembre: inscríbete." keywords="yoga San Borja, hatha yoga Lima, clase de yoga gratis, OmYoga, yoga adultos" url="https://teamwolfxjma.com/om-yoga" image="https://teamwolfxjma.com/media/om-yoga-v2-poster.jpg" />
       <OmYogaPage />
     </Suspense></LazyErrorBoundary>
   );

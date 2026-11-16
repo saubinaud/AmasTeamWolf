@@ -530,3 +530,12 @@ html {
     font-size: 16px;
   }
 }
+
+/* Subtítulos de los videos (pistas VTT, p. ej. el de OmYoga) */
+video::cue {
+  font-family: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.6);
+  line-height: 1.35;
+}
