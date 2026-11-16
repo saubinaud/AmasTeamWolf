@@ -1,139 +1,88 @@
-import { Badge } from './ui/badge';
-import { Check } from 'lucide-react';
+import { Check, Info } from 'lucide-react';
 import { useCatalogoPublico } from '../hooks/useCatalogoPublico';
 import { programaPorCodigo, soles, tituloWeb, type ItemCatalogo } from '../utils/catalogo';
+import { ui } from '../styles/marca';
+
+/** Leadership Wolf según el catálogo: precio, tachado, implementos que trae y beneficios. */
+export function useLeadership() {
+  const { items, estado } = useCatalogoPublico();
+  const programa = programaPorCodigo(items, 'leadership');
+  const implementos = (programa?.incluye ?? [])
+    .map((id) => items.find((i) => i.id === id))
+    .filter((i): i is ItemCatalogo => !!i);
+  return {
+    programa,
+    estado,
+    w: programa?.web ?? null,
+    titulo: programa ? tituloWeb(programa) : 'Leadership Wolf',
+    antes: programa?.web?.precio_referencia ?? null,
+    lineas: [...implementos.map((i) => tituloWeb(i)), ...(programa?.web?.beneficios ?? [])],
+  };
+}
+
+/** Precio de Leadership (del catálogo) con su tachado, nota y aviso. */
+export function PrecioLeadership({ grande = false }: { grande?: boolean }) {
+  const { programa, estado, w, antes } = useLeadership();
+  if (!programa) {
+    return <p className="text-white/70">{estado === 'cargando' ? 'Cargando precio…' : 'Precio: consúltalo por WhatsApp'}</p>;
+  }
+  return (
+    <div>
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className={`${grande ? 'text-5xl sm:text-6xl' : 'text-5xl'} font-bold tracking-tight text-white tabular-nums`}>{soles(programa.precio)}</span>
+        {antes != null && <span className="text-lg text-white/40 line-through tabular-nums">{soles(antes)}</span>}
+      </div>
+      {(antes != null || w?.nota_precio) && (
+        <p className="mt-2 text-sm text-white/55">
+          {antes != null && <span className="font-semibold text-[#FCA929]">Ahorras {soles(antes - programa.precio)}</span>}
+          {antes != null && w?.nota_precio && ' · '}
+          {w?.nota_precio}
+        </p>
+      )}
+      <p className="mt-1 text-sm text-white/45">El precio se ajusta según los implementos que ya tenga.</p>
+      {w?.aviso_texto && (
+        <p className="mt-4 flex items-start gap-2.5 rounded-xl bg-white/[0.05] px-3.5 py-3 text-sm text-white/80">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#FCA929]" />
+          <span>{w.aviso_titulo && <strong className="font-semibold text-white">{w.aviso_titulo}. </strong>}{w.aviso_texto}</span>
+        </p>
+      )}
+    </div>
+  );
+}
 
 interface LeadershipProgramCardProps {
   onEnrollClick: () => void;
 }
 
 /**
- * Tarjeta de Leadership Wolf: precio, implementos que trae (los del catálogo),
- * beneficios, tachado, sello y aviso salen del API (Space ▸ Catálogo ▸ En la web).
+ * Tarjeta de cierre de Leadership Wolf: lo que incluye, precio y botón.
+ * Todo sale del API (Space ▸ Catálogo ▸ En la web).
  */
 export function LeadershipProgramCard({ onEnrollClick }: LeadershipProgramCardProps) {
-  const { items, estado } = useCatalogoPublico();
-  const programa = programaPorCodigo(items, 'leadership');
-  const w = programa?.web;
-  const implementos = (programa?.incluye ?? [])
-    .map((id) => items.find((i) => i.id === id))
-    .filter((i): i is ItemCatalogo => !!i);
-  // Implementos del catálogo + lo que se escribe en Space, repartidos en dos columnas
-  const lineas = [...implementos.map((i) => tituloWeb(i)), ...(w?.beneficios ?? [])];
-  const mitad = Math.ceil(lineas.length / 2);
-  const antes = w?.precio_referencia ?? null;
+  const { w, titulo, lineas } = useLeadership();
 
   return (
-    <section id="programa" className="py-12 sm:py-16 md:py-20 bg-gradient-to-b from-black via-zinc-950 to-black">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div 
-          className="bg-gradient-to-br from-[#2B1A1F] via-[#1F1418] to-black border-2 rounded-2xl p-6 sm:p-8 md:p-10 shadow-2xl shadow-[#FA7B21]/20 relative overflow-hidden"
-          style={{
-            borderColor: 'rgba(250, 123, 33, 0.3)'
-          }}
-        >
-          {/* Background gradient accents */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/5 via-transparent to-[#FCA929]/5 pointer-events-none" />
-          
-          <div className="relative z-10">
-            {/* Badge */}
-            {w?.sello && (
-              <div className="flex justify-center mb-6">
-                <Badge
-                  className="bg-[#FA7B21] hover:bg-[#FA7B21] text-white px-6 py-2 uppercase tracking-wider shadow-lg pointer-events-none select-none"
-                >
-                  {w.sello}
-                </Badge>
-              </div>
-            )}
+    <section id="programa" className={ui.seccion}>
+      <div className={`mx-auto max-w-3xl ${ui.cardDestacada} ${ui.cardPad}`}>
+        {w?.sello && <p className="text-xs font-medium uppercase tracking-[0.14em] text-white/45">{w.sello}</p>}
+        <h2 className={`mt-1.5 ${ui.h2}`}>{titulo}</h2>
+        {w?.texto && <p className="mt-2 text-white/60">{w.texto}</p>}
 
-            {/* Title */}
-            <div className="text-center mb-6">
-              <h2 className="text-white mb-3 text-2xl sm:text-3xl md:text-4xl uppercase">
-                {programa ? tituloWeb(programa) : 'Leadership Wolf'}
-              </h2>
-              {w?.texto && <p className="text-white/70 text-sm sm:text-base">{w.texto}</p>}
-            </div>
+        <div className="mt-6"><PrecioLeadership /></div>
 
-            {/* Lo que incluye */}
-            {lineas.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-8">
-                {[lineas.slice(0, mitad), lineas.slice(mitad)].map((col, c) => (
-                  <div key={c} className="space-y-3">
-                    {col.map((t) => (
-                      <div key={t} className="flex items-center gap-3">
-                        <Check className="h-5 w-5 text-[#FA7B21] flex-shrink-0" />
-                        <span className="text-white/90 text-sm sm:text-base">{t}</span>
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
+        {lineas.length > 0 && (
+          <ul className="mt-6 grid gap-3 border-t border-white/[0.07] pt-6 sm:grid-cols-2">
+            {lineas.map((t) => (
+              <li key={t} className="flex items-start gap-3 text-white/80">
+                <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#FCA929]" strokeWidth={2} /> {t}
+              </li>
+            ))}
+          </ul>
+        )}
 
-            {/* Price */}
-            <div className="bg-gradient-to-br from-black/60 to-zinc-900/60 rounded-xl p-6 sm:p-8 mb-6 border border-white/5">
-              {programa ? (
-                <>
-                  <div className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 mb-3">
-                    {antes != null && (
-                      <span className="text-white/40 line-through text-base sm:text-lg">{soles(antes)}</span>
-                    )}
-                    <span className="text-white text-4xl sm:text-5xl md:text-6xl">{soles(programa.precio)}</span>
-                  </div>
-                  {(antes != null || w?.nota_precio) && (
-                    <p className="text-center text-[#FCA929] text-sm sm:text-base mb-4">
-                      {[antes != null ? `Ahorra ${soles(antes - programa.precio)}` : null, w?.nota_precio].filter(Boolean).join(' · ')}
-                    </p>
-                  )}
-                  <div className="text-center">
-                    <p className="text-white/50 text-xs sm:text-sm">
-                      * El precio se ajusta según los implementos que ya poseas
-                    </p>
-                  </div>
-                </>
-              ) : (
-                <p className="text-center text-white/70 text-base">
-                  {estado === 'cargando' ? 'Cargando precio…' : 'Precio: consultar por WhatsApp'}
-                </p>
-              )}
-            </div>
-
-            {/* Aviso (Space ▸ Catálogo ▸ En la web) */}
-            {w?.aviso_texto && (
-              <div
-                className="rounded-lg p-4 mb-6 text-center"
-                style={{
-                  backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                  borderColor: 'rgba(34, 197, 94, 0.3)',
-                  borderWidth: '1px'
-                }}
-              >
-                {w.aviso_titulo && <p className="text-sm sm:text-base font-semibold mb-1" style={{ color: 'rgb(34, 197, 94)' }}>{w.aviso_titulo}</p>}
-                <p className="text-sm sm:text-base" style={{ color: 'rgb(34, 197, 94)' }}>
-                  {w.aviso_texto}
-                </p>
-              </div>
-            )}
-
-            {/* CTA Button */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onEnrollClick();
-              }}
-              className="w-full bg-[#FA7B21] hover:bg-[#F36A15] text-white py-6 sm:py-7 text-base sm:text-lg rounded-lg text-center shadow-2xl shadow-[#FA7B21]/40 hover:shadow-[#FA7B21]/60 transition-all duration-300 active:scale-95"
-              style={{
-                touchAction: 'manipulation',
-                WebkitTapHighlightColor: 'transparent'
-              }}
-            >
-              Inscribirme al Programa Leadership
-            </button>
-          </div>
-        </div>
+        <button type="button" onClick={onEnrollClick} className={`mt-8 w-full ${ui.btnPrimary}`}>
+          Inscribirme a Leadership
+        </button>
       </div>
     </section>
   );

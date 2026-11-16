@@ -18,7 +18,7 @@ export function ImplementsSection() {
     <section id="implementos" className="py-12 sm:py-16 md:py-20 bg-black">
       <div className="container mx-auto px-4">
         <FadeIn className="text-center mb-8 sm:mb-12">
-          <h2 className="text-white mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl">Implementos del Programa {programa ? tituloWeb(programa) : 'Leadership Wolf'}</h2>
+          <h2 className="text-white mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl">Implementos del programa {programa ? tituloWeb(programa) : 'Leadership Wolf'}</h2>
           <p className="text-white/70 text-base sm:text-lg md:text-xl max-w-3xl mx-auto px-4">
             Equipamiento específico con características técnicas precisas
           </p>

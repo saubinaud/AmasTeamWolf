@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { HeaderMain } from './HeaderMain';
 import { FooterMain } from './FooterMain';
-import { Button } from './ui/button';
-import { ChevronDown, Award, Clock, User, Loader2, Calendar } from 'lucide-react';
+import { ChevronDown, Award, Clock, User, Loader2, Calendar, ClipboardList, Shirt, CalendarX } from 'lucide-react';
+import { ui } from '../styles/marca';
 import { toast } from 'sonner';
 
 interface GraduacionPageProps {
-  onNavigate: (page: string) => void;
+  onNavigate: (page: string, sectionId?: string) => void;
 }
 
 interface GraduadoRaw {
@@ -293,26 +293,9 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
   );
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden animate-fadeIn">
-      {/* Advanced Gradient Background - Optimizado para móviles */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-zinc-950 to-black" />
-        {!isMobileDevice && (
-          <>
-            <div
-              className="absolute inset-0 opacity-30"
-              style={{
-                background: 'radial-gradient(circle at 20% 50%, rgba(250, 123, 33, 0.15) 0%, transparent 50%)'
-              }}
-            />
-            <div
-              className="absolute inset-0 opacity-20"
-              style={{
-                background: 'radial-gradient(circle at 80% 50%, rgba(252, 169, 41, 0.2) 0%, transparent 60%)'
-              }}
-            />
-          </>
-        )}
+    <div className={`relative overflow-x-hidden ${ui.pagina}`}>
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -left-32 -top-40 h-[34rem] w-[34rem] rounded-full bg-[#FA7B21]/15 blur-3xl" />
       </div>
 
       <div className="relative z-10">
@@ -324,47 +307,21 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
           currentPage="graduacion"
         />
 
-        {/* Hero Section */}
-        <section className="relative pt-24 sm:pt-32 pb-12 sm:pb-20 px-4 overflow-hidden">
-          <div className="container mx-auto max-w-6xl text-center">
-            {/* Decorative elements - Solo en desktop */}
-            {!isMobileDevice && (
-              <>
-                <div className="absolute top-20 left-1/4 w-72 h-72 bg-[#FA7B21]/10 rounded-full blur-3xl" />
-                <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#FCA929]/10 rounded-full blur-3xl" />
-              </>
+        {/* Hero */}
+        <section className="container mx-auto px-4 pt-24 pb-8 sm:pt-32 sm:pb-12">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className={ui.antetitulo}>Ceremonias de graduación</p>
+            <h1 className={`mt-4 ${ui.h1}`}>Graduaciones</h1>
+            <p className={`mx-auto mt-5 max-w-2xl ${ui.bajada}`}>
+              {!isLoading && graduados.length === 0
+                ? 'Aquí publicamos la lista de cada ceremonia cuando se acerca la fecha. Abajo están las respuestas a las dudas más comunes.'
+                : 'Busca a tu hijo en la lista de la próxima ceremonia. Si ves un error, avísanos con el formulario de abajo.'}
+            </p>
+            {!isLoading && graduados.length > 0 && (
+              <button type="button" onClick={scrollToGraduados} className={`mt-8 ${ui.btnPrimary}`}>
+                Ver graduados <ChevronDown className="h-5 w-5" />
+              </button>
             )}
-            
-            <div className="relative z-10">
-              <div className="inline-flex items-center gap-2 mb-4 sm:mb-6 px-3 sm:px-4 py-2 bg-white/5 border border-white/10 rounded-full">
-                <Award className="w-4 h-4 text-[#FCA929]" />
-                <span className="text-xs sm:text-sm text-white/80">Ceremonia de Graduación</span>
-              </div>
-              
-              <h1 
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-4 sm:mb-6 px-4"
-                style={{
-                  background: 'linear-gradient(135deg, #FA7B21 0%, #FCA929 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
-              >
-                Graduaciones JMA Team Wolf 🐺
-              </h1>
-              
-              <p className="text-base sm:text-lg md:text-xl text-white/70 mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
-                Consulta aquí los resultados actualizados de nuestras ceremonias de graduación. Después de los horarios, encontrarás un formulario para dudas o correcciones y respuestas para preguntas frecuentes.
-              </p>
-              
-              <Button 
-                onClick={scrollToGraduados}
-                className="bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:opacity-90 text-white px-6 sm:px-8 py-5 sm:py-6 rounded-xl transition-opacity"
-              >
-                Ver graduados
-                <ChevronDown className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-              </Button>
-            </div>
           </div>
         </section>
 
@@ -372,9 +329,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
         {!isLoading && graduados.length > 0 && graduados[0].FECHA && (
           <section className="py-8 px-4">
             <div className="container mx-auto max-w-4xl">
-              <div className="relative bg-gradient-to-br from-[#FA7B21]/10 to-[#FCA929]/10 rounded-2xl border-2 border-[#FA7B21]/30 p-6 sm:p-8 overflow-hidden group hover:border-[#FA7B21]/50 transition-all duration-300">
-                {/* Decorative gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FA7B21]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className={`relative overflow-hidden ${ui.cardDestacada} ${ui.cardPad}`}>
                 
                 <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-[#FA7B21] to-[#FCA929] flex items-center justify-center shadow-lg shadow-orange-500/30 flex-shrink-0">
@@ -383,7 +338,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                   
                   <div className="text-center sm:text-left">
                     <p className="text-sm sm:text-base text-[#FCA929] mb-1">
-                      Fecha de la Graduación
+                      Fecha de la graduación
                     </p>
                     <p className="text-2xl sm:text-3xl text-white">
                       {graduados[0].FECHA}
@@ -411,10 +366,9 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                 </div>
               ) : null
             ) : graduados.length === 0 ? (
-              <div className="text-center py-20">
-                <Award className="w-12 h-12 sm:w-16 sm:h-16 text-white/20 mx-auto mb-4" />
-                <p className="text-white/60 text-sm sm:text-base">No hay graduados para mostrar en este momento.</p>
-              </div>
+              <p className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-center text-white/65">
+                Todavía no hay una ceremonia publicada. La lista aparecerá aquí cuando se acerque la fecha.
+              </p>
             ) : (
               turnosOrdenados.map(turno => (
                 <div key={turno} className="mb-12 sm:mb-16">
@@ -431,7 +385,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                       return (
                         <div
                           key={cardIndex}
-                          className={`relative bg-black/40  rounded-xl sm:rounded-2xl shadow-lg transition-all overflow-hidden group cursor-pointer border-2 border-[#FA7B21]/40 hover:border-[#FA7B21] ${
+                          className={`relative bg-black/40  rounded-xl sm:rounded-2xl shadow-lg transition-[border-color,box-shadow,transform] overflow-hidden group cursor-pointer border-2 border-[#FA7B21]/40 hover:border-[#FA7B21] ${
                             !reduceMotion && !isMobileDevice ? 'hover:shadow-2xl hover:-translate-y-2 duration-500' : 'duration-300'
                           }`}
                           onClick={() => setExpandedCard(isExpanded ? null : parseInt(cardIndex.replace(/\D/g, '') + index))}
@@ -461,7 +415,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                                     {graduado.APELLIDO}
                                   </p>
                                 </div>
-                                <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all flex-shrink-0 ${
+                                <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-[background-color,color,transform] flex-shrink-0 ${
                                   reduceMotion ? 'duration-150' : 'duration-300'
                                 } ${
                                   isExpanded 
@@ -480,7 +434,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                             </div>
                             
                             {/* Rango badge - Diseño pastilla mejorado */}
-                            <div className={`relative inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] transition-all ${
+                            <div className={`relative inline-flex items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2 sm:py-3 rounded-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] transition-[box-shadow,transform] ${
                               !isMobileDevice ? 'shadow-lg shadow-orange-500/25 group-hover:shadow-orange-500/40 group-hover:scale-[1.02] duration-300' : 'shadow-md duration-200'
                             } max-w-full`}>
                               {!isMobileDevice && (
@@ -520,15 +474,15 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
           </div>
         </section>
 
-        {/* Comentarios Section */}
-        <section className="py-12 sm:py-16 px-4 bg-zinc-900/50">
+        {/* Correcciones: solo cuando hay una lista publicada */}
+        {!isLoading && graduados.length > 0 && <section className="py-12 sm:py-16 px-4 bg-zinc-900/50">
           <div className="container mx-auto max-w-3xl">
             <div className="text-center mb-8 sm:mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl text-white mb-3 sm:mb-4 px-4">
-                ¿Tiene alguna corrección o comentario?
+                ¿Ves algún error en la lista?
               </h2>
               <p className="text-white/60 text-sm sm:text-base px-4">
-                Rellene el siguiente formulario y envíenos su observación.
+                Cuéntanos qué hay que corregir y lo revisamos.
               </p>
             </div>
 
@@ -536,15 +490,15 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               <div className="space-y-4 sm:space-y-6">
                 {/* Nombre */}
                 <div>
-                  <label htmlFor="nombre" className="block text-white mb-2 text-sm sm:text-base">
-                    Nombre del Alumno
+                  <label htmlFor="nombre" className={ui.label}>
+                    Nombre del alumno
                   </label>
                   <input
                     id="nombre"
                     type="text"
                     value={formData.nombre}
                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#FCA929] transition-colors text-sm sm:text-base"
+                    className={ui.input}
                     placeholder="Ingrese su nombre"
                     required
                   />
@@ -552,15 +506,15 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
 
                 {/* Apellido */}
                 <div>
-                  <label htmlFor="apellido" className="block text-white mb-2 text-sm sm:text-base">
-                    Apellido del Alumno
+                  <label htmlFor="apellido" className={ui.label}>
+                    Apellido del alumno
                   </label>
                   <input
                     id="apellido"
                     type="text"
                     value={formData.apellido}
                     onChange={(e) => setFormData({ ...formData, apellido: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#FCA929] transition-colors text-sm sm:text-base"
+                    className={ui.input}
                     placeholder="Ingrese su apellido"
                     required
                   />
@@ -568,7 +522,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
 
                 {/* Correo */}
                 <div>
-                  <label htmlFor="correo" className="block text-white mb-2 text-sm sm:text-base">
+                  <label htmlFor="correo" className={ui.label}>
                     Correo (opcional)
                   </label>
                   <input
@@ -576,21 +530,21 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                     type="email"
                     value={formData.correo}
                     onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#FCA929] transition-colors text-sm sm:text-base"
+                    className={ui.input}
                     placeholder="Ingresa tu correo"
                   />
                 </div>
 
                 {/* Comentario */}
                 <div>
-                  <label htmlFor="comentario" className="block text-white mb-2 text-sm sm:text-base">
+                  <label htmlFor="comentario" className={ui.label}>
                     Comentario adicional
                   </label>
                   <textarea
                     id="comentario"
                     value={formData.comentario}
                     onChange={(e) => setFormData({ ...formData, comentario: e.target.value })}
-                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder:text-white/40 focus:outline-none focus:border-[#FCA929] transition-colors min-h-[100px] sm:min-h-[120px] resize-y text-sm sm:text-base"
+                    className={`${ui.input} min-h-[120px] resize-y`}
                     placeholder="Escriba su comentario u observación aquí..."
                     required
                   />
@@ -605,52 +559,46 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                       </svg>
                     </div>
                     <p className="text-green-400 text-xs sm:text-sm">
-                      ✅ ¡Gracias! Tu comentario ha sido enviado correctamente.
+                      Gracias. Recibimos tu comentario y lo revisaremos.
                     </p>
                   </div>
                 )}
 
                 {/* Submit Button */}
-                <Button
+                <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:opacity-90 text-white py-5 sm:py-6 rounded-xl transition-opacity disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                  className={`w-full ${ui.btnPrimary}`}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-2 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                       Enviando...
                     </>
                   ) : (
                     'Enviar comentario'
                   )}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
-        </section>
+        </section>}
 
         {/* Preguntas Frecuentes Section */}
         <section className="py-12 sm:py-16 px-4 bg-black/30">
           <div className="container mx-auto max-w-4xl">
             <div className="text-center mb-8 sm:mb-12">
-              <div className="inline-flex items-center gap-2 mb-4 sm:mb-6 px-3 sm:px-4 py-2 bg-[#FA7B21]/10 border border-[#FA7B21]/30 rounded-full">
-                <span className="text-2xl">💬</span>
-                <span className="text-xs sm:text-sm text-[#FCA929] uppercase tracking-wider">FAQ</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl text-white mb-3 sm:mb-4 px-4">
-                Preguntas Frecuentes
+              <p className={ui.antetitulo}>Dudas</p>
+              <h2 className={`mt-4 mb-3 ${ui.h2}`}>
+                Preguntas frecuentes
               </h2>
-              <p className="text-white/60 text-sm sm:text-base px-4">
-                Encuentra respuestas a las consultas más comunes sobre las graduaciones
-              </p>
             </div>
 
             <div className="space-y-4 sm:space-y-6">
               {/* Pregunta 1 */}
               <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <span className="text-2xl sm:text-3xl flex-shrink-0">📋</span>
+                  <ClipboardList className="mt-0.5 h-6 w-6 flex-shrink-0 text-[#FCA929]" strokeWidth={1.75} />
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
                     ¿Por qué mi hijo/a no aparece en la lista de graduación?
                   </h3>
@@ -660,7 +608,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
                     La participación en cada ceremonia de graduación se determina según la <span className="text-[#FCA929]">contabilidad de clases tomadas dentro de su periodo activo</span>, que normalmente va entre <span className="text-[#FCA929]">20 a 25 clases efectivas</span>.
                   </p>
                   <p>
-                    En caso no haya sido convocado en esta oportunidad, no se preocupe 💛
+                    En caso no haya sido convocado en esta oportunidad, no se preocupe
                   </p>
                   <p>
                     Tendremos más fechas de graduación, donde serán incluidos los alumnos conforme cumplan con el requerimiento.
@@ -671,7 +619,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               {/* Pregunta 2 */}
               <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <span className="text-2xl sm:text-3xl flex-shrink-0">🕐</span>
+                  <Clock className="mt-0.5 h-6 w-6 flex-shrink-0 text-[#FCA929]" strokeWidth={1.75} />
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
                     ¿Con cuánto tiempo de anticipación debo llegar a la graduación?
                   </h3>
@@ -689,7 +637,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               {/* Pregunta 3 */}
               <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <span className="text-2xl sm:text-3xl flex-shrink-0">🥋</span>
+                  <Shirt className="mt-0.5 h-6 w-6 flex-shrink-0 text-[#FCA929]" strokeWidth={1.75} />
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
                     ¿Qué deben usar los alumnos para la graduación?
                   </h3>
@@ -707,7 +655,7 @@ export function GraduacionPage({ onNavigate }: GraduacionPageProps) {
               {/* Pregunta 4 */}
               <div className={`bg-white/5  border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 hover:border-[#FA7B21]/30 transition-colors duration-300`}>
                 <div className="flex items-start gap-3 sm:gap-4 mb-3 sm:mb-4">
-                  <span className="text-2xl sm:text-3xl flex-shrink-0">⏰</span>
+                  <CalendarX className="mt-0.5 h-6 w-6 flex-shrink-0 text-[#FCA929]" strokeWidth={1.75} />
                   <h3 className="text-base sm:text-lg md:text-xl text-white">
                     ¿Habrá clases el día de la graduación?
                   </h3>
