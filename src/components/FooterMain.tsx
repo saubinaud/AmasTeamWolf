@@ -1,13 +1,15 @@
-import { Facebook, Instagram, Mail, MapPin, Phone, Clock, Award } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin, Phone, Clock, CalendarCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { TELEFONO, TELEFONO_VISIBLE, CORREO, DIRECCION, DISTRITO } from '../config/contacto';
 
 interface FooterMainProps {
   onNavigate: (page: string) => void;
   onOpenMatricula: () => void;
+  /** Acción principal del pie: la clase de prueba de taekwondo, o ninguna (p. ej. en OmYoga, que es para adultos) */
+  accion?: 'clase-prueba' | 'ninguna';
 }
 
-export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
+export function FooterMain({ onNavigate, onOpenMatricula, accion = 'clase-prueba' }: FooterMainProps) {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: 'smooth' });
@@ -169,25 +171,25 @@ export function FooterMain({ onNavigate, onOpenMatricula }: FooterMainProps) {
           </div>
         </div>
 
-        {/* Botón destacado de Graduaciones */}
-        <div className="mb-8">
+        {/* Acción principal: agendar la clase de prueba */}
+        {accion === 'clase-prueba' && <div className="mb-8">
           <Button
-            onClick={() => onNavigate('graduacion')}
-            className="w-full sm:w-auto mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-all duration-300 px-8 py-6 text-base sm:text-lg"
+            onClick={() => onNavigate('clase-prueba')}
+            className="w-full sm:w-auto mx-auto flex items-center justify-center gap-2 bg-gradient-to-r from-[#FA7B21] to-[#FCA929] hover:from-[#F36A15] hover:to-[#FA7B21] text-white shadow-lg shadow-[#FA7B21]/30 hover:shadow-[#FA7B21]/50 transition-shadow duration-150 px-8 py-6 text-base sm:text-lg"
             style={{
               touchAction: 'manipulation',
               WebkitTapHighlightColor: 'transparent'
             }}
           >
-            <Award className="w-5 h-5" />
-            Ver Graduaciones Recientes
+            <CalendarCheck className="w-5 h-5" />
+            Agendar clase de prueba
           </Button>
-        </div>
+        </div>}
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-center">
           <p className="text-white/40 text-sm">
-            © 2025 JMA Team Wolf. Todos los derechos reservados.
+            © {new Date().getFullYear()} Team Wolf × JMA. Todos los derechos reservados.
           </p>
           <a
             href="/terminos"

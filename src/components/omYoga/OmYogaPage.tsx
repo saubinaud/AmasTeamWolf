@@ -269,7 +269,7 @@ export function OmYogaPage() {
           </div>
         </section>}
 
-        <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} />
+        <FooterMain onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} accion="ninguna" />
       </div>
 
       {!programa && <BarraMovil oculta={formVisible} />}

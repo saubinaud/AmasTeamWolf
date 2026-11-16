@@ -10,7 +10,7 @@ export function CTAFinalSection({ onOpenTrialModal }: CTAFinalSectionProps) {
     <section
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
       style={{
-        backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/q_80.w_1920/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg')`,
+        backgroundImage: `url('https://res.cloudinary.com/dkoocok3j/image/upload/q_80,w_1920/v1763124726/Academia_Medalla_Photo_copy_desesj.jpg')`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'

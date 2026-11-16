@@ -67,7 +67,7 @@ export function LandingConversion({ onNavigate, onOpenMatricula, onCartClick, ca
       <FormularioModal isOpen={isModalOpen} onOpenChange={setIsModalOpen} />
 
       <CTAFinalSection onOpenTrialModal={openTrialModal} />
-      <WhatsAppButton onClick={openTrialModal} />
+      <WhatsAppButton />
 
       <FooterMain
         onNavigate={onNavigate}

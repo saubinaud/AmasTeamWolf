@@ -160,6 +160,14 @@ const FAQ_ITEMS = [
 // ============================================================
 // COMPONENT
 // ============================================================
+/** ¿Ya pasó el torneo? (día completo en Lima) */
+function torneoPasado(fecha?: string | null): boolean {
+    if (!fecha) return false;
+    const dia = String(fecha).slice(0, 10);
+    const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Lima' });
+    return /^\d{4}-\d{2}-\d{2}$/.test(dia) && dia < hoy;
+}
+
 export function TorneoPage({
     onNavigate,
     onOpenMatricula,
@@ -599,7 +607,7 @@ export function TorneoPage({
                         <div className="inline-flex items-center gap-3 bg-gradient-to-r from-[#FA7B21] to-[#ff8800] px-6 py-3 rounded-full shadow-2xl border-2 border-white/20">
                             <Sparkles className="w-5 h-5 md:w-6 md:h-6 text-white animate-pulse" />
                             <span className="text-white font-black text-sm md:text-lg uppercase tracking-wider">
-                                Torneo Abierto
+                                {torneoPasado(torneo.fecha) ? 'Torneo finalizado' : 'Inscripciones abiertas'}
                             </span>
                         </div>
                     </div>
@@ -634,7 +642,7 @@ export function TorneoPage({
                             })() },
                             ...(torneo.hora ? [{ Icon: Clock, label: 'Hora', value: torneo.hora }] : []),
                             { Icon: MapPin, label: 'Lugar', value: torneo.lugar },
-                        ].map((item, i) => (
+                        ].filter((item) => item.value).map((item, i) => (
                             <div
                                 key={i}
                                 className="flex items-center gap-3 bg-zinc-950/85 px-5 py-3 rounded-2xl border-2 border-[#FA7B21]/30 shadow-xl"
@@ -677,10 +685,10 @@ export function TorneoPage({
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-12 md:mb-16 animate-fade-in-up">
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-4">
-                            Por que <span className="text-[#FA7B21]">participar</span>?
+                            ¿Por qué <span className="text-[#FA7B21]">participar</span>?
                         </h2>
                         <p className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto">
-                            Un torneo transforma a tu hijo mas de lo que imaginas
+                            Un torneo transforma a tu hijo más de lo que imaginas
                         </p>
                     </div>
 
@@ -694,12 +702,12 @@ export function TorneoPage({
                             {
                                 Icon: Flame,
                                 title: 'Ganan confianza real',
-                                desc: 'Descubren que son capaces de mas de lo que creen.',
+                                desc: 'Descubren que son capaces de más de lo que creen.',
                             },
                             {
                                 Icon: Heart,
-                                title: 'Crean recuerdos unicos',
-                                desc: 'Un momento que tu hijo recordara siempre.',
+                                title: 'Crean recuerdos únicos',
+                                desc: 'Un momento que tu hijo recordará siempre.',
                             },
                         ].map((item, i) => (
                             <div
@@ -737,8 +745,8 @@ export function TorneoPage({
                     <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
                         {[
                             { step: 1, text: 'Busca al alumno por DNI o nombre para verificar sus datos', Icon: Search },
-                            { step: 2, text: 'Elige las modalidades en las que participara', Icon: CheckCircle2 },
-                            { step: 3, text: 'Confirma la inscripcion y listo', Icon: Send },
+                            { step: 2, text: 'Elige las modalidades en las que participará', Icon: CheckCircle2 },
+                            { step: 3, text: 'Confirma la inscripción y listo', Icon: Send },
                         ].map((item, i) => (
                             <div
                                 key={i}
@@ -761,7 +769,7 @@ export function TorneoPage({
                         <div className="flex items-start gap-3 bg-gradient-to-r from-[#FA7B21]/10 to-[#ff8800]/10 border border-[#FA7B21]/30 rounded-2xl px-6 py-4">
                             <Lightbulb className="w-5 h-5 text-[#FCA929] flex-shrink-0 mt-0.5" />
                             <p className="text-white/60 text-sm leading-relaxed">
-                                Entrada al evento: <span className="text-white font-semibold">S/25</span> (personas de 12 a 60 anos, pago en puerta)
+                                Entrada al evento: <span className="text-white font-semibold">S/25</span> (personas de 12 a 60 años, pago en puerta)
                             </p>
                         </div>
                     </div>
@@ -886,7 +894,7 @@ export function TorneoPage({
                                             {/* ===== STEP 3: Modalidades ===== */}
                                             <div className="space-y-3">
                                                 <Label>Modalidades de Participacion *</Label>
-                                                <p className="text-white/50 text-xs md:text-sm">Selecciona las modalidades en las que participara</p>
+                                                <p className="text-white/50 text-xs md:text-sm">Selecciona las modalidades en las que participará</p>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                                     {modalidades.map((mod) => {
                                                         const selected = selectedModalidades.includes(mod.nombre);

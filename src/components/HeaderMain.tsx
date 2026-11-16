@@ -139,6 +139,15 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                     </button>
                     <button
                       onClick={() => {
+                        onNavigate('clase-prueba');
+                        setIsProgramasDesktopOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-sm text-white/80 hover:text-[#FCA929] hover:bg-[#FA7B21]/10 transition-colors"
+                    >
+                      Clase de prueba
+                    </button>
+                    <button
+                      onClick={() => {
                         onNavigate('om-yoga');
                         setIsProgramasDesktopOpen(false);
                       }}
@@ -285,6 +294,17 @@ export function HeaderMain({ onNavigate, onOpenMatricula, onCartClick, cartItems
                     style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
                   >
                     Leadership Wolf
+                  </button>
+                  <button
+                    onClick={() => {
+                      onNavigate('clase-prueba');
+                      setIsMobileMenuOpen(false);
+                      setIsProgramasOpen(false);
+                    }}
+                    className="block w-full text-left text-white/70 hover:text-[#FCA929] transition-colors py-2 text-sm"
+                    style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    Clase de prueba
                   </button>
                   <button
                     onClick={() => {
