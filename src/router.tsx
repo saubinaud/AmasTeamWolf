@@ -68,7 +68,6 @@ const RegistroMensualPage = lazy(() => import('./components/RegistroMensualPage'
 const RegistroLeadershipPage = lazy(() => import('./components/RegistroLeadershipPage').then(m => ({ default: m.RegistroLeadershipPage })));
 const GraduacionPage = lazy(() => import('./components/GraduacionPage').then(m => ({ default: m.GraduacionPage })));
 const PerfilPage = lazy(() => import('./components/perfil').then(m => ({ default: m.PerfilPage })));
-const RenovacionNavidadPage = lazy(() => import('./components/RenovacionNavidadPage').then(m => ({ default: m.RenovacionNavidadPage })));
 const RegistroActividadNavidadPage = lazy(() => import('./components/RegistroActividadNavidadPage').then(m => ({ default: m.RegistroActividadNavidadPage })));
 const RegistroShowroomPage = lazy(() => import('./components/RegistroShowroomPage').then(m => ({ default: m.RegistroShowroomPage })));
 const RenovacionPage = lazy(() => import('./pages/RenovacionPage').then(m => ({ default: m.RenovacionPage })));
@@ -249,16 +248,6 @@ function PerfilRoute() {
           <PerfilPage onNavigate={onNavigate} />
         </Suspense></LazyErrorBoundary>
       </AuthGuard>
-    </Suspense></LazyErrorBoundary>
-  );
-}
-
-function RenovacionNavidadRoute() {
-  const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
-  return (
-    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
-      <SEO title="Renovación Navidad - JMA Team Wolf" description="Renueva tu membresía anticipadamente." keywords="renovación navidad" url="https://teamwolfxjma.com/renovacion-navidad" />
-      <RenovacionNavidadPage onNavigate={onNavigate} onOpenMatricula={onOpenMatricula} onCartClick={onCartClick} cartItemsCount={cartItemsCount} />
     </Suspense></LazyErrorBoundary>
   );
 }
@@ -447,7 +436,7 @@ export const router = createBrowserRouter([
       { path: '/clase-prueba', element: <ClasePruebaRoute /> },
       { path: '/inicio-sesion', element: <InicioSesionRoute /> },
       { path: '/perfil', element: <PerfilRoute /> },
-      { path: '/renovacion-navidad', element: <RenovacionNavidadRoute /> },
+      { path: '/renovacion-navidad', element: <Navigate to="/renovacion" replace /> },
       { path: '/navidad', element: <RegistroActividadNavidadRoute /> },
       { path: '/registro-showroom', element: <RegistroShowroomRoute /> },
       { path: '/renovacion', element: <RenovacionRoute /> },
@@ -471,7 +460,7 @@ export const router = createBrowserRouter([
       { path: '/space/*', element: <SpaceRedirect /> },
       // Redirect aliases
       { path: '/renovar', element: <Navigate to="/renovacion" replace /> },
-      { path: '/renueva-diciembre', element: <Navigate to="/renovacion-navidad" replace /> },
+      { path: '/renueva-diciembre', element: <Navigate to="/renovacion" replace /> },
       { path: '/evento-navidad', element: <Navigate to="/navidad" replace /> },
       { path: '/showroom', element: <Navigate to="/registro-showroom" replace /> },
       { path: '/terminos-condiciones', element: <Navigate to="/terminos" replace /> },
