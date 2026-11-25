@@ -57,6 +57,15 @@ export interface ItemCatalogo {
   web?: WebItem | null;
 }
 
+/** Promoción que se ofrece al renovar un programa (GET /api/config/promociones-renovacion). */
+export interface OfertaRenovacion {
+  codigo: string;
+  nombre: string;
+  programa: string;
+  hasta: string | null;
+  beneficios: { texto: string; hasta: string | null }[];
+}
+
 export type LineaPedido = { item_id: number; cantidad?: number; talla?: string } | { codigo: string; cantidad?: number };
 
 export interface PedidoCotizacion {

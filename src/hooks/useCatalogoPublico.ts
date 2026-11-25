@@ -3,7 +3,7 @@
 // devuelve POST /api/config/cotizar; nunca suma precios por su cuenta.
 import { useEffect, useMemo, useState } from 'react';
 import { API_BASE } from '../config/api';
-import { type Cotizacion, type ItemCatalogo, type PedidoCotizacion } from '../utils/catalogo';
+import { type Cotizacion, type ItemCatalogo, type OfertaRenovacion, type PedidoCotizacion } from '../utils/catalogo';
 
 type EstadoCatalogo = 'cargando' | 'ok' | 'respaldo';
 
@@ -43,6 +43,20 @@ export function useCatalogoPublico() {
   }, []);
 
   return { items, estado };
+}
+
+/** Promociones para renovar, vigentes hoy. null mientras carga; si falla, ninguna (los planes salen igual). */
+export function useOfertasRenovacion(): OfertaRenovacion[] | null {
+  const [ofertas, setOfertas] = useState<OfertaRenovacion[] | null>(null);
+  useEffect(() => {
+    let vigente = true;
+    fetch(`${API_BASE}/config/promociones-renovacion`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((j: { data: OfertaRenovacion[] }) => { if (vigente) setOfertas(Array.isArray(j.data) ? j.data : []); })
+      .catch(() => { if (vigente) setOfertas([]); });
+    return () => { vigente = false; };
+  }, []);
+  return ofertas;
 }
 
 // Reintentos tras un error: cubren el minuto del limitador del API
