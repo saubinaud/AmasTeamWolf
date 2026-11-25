@@ -63,7 +63,7 @@ export interface OfertaRenovacion {
   nombre: string;
   programa: string;
   hasta: string | null;
-  beneficios: { texto: string; hasta: string | null }[];
+  beneficios: { tipo?: 'clases_extra' | 'item_gratis' | 'inicio_tras_plan'; texto: string; hasta: string | null }[];
 }
 
 export type LineaPedido = { item_id: number; cantidad?: number; talla?: string } | { codigo: string; cantidad?: number };

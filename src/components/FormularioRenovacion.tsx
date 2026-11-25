@@ -2,9 +2,10 @@
 // catálogo (programas con en_renovacion, más los que desbloquea un código como
 // RENOVAR1MES); el total lo devuelve POST /api/config/cotizar y al enviar el
 // servidor vuelve a cotizar las mismas líneas.
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { Gift } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { ChevronDown, Gift } from 'lucide-react';
 import { API_BASE } from '../config/api';
 import { useCatalogoPublico, useCotizacion, useOfertasRenovacion } from '../hooks/useCatalogoPublico';
 import { ContratoFirma } from './ContratoFirma';
@@ -27,84 +28,84 @@ interface FormularioRenovacionProps {
 const PERSONAS = { nombreAlumno: '', dniAlumno: '', fechaNacimiento: '', nombrePadre: '', dniPadre: '', email: '', direccion: '' };
 const soloDigitos = (v: string, max: number) => v.replace(/\D/g, '').slice(0, max);
 
-/** Tarjeta de un plan: precio del catálogo; subtítulo, cinta y beneficios de Space ▸ Catálogo ▸ En la web. */
-function TarjetaPlan({ plan, onElegir }: { plan: ItemCatalogo; onElegir: () => void }) {
-  const info = {
-    subtitulo: plan.web?.renovacion_texto ?? '',
-    destacado: plan.web?.renovacion_etiqueta ?? null,
-    beneficios: plan.web?.renovacion_beneficios ?? [],
-  };
-  const resaltado = !!info.destacado;
-  return (
-    <div className={`${cx.card} relative flex flex-col p-5 ${resaltado ? 'border-[#FA7B21]' : ''}`}>
-      {info.destacado && (
-        <span className={`${cx.display} absolute -top-3 left-5 rounded-full bg-[#FA7B21] px-3 py-1 text-[11px] uppercase tracking-wider text-[#231F20]`}>
-          {info.destacado}
-        </span>
-      )}
-      <p className={`${cx.display} text-[20px] text-white`}>{plan.nombre}</p>
-      <p className={`${cx.textoApagado} mt-1 text-[14px]`}>{[plan.clases ? `${plan.clases} clases` : null, info.subtitulo].filter(Boolean).join(' · ')}</p>
-      <p className={`${cx.cifra} mt-4 text-[30px] text-white`}>{soles(plan.precio)}</p>
-      {info.beneficios.length > 0 && (
-        <ul className="mt-4 space-y-2">
-          {info.beneficios.map((b) => (
-            <li key={b} className="flex items-start gap-2.5 text-[14px] text-white/75">
-              <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA7B21]" />
-              {b}
-            </li>
-          ))}
-        </ul>
-      )}
-      <button type="button" onClick={onElegir} className={`${resaltado ? cx.btnPrimario : cx.btnSecundario} mt-5 w-full`}>
-        Renovar con este plan
-      </button>
-    </div>
-  );
-}
-
 /** '2026-11-28' → 'sábado 28 de noviembre' */
 const diaLargo = (ymd: string) => deYmd(ymd).toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
 
-/** Promoción vigente para un plan: va primero y reemplaza su tarjeta. */
+/** Se abre al tocar: lo que no hace falta leer para decidir. */
+function Desplegable({ abierto, children }: { abierto: boolean; children: ReactNode }) {
+  return (
+    <AnimatePresence initial={false}>
+      {abierto && (
+        <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
+          {children}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function Lista({ textos }: { textos: string[] }) {
+  return (
+    <ul className="space-y-2">
+      {textos.map((t) => (
+        <li key={t} className="flex items-start gap-2.5 text-[14px] text-white/75">
+          <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-white/35" />{t}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+const incluyeDe = (plan: ItemCatalogo) => [plan.clases ? `${plan.clases} clases` : null, ...(plan.web?.renovacion_beneficios ?? [])].filter(Boolean) as string[];
+
+/** Un plan en una fila: nombre y precio. Al tocarla, lo que incluye y el botón. */
+function FilaPlan({ plan, abierta, onAbrir, onElegir }: { plan: ItemCatalogo; abierta: boolean; onAbrir: () => void; onElegir: () => void }) {
+  return (
+    <li className="border-t border-white/10 first:border-t-0">
+      <button type="button" aria-expanded={abierta} onClick={onAbrir} className="flex min-h-[68px] w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-100 hover:bg-white/[0.03] sm:px-6">
+        <span className="min-w-0 flex-1">
+          <span className={`${cx.display} block text-[16px] text-white`}>{plan.nombre}</span>
+          <span className={`${cx.textoApagado} block text-[13px]`}>{[plan.clases ? `${plan.clases} clases` : null, plan.web?.renovacion_etiqueta].filter(Boolean).join(' · ')}</span>
+        </span>
+        <span className={`${cx.cifra} shrink-0 text-[18px] text-white`}>{soles(plan.precio)}</span>
+        <ChevronDown className={`h-5 w-5 shrink-0 text-white/45 transition-transform duration-150 ${abierta ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+      <Desplegable abierto={abierta}>
+        <div className="px-4 pb-5 sm:px-6">
+          <Lista textos={incluyeDe(plan)} />
+          <button type="button" onClick={onElegir} className={`${cx.btnSecundario} mt-5 w-full`}>Renovar con este plan</button>
+        </div>
+      </Desplegable>
+    </li>
+  );
+}
+
+/** La promoción vigente: va primero, con el único botón lleno de la página. */
 function TarjetaOferta({ oferta, plan, onElegir }: { oferta: OfertaRenovacion; plan: ItemCatalogo; onElegir: () => void }) {
-  const fijos = oferta.beneficios.filter((b) => !b.hasta);
-  const conLimite = oferta.beneficios.filter((b) => b.hasta);
-  const incluye = [plan.clases ? `${plan.clases} clases, 2 veces por semana` : null, ...(plan.web?.renovacion_beneficios ?? [])].filter(Boolean) as string[];
+  const [verMas, setVerMas] = useState(false);
+  const regalos = oferta.beneficios.filter((b) => b.tipo !== 'inicio_tras_plan');
+  const notas = oferta.beneficios.filter((b) => b.tipo === 'inicio_tras_plan');
   return (
     <section className={`${cx.card} !border-[#FA7B21] p-5 sm:p-7`}>
-      <p className={`${cx.display} inline-block rounded-full bg-[#FA7B21] px-3 py-1 text-[11px] uppercase tracking-wider text-[#231F20]`}>Renovación anticipada</p>
-      <h2 className={`${cx.display} mt-4 text-[26px] leading-tight text-white sm:text-[32px]`}>{oferta.nombre.replace(/^Renovación anticipada:\s*/i, '')}</h2>
-      <p className={`${cx.cifra} mt-2 text-[40px] leading-none text-[#FA7B21]`}>{soles(plan.precio)}</p>
+      <h2 className={`${cx.display} text-[28px] leading-tight text-white sm:text-[34px]`}>{oferta.nombre.replace(/^Renovación anticipada:\s*/i, '')}</h2>
+      <p className={`${cx.cifra} mt-1 text-[36px] leading-none text-[#FA7B21]`}>{soles(plan.precio)}</p>
 
-      <div className="mt-6 grid gap-6 sm:grid-cols-2">
-        <div>
-          <p className="text-[13px] font-bold text-white/55">Te regalamos</p>
-          <ul className="mt-2 space-y-2.5">
-            {fijos.map((b) => (
-              <li key={b.texto} className="flex items-start gap-2.5 text-[15px] font-bold text-white">
-                <Gift className="mt-0.5 h-[18px] w-[18px] shrink-0 text-[#FA7B21]" aria-hidden />{b.texto}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="text-[13px] font-bold text-white/55">Incluye</p>
-          <ul className="mt-2 space-y-2">
-            {incluye.map((t) => (
-              <li key={t} className="flex items-start gap-2.5 text-[14px] text-white/75">
-                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#FA7B21]" />{t}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
+      <ul className="mt-6 space-y-3">
+        {regalos.map((b) => (
+          <li key={b.texto} className="flex items-start gap-3 text-[16px] leading-snug text-white">
+            <Gift className="mt-0.5 h-5 w-5 shrink-0 text-[#FA7B21]" aria-hidden />
+            <span>{b.texto}{b.hasta && <span className="block text-[14px] text-white/55">Solo hasta el {diaLargo(b.hasta)}</span>}</span>
+          </li>
+        ))}
+      </ul>
 
-      {conLimite.map((b) => (
-        <p key={b.texto} className="mt-6 rounded-xl border border-[#FA7B21]/40 bg-[#FA7B21]/10 px-4 py-3 text-[15px] text-white">
-          <strong>{b.texto}</strong> si renuevas hasta el {diaLargo(b.hasta!)}.
-        </p>
-      ))}
-      <button type="button" onClick={onElegir} className={`${cx.btnPrimario} mt-6 w-full`}>Renovar con esta promoción</button>
+      <button type="button" onClick={onElegir} className={`${cx.btnPrimario} mt-7 w-full`}>Renovar con esta promoción</button>
+      {notas.map((b) => <p key={b.texto} className={`${cx.ayuda} mt-3 text-center`}>{b.texto}.</p>)}
+
+      <button type="button" aria-expanded={verMas} onClick={() => setVerMas((v) => !v)} className="mx-auto mt-2 flex min-h-[44px] items-center gap-1.5 px-2 text-[14px] font-bold text-white/70 hover:text-white">
+        Qué incluye el plan <ChevronDown className={`h-4 w-4 transition-transform duration-150 ${verMas ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+      <Desplegable abierto={verMas}><div className="pt-2"><Lista textos={incluyeDe(plan)} /></div></Desplegable>
     </section>
   );
 }
@@ -115,6 +116,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
   const estado = estadoCatalogo === 'ok' && !ofertas ? 'cargando' : estadoCatalogo;
   const respaldo = estado === 'respaldo';
 
+  const [planAbierto, setPlanAbierto] = useState<number | null>(null);
   const [codigoPlan, setCodigoPlan] = useState<string | null>(null);
   const [p, setP] = useState(PERSONAS);
   const [polos, setPolos] = useState<CantidadPolos>('0');
@@ -274,7 +276,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
           <Portada
             etiqueta="Renovación"
             titulo="Que su camino de guerrero no se detenga"
-            bajada="Elige el plan con el que tu hijo sigue entrenando. Todos son 2 veces por semana."
+            bajada="Todos los planes son 2 veces por semana."
             respaldo={respaldo}
           />
           {estado === 'cargando' ? (
@@ -286,13 +288,18 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
           ) : (
             <div className="space-y-8">
               {conOferta.map(({ oferta, plan }) => <TarjetaOferta key={oferta.codigo + plan.id} oferta={oferta} plan={plan} onElegir={() => elegir(plan, oferta.codigo)} />)}
-              <div className="grid gap-5 sm:grid-cols-2">
-                {planes.filter((plan) => !conOferta.some((x) => x.plan === plan)).map((plan) => <TarjetaPlan key={plan.id} plan={plan} onElegir={() => elegir(plan)} />)}
-              </div>
+              <section>
+                {conOferta.length > 0 && <h2 className={`${cx.h2} mb-3`}>Otros planes</h2>}
+                <ul className={`${cx.card} overflow-hidden`}>
+                  {planes.filter((plan) => !conOferta.some((x) => x.plan === plan)).map((plan) => (
+                    <FilaPlan key={plan.id} plan={plan} abierta={planAbierto === plan.id} onAbrir={() => setPlanAbierto((a) => (a === plan.id ? null : plan.id))} onElegir={() => elegir(plan)} />
+                  ))}
+                </ul>
+              </section>
             </div>
           )}
           {!respaldo && (
-            <div className={`${cx.card} ${cx.cardPad} mt-6`}>
+            <div className="mt-5">
               <CampoCodigo aplicado={codigo} onAplicar={setCodigo} onQuitar={() => setCodigo('')} cotizacion={cotizacion} alDia={alDia} />
               {desbloqueados.length > 0 && <p className={`${cx.ayuda} mt-3`}>Se agregó un plan más a la lista.</p>}
             </div>
@@ -307,14 +314,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
     <div className={cx.pagina}>
       <CabeceraJMA onVolver={() => setCodigoPlan(null)} textoVolver="Planes" />
       <main className={cx.contenedor}>
-        <Portada etiqueta="Renovación" titulo={programa.nombre} precio={programa.precio} notaPrecio={programa.clases ? `${programa.clases} clases` : undefined} />
-
-        {ofertaAplicada && (
-          <div className={`${cx.avisoOk} mb-4`}>
-            <p className="font-bold">{ofertaAplicada.nombre}</p>
-            <ul className="mt-1.5 space-y-1">{ofertaAplicada.beneficios.map((b) => <li key={b.texto}>+ {b.texto}</li>)}</ul>
-          </div>
-        )}
+        <Portada etiqueta="Renovación" titulo={ofertaAplicada ? ofertaAplicada.nombre.replace(/^Renovación anticipada:\s*/i, '') : programa.nombre} precio={programa.precio} notaPrecio={clasesTotales ? `${clasesTotales} clases` : undefined} />
 
         <div className="space-y-4">
           <Seccion id="sec-alumno" titulo="Alumno">
@@ -331,7 +331,7 @@ export function FormularioRenovacion({ onVolver, onSuccess }: FormularioRenovaci
           </Seccion>
 
           <Seccion id="sec-fechas" titulo="Horario y fechas">
-            {ofertaAplicada && <p className={cx.avisoAmbar}>Elige una fecha después de que termine su membresía actual. Si falta más de un mes o no la recuerdas, marca «Aún no sé».</p>}
+            {ofertaAplicada && <p className={cx.avisoAmbar}>Empieza cuando termine su membresía actual. Si no sabes la fecha, marca «Aún no sé».</p>}
             <SeccionFechas f={fechas} hayNacimiento={!!p.fechaNacimiento} />
           </Seccion>
 
