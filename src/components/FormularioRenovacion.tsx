@@ -19,6 +19,7 @@ import {
   lineasMatricula, piezasRopa, programasOfrecidos, itemPolos, soles,
   type CantidadPolos, type ItemCatalogo, type OfertaRenovacion, type PedidoCotizacion,
 } from '../utils/catalogo';
+import { EtiquetaPromocion, NotaPromocion } from './legal/AvisoPromocion';
 
 interface FormularioRenovacionProps {
   onVolver: () => void;
@@ -87,6 +88,7 @@ function TarjetaOferta({ oferta, plan, onElegir }: { oferta: OfertaRenovacion; p
   const notas = oferta.beneficios.filter((b) => b.tipo === 'inicio_tras_plan');
   return (
     <section className={`${cx.card} !border-[#FA7B21] p-5 sm:p-7`}>
+      <EtiquetaPromocion className="mb-3" />
       <h2 className={`${cx.display} text-[28px] leading-tight text-white sm:text-[34px]`}>{oferta.nombre.replace(/^Renovación anticipada:\s*/i, '')}</h2>
       <p className={`${cx.cifra} mt-1 text-[36px] leading-none text-[#FA7B21]`}>{soles(plan.precio)}</p>
 
@@ -101,6 +103,7 @@ function TarjetaOferta({ oferta, plan, onElegir }: { oferta: OfertaRenovacion; p
 
       <button type="button" onClick={onElegir} className={`${cx.btnPrimario} mt-7 w-full`}>Renovar con esta promoción</button>
       {notas.map((b) => <p key={b.texto} className={`${cx.ayuda} mt-3 text-center`}>{b.texto}.</p>)}
+      <NotaPromocion hasta={oferta.hasta} condiciones={oferta.condiciones} className="mt-3 text-center" />
 
       <button type="button" aria-expanded={verMas} onClick={() => setVerMas((v) => !v)} className="mx-auto mt-2 flex min-h-[44px] items-center gap-1.5 px-2 text-[14px] font-bold text-white/70 hover:text-white">
         Qué incluye el plan <ChevronDown className={`h-4 w-4 transition-transform duration-150 ${verMas ? 'rotate-180' : ''}`} aria-hidden />

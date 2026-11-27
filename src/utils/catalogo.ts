@@ -63,6 +63,8 @@ export interface OfertaRenovacion {
   nombre: string;
   programa: string;
   hasta: string | null;
+  /** Condiciones propias de la promoción (Space ▸ Catálogo) */
+  condiciones?: string | null;
   beneficios: { tipo?: 'clases_extra' | 'item_gratis' | 'inicio_tras_plan'; texto: string; hasta: string | null }[];
 }
 
@@ -100,7 +102,7 @@ export interface Cotizacion {
   clases_extra: number;
   regalos: { item_id: number; nombre: string; categoria: string | null; cantidad: number; valor: number }[];
   desbloquea: string[];
-  promocion: { codigo: string | null; nombre: string | null; aplicada: boolean; motivo: string | null };
+  promocion: { codigo: string | null; nombre: string | null; aplicada: boolean; motivo: string | null; condiciones?: string | null; vigente_hasta?: string | null };
   implementos_ya_tiene?: { item_id: number; nombre: string; precio: number }[];
 }
 

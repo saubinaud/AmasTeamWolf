@@ -1,9 +1,9 @@
 {
-  "version": "2026-10-jma-2",
+  "version": "2026-11-jma-3",
   "terminos": {
     "titulo": "Términos y Condiciones",
     "subtitulo": "Academia de Artes Marciales JMA",
-    "actualizado": "Octubre 2026",
+    "actualizado": "Noviembre 2026",
     "secciones": [
       {
         "numero": 1,
@@ -43,7 +43,7 @@
       {
         "numero": 3,
         "id": "pagos",
-        "titulo": "Servicios y pagos electrónicos",
+        "titulo": "Servicios y pagos",
         "bloques": [
           {
             "tipo": "lista",
@@ -54,11 +54,15 @@
               },
               {
                 "etiqueta": "Devoluciones",
-                "texto": "Las solicitudes de devolución se rigen por lo establecido en la sección 9 de este documento."
+                "texto": "Las solicitudes de devolución se rigen por lo establecido en la sección 12 de este documento."
               },
               {
                 "etiqueta": "Precios",
-                "texto": "La academia se reserva el derecho de modificar los precios de los programas y promociones sin previo aviso, respetando los montos ya pagados por membresías activas."
+                "texto": "La academia puede modificar los precios de sus programas para compras futuras. Los cambios no afectan los planes ya pagados ni las promociones dentro de su vigencia publicada."
+              },
+              {
+                "etiqueta": "Constancia de pago",
+                "texto": "Por cada pago la academia entrega una constancia de pago, por WhatsApp, correo o impresa, con el concepto, el monto, el método, la fecha y, si lo hay, el saldo pendiente. La constancia es un documento interno de control y no reemplaza al comprobante de pago electrónico (boleta o factura), que la academia emite conforme a las normas de SUNAT. Si necesita factura, indíquelo con su RUC antes de pagar."
               }
             ]
           }
@@ -66,6 +70,74 @@
       },
       {
         "numero": 4,
+        "id": "promociones",
+        "titulo": "Promociones",
+        "bloques": [
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Identificación",
+                "texto": "Toda promoción de la academia se anuncia como tal, con su nombre o código, y remite a estos términos."
+              },
+              {
+                "etiqueta": "Vigencia y stock",
+                "texto": "Cada promoción indica su fecha de fin y, cuando incluye artículos de regalo, el stock disponible o la fecha límite de ese regalo. Vencido el plazo o agotado el stock, la promoción o el regalo dejan de ofrecerse sin afectar a quienes ya la contrataron."
+              },
+              {
+                "etiqueta": "Condiciones particulares",
+                "texto": "Las condiciones propias de cada promoción (planes a los que aplica, si es solo para renovaciones, beneficios y fechas de entrega) se publican junto a ella y forman parte del contrato de quien la toma. Ante una diferencia con estos términos, prevalece lo más favorable para el alumno."
+              },
+              {
+                "etiqueta": "No acumulables",
+                "texto": "Se aplica una sola promoción por compra y no se acumula con otras promociones ni descuentos, salvo que la promoción diga lo contrario. El bono de referidos sí puede sumarse, salvo indicación en contrario."
+              },
+              {
+                "etiqueta": "Combos",
+                "texto": "Cuando una promoción reúne varios beneficios (por ejemplo, una renovación anticipada con clases de obsequio, uniforme y polo), cada beneficio puede tener su propia fecha límite, que se indica en la oferta. Si la promoción dice que el nuevo periodo inicia al terminar la membresía actual, empieza el día siguiente al fin del plan vigente."
+              },
+              {
+                "etiqueta": "Beneficios en tiempo",
+                "texto": "Las clases o meses de obsequio se usan al final del periodo pagado, no tienen valor en dinero y no son canjeables ni transferibles. Congelar el plan corre también su inicio; no se pierden."
+              },
+              {
+                "etiqueta": "Artículos de regalo",
+                "texto": "Se entregan en la fecha indicada en la promoción, en la talla registrada; el cambio de talla está sujeto a stock. Si se pide una devolución, se aplica la sección 12: los artículos ya entregados se descuentan y los aún no entregados se anulan sin descuento."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 5,
+        "id": "congelamiento",
+        "titulo": "Congelamiento del plan y recuperación de clases",
+        "bloques": [
+          {
+            "tipo": "lista",
+            "items": [
+              {
+                "etiqueta": "Cuánto y cuántas veces",
+                "texto": "Los planes de 3, 6 y 12 meses pueden congelarse una vez durante su vigencia, por hasta 15, 30 y 45 días calendario respectivamente, salvo que el plan o la promoción indiquen otro tope. El plan de 1 mes no se congela."
+              },
+              {
+                "etiqueta": "Cómo se pide",
+                "texto": "El apoderado lo solicita desde su perfil en la web o en recepción, con al menos 7 días calendario de anticipación a la fecha en que empieza. La academia responde la solicitud y, si la aprueba, la fecha de fin del plan se corre por los días congelados."
+              },
+              {
+                "etiqueta": "Excepciones",
+                "texto": "Por razones de salud acreditadas con certificado médico o por fuerza mayor justificada, la academia puede evaluar un congelamiento fuera de estos plazos o un traslado del saldo a un periodo futuro."
+              },
+              {
+                "etiqueta": "Recuperación de clases",
+                "texto": "La recuperación de clases perdidas no es un derecho general: aplica solo cuando la academia la ofrece expresamente en un plan, una promoción o un aviso, y en las condiciones que allí se indiquen (plazo, horarios y cupos). Las clases no recuperadas dentro de la vigencia del plan no se acumulan ni se devuelven."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "numero": 6,
         "id": "infraestructura",
         "titulo": "Infraestructura y seguridad (Cloudflare)",
         "bloques": [
@@ -89,7 +161,7 @@
         ]
       },
       {
-        "numero": 5,
+        "numero": 7,
         "id": "propiedad-intelectual",
         "titulo": "Propiedad intelectual",
         "bloques": [
@@ -100,31 +172,47 @@
         ]
       },
       {
-        "numero": 6,
+        "numero": 8,
         "id": "datos-personales",
         "titulo": "Protección de datos personales (Ley 29733)",
         "bloques": [
           {
             "tipo": "p",
-            "texto": "De acuerdo con la legislación peruana, los datos personales recolectados a través de formularios web serán tratados con la finalidad de gestionar la matrícula del alumno y enviar información comercial relevante."
+            "texto": "De acuerdo con la Ley 29733 y su reglamento, la academia trata los datos del alumno y del apoderado (nombres, DNI, fecha de nacimiento, contacto, dirección, información de salud que el apoderado declare, fotografía de identificación y asistencia) para gestionar la matrícula, el plan, la asistencia y los pagos; emitir contratos, constancias y comprobantes; comunicarse sobre clases, horarios, vencimientos y renovaciones; y atender emergencias. Estas finalidades son necesarias para prestar el servicio."
           },
           {
             "tipo": "lista",
             "items": [
               {
-                "etiqueta": "Consentimiento de imagen",
-                "texto": "Al registrar al menor en actividades que se transmitan o promocionen vía web, el tutor acepta la política de uso de imagen detallada en el convenio de membresía."
+                "etiqueta": "Menores y salud",
+                "texto": "Los datos de menores de edad se tratan con el consentimiento de su padre, madre o tutor. La información de salud se usa solo para la seguridad del alumno en clase, con el consentimiento expreso del apoderado."
               },
               {
-                "etiqueta": "Derechos ARCO",
-                "texto": "El usuario puede solicitar el acceso, rectificación o cancelación de sus datos enviando un correo a la administración de la academia."
+                "etiqueta": "Comunicaciones comerciales",
+                "texto": "La academia envía promociones por correo o WhatsApp solo a quien lo acepte. Ese consentimiento es opcional, no condiciona la matrícula y puede retirarse en cualquier momento respondiendo al mensaje o escribiendo al correo de la academia."
+              },
+              {
+                "etiqueta": "Proveedores",
+                "texto": "Para operar, la academia usa proveedores que tratan datos por su encargo: alojamiento y almacenamiento en la nube (incluidas las fotografías de los alumnos), envío de correos, mensajería y medición de publicidad. Algunos están fuera del Perú, por lo que hay flujo transfronterizo de datos con las garantías que exige la ley. La academia no vende ni cede los datos a terceros para sus propios fines."
+              },
+              {
+                "etiqueta": "Conservación",
+                "texto": "Los datos se conservan mientras el alumno esté activo y hasta cinco años después, por obligaciones contables y para atender reclamos; luego se eliminan o anonimizan."
+              },
+              {
+                "etiqueta": "Consentimiento de imagen",
+                "texto": "Al registrar al menor en actividades que se transmitan o promocionen vía web, el tutor acepta la política de uso de imagen detallada en el contrato de inscripción."
+              },
+              {
+                "etiqueta": "Derechos",
+                "texto": "El titular de los datos o su representante puede ejercer los derechos de información, acceso, rectificación, cancelación y oposición escribiendo a amasteamwolf@gmail.com, con copia de su DNI. Si no queda conforme con la respuesta, puede acudir a la Autoridad Nacional de Protección de Datos Personales."
               }
             ]
           }
         ]
       },
       {
-        "numero": 7,
+        "numero": 9,
         "id": "conducta",
         "titulo": "Conducta en el entorno digital",
         "bloques": [
@@ -149,7 +237,18 @@
         ]
       },
       {
-        "numero": 8,
+        "numero": 10,
+        "id": "reclamaciones",
+        "titulo": "Libro de Reclamaciones",
+        "bloques": [
+          {
+            "tipo": "p",
+            "texto": "Conforme al Código de Protección y Defensa del Consumidor, la academia cuenta con un Libro de Reclamaciones físico en su local (Av. San Luis 2083, San Borja, Lima) y uno virtual en teamwolfxjma.com/reclamaciones. Al registrar un reclamo o una queja, el consumidor recibe una copia con su número en el correo que indique. La academia responde en un plazo máximo de 15 días hábiles. Presentar un reclamo no impide acudir a otras vías de solución de controversias ni es requisito previo para denunciar ante el INDECOPI."
+          }
+        ]
+      },
+      {
+        "numero": 11,
         "id": "ley-aplicable",
         "titulo": "Ley aplicable y jurisdicción",
         "bloques": [
@@ -160,7 +259,7 @@
         ]
       },
       {
-        "numero": 9,
+        "numero": 12,
         "id": "devoluciones",
         "titulo": "Devoluciones, beneficios promocionales y obsequios",
         "bloques": [

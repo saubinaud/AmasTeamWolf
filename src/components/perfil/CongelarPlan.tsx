@@ -136,7 +136,7 @@ export function CongelarPlan({ user, onRefresh }: { user: any; onRefresh: () => 
                 <Snowflake className="w-5 h-5 text-cyan-400" /> Elige las fechas
               </DialogTitle>
               <DialogDescription className="text-white/60 text-sm">
-                Hasta {tope} días, empezando como máximo en {info.anticipacionMaxDias} días.
+                Hasta {tope} días. Se pide con al menos {info.avisoMinDias} días de anticipación: puede empezar desde el {format(addDays(hoy, info.avisoMinDias), "d 'de' MMMM", { locale: es })}.
               </DialogDescription>
             </div>
             <div className="flex justify-center bg-black/30 rounded-2xl p-2 border border-white/5">
@@ -148,7 +148,7 @@ export function CongelarPlan({ user, onRefresh }: { user: any; onRefresh: () => 
                 mode="range"
                 selected={rango}
                 onSelect={setRango}
-                disabled={{ before: hoy, after: addDays(hoy, info.anticipacionMaxDias + tope) }}
+                disabled={{ before: addDays(hoy, info.avisoMinDias), after: addDays(hoy, info.anticipacionMaxDias + tope) }}
                 numberOfMonths={1}
                 locale={es}
                 className="text-white"

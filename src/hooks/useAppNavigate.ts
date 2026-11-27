@@ -22,6 +22,7 @@ const PAGE_TO_PATH: Record<string, string> = {
   'asistencia-panel': '/asistencia/panel',
   'consulta-asistencia': '/consulta-asistencia',
   terminos: '/terminos',
+  reclamaciones: '/reclamaciones',
   'vincular-cuenta': '/vincular-cuenta',
   space: '/space',
 };

@@ -237,7 +237,7 @@ export function FormularioMatricula({ programa: codigoPrograma, portada, onVolve
                 derecha={`+ ${soles(ropa.uniforme.precio)}`}
               />
             )}
-            {sinUniforme && regaloUniforme && !conUniforme && <p className={cx.avisoOk}>Tu código incluye el uniforme de regalo.</p>}
+            {sinUniforme && regaloUniforme && !conUniforme && <p className={cx.avisoOk}>Tu promoción incluye el uniforme de regalo.</p>}
             {pideTallaUniforme && <SelectorTalla titulo="Talla del uniforme" valor={tallaUniforme} onCambio={setTallaUniforme} />}
             <SelectorPolos ropa={ropa} cantidad={polos} onCantidad={cambiarPolos} tallas={tallasPolos} onTalla={(i, t) => setTallasPolos((prev) => prev.map((x, j) => (j === i ? t : x)))} />
           </Seccion>

@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Mail, MapPin, Phone, Clock, CalendarCheck } from 'lucide-react';
+import { Facebook, Instagram, Mail, MapPin, Phone, Clock, CalendarCheck, BookOpen } from 'lucide-react';
 import { TELEFONO, TELEFONO_VISIBLE, CORREO, DIRECCION, DISTRITO } from '../config/contacto';
 import { EnlaceInterno } from './EnlaceInterno';
 import { HORARIO } from '../config/horario';
@@ -129,6 +129,11 @@ export function FooterMain({ onNavigate, onOpenMatricula, accion = 'clase-prueba
           </p>
           <EnlaceInterno page="terminos" onNavigate={onNavigate} className={`py-2 text-sm underline underline-offset-4 ${ui.enlace}`}>
             Términos y condiciones
+          </EnlaceInterno>
+          {/* Aviso del Libro de Reclamaciones: visible en la web (DS 011-2011-PCM) */}
+          <EnlaceInterno page="reclamaciones" onNavigate={onNavigate} className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/20 px-3 text-sm font-bold text-white hover:border-white/40`}>
+            <BookOpen className="h-4 w-4 text-[#FA7B21]" />
+            Libro de Reclamaciones
           </EnlaceInterno>
         </div>
       </div>

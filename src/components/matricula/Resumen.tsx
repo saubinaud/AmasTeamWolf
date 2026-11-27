@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Loader2, X } from 'lucide-react';
 import { cx } from './tokens';
 import { soles, type Cotizacion } from '../../utils/catalogo';
+import { NotaPromocion } from '../legal/AvisoPromocion';
 
 /**
  * El código se aplica pidiendo una cotización con él: el servidor dice si vale
@@ -56,7 +57,10 @@ export function CampoCodigo({ aplicado, onAplicar, onQuitar, cotizacion, alDia, 
       </div>
       {revisando && <p className={`${cx.ayuda} flex items-center gap-2`}><Loader2 className="h-4 w-4 animate-spin" /> Revisando el código…</p>}
       {promo?.aplicada && (
-        <p className={`${cx.avisoOk} mt-3`}><strong>{promo.codigo}</strong> aplicado{promo.nombre ? `: ${promo.nombre}` : ''}.</p>
+        <>
+          <p className={`${cx.avisoOk} mt-3`}>Promoción <strong>{promo.codigo}</strong> aplicada{promo.nombre ? `: ${promo.nombre}` : ''}.</p>
+          <NotaPromocion hasta={promo.vigente_hasta} condiciones={promo.condiciones} className="mt-2" />
+        </>
       )}
       {promo && !promo.aplicada && promo.motivo && (
         <p className={`${cx.avisoError} mt-3`}>{promo.motivo}.</p>
@@ -96,7 +100,7 @@ export function ResumenCotizacion({ cotizacion, alDia, error, respaldo, etiqueta
       ))}
       {c.descuento_promocion > 0 && (
         <div className="flex items-baseline justify-between gap-3 text-emerald-300">
-          <span>Código {c.promocion.codigo}</span>
+          <span>Promoción {c.promocion.codigo}</span>
           <span className={`${cx.cifra} shrink-0`}>− {soles(c.descuento_promocion)}</span>
         </div>
       )}
@@ -107,10 +111,10 @@ export function ResumenCotizacion({ cotizacion, alDia, error, respaldo, etiqueta
         </div>
       )}
       {c.clases_extra > 0 && (
-        <p className="text-emerald-300">+ {c.clases_extra} clases de regalo{clasesBase ? ` (${clasesBase + c.clases_extra} en total)` : ''}</p>
+        <p className="text-emerald-300">+ {c.clases_extra} clases de regalo por promoción{clasesBase ? ` (${clasesBase + c.clases_extra} en total)` : ''}</p>
       )}
       {c.regalos.map((g) => (
-        <p key={g.item_id} className="text-emerald-300">+ {g.cantidad > 1 ? `${g.cantidad} × ` : ''}{g.nombre} de regalo</p>
+        <p key={g.item_id} className="text-emerald-300">+ {g.cantidad > 1 ? `${g.cantidad} × ` : ''}{g.nombre} de regalo por promoción</p>
       ))}
       {!c.ok && <p className={cx.avisoError}>{c.errores[0]}</p>}
       <div className={`${cx.divisor} flex items-baseline justify-between pt-4`}>

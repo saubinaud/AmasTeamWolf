@@ -157,7 +157,7 @@ export function RegistroLeadershipPage({ onNavigateHome, onSuccess }: RegistroLe
               etiquetaDescuentoManual={`Implementos que ya tiene (${yaTiene.length})`}
             />
             {!respaldo && <CampoCodigo aplicado={codigo} onAplicar={setCodigo} onQuitar={() => setCodigo('')} cotizacion={cotizacion} alDia={alDia} />}
-            <p className={`${cx.textoApagado} text-[13px]`}>Al inscribirte aceptas los términos y condiciones del programa Leadership Wolf.</p>
+            <p className={`${cx.textoApagado} text-[13px]`}>Al inscribirte aceptas los <a href="/terminos" target="_blank" rel="noopener" className="underline underline-offset-2">Términos y Condiciones</a> del programa Leadership Wolf.</p>
           </Seccion>
         </div>
         <EspacioBarra />

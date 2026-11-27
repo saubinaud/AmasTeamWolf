@@ -170,6 +170,8 @@ interface CongelamientoInfo {
   motivo: string | null;
   topeDias: number;
   anticipacionMaxDias: number;
+  /** Días de aviso mínimos para pedir (T&C v3: 7) */
+  avisoMinDias: number;
   solicitudes: SolicitudCongelamiento[];
 }
 
@@ -401,6 +403,7 @@ function transformProfile(data: any): UserData {
       motivo: cong.motivo ?? null,
       topeDias: Number(cong.tope_dias) || 0,
       anticipacionMaxDias: Number(cong.anticipacion_max_dias) || 60,
+      avisoMinDias: Number.isFinite(Number(cong.aviso_min_dias)) ? Number(cong.aviso_min_dias) : 7,
       solicitudes: Array.isArray(cong.solicitudes)
         ? cong.solicitudes.map((s: any) => ({
             id: Number(s.id),

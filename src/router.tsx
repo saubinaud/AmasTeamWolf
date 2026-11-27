@@ -73,6 +73,7 @@ const RegistroShowroomPage = lazy(() => import('./components/RegistroShowroomPag
 const RenovacionPage = lazy(() => import('./pages/RenovacionPage').then(m => ({ default: m.RenovacionPage })));
 const FirmarContratoPage = lazy(() => import('./pages/FirmarContratoPage').then(m => ({ default: m.FirmarContratoPage })));
 const TerminosCondicionesPage = lazy(() => import('./components/TerminosCondicionesPage').then(m => ({ default: m.TerminosCondicionesPage })));
+const LibroReclamacionesPage = lazy(() => import('./components/reclamaciones/LibroReclamacionesPage').then(m => ({ default: m.LibroReclamacionesPage })));
 const TorneoPage = lazy(() => import('./components/TorneoPage').then(m => ({ default: m.TorneoPage })));
 const AsistenciaPage = lazy(() => import('./components/AsistenciaPage').then(m => ({ default: m.AsistenciaPage })));
 const AsistenciaPanelPage = lazy(() => import('./components/AsistenciaPanelPage').then(m => ({ default: m.AsistenciaPanelPage })));
@@ -309,6 +310,16 @@ function TerminosRoute() {
   );
 }
 
+// Libro de Reclamaciones virtual (Ley 29571, art. 150; DS 011-2011-PCM)
+function ReclamacionesRoute() {
+  return (
+    <LazyErrorBoundary><Suspense fallback={<LoadingPage />}>
+      <SEO title="Libro de Reclamaciones - JMA Team Wolf" description="Registra un reclamo o una queja en el Libro de Reclamaciones virtual de Team Wolf × JMA. Respondemos en un plazo máximo de 15 días hábiles." keywords="libro de reclamaciones team wolf jma" url="https://teamwolfxjma.com/reclamaciones" />
+      <LibroReclamacionesPage />
+    </Suspense></LazyErrorBoundary>
+  );
+}
+
 function TorneoRoute() {
   const { onNavigate, onOpenMatricula, onCartClick, cartItemsCount } = useLayoutContext();
   return (
@@ -441,6 +452,8 @@ export const router = createBrowserRouter([
       { path: '/registro-showroom', element: <RegistroShowroomRoute /> },
       { path: '/renovacion', element: <RenovacionRoute /> },
       { path: '/terminos', element: <TerminosRoute /> },
+      { path: '/reclamaciones', element: <ReclamacionesRoute /> },
+      { path: '/libro-de-reclamaciones', element: <Navigate to="/reclamaciones" replace /> },
       { path: '/firmar/:token', element: <FirmarContratoRoute /> },
       { path: '/torneo', element: <TorneoRoute /> },
       { path: '/asistencia', element: <AsistenciaRoute /> },
